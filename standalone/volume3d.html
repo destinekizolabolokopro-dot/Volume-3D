@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Volume3D — visites virtuelles 3D pour logements Airbnb</title>
+<meta name="description" content="Visites virtuelles 3D pour propriétaires et conciergeries Airbnb. Un lien interactif à intégrer dans votre annonce, livré sous 48h. France entière.">
+<meta property="og:title" content="Volume3D — visites virtuelles 3D pour logements Airbnb">
+<meta property="og:description" content="Vos voyageurs visitent chaque pièce avant de réserver. Un lien interactif, livré sous 48h.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23f6f1ea'/%3E%3Cpolygon points='20,4 35,12.5 20,21 5,12.5' fill='%23b08a4a'/%3E%3Cpolygon points='5,12.5 20,21 20,36 5,27.5' fill='%23211c18'/%3E%3Cpolygon points='20,21 35,12.5 35,27.5 20,36' fill='%233a332c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ==========================================================================
+   Volume3D — page autonome.
+   Un seul fichier : aucune installation, aucun serveur, aucune bibliothèque
+   externe. Le viewer 360° est écrit en WebGL brut, plus bas dans ce fichier.
+   ========================================================================== */
+
+:root{
+  --bg:#f6f1ea; --bg-warm:#ece2d4; --ink:#2a2521; --ink-strong:#211c18;
+  --ink-muted:#5a4f43; --ink-soft:#7a6c5c; --ink-faint:#a89a86;
+  --dark:#211c18; --accent:#b08a4a; --accent-ink:#211c18;
+  --line:rgba(42,37,33,.1); --line-soft:rgba(42,37,33,.08);
+  --serif:'Domine',Georgia,serif; --sans:'Work Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius:4px; --radius-sm:2px; --pad-x:56px;
+}
+@media(max-width:900px){ :root{ --pad-x:24px } }
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+img,svg,canvas{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--serif);letter-spacing:-.01em;color:var(--ink-strong)}
+a{color:#8a6a2f}
+a:hover{color:#6b5220}
+::selection{background:#e7d5c4}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@keyframes riseIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+.skip-link{position:absolute;left:-9999px;background:var(--dark);color:#f6f1ea;padding:12px 20px;text-decoration:none;z-index:100}
+.skip-link:focus{left:12px;top:12px}
+
+/* ------------------------------------------------------------ primitives */
+.btn{display:inline-block;border:1px solid transparent;border-radius:var(--radius-sm);font-family:var(--sans);
+  font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;text-align:center;
+  cursor:pointer;padding:17px 30px;transition:background-color .18s ease,filter .18s ease}
+.btn-dark{background:var(--dark);color:#fdf6ee}
+.btn-dark:hover{background:#352d25;color:#fdf6ee}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn-accent:hover{filter:brightness(.94);color:var(--accent-ink)}
+.btn-ghost{background:transparent;color:var(--ink-strong);border-color:var(--line);text-transform:none;letter-spacing:0}
+.btn-ghost:hover{background:rgba(42,37,33,.05);color:var(--ink-strong)}
+.btn-sm{padding:10px 18px;font-size:12.5px}
+.btn-block{display:block;width:100%}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section{padding:96px var(--pad-x)}
+.wrap{max-width:1200px;margin:0 auto}
+.section-head{text-align:center;margin-bottom:56px}
+.section-head h2{font-size:36px;font-weight:700;margin:0 0 12px}
+.section-head p{color:var(--ink-soft);font-size:16px;max-width:540px;margin:0 auto}
+.placeholder{background:repeating-linear-gradient(135deg,#e8ddcd,#e8ddcd 10px,#ddcfba 10px,#ddcfba 20px);
+  display:flex;align-items:center;justify-content:center;position:relative}
+.placeholder span{font-family:var(--mono);font-size:12px;color:#6b5b47;background:rgba(255,255,255,.85);padding:6px 12px;border-radius:6px;text-align:center}
+.placeholder-light{background:repeating-linear-gradient(135deg,#eee6db,#eee6db 8px,#e2d7c6 8px,#e2d7c6 16px)}
+
+/* ------------------------------------------------------------------- nav */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:20px var(--pad-x);background:rgba(246,241,234,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.brand-name{font-family:var(--serif);font-weight:700;font-size:20px;letter-spacing:-.01em;color:var(--ink-strong)}
+.brand-name i{font-style:normal;color:var(--accent)}
+.nav-links{display:flex;gap:32px;align-items:center;font-size:15px}
+.nav-links a:not(.btn){color:var(--ink);text-decoration:none}
+.nav-links a:not(.btn):hover{text-decoration:underline}
+@media(max-width:760px){.nav-links{gap:14px;font-size:14px}.nav-hide-sm{display:none}}
+
+/* ------------------------------------------------------------------ hero */
+.hero{position:relative;overflow:hidden;padding:96px var(--pad-x) 80px;display:grid;grid-template-columns:1.1fr 1fr;
+  gap:56px;align-items:center;max-width:1360px;margin:0 auto}
+.hero-blob{position:absolute;top:-120px;right:-160px;width:480px;height:480px;border-radius:50%;
+  background:radial-gradient(circle,rgba(150,120,60,.14),transparent 70%);pointer-events:none}
+.hero-copy{animation:riseIn .7s ease both}
+.hero-visual{position:relative;animation:riseIn .8s ease .15s both}
+.hero h1{font-size:52px;line-height:1.08;font-weight:700;letter-spacing:-.015em;margin:0 0 24px}
+.hero-lede{font-size:18px;line-height:1.6;color:var(--ink-muted);max-width:480px;margin:0 0 36px}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--bg-warm);padding:6px 14px;border-radius:100px;
+  font-size:13px;font-weight:500;color:#6b5b47;margin-bottom:24px}
+.pill i{width:6px;height:6px;border-radius:50%;background:var(--accent);display:block}
+.hero-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.link-underline{color:var(--ink-strong);padding:16px 12px;text-decoration:none;font-weight:500;font-size:15px;border-bottom:1px solid var(--ink-strong)}
+.link-underline:hover{color:var(--ink-strong);background:rgba(42,37,33,.04)}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:48px;padding-top:32px;border-top:1px solid var(--line)}
+.stat-value{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--ink-strong)}
+.stat-label{font-size:13px;color:var(--ink-soft)}
+.listing-card{background:#fff;border-radius:var(--radius);box-shadow:0 40px 80px -24px rgba(20,16,13,.45);
+  overflow:hidden;border:1px solid rgba(42,37,33,.06)}
+.listing-body{padding:20px 22px}
+.listing-title{font-weight:600;font-size:15px;margin-bottom:4px;color:var(--ink-strong)}
+.listing-meta{font-size:13px;color:var(--ink-soft)}
+.badge-360{position:absolute;bottom:16px;left:16px;background:rgba(33,28,24,.85);color:#fff;font-size:12px;
+  padding:6px 12px;border-radius:var(--radius-sm);display:flex;align-items:center;gap:6px;letter-spacing:.02em;z-index:3}
+.badge-360 i{width:8px;height:8px;border-radius:2px;background:#fff;display:block}
+.callout{position:absolute;top:-22px;right:-22px;background:var(--dark);color:var(--accent);border-radius:var(--radius);
+  padding:16px 20px;box-shadow:0 20px 40px -12px rgba(20,16,13,.4);font-size:13px;line-height:1.4;max-width:180px;
+  border:1px solid rgba(255,255,255,.08);z-index:4}
+.callout b{font-size:22px;display:block;font-family:var(--serif)}
+@media(max-width:980px){
+  .hero{grid-template-columns:1fr;gap:48px;padding-top:56px}
+  .hero h1{font-size:38px}
+  .callout{right:0}
+  .section{padding:64px var(--pad-x)}
+  .section-head h2{font-size:28px}
+}
+
+/* --------------------------------------------------------- viewer 360° */
+.viewer{position:relative;background:#14100d;border-radius:var(--radius);overflow:hidden;
+  aspect-ratio:16/10;touch-action:none;user-select:none;color:#fff}
+.viewer canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+.viewer.grabbing canvas{cursor:grabbing}
+.viewer-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;
+  gap:12px;padding:14px;background:linear-gradient(rgba(15,12,10,.6),transparent);pointer-events:none;z-index:3}
+.viewer-room{font-family:var(--serif);font-size:16px;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.viewer-btn{pointer-events:auto;background:rgba(20,16,13,.55);border:1px solid rgba(255,255,255,.2);color:#fff;
+  border-radius:2px;padding:7px 12px;font-size:12.5px;font-family:inherit;cursor:pointer}
+.viewer-btn:hover{background:rgba(20,16,13,.85)}
+.viewer-bar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;padding:14px;overflow-x:auto;
+  background:linear-gradient(transparent,rgba(15,12,10,.75));z-index:3}
+.chip{flex:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:2px;
+  padding:8px 14px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap}
+.chip:hover{background:rgba(255,255,255,.22)}
+.chip[aria-pressed="true"]{background:var(--accent);color:#211c18;border-color:transparent;font-weight:600}
+.hotspot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:none;border:0;padding:0;color:#fff;cursor:pointer;font-family:inherit;font-size:13px;z-index:2;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
+.hotspot:hover{transform:translate(-50%,-50%) scale(1.08)}
+.hotspot i{width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.9);background:rgba(20,16,13,.35);
+  display:flex;align-items:center;justify-content:center;font-style:normal;font-size:18px;animation:pulse 2.4s ease-in-out infinite}
+.hotspot b{background:rgba(20,16,13,.75);padding:3px 9px;border-radius:2px;white-space:nowrap;font-weight:500;font-size:12.5px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}50%{box-shadow:0 0 0 10px rgba(255,255,255,0)}}
+.viewer-hint{position:absolute;left:50%;bottom:70px;transform:translateX(-50%);background:rgba(20,16,13,.7);
+  padding:8px 16px;border-radius:2px;font-size:13px;white-space:nowrap;pointer-events:none;z-index:3;transition:opacity .5s}
+@media(max-width:700px){.viewer-hint{bottom:auto;top:58px;font-size:12px}}
+.viewer-fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;
+  padding:24px;color:#cbbfb0;font-size:14px;background:#14100d;z-index:5}
+.demo-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;font-size:13.5px;color:var(--ink-soft)}
+.file-btn{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:10px 16px;font-size:13px;font-weight:500;color:var(--ink-strong);cursor:pointer}
+.file-btn:hover{background:#faf7f2}
+.file-btn input{display:none}
+
+/* ------------------------------------------------------------ sections */
+.section-white{background:#fff;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.compare-label{font-size:14px;font-weight:600;color:var(--ink-soft);margin-bottom:12px}
+.compare-label-on{color:var(--accent)}
+.compare-card{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#fff;height:100%}
+.compare-card-on{border-color:var(--accent);box-shadow:0 30px 60px -20px rgba(20,16,13,.35)}
+.photo-grid{display:grid;grid-template-columns:2fr 1fr;gap:2px}
+.photo-grid>.placeholder{aspect-ratio:4/3}
+.photo-stack{display:grid;grid-template-rows:1fr 1fr;gap:2px}
+.compare-body{padding:18px 20px}
+.badge-3d{position:absolute;top:12px;left:12px;background:var(--dark);color:var(--accent);font-size:11px;font-weight:600;
+  padding:5px 10px;border-radius:var(--radius-sm);letter-spacing:.03em;text-transform:uppercase}
+.footnote{font-size:11px;color:var(--ink-faint);margin-top:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.step-card{background:#fff;border-radius:var(--radius);padding:32px 28px;border:1px solid var(--line-soft);
+  box-shadow:0 24px 48px -32px rgba(20,16,13,.2)}
+.step-n{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--accent);margin-bottom:16px}
+.step-card h3{font-family:var(--sans);font-size:19px;font-weight:600;margin:0 0 10px}
+.step-card p{font-size:14.5px;line-height:1.6;color:#6b5b47;margin:0}
+.section-dark{background:var(--dark);color:#f6f1ea}
+.section-dark h2,.section-dark h3{color:#f6f1ea}
+.section-dark .eyebrow{color:#d99b7f}
+.value-card{padding:28px 22px;border-radius:var(--radius);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.value-icon{width:38px;height:38px;border-radius:var(--radius-sm);background:var(--accent);margin-bottom:18px;display:flex;
+  align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;color:#211c18;font-size:16px}
+.value-card h3{font-family:var(--sans);font-size:16.5px;font-weight:600;margin:0 0 8px}
+.value-card p{font-size:13.5px;line-height:1.55;color:#cbbfb0;margin:0}
+.pricing{display:grid;grid-template-columns:1fr 1fr;gap:28px;max-width:1000px;margin:0 auto}
+.price-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:36px;position:relative}
+.price-card-dark{background:var(--dark);color:#fdf6ee;border-color:var(--accent)}
+.price-kicker{font-size:14px;font-weight:600;color:var(--ink-soft);margin-bottom:8px}
+.price-card-dark .price-kicker{color:#f4d9c8}
+.price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:20px}
+.price-value{font-family:var(--serif);font-size:40px;font-weight:700}
+.price-unit{font-size:14px;color:var(--ink-soft)}
+.price-features{list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:12px;font-size:14.5px;color:#4a3f34}
+.price-card-dark .price-features{color:#f0e6da}
+.price-badge{position:absolute;top:-14px;right:28px;background:var(--accent);color:#211c18;font-size:12px;font-weight:600;
+  padding:6px 14px;border-radius:var(--radius-sm);letter-spacing:.03em;text-transform:uppercase}
+@media(max-width:1000px){.grid-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:860px){.two-col,.grid-3,.pricing{grid-template-columns:1fr}}
+@media(max-width:560px){.grid-4{grid-template-columns:1fr}}
+
+/* ------------------------------------------------------------- contact */
+.section-cta{background:var(--bg-warm);text-align:center;padding:88px var(--pad-x) 100px}
+.section-cta h2{font-size:38px;font-weight:700;margin:0 auto 18px;max-width:640px}
+.section-cta>p{font-size:16px;color:#6b5b47;margin:0 0 32px}
+@media(max-width:860px){.section-cta h2{font-size:28px}}
+.form{max-width:620px;margin:0 auto;text-align:left;display:grid;gap:18px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:620px){.form-row{grid-template-columns:1fr}}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 14px}
+.field textarea{min-height:110px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(150,120,60,.18)}
+.form-note{font-size:12.5px;color:var(--ink-soft);margin:0}
+.footer{padding:32px var(--pad-x);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  font-size:13px;color:#8a7c6b;border-top:1px solid var(--line-soft)}
+.footer a{color:#8a7c6b}
+</style>
+</head>
+
+<body>
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+
+<header class="nav">
+  <a class="brand" href="#">
+    <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true">
+      <polygon points="20,3 36,12 20,21 4,12" fill="#b08a4a"></polygon>
+      <polygon points="4,12 20,21 20,37 4,28" fill="#211c18"></polygon>
+      <polygon points="20,21 36,12 36,28 20,37" fill="#3a332c"></polygon>
+    </svg>
+    <span class="brand-name">Volume<i>3D</i></span>
+  </a>
+  <nav class="nav-links" aria-label="Navigation principale">
+    <a class="nav-hide-sm" href="#comment-ca-marche">Comment ça marche</a>
+    <a class="nav-hide-sm" href="#tarifs">Tarifs</a>
+    <a class="btn btn-accent btn-sm" href="#contact">Prendre rendez-vous</a>
+  </nav>
+</header>
+
+<main id="contenu">
+
+  <!-- ===================================================== hero ===== -->
+  <section class="hero">
+    <div class="hero-blob" aria-hidden="true"></div>
+
+    <div class="hero-copy">
+      <div class="pill"><i aria-hidden="true"></i> Pour propriétaires &amp; conciergeries Airbnb</div>
+      <h1>Une visite 3D qui transforme les curieux en réservations</h1>
+      <p class="hero-lede">Nous venons scanner votre logement en 20 minutes. Vous recevez une visite 3D interactive,
+        prête à intégrer dans votre annonce.</p>
+      <div class="hero-actions">
+        <a class="btn btn-dark" href="#contact">Prendre rendez-vous →</a>
+        <a class="link-underline" href="#exemple">Essayer la visite en direct</a>
+      </div>
+      <div class="stats">
+        <div><div class="stat-value">20 min</div><div class="stat-label">Sur place, une seule fois</div></div>
+        <div><div class="stat-value">48h</div><div class="stat-label">Livraison du lien</div></div>
+        <div><div class="stat-value">1 lien</div><div class="stat-label">Intégrable partout</div></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="listing-card">
+        <div class="placeholder" style="aspect-ratio:16/10">
+          <span>visite 3d — capture d’écran à intégrer</span>
+          <div class="badge-360"><i aria-hidden="true"></i> Visite interactive 360°</div>
+        </div>
+        <div class="listing-body">
+          <div class="listing-title">Appartement lumineux — Le Marais</div>
+          <div class="listing-meta">Paris 3e · 4,97 ★ (128 avis)</div>
+        </div>
+      </div>
+      <div class="callout"><b>+38%</b> de clics sur les annonces avec visite 3D*</div>
+    </div>
+  </section>
+
+  <!-- ============================================ viewer en direct ===== -->
+  <section id="exemple" class="section section-white">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Démonstration</div>
+        <h2>Voilà ce que reçoit votre voyageur</h2>
+        <p>Faites glisser pour regarder autour de vous, cliquez sur les pastilles pour passer d’une pièce à l’autre.
+          Exactement ce que verra quelqu’un qui ouvre votre lien.</p>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <canvas id="pano"></canvas>
+        <div class="viewer-top">
+          <div class="viewer-room" id="roomName">Salon</div>
+          <button class="viewer-btn" id="fsBtn" type="button">Plein écran</button>
+        </div>
+        <div class="viewer-hint" id="hint">Faites glisser pour regarder autour de vous</div>
+        <div class="viewer-bar" id="roomBar"></div>
+        <div class="viewer-fallback" id="fallback">
+          Votre navigateur ne prend pas en charge WebGL : la visite ne peut pas s’afficher ici.
+        </div>
+      </div>
+
+      <div class="demo-tools">
+        <label class="file-btn">
+          Charger ma propre photo 360°
+          <input type="file" id="ownPano" accept="image/*">
+        </label>
+        <span>Testez avec un panorama pris depuis l’app Google Street View — le fichier reste sur votre ordinateur.</span>
+      </div>
+      <p class="footnote">Les pièces ci-dessus sont des panoramas de démonstration générés par le navigateur, pas de
+        vraies photos de logement.</p>
+    </div>
+  </section>
+
+  <!-- ================================================ avant / après ===== -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Avant / Après</div>
+        <h2>La même annonce, un tout autre niveau de confiance</h2>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="compare-label">SANS visite 3D</div>
+          <div class="compare-card">
+            <div class="photo-grid">
+              <div class="placeholder placeholder-light"><span>photo salon</span></div>
+              <div class="photo-stack">
+                <div class="placeholder placeholder-light"><span>photo</span></div>
+                <div class="placeholder placeholder-light"><span>photo</span></div>
+              </div>
+            </div>
+            <div class="compare-body">
+              <div class="listing-title">Studio cosy centre-ville</div>
+              <div class="listing-meta">« Est-ce que la chambre est séparée ? » — question reçue 6× ce mois-ci</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="compare-label compare-label-on">AVEC visite 3D</div>
+          <div class="compare-card compare-card-on">
+            <div class="placeholder" style="aspect-ratio:16/9">
+              <span>viewer 3d — capture à intégrer</span>
+              <div class="badge-3d">Visite virtuelle 3D</div>
+            </div>
+            <div class="compare-body">
+              <div class="listing-title">Studio cosy centre-ville</div>
+              <div class="listing-meta">Les voyageurs visitent chaque recoin avant de réserver — zéro surprise, zéro question</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="footnote">*Ordre de grandeur issu d’études sectorielles sur l’impact des visites virtuelles dans
+        l’immobilier locatif — les résultats varient selon le logement et l’annonce.</p>
+    </div>
+  </section>
+
+  <!-- ============================================ comment ça marche ===== -->
+  <section id="comment-ca-marche" class="section section-white">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Le déroulé</div>
+        <h2>Comment ça marche</h2>
+        <p>Aucune contrainte technique de votre côté — on s’occupe de tout, sur place.</p>
+      </div>
+      <div class="grid-3">
+        <article class="step-card">
+          <div class="step-n">01</div>
+          <h3>On convient d’un créneau</h3>
+          <p>Vingt minutes suffisent pour un T2. Vous n’avez rien à préparer d’autre qu’un logement rangé, comme pour
+            une arrivée voyageur.</p>
+        </article>
+        <article class="step-card">
+          <div class="step-n">02</div>
+          <h3>On scanne, puis on modélise</h3>
+          <p>Capture 360° pièce par pièce sur place, puis assemblage en une visite fluide et navigable de votre logement.</p>
+        </article>
+        <article class="step-card">
+          <div class="step-n">03</div>
+          <h3>Vous recevez le lien</h3>
+          <p>Un lien de visite prêt à partager avec vos voyageurs, à intégrer sur votre site ou vos annonces, sous 48h.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= pourquoi la 3D ===== -->
+  <section class="section section-dark">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Pourquoi la 3D</div>
+        <h2>Ce que ça change pour votre annonce</h2>
+      </div>
+      <div class="grid-4">
+        <article class="value-card">
+          <div class="value-icon" aria-hidden="true">A</div>
+          <h3>Plus de réservations</h3>
+          <p>Les voyageurs qui se projettent réservent plus vite et annulent moins.</p>
+        </article>
+        <article class="value-card">
+          <div class="value-icon" aria-hidden="true">B</div>
+          <h3>Moins de questions</h3>
+          <p>La visite répond à l’avance aux questions sur l’agencement, la taille, la luminosité.</p>
+        </article>
+        <article class="value-card">
+          <div class="value-icon" aria-hidden="true">C</div>
+          <h3>Une annonce qui se démarque</h3>
+          <p>Rares sont les annonces avec une visite 3D — la vôtre sort du lot immédiatement.</p>
+        </article>
+        <article class="value-card">
+          <div class="value-icon" aria-hidden="true">D</div>
+          <h3>Zéro contrainte</h3>
+          <p>Un seul rendez-vous court, aucun matériel à acheter, aucune manipulation de votre côté.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= tarifs ===== -->
+  <section id="tarifs" class="section">
+    <div class="section-head">
+      <div class="eyebrow">Tarifs</div>
+      <h2>Simple, sans engagement</h2>
+      <p>Lancement en France entière — places limitées ce mois-ci.</p>
+    </div>
+    <div class="pricing">
+      <article class="price-card">
+        <div class="price-kicker">Propriétaire</div>
+        <div class="price-row"><span class="price-value">89€</span><span class="price-unit">/ logement</span></div>
+        <ul class="price-features">
+          <li>✓ Scan complet sur place, sans préparation</li>
+          <li>✓ Lien de visite interactif et illimité</li>
+          <li>✓ Livraison sous 48h</li>
+          <li>✓ Partageable en message, site perso, Booking</li>
+        </ul>
+        <a class="btn btn-dark btn-block btn-sm" href="#contact">Réserver ma visite 3D</a>
+      </article>
+      <article class="price-card price-card-dark">
+        <div class="price-badge">Conciergeries</div>
+        <div class="price-kicker">Volume / abonnement</div>
+        <div class="price-row"><span class="price-value">Sur devis</span></div>
+        <ul class="price-features">
+          <li>✓ Tarif dégressif dès 3 logements</li>
+          <li>✓ Planification des scans groupée</li>
+          <li>✓ Interlocuteur dédié</li>
+          <li>✓ Renouvellement périodique possible</li>
+        </ul>
+        <a class="btn btn-accent btn-block btn-sm" href="#contact">Demander un devis</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================================================== contact ===== -->
+  <section id="contact" class="section-cta">
+    <h2>Prêt à montrer votre logement sous son meilleur jour ?</h2>
+    <p>Réponse sous 24h. Première visite 3D livrée cette semaine.</p>
+
+    <form class="form" id="contactForm">
+      <div class="form-row">
+        <div class="field">
+          <label for="f-name">Votre nom</label>
+          <input id="f-name" name="name" type="text" required autocomplete="name" maxlength="120">
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" name="email" type="email" required autocomplete="email" maxlength="200">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="f-phone">Téléphone (facultatif)</label>
+          <input id="f-phone" name="phone" type="tel" autocomplete="tel" maxlength="40">
+        </div>
+        <div class="field">
+          <label for="f-city">Ville du logement</label>
+          <input id="f-city" name="city" type="text" required maxlength="120">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-profile">Vous êtes</label>
+        <select id="f-profile" name="profile">
+          <option>Propriétaire d’un ou deux logements</option>
+          <option>Propriétaire de plusieurs logements</option>
+          <option>Conciergerie</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-message">Votre logement en deux mots (facultatif)</label>
+        <textarea id="f-message" name="message" maxlength="2000" placeholder="T2 de 40 m² au 3e étage, deux chambres…"></textarea>
+      </div>
+      <button class="btn btn-dark" type="submit">Demander un créneau</button>
+      <p class="form-note">Réponse sous 24h. Vos coordonnées servent uniquement à vous recontacter, elles ne sont
+        jamais revendues.</p>
+    </form>
+  </section>
+</main>
+
+<footer class="footer">
+  <a class="brand" href="#">
+    <svg width="20" height="20" viewBox="0 0 40 40" aria-hidden="true">
+      <polygon points="20,3 36,12 20,21 4,12" fill="#b08a4a"></polygon>
+      <polygon points="4,12 20,21 20,37 4,28" fill="#211c18"></polygon>
+      <polygon points="20,21 36,12 36,28 20,37" fill="#3a332c"></polygon>
+    </svg>
+    <span class="brand-name" style="font-size:16px">Volume3D</span>
+  </a>
+  <div>France entière · <a href="mailto:scan@volume3d.fr" id="footerMail">scan@volume3d.fr</a></div>
+</footer>
+
+<script>
+/* ==========================================================================
+   Viewer panoramique 360°, en WebGL brut.
+
+   Aucune bibliothèque : le panorama équirectangulaire est plaqué par un
+   fragment shader qui, pour chaque pixel, calcule la direction du rayon
+   correspondant puis va lire la texture aux coordonnées sphériques associées.
+   C'est la même approche que les gros viewers du marché, en 150 lignes.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var CONTACT_EMAIL = 'scan@volume3d.fr';
+
+  /* --------------------------------------------- panoramas de démonstration */
+  /* Dessinés dans un canvas plutôt que chargés depuis un fichier : la page
+     reste autonome et fonctionne hors connexion. */
+  function makeDemoPano(opts) {
+    var W = 2048, H = 1024;
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var g = c.getContext('2d');
+
+    // Ligne d'horizon : hauteur des yeux. Tout ce qui est au-dessus est mur et
+    // plafond, tout ce qui est en dessous est sol.
+    var horizon = H * 0.55;
+    var baseboard = horizon + H * 0.02;
+
+    var ceiling = g.createLinearGradient(0, 0, 0, horizon);
+    ceiling.addColorStop(0, opts.ceiling);
+    ceiling.addColorStop(0.55, opts.wall);
+    ceiling.addColorStop(1, shade(opts.wall, -6));
+    g.fillStyle = ceiling;
+    g.fillRect(0, 0, W, horizon);
+
+    var floor = g.createLinearGradient(0, horizon, 0, H);
+    floor.addColorStop(0, shade(opts.floor, 14));
+    floor.addColorStop(1, shade(opts.floor, -18));
+    g.fillStyle = floor;
+    g.fillRect(0, horizon, W, H - horizon);
+
+    // Lames de parquet : bandes horizontales resserrées près de l'horizon,
+    // écartées vers le bas — ça suffit à lire une profondeur.
+    g.strokeStyle = 'rgba(30,22,14,.14)';
+    g.lineWidth = 2;
+    for (var t = 0.02; t < 1; t += 0.055) {
+      var y = horizon + (H - horizon) * t * t;
+      g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+    }
+
+    // Angles de la pièce : quatre arêtes verticales assombries, tous les 90°.
+    [0.125, 0.375, 0.625, 0.875].forEach(function (x) {
+      var corner = g.createLinearGradient(x * W - W * 0.035, 0, x * W + W * 0.035, 0);
+      corner.addColorStop(0, 'rgba(30,22,14,0)');
+      corner.addColorStop(0.5, 'rgba(30,22,14,.16)');
+      corner.addColorStop(1, 'rgba(30,22,14,0)');
+      g.fillStyle = corner;
+      g.fillRect(x * W - W * 0.035, 0, W * 0.07, horizon);
+    });
+
+    // Plafonnier, au zénith du panorama.
+    var lamp = g.createRadialGradient(W * 0.5, 0, 0, W * 0.5, 0, H * 0.22);
+    lamp.addColorStop(0, 'rgba(255,246,225,.85)');
+    lamp.addColorStop(1, 'rgba(255,246,225,0)');
+    g.fillStyle = lamp;
+    g.fillRect(0, 0, W, H * 0.22);
+
+    // Fenêtres : rectangles clairs, avec croisillons et halo de lumière au sol.
+    opts.windows.forEach(function (x) {
+      var w = W * 0.115, h = H * 0.27, y = horizon - h - H * 0.06;
+      var light = g.createLinearGradient(0, y, 0, y + h);
+      light.addColorStop(0, '#fdfaf3');
+      light.addColorStop(1, '#dfd6c1');
+      g.fillStyle = light;
+      g.fillRect(x * W - w / 2, y, w, h);
+      g.strokeStyle = 'rgba(40,34,28,.4)';
+      g.lineWidth = 6;
+      g.strokeRect(x * W - w / 2, y, w, h);
+      g.lineWidth = 4;
+      g.beginPath();
+      g.moveTo(x * W, y); g.lineTo(x * W, y + h);
+      g.moveTo(x * W - w / 2, y + h * 0.45); g.lineTo(x * W + w / 2, y + h * 0.45);
+      g.stroke();
+
+      var glow = g.createRadialGradient(x * W, horizon, 0, x * W, horizon, W * 0.11);
+      glow.addColorStop(0, 'rgba(255,248,230,.35)');
+      glow.addColorStop(1, 'rgba(255,248,230,0)');
+      g.fillStyle = glow;
+      g.fillRect(x * W - W * 0.11, horizon - H * 0.05, W * 0.22, H * 0.3);
+    });
+
+    // Cadres accrochés au mur.
+    (opts.frames || []).forEach(function (x) {
+      var w = W * 0.045, h = H * 0.1, y = horizon - h - H * 0.14;
+      g.fillStyle = 'rgba(40,34,28,.5)';
+      g.fillRect(x * W - w / 2 - 5, y - 5, w + 10, h + 10);
+      g.fillStyle = shade(opts.wall, 16);
+      g.fillRect(x * W - w / 2, y, w, h);
+    });
+
+    // Mobilier : blocs posés sur la ligne de sol, avec ombre portée.
+    opts.furniture.forEach(function (item) {
+      var w = W * item.w, h = H * item.h, x = item.x * W - w / 2, y = horizon - h + H * 0.02;
+      var shadow = g.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, w * 0.8);
+      shadow.addColorStop(0, 'rgba(20,14,8,.35)');
+      shadow.addColorStop(1, 'rgba(20,14,8,0)');
+      g.fillStyle = shadow;
+      g.fillRect(x - w * 0.3, y + h - H * 0.03, w * 1.6, H * 0.12);
+
+      var body = g.createLinearGradient(0, y, 0, y + h);
+      body.addColorStop(0, shade(item.color, 14));
+      body.addColorStop(1, shade(item.color, -12));
+      g.fillStyle = body;
+      g.fillRect(x, y, w, h);
+    });
+
+    // Plinthe le long du mur.
+    g.fillStyle = 'rgba(255,255,255,.35)';
+    g.fillRect(0, horizon, W, baseboard - horizon);
+    g.fillStyle = 'rgba(30,22,14,.22)';
+    g.fillRect(0, baseboard - 3, W, 3);
+
+    // Vignettage haut et bas, pour éviter l'aplat au zénith et au nadir.
+    var vignette = g.createLinearGradient(0, H * 0.86, 0, H);
+    vignette.addColorStop(0, 'rgba(20,14,8,0)');
+    vignette.addColorStop(1, 'rgba(20,14,8,.4)');
+    g.fillStyle = vignette;
+    g.fillRect(0, H * 0.86, W, H * 0.14);
+
+    // Nom de la pièce, répété deux fois pour rester lisible quel que soit l'angle.
+    g.font = 'bold ' + Math.round(H * 0.055) + 'px Georgia, serif';
+    g.fillStyle = 'rgba(40,34,28,.26)';
+    g.textAlign = 'center';
+    g.fillText(opts.label, W * 0.25, horizon - H * 0.33);
+    g.fillText(opts.label, W * 0.75, horizon - H * 0.33);
+
+    return c;
+  }
+
+  /** Éclaircit (amount > 0) ou assombrit (amount < 0) une couleur hexadécimale. */
+  function shade(hex, amount) {
+    var n = parseInt(hex.slice(1), 16);
+    var channels = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+      return Math.max(0, Math.min(255, Math.round(v + amount * 2.55)));
+    });
+    return 'rgb(' + channels.join(',') + ')';
+  }
+
+  var SCENES = [
+    {
+      name: 'Salon',
+      image: makeDemoPano({
+        label: 'SALON', ceiling: '#f2ece1', wall: '#e4d8c4', floor: '#a9885f',
+        windows: [0.18, 0.34],
+        frames: [0.5, 0.57],
+        furniture: [
+          { x: 0.62, w: 0.17, h: 0.13, color: '#6f5c47' },
+          { x: 0.80, w: 0.07, h: 0.19, color: '#5c4d3d' },
+          { x: 0.04, w: 0.11, h: 0.09, color: '#8a7659' }
+        ]
+      }),
+      hotspots: [{ yaw: 34, pitch: -7, label: 'Chambre', target: 1 }]
+    },
+    {
+      name: 'Chambre',
+      image: makeDemoPano({
+        label: 'CHAMBRE', ceiling: '#eeebe7', wall: '#d8d3cd', floor: '#96805f',
+        windows: [0.72],
+        frames: [0.14],
+        furniture: [
+          { x: 0.30, w: 0.24, h: 0.11, color: '#6e665d' },
+          { x: 0.52, w: 0.06, h: 0.15, color: '#585148' },
+          { x: 0.90, w: 0.08, h: 0.2, color: '#655e56' }
+        ]
+      }),
+      hotspots: [
+        { yaw: -32, pitch: -7, label: 'Salon', target: 0 },
+        { yaw: 40, pitch: -7, label: 'Cuisine', target: 2 }
+      ]
+    },
+    {
+      name: 'Cuisine',
+      image: makeDemoPano({
+        label: 'CUISINE', ceiling: '#f1f3ee', wall: '#dfe3dc', floor: '#8d8b73',
+        windows: [0.45],
+        frames: [0.68],
+        furniture: [
+          { x: 0.15, w: 0.28, h: 0.13, color: '#636a5a' },
+          { x: 0.88, w: 0.10, h: 0.21, color: '#535849' },
+          { x: 0.30, w: 0.06, h: 0.17, color: '#6f7566' }
+        ]
+      }),
+      hotspots: [{ yaw: -28, pitch: -7, label: 'Chambre', target: 1 }]
+    }
+  ];
+
+  /* ------------------------------------------------------------- WebGL --- */
+  var canvas = document.getElementById('pano');
+  var viewer = document.getElementById('viewer');
+  var fallback = document.getElementById('fallback');
+  var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+
+  if (!gl) {
+    fallback.style.display = 'flex';
+    return;
+  }
+
+  var VERT = [
+    'attribute vec2 position;',
+    'varying vec2 ndc;',
+    'void main(){ ndc = position; gl_Position = vec4(position, 0.0, 1.0); }'
+  ].join('\n');
+
+  var FRAG = [
+    'precision highp float;',
+    'varying vec2 ndc;',
+    'uniform sampler2D pano;',
+    'uniform float aspect;',
+    'uniform float tanHalfFov;',
+    'uniform float yaw;',
+    'uniform float pitch;',
+    'const float PI = 3.14159265359;',
+    'void main(){',
+    // Rayon dans le repère de la caméra, puis rotation par l'orientation.
+    '  vec3 dir = normalize(vec3(ndc.x * aspect * tanHalfFov, ndc.y * tanHalfFov, -1.0));',
+    '  float cp = cos(pitch), sp = sin(pitch);',
+    '  dir = vec3(dir.x, dir.y * cp - dir.z * sp, dir.y * sp + dir.z * cp);',
+    '  float cy = cos(yaw), sy = sin(yaw);',
+    '  dir = vec3(dir.x * cy + dir.z * sy, dir.y, -dir.x * sy + dir.z * cy);',
+    // Direction → coordonnées équirectangulaires.
+    '  float u = atan(dir.x, -dir.z) / (2.0 * PI) + 0.5;',
+    '  float v = 0.5 - asin(clamp(dir.y, -1.0, 1.0)) / PI;',
+    '  gl_FragColor = texture2D(pano, vec2(u, v));',
+    '}'
+  ].join('\n');
+
+  function compile(type, source) {
+    var shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error(gl.getShaderInfoLog(shader));
+      return null;
+    }
+    return shader;
+  }
+
+  var program = gl.createProgram();
+  gl.attachShader(program, compile(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(program, compile(gl.FRAGMENT_SHADER, FRAG));
+  gl.linkProgram(program);
+  gl.useProgram(program);
+
+  var quad = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(program, 'position');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  var uniforms = {
+    aspect: gl.getUniformLocation(program, 'aspect'),
+    tanHalfFov: gl.getUniformLocation(program, 'tanHalfFov'),
+    yaw: gl.getUniformLocation(program, 'yaw'),
+    pitch: gl.getUniformLocation(program, 'pitch')
+  };
+
+  var texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+  function uploadTexture(source) {
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+  }
+
+  /* ------------------------------------------------------------- état --- */
+  var view = { yaw: 0, pitch: -4, fov: 76 };
+  var sceneIndex = 0;
+  var customScene = null;
+
+  var roomName = document.getElementById('roomName');
+  var roomBar = document.getElementById('roomBar');
+  var hint = document.getElementById('hint');
+
+  function activeScene() {
+    return customScene || SCENES[sceneIndex];
+  }
+
+  function render() {
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== w || canvas.height !== h) {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+    }
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform1f(uniforms.aspect, canvas.width / canvas.height);
+    gl.uniform1f(uniforms.tanHalfFov, Math.tan((view.fov * Math.PI / 180) / 2));
+    gl.uniform1f(uniforms.yaw, view.yaw * Math.PI / 180);
+    gl.uniform1f(uniforms.pitch, view.pitch * Math.PI / 180);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    placeHotspots();
+    requestAnimationFrame(render);
+  }
+
+  /* Position à l'écran d'un point de passage : on applique la rotation inverse
+     de la caméra, puis la projection perspective. */
+  function project(yawDeg, pitchDeg) {
+    var y = yawDeg * Math.PI / 180, p = pitchDeg * Math.PI / 180;
+    var d = [Math.cos(p) * Math.sin(y), Math.sin(p), -Math.cos(p) * Math.cos(y)];
+
+    var cy = Math.cos(-view.yaw * Math.PI / 180), sy = Math.sin(-view.yaw * Math.PI / 180);
+    var r1 = [d[0] * cy + d[2] * sy, d[1], -d[0] * sy + d[2] * cy];
+    var cp = Math.cos(-view.pitch * Math.PI / 180), sp = Math.sin(-view.pitch * Math.PI / 180);
+    var r2 = [r1[0], r1[1] * cp - r1[2] * sp, r1[1] * sp + r1[2] * cp];
+
+    if (r2[2] >= -0.05) return null; // derrière la caméra
+    var t = Math.tan((view.fov * Math.PI / 180) / 2);
+    var aspect = canvas.clientWidth / canvas.clientHeight;
+    var x = (r2[0] / -r2[2]) / (t * aspect);
+    var yy = (r2[1] / -r2[2]) / t;
+    if (Math.abs(x) > 1.1 || Math.abs(yy) > 1.1) return null;
+    return { x: (x * 0.5 + 0.5) * canvas.clientWidth, y: (-yy * 0.5 + 0.5) * canvas.clientHeight };
+  }
+
+  var hotspotNodes = [];
+
+  function buildHotspots() {
+    hotspotNodes.forEach(function (node) { node.remove(); });
+    hotspotNodes = [];
+    if (customScene) return;
+
+    activeScene().hotspots.forEach(function (spot) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'hotspot';
+      button.innerHTML = '<i aria-hidden="true">↗</i><b></b>';
+      button.querySelector('b').textContent = spot.label;
+      button.title = 'Aller vers ' + spot.label;
+      button.addEventListener('click', function () { goTo(spot.target); });
+      viewer.appendChild(button);
+      hotspotNodes.push(button);
+      button._spot = spot;
+    });
+  }
+
+  function placeHotspots() {
+    hotspotNodes.forEach(function (node) {
+      var point = project(node._spot.yaw, node._spot.pitch);
+      if (!point) { node.style.display = 'none'; return; }
+      node.style.display = 'flex';
+      node.style.left = point.x + 'px';
+      node.style.top = point.y + 'px';
+    });
+  }
+
+  function goTo(index) {
+    customScene = null;
+    sceneIndex = index;
+    view.yaw = 0; view.pitch = -4;
+    var scene = SCENES[index];
+    roomName.textContent = scene.name;
+    uploadTexture(scene.image);
+    buildHotspots();
+    syncChips();
+  }
+
+  function syncChips() {
+    Array.prototype.forEach.call(roomBar.children, function (chip, i) {
+      chip.setAttribute('aria-pressed', String(!customScene && i === sceneIndex));
+    });
+  }
+
+  SCENES.forEach(function (scene, i) {
+    var chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip';
+    chip.textContent = scene.name;
+    chip.addEventListener('click', function () { goTo(i); });
+    roomBar.appendChild(chip);
+  });
+
+  /* --------------------------------------------------------- contrôles --- */
+  var pointers = {};
+  var pointerCount = 0;
+  var pinch = 0;
+
+  viewer.addEventListener('pointerdown', function (e) {
+    if (e.target.closest('.chip, .viewer-btn, .hotspot')) return;
+    viewer.setPointerCapture(e.pointerId);
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+    pointerCount++;
+    viewer.classList.add('grabbing');
+    if (hint) hint.style.opacity = '0';
+  });
+
+  viewer.addEventListener('pointermove', function (e) {
+    var previous = pointers[e.pointerId];
+    if (!previous) return;
+    var ids = Object.keys(pointers);
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+
+    if (ids.length >= 2) {
+      var a = pointers[ids[0]], b = pointers[ids[1]];
+      var distance = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch > 0) view.fov = Math.max(35, Math.min(100, view.fov * (pinch / distance)));
+      pinch = distance;
+      return;
+    }
+
+    // La sensibilité suit le champ de vision : zoomé, on tourne plus lentement.
+    var speed = 0.13 * view.fov / 75;
+    view.yaw -= (e.clientX - previous.x) * speed;
+    view.pitch = Math.max(-89, Math.min(89, view.pitch + (e.clientY - previous.y) * speed));
+  });
+
+  function endPointer(e) {
+    if (!pointers[e.pointerId]) return;
+    delete pointers[e.pointerId];
+    pointerCount = Math.max(0, pointerCount - 1);
+    if (pointerCount < 2) pinch = 0;
+    if (pointerCount === 0) viewer.classList.remove('grabbing');
+  }
+  viewer.addEventListener('pointerup', endPointer);
+  viewer.addEventListener('pointercancel', endPointer);
+
+  viewer.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    view.fov = Math.max(35, Math.min(100, view.fov + e.deltaY * 0.05));
+  }, { passive: false });
+
+  canvas.tabIndex = 0;
+  canvas.setAttribute('role', 'application');
+  canvas.setAttribute('aria-label', 'Visite 360°. Flèches du clavier pour regarder autour de vous.');
+  canvas.addEventListener('keydown', function (e) {
+    var step = e.shiftKey ? 15 : 5;
+    if (e.key === 'ArrowLeft') view.yaw -= step;
+    else if (e.key === 'ArrowRight') view.yaw += step;
+    else if (e.key === 'ArrowUp') view.pitch = Math.min(89, view.pitch + step);
+    else if (e.key === 'ArrowDown') view.pitch = Math.max(-89, view.pitch - step);
+    else return;
+    e.preventDefault();
+  });
+
+  document.getElementById('fsBtn').addEventListener('click', function () {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (viewer.requestFullscreen) viewer.requestFullscreen();
+  });
+
+  /* Chargement d'un panorama personnel — le fichier ne quitte pas la machine. */
+  document.getElementById('ownPano').addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var image = new Image();
+    image.onload = function () {
+      customScene = { name: file.name.replace(/\.[^.]+$/, ''), hotspots: [] };
+      roomName.textContent = customScene.name;
+      view.yaw = 0; view.pitch = -4;
+      uploadTexture(image);
+      buildHotspots();
+      syncChips();
+      URL.revokeObjectURL(image.src);
+    };
+    image.onerror = function () { alert('Cette image n’a pas pu être chargée.'); };
+    image.src = URL.createObjectURL(file);
+  });
+
+  /* ----------------------------------------------- formulaire (mailto) --- */
+  /* Page autonome : sans serveur, la demande part par email depuis le client
+     du visiteur. Sur le site déployé, elle est enregistrée en base. */
+  document.getElementById('contactForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = new FormData(e.target);
+    var body = [
+      'Nom : ' + (data.get('name') || ''),
+      'Email : ' + (data.get('email') || ''),
+      'Téléphone : ' + (data.get('phone') || '—'),
+      'Ville : ' + (data.get('city') || ''),
+      'Profil : ' + (data.get('profile') || ''),
+      '',
+      data.get('message') || ''
+    ].join('\n');
+    window.location.href = 'mailto:' + CONTACT_EMAIL +
+      '?subject=' + encodeURIComponent('Demande de visite 3D — ' + (data.get('city') || '')) +
+      '&body=' + encodeURIComponent(body);
+  });
+
+  goTo(0);
+  render();
+  setTimeout(function () { if (hint) hint.style.opacity = '0'; }, 5000);
+})();
+</script>
+</body>
+</html>
