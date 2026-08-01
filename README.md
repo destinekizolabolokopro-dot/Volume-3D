@@ -2,13 +2,15 @@
 
 Site et back-office du service de visites virtuelles 3D pour logements Airbnb.
 
-Trois zones :
+Le service est vendu **par abonnement** : chaque client dispose de son espace,
+y crée ses biens, et suit ce qu'ils rapportent.
 
 | Zone | URL | Qui y accède |
 |---|---|---|
 | **Landing** | `/` | Le public. Présentation de l'offre + formulaire de contact. |
-| **Back-office** | `/admin` | Vous seul, par mot de passe. |
-| **Visite publique** | `/v/{slug}` | Le propriétaire et ses voyageurs, sans compte. |
+| **Espace client** | `/espace` | Vos abonnés, chacun sur ses propres biens. |
+| **Back-office** | `/admin` | Vous seul, par mot de passe. Vue sur l'ensemble. |
+| **Visite publique** | `/v/{slug}` | Les voyageurs, sans compte, avec assistant. |
 | **Aperçu de démarchage** | `/demo/{token}` | Un prospect précis, en privé, temporairement. |
 
 ---
@@ -80,15 +82,65 @@ Quatre formats sont disponibles :
 - **Panoramas 360°** — le cas nominal, hébergé chez vous, décrit ci-dessus. Le
   visiteur explore : il tourne la tête, il choisit où aller.
 - **Vidéo walkthrough** — une déambulation filmée au téléphone en marchant
-  lentement dans le logement. Le visiteur regarde, il ne contrôle pas. C'est le
-  format des visites qu'on voit passer sur les réseaux : plus spectaculaire,
-  plus facile à produire, mais moins convaincant pour lever un doute précis
-  (« la chambre est-elle vraiment séparée ? »). Les deux se complètent.
+  lentement dans le logement. C'est le format des visites qu'on voit passer sur
+  les réseaux : plus spectaculaire, plus facile à produire. Ajoutez des
+  **repères** (« Chambre — 1:20 ») depuis la fiche du bien : le visiteur saute
+  directement à la pièce qui l'intéresse au lieu de tâtonner dans la barre de
+  lecture. Sans eux, une vidéo ne se parcourt pas.
 - **Modèle 3D `.glb`** — pour un logement capturé en photogrammétrie avec
   Polycam ou Luma. Envoyez l'export `.glb` ; au-delà de ~60 Mo le chargement
   devient pénible sur mobile.
 - **Viewer externe** — collez un lien Matterport ou Cupix : la page de visite
   garde votre habillage et affiche leur viewer à l'intérieur.
+
+---
+
+## L'espace client
+
+Un client crée son compte sur `/espace`, choisit sa formule, puis travaille
+dans quatre onglets :
+
+- **Tableau de bord** — vues cumulées, visites en ligne, questions posées à
+  l'assistant, vues moyennes par visite, et le classement des questions les plus
+  fréquentes. Ces questions sont la donnée la plus utile du produit : elles
+  disent noir sur blanc ce que l'annonce n'explique pas.
+- **Mes biens** — la liste, avec vignette, statut et nombre de vues.
+- **Création** — nom, ville, **description** et **photos** du bien. La visite
+  360° ou la vidéo s'ajoutent ensuite dans la fiche.
+- **Mon compte** — coordonnées et formule.
+
+Les formules limitent le nombre de biens : Essentiel 1, Pro 5, Conciergerie
+illimité. Aucun paiement n'est encaissé par l'application — la limite sert à
+cadrer l'usage, la facturation reste à mettre en place de votre côté.
+
+**Cloisonnement.** Chaque action portant sur un bien vérifie qu'il appartient
+au compte connecté ; un bien d'un autre client répond 404, y compris en tapant
+son adresse directement. L'administrateur, lui, voit et modifie tout.
+
+---
+
+## L'assistant des visites
+
+Sur chaque page de visite, un bouton « Une question sur ce logement ? » ouvre un
+assistant qui répond aux voyageurs à partir de la description, du nom des
+pièces, des repères vidéo et des légendes de photos. Il tourne sur l'API Claude
+(`claude-opus-5`).
+
+Ce qu'il ne fait pas, volontairement :
+
+- **Il n'invente rien.** Une information absente de la fiche est annoncée comme
+  absente, avec renvoi vers le propriétaire. Un voyageur qui réserve sur une
+  réponse fausse se retourne contre l'annonce.
+- **Il ne déduit pas.** « Chambre 2 » ne prouve pas qu'il y a deux lits.
+- **Il n'engage rien** : ni réservation, ni modification, ni transmission de
+  message.
+
+Chaque question est enregistrée et remonte dans le tableau de bord du client.
+Un compteur limite les rafales (8 questions par minute et par visiteur) pour
+que le budget d'API ne parte pas d'un coup.
+
+Activez-le avec `ANTHROPIC_API_KEY` dans les variables d'environnement. Sans
+clé, le bouton ne s'affiche pas et le reste du site fonctionne normalement.
 
 ---
 
@@ -178,6 +230,7 @@ Servez-vous-en comme d'une vitrine portable — en rendez-vous, même sans rése
    | `SUPABASE_BUCKET` | `tours` |
    | `NEXT_PUBLIC_SITE_URL` | l'URL finale du site |
    | `NEXT_PUBLIC_CONTACT_EMAIL` | votre email de contact |
+   | `ANTHROPIC_API_KEY` | pour l'assistant des visites |
    | `GOOGLE_AI_API_KEY` | facultatif, pour les aperçus IA |
 
 4. **Deploy**. Connectez ensuite votre nom de domaine dans **Settings → Domains**.

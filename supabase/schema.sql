@@ -12,15 +12,30 @@
 -- ce qui bloque totalement la clé publique "anon" — donc le navigateur.
 -- =============================================================================
 
+create table if not exists accounts (
+  id             text primary key,
+  email          text not null unique,
+  "passwordHash" text not null,
+  name           text not null default '',
+  company        text not null default '',
+  phone          text not null default '',
+  plan           text not null default 'essentiel' check (plan in ('essentiel', 'pro', 'conciergerie')),
+  status         text not null default 'active',
+  "createdAt"    text not null
+);
+
 create table if not exists properties (
   id            text primary key,
+  "accountId"   text not null default '',
   slug          text not null unique,
   name          text not null default '',
   city          text not null default '',
   "ownerName"   text not null default '',
   "ownerEmail"  text not null default '',
   "ownerPhone"  text not null default '',
+  description   text not null default '',
   notes         text not null default '',
+  "chatEnabled" boolean not null default true,
   mode          text not null default 'pano' check (mode in ('pano', 'model', 'video', 'embed')),
   "embedUrl"    text not null default '',
   "modelUrl"    text not null default '',
@@ -32,6 +47,38 @@ create table if not exists properties (
 );
 
 create index if not exists properties_status_idx on properties (status);
+create index if not exists properties_account_idx on properties ("accountId");
+
+create table if not exists photos (
+  id           text primary key,
+  "propertyId" text not null references properties (id) on delete cascade,
+  url          text not null,
+  caption      text not null default '',
+  position     integer not null default 0
+);
+
+create index if not exists photos_property_idx on photos ("propertyId", position);
+
+-- Repères temporels dans la vidéo : ce qui la rend navigable.
+create table if not exists chapters (
+  id           text primary key,
+  "propertyId" text not null references properties (id) on delete cascade,
+  label        text not null default '',
+  seconds      double precision not null default 0
+);
+
+create index if not exists chapters_property_idx on chapters ("propertyId", seconds);
+
+-- Questions posées à l'assistant : la matière du tableau de bord client.
+create table if not exists "chatMessages" (
+  id           text primary key,
+  "propertyId" text not null references properties (id) on delete cascade,
+  question     text not null default '',
+  answer       text not null default '',
+  "createdAt"  text not null
+);
+
+create index if not exists chat_property_idx on "chatMessages" ("propertyId", "createdAt");
 
 create table if not exists scenes (
   id             text primary key,
@@ -98,7 +145,11 @@ create table if not exists leads (
 );
 
 -- Rien n'est accessible sans la clé service_role : aucune politique n'est créée.
+alter table accounts       enable row level security;
 alter table properties     enable row level security;
+alter table photos         enable row level security;
+alter table chapters       enable row level security;
+alter table "chatMessages" enable row level security;
 alter table scenes         enable row level security;
 alter table hotspots       enable row level security;
 alter table previews       enable row level security;

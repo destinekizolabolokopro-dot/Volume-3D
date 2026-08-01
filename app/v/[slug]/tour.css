@@ -83,6 +83,51 @@
   background: #14100d;
 }
 
+/* Sous la visite : ce que la visite ne montre pas — le texte du propriétaire
+   et quelques photos classiques, utiles au voyageur comme à l'assistant. */
+.tour-about {
+  background: var(--bg);
+  color: var(--ink);
+  padding: 48px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.tour-about-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  gap: 32px;
+}
+
+.tour-desc h2 {
+  font-family: var(--serif);
+  font-size: 22px;
+  margin: 0 0 12px;
+  color: var(--ink-strong);
+}
+
+.tour-desc p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink-muted);
+  white-space: pre-wrap;
+}
+
+.tour-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.tour-gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
 .tour-footer {
   display: flex;
   align-items: center;

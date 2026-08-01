@@ -4,11 +4,13 @@ import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { expandPhoto, isAiConfigured } from '@/lib/ai-preview';
+import { currentAccount } from '@/lib/accounts';
 import { SESSION_COOKIE, checkPassword, isAuthenticated, issueToken, sessionCookieOptions } from '@/lib/auth';
 import { randomId, uniqueSlug } from '@/lib/ids';
 import { assertImage, assertModel, assertVideo, putFile, putImage } from '@/lib/storage';
+import { TimecodeError, parseTimecode } from '@/lib/timecode';
 import { getStore } from '@/lib/store';
-import type { Hotspot, Preview, PreviewShot, Property, Scene, TourMode } from '@/lib/types';
+import type { Chapter, Hotspot, Photo, Preview, PreviewShot, Property, Scene, TourMode } from '@/lib/types';
 import { ValidationError, email, httpUrl, number, oneOf, text } from '@/lib/validation';
 
 export interface ActionResult {
@@ -21,8 +23,46 @@ export interface ActionResult {
 /** Les aperçus de démarchage expirent d'eux-mêmes : un document commercial n'a pas à survivre. */
 const PREVIEW_LIFETIME_DAYS = 30;
 
+/**
+ * Qui agit : l'administrateur du service, ou un client depuis son espace.
+ *
+ * Les deux passent par les mêmes actions — c'est le même éditeur de visite —
+ * mais un client ne peut toucher qu'à ses propres biens. Toute action portant
+ * sur un bien existant passe donc par `authorizeProperty`.
+ */
+async function actor(): Promise<{ admin: boolean; accountId: string | null }> {
+  if (await isAuthenticated()) return { admin: true, accountId: null };
+  const account = await currentAccount();
+  if (account) return { admin: false, accountId: account.id };
+  throw new ValidationError('Session expirée. Reconnectez-vous.');
+}
+
 async function guard(): Promise<void> {
-  if (!(await isAuthenticated())) throw new ValidationError('Session expirée. Reconnectez-vous.');
+  await actor();
+}
+
+/** Réservé à l'administrateur : démarchage, comptes, demandes entrantes. */
+async function guardAdmin(): Promise<void> {
+  if (!(await isAuthenticated())) throw new ValidationError('Réservé à l’administrateur.');
+}
+
+/** Renvoie le bien si l'appelant a le droit d'y toucher, sinon lève. */
+async function authorizeProperty(propertyId: string): Promise<Property> {
+  const who = await actor();
+  const property = await getStore().get('properties', propertyId);
+  if (!property) throw new ValidationError('Ce logement n’existe plus.');
+  if (!who.admin && property.accountId !== who.accountId) {
+    throw new ValidationError('Ce logement ne fait pas partie de votre espace.');
+  }
+  return property;
+}
+
+/** Même contrôle, à partir d'une pièce. */
+async function authorizeScene(sceneId: string): Promise<Scene> {
+  const scene = await getStore().get('scenes', sceneId);
+  if (!scene) throw new ValidationError('Cette pièce n’existe plus.');
+  await authorizeProperty(scene.propertyId);
+  return scene;
 }
 
 /** Enveloppe commune : traduit les exceptions en message affichable. */
@@ -30,7 +70,9 @@ async function run(fn: () => Promise<ActionResult>): Promise<ActionResult> {
   try {
     return await fn();
   } catch (error) {
-    if (error instanceof ValidationError) return { ok: false, error: error.message };
+    if (error instanceof ValidationError || error instanceof TimecodeError) {
+      return { ok: false, error: error.message };
+    }
     // `redirect()` lève une exception de contrôle qu'il ne faut surtout pas avaler.
     if (error && typeof error === 'object' && 'digest' in error) throw error;
     console.error('[admin] action en échec', error);
@@ -61,20 +103,23 @@ export async function logout(): Promise<void> {
 
 export async function createProperty(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
   return run(async () => {
-    await guard();
+    const who = await actor();
     const store = getStore();
     const name = text(formData.get('name'), 'nom du logement', { max: 140 });
     const existing = await store.list('properties');
 
     const property: Property = {
       id: randomId(),
+      accountId: who.accountId ?? '',
       slug: uniqueSlug(name, existing.map((entry) => entry.slug)),
       name,
       city: text(formData.get('city'), 'ville', { max: 120, required: false }),
       ownerName: text(formData.get('ownerName'), 'propriétaire', { max: 140, required: false }),
       ownerEmail: text(formData.get('ownerEmail'), 'email', { max: 200, required: false }),
       ownerPhone: text(formData.get('ownerPhone'), 'téléphone', { max: 40, required: false }),
+      description: text(formData.get('description'), 'description', { max: 4000, required: false }),
       notes: '',
+      chatEnabled: true,
       mode: 'pano',
       embedUrl: '',
       modelUrl: '',
@@ -93,11 +138,9 @@ export async function createProperty(_previous: ActionResult | null, formData: F
 
 export async function updateProperty(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
     const id = text(formData.get('id'), 'identifiant', { max: 40 });
-    const property = await store.get('properties', id);
-    if (!property) throw new ValidationError('Ce logement n’existe plus.');
+    const property = await authorizeProperty(id);
 
     const mode = oneOf<TourMode>(formData.get('mode') ?? property.mode, ['pano', 'model', 'video', 'embed'], 'mode');
     const embedUrl = httpUrl(formData.get('embedUrl'), 'lien du viewer externe', { required: false });
@@ -111,10 +154,14 @@ export async function updateProperty(_previous: ActionResult | null, formData: F
       ownerName: text(formData.get('ownerName'), 'propriétaire', { max: 140, required: false }),
       ownerEmail: text(formData.get('ownerEmail'), 'email', { max: 200, required: false }),
       ownerPhone: text(formData.get('ownerPhone'), 'téléphone', { max: 40, required: false }),
+      description: text(formData.get('description'), 'description', { max: 4000, required: false }),
       notes: text(formData.get('notes'), 'notes', { max: 4000, required: false }),
+      chatEnabled: formData.get('chatEnabled') === 'on',
       mode,
       embedUrl,
     });
+
+    revalidatePath('/espace/biens');
 
     revalidatePath(`/admin/logements/${id}`);
     revalidatePath('/admin');
@@ -124,10 +171,8 @@ export async function updateProperty(_previous: ActionResult | null, formData: F
 
 export async function setPropertyStatus(id: string, status: 'draft' | 'published'): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
-    const property = await store.get('properties', id);
-    if (!property) throw new ValidationError('Ce logement n’existe plus.');
+    const property = await authorizeProperty(id);
 
     if (status === 'published') {
       // Publier une visite vide enverrait un lien mort au propriétaire.
@@ -150,7 +195,9 @@ export async function setPropertyStatus(id: string, status: 'draft' | 'published
     });
 
     revalidatePath(`/admin/logements/${id}`);
+    revalidatePath(`/espace/biens/${id}`);
     revalidatePath('/admin');
+    revalidatePath('/espace');
     revalidatePath(`/v/${property.slug}`);
     return { ok: true };
   });
@@ -158,7 +205,7 @@ export async function setPropertyStatus(id: string, status: 'draft' | 'published
 
 export async function deleteProperty(id: string): Promise<ActionResult> {
   return run(async () => {
-    await guard();
+    await authorizeProperty(id);
     const store = getStore();
     const scenes = await store.list('scenes', { propertyId: id });
     for (const scene of scenes) {
@@ -166,9 +213,13 @@ export async function deleteProperty(id: string): Promise<ActionResult> {
       await store.remove('hotspots', { targetSceneId: scene.id });
     }
     await store.remove('scenes', { propertyId: id });
+    await store.remove('photos', { propertyId: id });
+    await store.remove('chapters', { propertyId: id });
+    await store.remove('chatMessages', { propertyId: id });
     await store.remove('properties', { id });
     revalidatePath('/admin');
-    redirect('/admin');
+    revalidatePath('/espace/biens');
+    return { ok: true };
   });
 }
 
@@ -188,11 +239,9 @@ function nameFromFile(filename: string, index: number): string {
 
 export async function addScene(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
     const propertyId = text(formData.get('propertyId'), 'logement', { max: 40 });
-    const property = await store.get('properties', propertyId);
-    if (!property) throw new ValidationError('Ce logement n’existe plus.');
+    await authorizeProperty(propertyId);
 
     const files = formData.getAll('image').filter((entry): entry is File => entry instanceof File && entry.size > 0);
     if (files.length === 0) throw new ValidationError('Choisissez au moins une image panoramique.');
@@ -231,10 +280,8 @@ export async function updateScene(
   patch: { name?: string; initialYaw?: number; initialPitch?: number; position?: number },
 ): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
-    const scene = await store.get('scenes', id);
-    if (!scene) throw new ValidationError('Cette pièce n’existe plus.');
+    const scene = await authorizeScene(id);
 
     const next: Partial<Scene> = {};
     if (patch.name !== undefined) next.name = text(patch.name, 'nom de la pièce', { max: 60 });
@@ -251,10 +298,8 @@ export async function updateScene(
 /** Échange une pièce avec sa voisine, pour réordonner le sélecteur de pièces. */
 export async function moveScene(id: string, direction: -1 | 1): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
-    const scene = await store.get('scenes', id);
-    if (!scene) throw new ValidationError('Cette pièce n’existe plus.');
+    const scene = await authorizeScene(id);
 
     const siblings = (await store.list('scenes', { propertyId: scene.propertyId })).sort(
       (a, b) => a.position - b.position,
@@ -272,10 +317,8 @@ export async function moveScene(id: string, direction: -1 | 1): Promise<ActionRe
 
 export async function deleteScene(id: string): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
-    const scene = await store.get('scenes', id);
-    if (!scene) return { ok: true };
+    const scene = await authorizeScene(id);
 
     // Les points de passage qui pointaient vers cette pièce n'ont plus de sens.
     await store.remove('hotspots', { sceneId: id });
@@ -305,11 +348,10 @@ export async function addHotspot(input: {
   label?: string;
 }): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
-    const scene = await store.get('scenes', input.sceneId);
+    const scene = await authorizeScene(input.sceneId);
     const target = await store.get('scenes', input.targetSceneId);
-    if (!scene || !target) throw new ValidationError('Pièce de départ ou d’arrivée introuvable.');
+    if (!target) throw new ValidationError('Pièce d’arrivée introuvable.');
     if (scene.id === target.id) throw new ValidationError('Un passage doit mener vers une autre pièce.');
 
     const hotspot: Hotspot = {
@@ -329,8 +371,100 @@ export async function addHotspot(input: {
 
 export async function deleteHotspot(id: string): Promise<ActionResult> {
   return run(async () => {
-    await guard();
+    const hotspot = await getStore().get('hotspots', id);
+    if (hotspot) await authorizeScene(hotspot.sceneId);
     await getStore().remove('hotspots', { id });
+    return { ok: true };
+  });
+}
+
+/* ===================================== photos de présentation === */
+
+export async function addPhotos(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const propertyId = text(formData.get('propertyId'), 'logement', { max: 40 });
+    await authorizeProperty(propertyId);
+
+    const files = formData.getAll('photos').filter((entry): entry is File => entry instanceof File && entry.size > 0);
+    if (files.length === 0) throw new ValidationError('Choisissez au moins une photo.');
+    if (files.length > 20) throw new ValidationError('Vingt photos maximum en une fois.');
+    files.forEach(assertImage);
+
+    const existing = await store.list('photos', { propertyId });
+    for (const [index, file] of files.entries()) {
+      const { url } = await putImage('photos', file, file.name);
+      const photo: Photo = {
+        id: randomId(),
+        propertyId,
+        url,
+        caption: text(file.name.replace(/\.[^.]+$/, ''), 'légende', { max: 120, required: false }),
+        position: existing.length + index,
+      };
+      await store.insert('photos', photo);
+    }
+
+    revalidatePath(`/admin/logements/${propertyId}`);
+    revalidatePath(`/espace/biens/${propertyId}`);
+    return { ok: true };
+  });
+}
+
+export async function updatePhoto(id: string, caption: string): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const photo = await store.get('photos', id);
+    if (!photo) throw new ValidationError('Cette photo n’existe plus.');
+    await authorizeProperty(photo.propertyId);
+    await store.update('photos', id, { caption: text(caption, 'légende', { max: 120, required: false }) });
+    revalidatePath(`/espace/biens/${photo.propertyId}`);
+    return { ok: true };
+  });
+}
+
+export async function deletePhoto(id: string): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const photo = await store.get('photos', id);
+    if (!photo) return { ok: true };
+    await authorizeProperty(photo.propertyId);
+    await store.remove('photos', { id });
+    revalidatePath(`/admin/logements/${photo.propertyId}`);
+    revalidatePath(`/espace/biens/${photo.propertyId}`);
+    return { ok: true };
+  });
+}
+
+/* ============================================ chapitres vidéo === */
+
+export async function addChapter(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const propertyId = text(formData.get('propertyId'), 'logement', { max: 40 });
+    await authorizeProperty(propertyId);
+
+    const chapter: Chapter = {
+      id: randomId(),
+      propertyId,
+      label: text(formData.get('label'), 'nom de la pièce', { max: 60 }),
+      seconds: parseTimecode(text(formData.get('time'), 'repère', { max: 12 })),
+    };
+    await store.insert('chapters', chapter);
+    revalidatePath(`/admin/logements/${propertyId}`);
+    revalidatePath(`/espace/biens/${propertyId}`);
+    return { ok: true };
+  });
+}
+
+export async function deleteChapter(id: string): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const chapter = await store.get('chapters', id);
+    if (!chapter) return { ok: true };
+    await authorizeProperty(chapter.propertyId);
+    await store.remove('chapters', { id });
+    revalidatePath(`/admin/logements/${chapter.propertyId}`);
+    revalidatePath(`/espace/biens/${chapter.propertyId}`);
     return { ok: true };
   });
 }
@@ -339,9 +473,9 @@ export async function deleteHotspot(id: string): Promise<ActionResult> {
 
 export async function uploadModel(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
     const propertyId = text(formData.get('propertyId'), 'logement', { max: 40 });
+    await authorizeProperty(propertyId);
     const file = formData.get('model');
     if (!(file instanceof File) || file.size === 0) throw new ValidationError('Choisissez un fichier .glb.');
     assertModel(file);
@@ -355,9 +489,9 @@ export async function uploadModel(_previous: ActionResult | null, formData: Form
 
 export async function uploadVideo(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
   return run(async () => {
-    await guard();
     const store = getStore();
     const propertyId = text(formData.get('propertyId'), 'logement', { max: 40 });
+    await authorizeProperty(propertyId);
     const file = formData.get('video');
     if (!(file instanceof File) || file.size === 0) throw new ValidationError('Choisissez une vidéo.');
     assertVideo(file);
@@ -384,7 +518,7 @@ export async function uploadVideo(_previous: ActionResult | null, formData: Form
  */
 export async function createPreview(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
   return run(async () => {
-    await guard();
+    await guardAdmin();
     const store = getStore();
 
     const files = formData.getAll('photos').filter((entry): entry is File => entry instanceof File && entry.size > 0);
@@ -457,7 +591,7 @@ export async function createPreview(_previous: ActionResult | null, formData: Fo
 
 export async function deletePreview(id: string): Promise<ActionResult> {
   return run(async () => {
-    await guard();
+    await guardAdmin();
     const store = getStore();
     await store.remove('previewShots', { previewId: id });
     await store.remove('previews', { id });
@@ -470,7 +604,7 @@ export async function deletePreview(id: string): Promise<ActionResult> {
 
 export async function toggleLead(id: string, handled: boolean): Promise<ActionResult> {
   return run(async () => {
-    await guard();
+    await guardAdmin();
     await getStore().update('leads', id, { handled });
     revalidatePath('/admin');
     return { ok: true };
@@ -479,7 +613,7 @@ export async function toggleLead(id: string, handled: boolean): Promise<ActionRe
 
 export async function deleteLead(id: string): Promise<ActionResult> {
   return run(async () => {
-    await guard();
+    await guardAdmin();
     await getStore().remove('leads', { id });
     revalidatePath('/admin');
     return { ok: true };

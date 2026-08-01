@@ -20,8 +20,34 @@ export type TourMode =
 
 export type PropertyStatus = 'draft' | 'published';
 
+/** Formule d'abonnement du client. */
+export type Plan = 'essentiel' | 'pro' | 'conciergerie';
+
+/**
+ * Compte d'un client propriétaire ou conciergerie.
+ *
+ * Le service est vendu par abonnement : chaque client dispose de son propre
+ * espace, y crée ses biens et n'accède jamais à ceux des autres. Le compte
+ * administrateur, lui, voit l'ensemble.
+ */
+export interface Account {
+  id: string;
+  email: string;
+  /** Empreinte scrypt du mot de passe, au format « sel:empreinte ». */
+  passwordHash: string;
+  name: string;
+  company: string;
+  phone: string;
+  plan: Plan;
+  /** 'active' | 'suspended' — un compte suspendu ne peut plus publier. */
+  status: string;
+  createdAt: string;
+}
+
 export interface Property {
   id: string;
+  /** Compte propriétaire. Vide pour les biens créés par l'administrateur. */
+  accountId: string;
   /** Identifiant de l'URL publique : /v/{slug} */
   slug: string;
   name: string;
@@ -29,8 +55,12 @@ export interface Property {
   ownerName: string;
   ownerEmail: string;
   ownerPhone: string;
+  /** Présentation publique du bien, affichée sous la visite et lue par l'assistant. */
+  description: string;
   /** Notes internes de démarchage, jamais affichées publiquement. */
   notes: string;
+  /** L'assistant répond aux questions des voyageurs sur cette visite. */
+  chatEnabled: boolean;
   mode: TourMode;
   /** Renseigné si mode === 'embed'. */
   embedUrl: string;
@@ -66,6 +96,38 @@ export interface Hotspot {
   /** Position sur la sphère, en degrés. yaw = horizontal, pitch = vertical. */
   yaw: number;
   pitch: number;
+}
+
+/** Photo de présentation du bien — distincte des panoramas 360°. */
+export interface Photo {
+  id: string;
+  propertyId: string;
+  url: string;
+  caption: string;
+  position: number;
+}
+
+/**
+ * Repère temporel dans la vidéo de déambulation.
+ *
+ * C'est ce qui rend la vidéo navigable : le visiteur saute directement à la
+ * chambre au lieu de faire défiler à l'aveugle.
+ */
+export interface Chapter {
+  id: string;
+  propertyId: string;
+  label: string;
+  /** Position en secondes depuis le début de la vidéo. */
+  seconds: number;
+}
+
+/** Question posée à l'assistant sur une visite, conservée pour le suivi. */
+export interface ChatMessage {
+  id: string;
+  propertyId: string;
+  question: string;
+  answer: string;
+  createdAt: string;
 }
 
 export type PreviewStatus = 'pending' | 'ready' | 'failed';
@@ -125,18 +187,26 @@ export interface Lead {
 }
 
 export interface Database {
+  accounts: Account[];
   properties: Property[];
   scenes: Scene[];
   hotspots: Hotspot[];
+  photos: Photo[];
+  chapters: Chapter[];
+  chatMessages: ChatMessage[];
   previews: Preview[];
   previewShots: PreviewShot[];
   leads: Lead[];
 }
 
 export const EMPTY_DB: Database = {
+  accounts: [],
   properties: [],
   scenes: [],
   hotspots: [],
+  photos: [],
+  chapters: [],
+  chatMessages: [],
   previews: [],
   previewShots: [],
   leads: [],

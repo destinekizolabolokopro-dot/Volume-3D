@@ -1,0 +1,187 @@
+/* =========================================================================
+   Éditeur de visite — partagé entre le back-office interne (/admin) et
+   l'espace client (/espace). Les deux affichent le même composant, il ne peut
+   donc pas dépendre de la feuille de style de l'un ou de l'autre.
+   ========================================================================= */
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+
+.card + .card {
+  margin-top: 14px;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 9px;
+  border-radius: 2px;
+}
+
+.tag-draft {
+  background: #eee6db;
+  color: #7a6c5c;
+}
+
+.tag-live {
+  background: #d9e8d4;
+  color: #35592c;
+}
+
+/* -------------------------------------------------------------- éditeur --- */
+
+.editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .editor {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #14100d;
+}
+
+.scene-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
+.scene-row-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(176, 138, 74, 0.18);
+}
+
+.scene-thumb {
+  width: 54px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex: none;
+  background: #e8ddcd;
+}
+
+.scene-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  color: var(--ink-strong);
+  padding: 4px 2px;
+}
+
+.scene-name:focus {
+  outline: 1px solid var(--line);
+  background: #fbf8f4;
+}
+
+.mini-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 2px;
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink-muted);
+  flex: none;
+}
+
+.mini-btn:hover {
+  background: #f3efe8;
+  color: var(--ink-strong);
+}
+
+.mini-btn-danger:hover {
+  background: #f6e3df;
+  color: #7c2f1e;
+  border-color: #e0bcb3;
+}
+
+.hotspot-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 7px 10px;
+  background: #faf7f2;
+  border-radius: 2px;
+}
+
+.hotspot-row span {
+  flex: 1;
+  min-width: 0;
+}
+
+.callout-box {
+  background: #fbf5ea;
+  border: 1px solid #e6d6b8;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b5220;
+}
+
+.callout-warn {
+  background: #fdf1ec;
+  border-color: #e6c3b5;
+  color: #7c3a24;
+}
+
+.link-box {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.link-box input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: #faf7f2;
+  color: var(--ink);
+}
+
+.file-drop {
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  background: #faf7f2;
+  font-size: 13.5px;
+}
+
+.file-drop input[type='file'] {
+  font-size: 13px;
+  width: 100%;
+}

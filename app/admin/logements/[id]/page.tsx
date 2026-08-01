@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { LogoMark } from '@/components/Logo';
+import { PropertyExtras } from '@/components/PropertyExtras';
 import { loadTour } from '@/lib/queries';
 import { requireAuth } from '@/lib/require-auth';
 import { getStore } from '@/lib/store';
@@ -27,6 +28,11 @@ export default async function PropertyEditorPage({ params }: Params) {
   if (!property) notFound();
 
   const { scenes, hotspots } = await loadTour(property.id);
+  const store = getStore();
+  const [photos, chapters] = await Promise.all([
+    store.list('photos', { propertyId: property.id }),
+    store.list('chapters', { propertyId: property.id }),
+  ]);
   const origin = await currentOrigin();
 
   return (
@@ -60,7 +66,20 @@ export default async function PropertyEditorPage({ params }: Params) {
           {new Date(property.createdAt).toLocaleDateString('fr-FR')} · /v/{property.slug}
         </p>
 
-        <TourEditor property={property} scenes={scenes} hotspots={hotspots} origin={origin} />
+        <TourEditor
+          property={property}
+          scenes={scenes}
+          hotspots={hotspots}
+          origin={origin}
+          extras={
+            <PropertyExtras
+              propertyId={property.id}
+              photos={[...photos].sort((first, second) => first.position - second.position)}
+              chapters={chapters}
+              hasVideo={property.videoUrl !== ''}
+            />
+          }
+        />
       </main>
     </div>
   );

@@ -70,7 +70,12 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  /* Deux halos très diffus : la page cesse d'être un aplat sans devenir bruyante. */
+  background:
+    radial-gradient(1100px 520px at 82% -6%, rgba(176, 138, 74, 0.1), transparent 62%),
+    radial-gradient(800px 500px at -8% 22%, rgba(150, 120, 60, 0.06), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--sans);
   font-size: 16px;
@@ -107,8 +112,13 @@ h1,
 h2,
 h3 {
   font-family: var(--serif);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.018em;
   color: var(--ink-strong);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 /* Lien d'évitement pour la navigation au clavier. */
@@ -154,7 +164,11 @@ h3 {
   text-align: center;
   cursor: pointer;
   padding: 17px 30px;
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
 }
 
 .btn-dark {
@@ -162,9 +176,14 @@ h3 {
   color: #fdf6ee;
 }
 
+.btn-dark {
+  box-shadow: 0 10px 24px -14px rgba(20, 16, 13, 0.8);
+}
+
 .btn-dark:hover {
   background: #352d25;
   color: #fdf6ee;
+  box-shadow: 0 16px 30px -14px rgba(20, 16, 13, 0.9);
 }
 
 .btn-accent {
@@ -207,12 +226,30 @@ h3 {
 }
 
 .eyebrow {
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+}
+
+.eyebrow::before,
+.eyebrow::after {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.45;
+}
+
+/* Dans une colonne alignée à gauche, un seul filet suffit. */
+.section-head .eyebrow::before,
+.section-head .eyebrow::after {
+  opacity: 0.45;
 }
 
 .section {
@@ -312,9 +349,30 @@ h3 {
   text-decoration: none;
 }
 
+.nav-links a:not(.btn) {
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.nav-links a:not(.btn)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.22s ease;
+}
+
 .nav-links a:not(.btn):hover {
   color: var(--ink-strong);
-  text-decoration: underline;
+}
+
+.nav-links a:not(.btn):hover::after {
+  transform: scaleX(1);
 }
 
 @media (max-width: 720px) {
@@ -652,11 +710,35 @@ h3 {
 }
 
 .step-card {
+  position: relative;
   background: #fff;
   border-radius: var(--radius);
   padding: 32px 28px;
   border: 1px solid var(--line-soft);
   box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.step-card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 28px;
+  bottom: 28px;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--line);
+  box-shadow: 0 30px 56px -30px rgba(20, 16, 13, 0.3);
+}
+
+.step-card:hover::after {
+  opacity: 0.9;
 }
 
 .step-n {
@@ -684,7 +766,10 @@ h3 {
 /* ------------------------------------------------------- section sombre --- */
 
 .section-dark {
-  background: var(--dark);
+  position: relative;
+  background:
+    radial-gradient(700px 340px at 78% 0%, rgba(176, 138, 74, 0.16), transparent 62%),
+    var(--dark);
   color: var(--ink-on-dark);
 }
 
@@ -702,6 +787,12 @@ h3 {
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--line-on-dark);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.value-card:hover {
+  background: rgba(255, 255, 255, 0.075);
+  transform: translateY(-2px);
 }
 
 .value-icon {
@@ -757,10 +848,22 @@ h3 {
   position: relative;
 }
 
+.price-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.price-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 34px 60px -34px rgba(20, 16, 13, 0.4);
+}
+
 .price-card-dark {
-  background: var(--dark);
+  background:
+    radial-gradient(420px 240px at 80% 0%, rgba(176, 138, 74, 0.22), transparent 65%),
+    var(--dark);
   color: #fdf6ee;
   border-color: var(--accent);
+  box-shadow: 0 30px 60px -30px rgba(20, 16, 13, 0.55);
 }
 
 .price-kicker {
@@ -1000,6 +1103,17 @@ h3 {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   padding: 13px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #b6a894;
+}
+
+.field input:disabled {
+  background: #f4f0ea;
+  color: var(--ink-soft);
 }
 
 .field textarea {
@@ -1051,6 +1165,7 @@ h3 {
 /* ---------------------------------------------------------------- pied --- */
 
 .footer {
+  background: rgba(255, 255, 255, 0.4);
   padding: 32px var(--pad-x);
   display: flex;
   justify-content: space-between;

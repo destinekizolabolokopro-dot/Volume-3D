@@ -25,9 +25,11 @@ interface Props {
   scenes: Scene[];
   hotspots: Hotspot[];
   origin: string;
+  /** Blocs supplémentaires (photos, repères vidéo) rendus dans la colonne latérale. */
+  extras?: React.ReactNode;
 }
 
-export function TourEditor({ property, scenes, hotspots, origin }: Props) {
+export function TourEditor({ property, scenes, hotspots, origin, extras }: Props) {
   const router = useRouter();
   const [currentSceneId, setCurrentSceneId] = useState(scenes[0]?.id ?? '');
   const [pendingTarget, setPendingTarget] = useState<string | null>(null);
@@ -271,6 +273,8 @@ export function TourEditor({ property, scenes, hotspots, origin }: Props) {
           <SettingsForm property={property} />
 
           <VideoUploadForm property={property} />
+
+          {extras}
 
           {property.mode === 'model' && <ModelUploadForm property={property} />}
 
@@ -523,6 +527,31 @@ function SettingsForm({ property }: { property: Property }) {
         Les formats que vous avez renseignés sont tous proposés au voyageur, qui bascule de l’un à l’autre. Celui-ci
         est simplement affiché en premier.
       </p>
+
+      <div className="field">
+        <label htmlFor="ed-description">Description publique</label>
+        <textarea
+          id="ed-description"
+          name="description"
+          defaultValue={property.description}
+          maxLength={4000}
+          rows={5}
+          placeholder="T2 de 42 m² au 3e étage, chambre séparée, cuisine équipée…"
+        />
+        <p className="tiny" style={{ margin: '6px 0 0' }}>
+          Affichée sous la visite, et utilisée par l’assistant pour répondre aux voyageurs.
+        </p>
+      </div>
+
+      <div className="field">
+        <label htmlFor="ed-chat" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500 }}>
+          <input id="ed-chat" name="chatEnabled" type="checkbox" defaultChecked={property.chatEnabled} style={{ width: 'auto' }} />
+          Activer l’assistant sur cette visite
+        </label>
+        <p className="tiny" style={{ margin: '6px 0 0' }}>
+          Il répond aux questions des voyageurs à partir de la description et des pièces, sans jamais inventer.
+        </p>
+      </div>
 
       <div className="field">
         <label htmlFor="ed-notes">Notes internes</label>

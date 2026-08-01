@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { ChatWidget } from '@/components/ChatWidget';
 import { LogoMark } from '@/components/Logo';
 import { TourStage } from '@/components/TourStage';
 import { CONTACT_EMAIL } from '@/lib/content';
+import { isAssistantConfigured } from '@/lib/assistant';
 import { availableFormats, bumpViews, findPublishedProperty, loadTour } from '@/lib/queries';
+import { getStore } from '@/lib/store';
 import './tour.css';
 
 export const dynamic = 'force-dynamic';
@@ -29,8 +32,14 @@ export default async function TourPage({ params }: Params) {
   if (!property) notFound();
 
   const { scenes, hotspots } = await loadTour(property.id);
+  const store = getStore();
+  const [chapters, photos] = await Promise.all([
+    store.list('chapters', { propertyId: property.id }),
+    store.list('photos', { propertyId: property.id }),
+  ]);
   await bumpViews('properties', property.id, property.views);
   const formats = availableFormats(property, scenes.length);
+  const assistantOn = property.chatEnabled && isAssistantConfigured();
 
   return (
     <div className="tour-page">
@@ -57,13 +66,40 @@ export default async function TourPage({ params }: Params) {
           videoUrl={property.videoUrl}
           modelUrl={property.modelUrl}
           embedUrl={property.embedUrl}
+          chapters={chapters}
         />
       </div>
+
+      {(property.description || photos.length > 0) && (
+        <section className="tour-about">
+          <div className="tour-about-inner">
+            {property.description && (
+              <div className="tour-desc">
+                <h2>Le logement</h2>
+                <p>{property.description}</p>
+              </div>
+            )}
+
+            {photos.length > 0 && (
+              <div className="tour-gallery">
+                {[...photos]
+                  .sort((a, b) => a.position - b.position)
+                  .map((photo) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={photo.id} src={photo.url} alt={photo.caption || property.name} loading="lazy" />
+                  ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <footer className="tour-footer">
         <span>Vous aussi, équipez votre annonce d’une visite 3D.</span>
         <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </footer>
+
+      {assistantOn && <ChatWidget slug={property.slug} propertyName={property.name} />}
     </div>
   );
 }

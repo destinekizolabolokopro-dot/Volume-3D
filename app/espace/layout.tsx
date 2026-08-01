@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import '../editor.css';
-import './admin.css';
+import './espace.css';
 
 export const metadata: Metadata = {
-  title: 'Back-office',
+  title: 'Mon espace',
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function EspaceLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

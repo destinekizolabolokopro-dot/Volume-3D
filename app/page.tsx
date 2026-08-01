@@ -85,6 +85,9 @@ export default async function HomePage() {
           <a className="nav-hide-sm" href="#tarifs">
             Tarifs
           </a>
+          <a className="nav-hide-sm" href="/espace">
+            Mon espace
+          </a>
           <a className="btn btn-accent btn-sm" href="#contact">
             Prendre rendez-vous
           </a>

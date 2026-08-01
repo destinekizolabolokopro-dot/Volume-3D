@@ -61,3 +61,53 @@
   object-fit: contain;
   background: #14100d;
 }
+
+/* ------------------------------------------------- chapitres de la vidéo --- */
+
+.videoWrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.videoWrap .media {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Sans ces repères, une vidéo ne se parcourt pas : le voyageur qui veut
+   revoir la chambre doit tâtonner dans la barre de lecture. */
+.chapters {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  background: #1b1613;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.chapter {
+  flex: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e6dcce;
+  border-radius: 2px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chapter:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.chapter[aria-current='true'] {
+  background: var(--accent);
+  border-color: transparent;
+  color: #211c18;
+  font-weight: 600;
+}

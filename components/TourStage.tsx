@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ModelViewer } from './ModelViewer';
 import { PanoViewer } from './PanoViewer';
-import type { Hotspot, Scene, TourMode } from '@/lib/types';
+import type { Chapter, Hotspot, Scene, TourMode } from '@/lib/types';
 import styles from './TourStage.module.css';
 
 export interface TourStageProps {
@@ -15,6 +15,8 @@ export interface TourStageProps {
   videoUrl: string;
   modelUrl: string;
   embedUrl: string;
+  /** Repères de la vidéo, pour sauter directement à une pièce. */
+  chapters: Chapter[];
 }
 
 const LABELS: Record<TourMode, string> = {
@@ -47,10 +49,23 @@ export function TourStage({
   videoUrl,
   modelUrl,
   embedUrl,
+  chapters,
 }: TourStageProps) {
   const [active, setActive] = useState<TourMode>(
     formats.includes(defaultFormat) ? defaultFormat : (formats[0] ?? 'pano'),
   );
+  const [chapterIndex, setChapterIndex] = useState(-1);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const ordered = [...chapters].sort((a, b) => a.seconds - b.seconds);
+
+  /** Une vidéo ne se parcourt pas : on la découpe en pièces, comme la 360°. */
+  function seek(index: number) {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = ordered[index].seconds;
+    setChapterIndex(index);
+    void video.play().catch(() => undefined);
+  }
 
   return (
     <div className={styles.stage}>
@@ -76,17 +91,44 @@ export function TourStage({
         {active === 'pano' && <PanoViewer scenes={scenes} hotspots={hotspots} />}
 
         {active === 'video' && (
-          // `key` force le remontage : sans lui, une vidéo déjà lancée continue
-          // de tourner en fond quand on revient sur le panorama.
-          <video
-            key={videoUrl}
-            className={styles.media}
-            src={videoUrl}
-            controls
-            playsInline
-            preload="metadata"
-            title={`Visite vidéo — ${name}`}
-          />
+          <div className={styles.videoWrap}>
+            {/* `key` force le remontage : sans lui, une vidéo déjà lancée
+                continue de tourner en fond quand on revient sur le panorama. */}
+            <video
+              key={videoUrl}
+              ref={videoRef}
+              className={styles.media}
+              src={videoUrl}
+              controls
+              playsInline
+              preload="metadata"
+              title={`Visite vidéo — ${name}`}
+              onTimeUpdate={(event) => {
+                const time = event.currentTarget.currentTime;
+                let current = -1;
+                for (let i = 0; i < ordered.length; i += 1) {
+                  if (ordered[i].seconds <= time + 0.25) current = i;
+                }
+                if (current !== chapterIndex) setChapterIndex(current);
+              }}
+            />
+
+            {ordered.length > 0 && (
+              <div className={styles.chapters} aria-label="Pièces de la vidéo">
+                {ordered.map((chapter, index) => (
+                  <button
+                    key={chapter.id}
+                    type="button"
+                    className={styles.chapter}
+                    aria-current={index === chapterIndex}
+                    onClick={() => seek(index)}
+                  >
+                    {chapter.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {active === 'model' && <ModelViewer url={modelUrl} />}
