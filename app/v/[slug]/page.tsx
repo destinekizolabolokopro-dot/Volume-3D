@@ -58,6 +58,15 @@ export default async function TourPage({ params }: Params) {
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
+        ) : property.mode === 'video' && property.videoUrl ? (
+          <video
+            className="tour-video"
+            src={property.videoUrl}
+            controls
+            playsInline
+            preload="metadata"
+            title={`Visite vidéo — ${property.name}`}
+          />
         ) : property.mode === 'model' && property.modelUrl ? (
           <ModelViewer url={property.modelUrl} />
         ) : (

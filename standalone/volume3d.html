@@ -154,6 +154,76 @@ a:hover{color:#6b5220}
 .file-btn:hover{background:#faf7f2}
 .file-btn input{display:none}
 
+/* ------------------------------------------------------- espace privé */
+[hidden]{display:none!important}
+.espace-link{background:none;border:0;font-family:inherit;font-size:15px;color:var(--ink);cursor:pointer;padding:0}
+.espace-link:hover{text-decoration:underline}
+
+.espace{position:fixed;inset:0;z-index:60;background:#f3efe8;overflow-y:auto;display:none}
+.espace[data-open="1"]{display:block}
+
+.espace-login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:#211c18}
+.login-card{background:#f6f1ea;border-radius:var(--radius);padding:36px;width:100%;max-width:400px;
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.6)}
+.login-card h2{font-size:21px;margin:18px 0 6px}
+.login-card p{color:var(--ink-soft);font-size:14px;margin:0 0 22px}
+
+.espace-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:14px 24px;background:#211c18;color:#f6f1ea;position:sticky;top:0;z-index:5}
+.espace-bar .brand-name{color:#f6f1ea}
+.espace-tabs{display:flex;gap:8px}
+.tab{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);color:#e6dcce;border-radius:2px;
+  padding:8px 16px;font-size:13.5px;font-family:inherit;cursor:pointer}
+.tab:hover{background:rgba(255,255,255,.2)}
+.tab[aria-selected="true"]{background:var(--accent);color:#211c18;border-color:transparent;font-weight:600}
+.espace-main{max-width:1180px;margin:0 auto;padding:28px 24px 80px}
+.espace-h1{font-family:var(--serif);font-size:25px;margin:0 0 4px}
+.espace-sub{color:var(--ink-soft);font-size:14px;margin:0 0 22px}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card+.card{margin-top:14px}
+.stack{display:grid;gap:14px}
+.stack-sm{display:grid;gap:9px}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.row-between{justify-content:space-between}
+.muted{color:var(--ink-soft);font-size:13px}
+.tiny{font-size:12px;color:var(--ink-faint)}
+.empty{border:1px dashed var(--line);border-radius:var(--radius);padding:26px;text-align:center;
+  color:var(--ink-soft);font-size:14px;background:rgba(255,255,255,.5)}
+.note{background:#fbf5ea;border:1px solid #e6d6b8;border-radius:var(--radius-sm);padding:12px 14px;
+  font-size:13px;line-height:1.5;color:#6b5220}
+.note-warn{background:#fdf1ec;border-color:#e6c3b5;color:#7c3a24}
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.tour-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;cursor:pointer;
+  text-align:left;font-family:inherit;font-size:14px;transition:border-color .15s ease,transform .15s ease}
+.tour-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.tour-card b{display:block;font-size:15px;color:var(--ink-strong);margin-bottom:2px}
+
+.editor{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr);gap:18px;align-items:start}
+@media(max-width:980px){.editor{grid-template-columns:1fr}}
+.stage{position:relative;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#14100d}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#14100d}
+.mode-switch{display:flex;gap:6px;margin-bottom:10px}
+.mode-switch button{background:#fff;border:1px solid var(--line);border-radius:2px;padding:7px 14px;
+  font-size:13px;font-family:inherit;cursor:pointer;color:var(--ink-muted)}
+.mode-switch button[aria-selected="true"]{background:var(--dark);color:#fdf6ee;border-color:transparent;font-weight:600}
+.room-row{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);
+  border-radius:var(--radius-sm);background:#fff;cursor:pointer}
+.room-row[data-active="1"]{border-color:var(--accent);box-shadow:0 0 0 2px rgba(176,138,74,.18)}
+.room-thumb{width:52px;height:34px;object-fit:cover;border-radius:2px;flex:none;background:#e8ddcd}
+.room-name{flex:1;min-width:0;font-size:14px;font-weight:500;border:0;background:transparent;font-family:inherit;
+  color:var(--ink-strong);padding:4px 2px}
+.room-name:focus{outline:1px solid var(--line);background:#fbf8f4}
+.mini{border:1px solid var(--line);background:#fff;border-radius:2px;width:28px;height:28px;font-size:13px;
+  line-height:1;cursor:pointer;color:var(--ink-muted);flex:none}
+.mini:hover{background:#f3efe8;color:var(--ink-strong)}
+.mini-danger:hover{background:#f6e3df;color:#7c2f1e;border-color:#e0bcb3}
+.pass-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:7px 10px;background:#faf7f2;border-radius:2px}
+.pass-row span{flex:1;min-width:0}
+.drop{border:1px dashed var(--line);border-radius:var(--radius-sm);padding:14px;background:#faf7f2;font-size:13px}
+.drop input[type=file]{width:100%;font-size:13px;margin-top:6px}
+.lead-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+
 /* ------------------------------------------------------------ sections */
 .section-white{background:#fff;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px}
@@ -234,6 +304,7 @@ a:hover{color:#6b5220}
   <nav class="nav-links" aria-label="Navigation principale">
     <a class="nav-hide-sm" href="#comment-ca-marche">Comment ça marche</a>
     <a class="nav-hide-sm" href="#tarifs">Tarifs</a>
+    <button class="espace-link" id="openEspace" type="button">Mon espace</button>
     <a class="btn btn-accent btn-sm" href="#contact">Prendre rendez-vous</a>
   </nav>
 </header>
@@ -493,6 +564,82 @@ a:hover{color:#6b5220}
   </section>
 </main>
 
+<!-- ============================================== espace privé ===== -->
+<section class="espace" id="espace" aria-label="Mon espace">
+
+  <!-- ---------------------------------------------------- connexion --- -->
+  <div class="espace-login" id="loginScreen">
+    <div class="login-card">
+      <svg width="30" height="30" viewBox="0 0 40 40" aria-hidden="true">
+        <polygon points="20,3 36,12 20,21 4,12" fill="#b08a4a"></polygon>
+        <polygon points="4,12 20,21 20,37 4,28" fill="#211c18"></polygon>
+        <polygon points="20,21 36,12 36,28 20,37" fill="#3a332c"></polygon>
+      </svg>
+      <h2>Mon espace</h2>
+      <p>Espace réservé. Vos propriétaires n’ont pas de compte : ils reçoivent un simple lien.</p>
+      <form class="stack" id="loginForm">
+        <div class="field">
+          <label for="pass">Mot de passe</label>
+          <input id="pass" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="note note-warn" id="loginError" hidden>Mot de passe incorrect.</div>
+        <button class="btn btn-dark" type="submit">Se connecter</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="closeLogin">← Retour au site</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------ espace connecté --- -->
+  <div id="deskScreen" hidden>
+    <header class="espace-bar">
+      <span class="brand-name" style="font-size:16px">Volume<i>3D</i> · mon espace</span>
+      <div class="espace-tabs" role="tablist">
+        <button class="tab" id="tabToursBtn" role="tab" aria-selected="true" type="button">Mes visites</button>
+        <button class="tab" id="tabLeadsBtn" role="tab" aria-selected="false" type="button">Demandes reçues</button>
+      </div>
+      <div class="row">
+        <button class="tab" id="backToSite" type="button">← Le site</button>
+        <button class="tab" id="logout" type="button">Déconnexion</button>
+      </div>
+    </header>
+
+    <main class="espace-main">
+
+      <!-- =================================================== visites --- -->
+      <div id="tabTours">
+        <div class="row row-between" style="margin-bottom:18px">
+          <div>
+            <h1 class="espace-h1">Mes visites</h1>
+            <p class="espace-sub" id="tourCount">Aucune visite pour l’instant.</p>
+          </div>
+          <button class="btn btn-dark btn-sm" id="newTour" type="button">+ Nouvelle visite</button>
+        </div>
+
+        <div class="note" style="margin-bottom:18px">
+          <strong>Version autonome.</strong> Vos visites sont enregistrées dans <em>ce navigateur, sur cet appareil</em>.
+          Rien n’est envoyé sur internet, et le mot de passe ci-dessus n’est pas une vraie protection : quiconque ouvre
+          ce fichier peut le lire. Pour des liens publics et une vraie sécurité, il faut la version en ligne.
+        </div>
+
+        <div id="tourList" class="grid-cards"></div>
+        <div id="tourEditor" hidden></div>
+      </div>
+
+      <!-- ================================================== demandes --- -->
+      <div id="tabLeads" hidden>
+        <h1 class="espace-h1">Demandes reçues</h1>
+        <p class="espace-sub">Les réponses au formulaire de la page d’accueil.</p>
+        <div class="note" style="margin-bottom:18px">
+          Sans serveur, seules les demandes envoyées <strong>depuis ce navigateur</strong> apparaissent ici — utile pour
+          tester le formulaire. En ligne, toutes les demandes de vos visiteurs arrivent automatiquement.
+        </div>
+        <div id="leadList" class="stack"></div>
+      </div>
+
+    </main>
+  </div>
+</section>
+
 <footer class="footer">
   <a class="brand" href="#">
     <svg width="20" height="20" viewBox="0 0 40 40" aria-hidden="true">
@@ -507,29 +654,386 @@ a:hover{color:#6b5220}
 
 <script>
 /* ==========================================================================
-   Viewer panoramique 360°, en WebGL brut.
+   Volume3D — logique de la page autonome.
 
-   Aucune bibliothèque : le panorama équirectangulaire est plaqué par un
-   fragment shader qui, pour chaque pixel, calcule la direction du rayon
-   correspondant puis va lire la texture aux coordonnées sphériques associées.
-   C'est la même approche que les gros viewers du marché, en 150 lignes.
+   Trois blocs :
+     1. un moteur de visite 360° en WebGL brut, réutilisable ;
+     2. la démonstration publique de la page d'accueil ;
+     3. l'espace privé : création de visites et suivi des demandes.
+
+   Aucune bibliothèque externe, aucun serveur.
    ========================================================================== */
 (function () {
   'use strict';
 
+  /* ====================================================== configuration === */
+
   var CONTACT_EMAIL = 'scan@volume3d.fr';
 
-  /* --------------------------------------------- panoramas de démonstration */
-  /* Dessinés dans un canvas plutôt que chargés depuis un fichier : la page
-     reste autonome et fonctionne hors connexion. */
+  /* Mot de passe de l'espace privé. Changez-le en modifiant cette ligne.
+     ⚠️ Dans un fichier ouvert par le navigateur, ce mot de passe est lisible
+     par quiconque affiche le code source : c'est un verrou de confort, pas une
+     sécurité. La version en ligne, elle, vérifie le mot de passe côté serveur. */
+  var ESPACE_PASSWORD = 'Volume3D-2026';
+
+  var el = function (id) { return document.getElementById(id); };
+
+  /** Éclaircit (amount > 0) ou assombrit (amount < 0) une couleur hexadécimale. */
+  function shade(hex, amount) {
+    var n = parseInt(hex.slice(1), 16);
+    var channels = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+      return Math.max(0, Math.min(255, Math.round(v + amount * 2.55)));
+    });
+    return 'rgb(' + channels.join(',') + ')';
+  }
+
+  function uid() {
+    return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  }
+
+  /* ================================================== base locale (IDB) === */
+  /* IndexedDB plutôt que localStorage : un panorama pèse plusieurs mégaoctets,
+     et IndexedDB sait stocker les fichiers tels quels. */
+
+  var DB = (function () {
+    var ready = null;
+
+    function open() {
+      if (ready) return ready;
+      ready = new Promise(function (resolve, reject) {
+        if (!window.indexedDB) { reject(new Error('IndexedDB indisponible')); return; }
+        var request = indexedDB.open('volume3d', 1);
+        request.onupgradeneeded = function () {
+          var db = request.result;
+          if (!db.objectStoreNames.contains('tours')) db.createObjectStore('tours', { keyPath: 'id' });
+          if (!db.objectStoreNames.contains('leads')) db.createObjectStore('leads', { keyPath: 'id' });
+        };
+        request.onsuccess = function () { resolve(request.result); };
+        request.onerror = function () { reject(request.error); };
+      });
+      return ready;
+    }
+
+    function run(store, mode, action) {
+      return open().then(function (db) {
+        return new Promise(function (resolve, reject) {
+          var tx = db.transaction(store, mode);
+          var request = action(tx.objectStore(store));
+          request.onsuccess = function () { resolve(request.result); };
+          request.onerror = function () { reject(request.error); };
+        });
+      });
+    }
+
+    return {
+      all: function (store) { return run(store, 'readonly', function (s) { return s.getAll(); }); },
+      put: function (store, value) { return run(store, 'readwrite', function (s) { return s.put(value); }); },
+      del: function (store, key) { return run(store, 'readwrite', function (s) { return s.delete(key); }); }
+    };
+  })();
+
+  /* ==================================================== moteur 360° === */
+  /*
+     Le panorama équirectangulaire est plaqué par un fragment shader : pour
+     chaque pixel de l'écran, on calcule la direction du rayon correspondant,
+     puis on lit la texture aux coordonnées sphériques associées.
+  */
+
+  var VERT = [
+    'attribute vec2 position;',
+    'varying vec2 ndc;',
+    'void main(){ ndc = position; gl_Position = vec4(position, 0.0, 1.0); }'
+  ].join('\n');
+
+  var FRAG = [
+    'precision highp float;',
+    'varying vec2 ndc;',
+    'uniform sampler2D pano;',
+    'uniform float aspect;',
+    'uniform float tanHalfFov;',
+    'uniform float yaw;',
+    'uniform float pitch;',
+    'const float PI = 3.14159265359;',
+    'void main(){',
+    '  vec3 dir = normalize(vec3(ndc.x * aspect * tanHalfFov, ndc.y * tanHalfFov, -1.0));',
+    '  float cp = cos(pitch), sp = sin(pitch);',
+    '  dir = vec3(dir.x, dir.y * cp - dir.z * sp, dir.y * sp + dir.z * cp);',
+    '  float cy = cos(yaw), sy = sin(yaw);',
+    '  dir = vec3(dir.x * cy + dir.z * sy, dir.y, -dir.x * sy + dir.z * cy);',
+    '  float u = atan(dir.x, -dir.z) / (2.0 * PI) + 0.5;',
+    '  float v = 0.5 - asin(clamp(dir.y, -1.0, 1.0)) / PI;',
+    '  gl_FragColor = texture2D(pano, vec2(u, v));',
+    '}'
+  ].join('\n');
+
+  /**
+   * Crée une visionneuse 360° dans `container`, dessinant sur `canvas`.
+   * Renvoie null si le navigateur ne sait pas faire de WebGL.
+   */
+  function createViewer(container, canvas) {
+    var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    if (!gl) return null;
+
+    function compile(type, source) {
+      var shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error(gl.getShaderInfoLog(shader));
+        return null;
+      }
+      return shader;
+    }
+
+    var program = gl.createProgram();
+    gl.attachShader(program, compile(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(program, compile(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(program);
+    gl.useProgram(program);
+
+    var quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    var attribute = gl.getAttribLocation(program, 'position');
+    gl.enableVertexAttribArray(attribute);
+    gl.vertexAttribPointer(attribute, 2, gl.FLOAT, false, 0, 0);
+
+    var uniforms = {
+      aspect: gl.getUniformLocation(program, 'aspect'),
+      tanHalfFov: gl.getUniformLocation(program, 'tanHalfFov'),
+      yaw: gl.getUniformLocation(program, 'yaw'),
+      pitch: gl.getUniformLocation(program, 'pitch')
+    };
+
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+    var view = { yaw: 0, pitch: -4, fov: 76 };
+    var spots = [];
+    var nodes = [];
+    var picking = false;
+    var callbacks = { pick: null, navigate: null };
+    var frame = 0;
+    var alive = true;
+
+    /* ------------------------------------------------------ projection --- */
+
+    /** Position à l'écran d'un point de la sphère, ou null s'il est hors champ. */
+    function project(yawDeg, pitchDeg) {
+      var y = yawDeg * Math.PI / 180, p = pitchDeg * Math.PI / 180;
+      var d = [Math.cos(p) * Math.sin(y), Math.sin(p), -Math.cos(p) * Math.cos(y)];
+
+      var cy = Math.cos(-view.yaw * Math.PI / 180), sy = Math.sin(-view.yaw * Math.PI / 180);
+      var a = [d[0] * cy + d[2] * sy, d[1], -d[0] * sy + d[2] * cy];
+      var cp = Math.cos(-view.pitch * Math.PI / 180), sp = Math.sin(-view.pitch * Math.PI / 180);
+      var b = [a[0], a[1] * cp - a[2] * sp, a[1] * sp + a[2] * cp];
+
+      if (b[2] >= -0.05) return null;
+      var t = Math.tan(view.fov * Math.PI / 180 / 2);
+      var aspect = canvas.clientWidth / canvas.clientHeight;
+      var x = (b[0] / -b[2]) / (t * aspect);
+      var yy = (b[1] / -b[2]) / t;
+      if (Math.abs(x) > 1.1 || Math.abs(yy) > 1.1) return null;
+      return { x: (x * 0.5 + 0.5) * canvas.clientWidth, y: (-yy * 0.5 + 0.5) * canvas.clientHeight };
+    }
+
+    /** Opération inverse : un point de l'écran → une direction sur la sphère. */
+    function unproject(clientX, clientY) {
+      var rect = canvas.getBoundingClientRect();
+      var nx = ((clientX - rect.left) / rect.width) * 2 - 1;
+      var ny = -((((clientY - rect.top) / rect.height) * 2) - 1);
+      var t = Math.tan(view.fov * Math.PI / 180 / 2);
+      var aspect = rect.width / rect.height;
+      var d = [nx * aspect * t, ny * t, -1];
+      var len = Math.hypot(d[0], d[1], d[2]);
+      d = [d[0] / len, d[1] / len, d[2] / len];
+
+      var cp = Math.cos(view.pitch * Math.PI / 180), sp = Math.sin(view.pitch * Math.PI / 180);
+      var a = [d[0], d[1] * cp - d[2] * sp, d[1] * sp + d[2] * cp];
+      var cy = Math.cos(view.yaw * Math.PI / 180), sy = Math.sin(view.yaw * Math.PI / 180);
+      var w = [a[0] * cy + a[2] * sy, a[1], -a[0] * sy + a[2] * cy];
+
+      return {
+        yaw: Math.round(Math.atan2(w[0], -w[2]) * 180 / Math.PI),
+        pitch: Math.round(Math.asin(Math.max(-1, Math.min(1, w[1]))) * 180 / Math.PI)
+      };
+    }
+
+    /* -------------------------------------------------- points de passage --- */
+
+    function rebuildSpots() {
+      nodes.forEach(function (node) { node.remove(); });
+      nodes = [];
+      spots.forEach(function (spot) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'hotspot';
+        button.innerHTML = '<i aria-hidden="true">↗</i><b></b>';
+        button.querySelector('b').textContent = spot.label;
+        button.title = 'Aller vers ' + spot.label;
+        button.addEventListener('click', function (event) {
+          event.stopPropagation();
+          if (callbacks.navigate) callbacks.navigate(spot);
+        });
+        container.appendChild(button);
+        button._spot = spot;
+        nodes.push(button);
+      });
+    }
+
+    function placeSpots() {
+      nodes.forEach(function (node) {
+        var point = project(node._spot.yaw, node._spot.pitch);
+        if (!point) { node.style.display = 'none'; return; }
+        node.style.display = 'flex';
+        node.style.left = point.x + 'px';
+        node.style.top = point.y + 'px';
+      });
+    }
+
+    /* ---------------------------------------------------------- contrôles --- */
+
+    var pointers = {};
+    var pinch = 0;
+    var moved = 0;
+
+    function onDown(event) {
+      if (event.target.closest('button')) return;
+      container.setPointerCapture(event.pointerId);
+      pointers[event.pointerId] = { x: event.clientX, y: event.clientY };
+      moved = 0;
+      container.classList.add('grabbing');
+      container.dispatchEvent(new CustomEvent('v3d-interact'));
+    }
+
+    function onMove(event) {
+      var previous = pointers[event.pointerId];
+      if (!previous) return;
+      var ids = Object.keys(pointers);
+      pointers[event.pointerId] = { x: event.clientX, y: event.clientY };
+
+      if (ids.length >= 2) {
+        var a = pointers[ids[0]], b = pointers[ids[1]];
+        var distance = Math.hypot(a.x - b.x, a.y - b.y);
+        if (pinch > 0) view.fov = Math.max(35, Math.min(100, view.fov * (pinch / distance)));
+        pinch = distance;
+        return;
+      }
+
+      var dx = event.clientX - previous.x, dy = event.clientY - previous.y;
+      moved += Math.abs(dx) + Math.abs(dy);
+      // La sensibilité suit le champ de vision : zoomé, on tourne plus lentement.
+      var speed = 0.13 * view.fov / 75;
+      view.yaw -= dx * speed;
+      view.pitch = Math.max(-89, Math.min(89, view.pitch + dy * speed));
+    }
+
+    function onUp(event) {
+      if (!pointers[event.pointerId]) return;
+      delete pointers[event.pointerId];
+      if (Object.keys(pointers).length < 2) pinch = 0;
+      if (Object.keys(pointers).length === 0) container.classList.remove('grabbing');
+    }
+
+    function onWheel(event) {
+      event.preventDefault();
+      view.fov = Math.max(35, Math.min(100, view.fov + event.deltaY * 0.05));
+    }
+
+    function onClick(event) {
+      if (moved > 6 || !picking || !callbacks.pick) return;
+      if (event.target.closest('button')) return;
+      var direction = unproject(event.clientX, event.clientY);
+      callbacks.pick(direction.yaw, direction.pitch);
+    }
+
+    function onKey(event) {
+      var step = event.shiftKey ? 15 : 5;
+      if (event.key === 'ArrowLeft') view.yaw -= step;
+      else if (event.key === 'ArrowRight') view.yaw += step;
+      else if (event.key === 'ArrowUp') view.pitch = Math.min(89, view.pitch + step);
+      else if (event.key === 'ArrowDown') view.pitch = Math.max(-89, view.pitch - step);
+      else return;
+      event.preventDefault();
+    }
+
+    container.addEventListener('pointerdown', onDown);
+    container.addEventListener('pointermove', onMove);
+    container.addEventListener('pointerup', onUp);
+    container.addEventListener('pointercancel', onUp);
+    container.addEventListener('wheel', onWheel, { passive: false });
+    container.addEventListener('click', onClick);
+    canvas.addEventListener('keydown', onKey);
+    canvas.tabIndex = 0;
+    canvas.setAttribute('role', 'application');
+    canvas.setAttribute('aria-label', 'Visite 360°. Flèches du clavier pour regarder autour de vous.');
+
+    /* ------------------------------------------------------------ rendu --- */
+
+    function tick() {
+      if (!alive) return;
+      frame = requestAnimationFrame(tick);
+      var w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+      }
+      gl.useProgram(program);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.uniform1f(uniforms.aspect, canvas.width / canvas.height);
+      gl.uniform1f(uniforms.tanHalfFov, Math.tan(view.fov * Math.PI / 180 / 2));
+      gl.uniform1f(uniforms.yaw, view.yaw * Math.PI / 180);
+      gl.uniform1f(uniforms.pitch, view.pitch * Math.PI / 180);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      placeSpots();
+    }
+    frame = requestAnimationFrame(tick);
+
+    return {
+      setImage: function (source) {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+      },
+      setHotspots: function (list) { spots = list || []; rebuildSpots(); },
+      onNavigate: function (fn) { callbacks.navigate = fn; },
+      onPick: function (fn) { callbacks.pick = fn; },
+      setPicking: function (value) {
+        picking = value;
+        container.style.cursor = value ? 'crosshair' : '';
+      },
+      resetView: function () { view.yaw = 0; view.pitch = -4; view.fov = 76; },
+      getView: function () { return { yaw: Math.round(view.yaw), pitch: Math.round(view.pitch) }; },
+      destroy: function () {
+        alive = false;
+        cancelAnimationFrame(frame);
+        nodes.forEach(function (node) { node.remove(); });
+        container.removeEventListener('pointerdown', onDown);
+        container.removeEventListener('pointermove', onMove);
+        container.removeEventListener('pointerup', onUp);
+        container.removeEventListener('pointercancel', onUp);
+        container.removeEventListener('wheel', onWheel);
+        container.removeEventListener('click', onClick);
+      }
+    };
+  }
+
+  /* ============================================ panoramas de démonstration === */
+  /* Dessinés par le navigateur plutôt que chargés depuis un fichier : la page
+     reste autonome et fonctionne hors connexion. Ce sont des illustrations
+     stylisées, pas le rendu d'une vraie visite — celle-ci utilise vos photos. */
+
   function makeDemoPano(opts) {
     var W = 2048, H = 1024;
     var c = document.createElement('canvas');
     c.width = W; c.height = H;
     var g = c.getContext('2d');
 
-    // Ligne d'horizon : hauteur des yeux. Tout ce qui est au-dessus est mur et
-    // plafond, tout ce qui est en dessous est sol.
     var horizon = H * 0.55;
     var baseboard = horizon + H * 0.02;
 
@@ -546,8 +1050,6 @@ a:hover{color:#6b5220}
     g.fillStyle = floor;
     g.fillRect(0, horizon, W, H - horizon);
 
-    // Lames de parquet : bandes horizontales resserrées près de l'horizon,
-    // écartées vers le bas — ça suffit à lire une profondeur.
     g.strokeStyle = 'rgba(30,22,14,.14)';
     g.lineWidth = 2;
     for (var t = 0.02; t < 1; t += 0.055) {
@@ -555,7 +1057,6 @@ a:hover{color:#6b5220}
       g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
     }
 
-    // Angles de la pièce : quatre arêtes verticales assombries, tous les 90°.
     [0.125, 0.375, 0.625, 0.875].forEach(function (x) {
       var corner = g.createLinearGradient(x * W - W * 0.035, 0, x * W + W * 0.035, 0);
       corner.addColorStop(0, 'rgba(30,22,14,0)');
@@ -565,14 +1066,12 @@ a:hover{color:#6b5220}
       g.fillRect(x * W - W * 0.035, 0, W * 0.07, horizon);
     });
 
-    // Plafonnier, au zénith du panorama.
     var lamp = g.createRadialGradient(W * 0.5, 0, 0, W * 0.5, 0, H * 0.22);
     lamp.addColorStop(0, 'rgba(255,246,225,.85)');
     lamp.addColorStop(1, 'rgba(255,246,225,0)');
     g.fillStyle = lamp;
     g.fillRect(0, 0, W, H * 0.22);
 
-    // Fenêtres : rectangles clairs, avec croisillons et halo de lumière au sol.
     opts.windows.forEach(function (x) {
       var w = W * 0.115, h = H * 0.27, y = horizon - h - H * 0.06;
       var light = g.createLinearGradient(0, y, 0, y + h);
@@ -596,7 +1095,6 @@ a:hover{color:#6b5220}
       g.fillRect(x * W - W * 0.11, horizon - H * 0.05, W * 0.22, H * 0.3);
     });
 
-    // Cadres accrochés au mur.
     (opts.frames || []).forEach(function (x) {
       var w = W * 0.045, h = H * 0.1, y = horizon - h - H * 0.14;
       g.fillStyle = 'rgba(40,34,28,.5)';
@@ -605,7 +1103,6 @@ a:hover{color:#6b5220}
       g.fillRect(x * W - w / 2, y, w, h);
     });
 
-    // Mobilier : blocs posés sur la ligne de sol, avec ombre portée.
     opts.furniture.forEach(function (item) {
       var w = W * item.w, h = H * item.h, x = item.x * W - w / 2, y = horizon - h + H * 0.02;
       var shadow = g.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, w * 0.8);
@@ -621,20 +1118,17 @@ a:hover{color:#6b5220}
       g.fillRect(x, y, w, h);
     });
 
-    // Plinthe le long du mur.
     g.fillStyle = 'rgba(255,255,255,.35)';
     g.fillRect(0, horizon, W, baseboard - horizon);
     g.fillStyle = 'rgba(30,22,14,.22)';
     g.fillRect(0, baseboard - 3, W, 3);
 
-    // Vignettage haut et bas, pour éviter l'aplat au zénith et au nadir.
     var vignette = g.createLinearGradient(0, H * 0.86, 0, H);
     vignette.addColorStop(0, 'rgba(20,14,8,0)');
     vignette.addColorStop(1, 'rgba(20,14,8,.4)');
     g.fillStyle = vignette;
     g.fillRect(0, H * 0.86, W, H * 0.14);
 
-    // Nom de la pièce, répété deux fois pour rester lisible quel que soit l'angle.
     g.font = 'bold ' + Math.round(H * 0.055) + 'px Georgia, serif';
     g.fillStyle = 'rgba(40,34,28,.26)';
     g.textAlign = 'center';
@@ -644,43 +1138,32 @@ a:hover{color:#6b5220}
     return c;
   }
 
-  /** Éclaircit (amount > 0) ou assombrit (amount < 0) une couleur hexadécimale. */
-  function shade(hex, amount) {
-    var n = parseInt(hex.slice(1), 16);
-    var channels = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
-      return Math.max(0, Math.min(255, Math.round(v + amount * 2.55)));
-    });
-    return 'rgb(' + channels.join(',') + ')';
-  }
-
-  var SCENES = [
+  var DEMO = [
     {
       name: 'Salon',
       image: makeDemoPano({
         label: 'SALON', ceiling: '#f2ece1', wall: '#e4d8c4', floor: '#a9885f',
-        windows: [0.18, 0.34],
-        frames: [0.5, 0.57],
+        windows: [0.18, 0.34], frames: [0.5, 0.57],
         furniture: [
           { x: 0.62, w: 0.17, h: 0.13, color: '#6f5c47' },
           { x: 0.80, w: 0.07, h: 0.19, color: '#5c4d3d' },
           { x: 0.04, w: 0.11, h: 0.09, color: '#8a7659' }
         ]
       }),
-      hotspots: [{ yaw: 34, pitch: -7, label: 'Chambre', target: 1 }]
+      spots: [{ yaw: 34, pitch: -7, label: 'Chambre', target: 1 }]
     },
     {
       name: 'Chambre',
       image: makeDemoPano({
         label: 'CHAMBRE', ceiling: '#eeebe7', wall: '#d8d3cd', floor: '#96805f',
-        windows: [0.72],
-        frames: [0.14],
+        windows: [0.72], frames: [0.14],
         furniture: [
           { x: 0.30, w: 0.24, h: 0.11, color: '#6e665d' },
           { x: 0.52, w: 0.06, h: 0.15, color: '#585148' },
           { x: 0.90, w: 0.08, h: 0.2, color: '#655e56' }
         ]
       }),
-      hotspots: [
+      spots: [
         { yaw: -32, pitch: -7, label: 'Salon', target: 0 },
         { yaw: 40, pitch: -7, label: 'Cuisine', target: 2 }
       ]
@@ -689,317 +1172,690 @@ a:hover{color:#6b5220}
       name: 'Cuisine',
       image: makeDemoPano({
         label: 'CUISINE', ceiling: '#f1f3ee', wall: '#dfe3dc', floor: '#8d8b73',
-        windows: [0.45],
-        frames: [0.68],
+        windows: [0.45], frames: [0.68],
         furniture: [
           { x: 0.15, w: 0.28, h: 0.13, color: '#636a5a' },
           { x: 0.88, w: 0.10, h: 0.21, color: '#535849' },
           { x: 0.30, w: 0.06, h: 0.17, color: '#6f7566' }
         ]
       }),
-      hotspots: [{ yaw: -28, pitch: -7, label: 'Chambre', target: 1 }]
+      spots: [{ yaw: -28, pitch: -7, label: 'Chambre', target: 1 }]
     }
   ];
 
-  /* ------------------------------------------------------------- WebGL --- */
-  var canvas = document.getElementById('pano');
-  var viewer = document.getElementById('viewer');
-  var fallback = document.getElementById('fallback');
-  var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+  /* ================================================ démonstration publique === */
 
-  if (!gl) {
-    fallback.style.display = 'flex';
-    return;
-  }
+  (function initDemo() {
+    var container = el('viewer');
+    var canvas = el('pano');
+    var viewer = createViewer(container, canvas);
+    if (!viewer) { el('fallback').style.display = 'flex'; return; }
 
-  var VERT = [
-    'attribute vec2 position;',
-    'varying vec2 ndc;',
-    'void main(){ ndc = position; gl_Position = vec4(position, 0.0, 1.0); }'
-  ].join('\n');
+    var roomName = el('roomName');
+    var roomBar = el('roomBar');
+    var hint = el('hint');
+    var current = 0;
+    var custom = false;
 
-  var FRAG = [
-    'precision highp float;',
-    'varying vec2 ndc;',
-    'uniform sampler2D pano;',
-    'uniform float aspect;',
-    'uniform float tanHalfFov;',
-    'uniform float yaw;',
-    'uniform float pitch;',
-    'const float PI = 3.14159265359;',
-    'void main(){',
-    // Rayon dans le repère de la caméra, puis rotation par l'orientation.
-    '  vec3 dir = normalize(vec3(ndc.x * aspect * tanHalfFov, ndc.y * tanHalfFov, -1.0));',
-    '  float cp = cos(pitch), sp = sin(pitch);',
-    '  dir = vec3(dir.x, dir.y * cp - dir.z * sp, dir.y * sp + dir.z * cp);',
-    '  float cy = cos(yaw), sy = sin(yaw);',
-    '  dir = vec3(dir.x * cy + dir.z * sy, dir.y, -dir.x * sy + dir.z * cy);',
-    // Direction → coordonnées équirectangulaires.
-    '  float u = atan(dir.x, -dir.z) / (2.0 * PI) + 0.5;',
-    '  float v = 0.5 - asin(clamp(dir.y, -1.0, 1.0)) / PI;',
-    '  gl_FragColor = texture2D(pano, vec2(u, v));',
-    '}'
-  ].join('\n');
-
-  function compile(type, source) {
-    var shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.error(gl.getShaderInfoLog(shader));
-      return null;
-    }
-    return shader;
-  }
-
-  var program = gl.createProgram();
-  gl.attachShader(program, compile(gl.VERTEX_SHADER, VERT));
-  gl.attachShader(program, compile(gl.FRAGMENT_SHADER, FRAG));
-  gl.linkProgram(program);
-  gl.useProgram(program);
-
-  var quad = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-  var loc = gl.getAttribLocation(program, 'position');
-  gl.enableVertexAttribArray(loc);
-  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-
-  var uniforms = {
-    aspect: gl.getUniformLocation(program, 'aspect'),
-    tanHalfFov: gl.getUniformLocation(program, 'tanHalfFov'),
-    yaw: gl.getUniformLocation(program, 'yaw'),
-    pitch: gl.getUniformLocation(program, 'pitch')
-  };
-
-  var texture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-  function uploadTexture(source) {
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
-  }
-
-  /* ------------------------------------------------------------- état --- */
-  var view = { yaw: 0, pitch: -4, fov: 76 };
-  var sceneIndex = 0;
-  var customScene = null;
-
-  var roomName = document.getElementById('roomName');
-  var roomBar = document.getElementById('roomBar');
-  var hint = document.getElementById('hint');
-
-  function activeScene() {
-    return customScene || SCENES[sceneIndex];
-  }
-
-  function render() {
-    var w = canvas.clientWidth, h = canvas.clientHeight;
-    if (canvas.width !== w || canvas.height !== h) {
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-    }
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.uniform1f(uniforms.aspect, canvas.width / canvas.height);
-    gl.uniform1f(uniforms.tanHalfFov, Math.tan((view.fov * Math.PI / 180) / 2));
-    gl.uniform1f(uniforms.yaw, view.yaw * Math.PI / 180);
-    gl.uniform1f(uniforms.pitch, view.pitch * Math.PI / 180);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    placeHotspots();
-    requestAnimationFrame(render);
-  }
-
-  /* Position à l'écran d'un point de passage : on applique la rotation inverse
-     de la caméra, puis la projection perspective. */
-  function project(yawDeg, pitchDeg) {
-    var y = yawDeg * Math.PI / 180, p = pitchDeg * Math.PI / 180;
-    var d = [Math.cos(p) * Math.sin(y), Math.sin(p), -Math.cos(p) * Math.cos(y)];
-
-    var cy = Math.cos(-view.yaw * Math.PI / 180), sy = Math.sin(-view.yaw * Math.PI / 180);
-    var r1 = [d[0] * cy + d[2] * sy, d[1], -d[0] * sy + d[2] * cy];
-    var cp = Math.cos(-view.pitch * Math.PI / 180), sp = Math.sin(-view.pitch * Math.PI / 180);
-    var r2 = [r1[0], r1[1] * cp - r1[2] * sp, r1[1] * sp + r1[2] * cp];
-
-    if (r2[2] >= -0.05) return null; // derrière la caméra
-    var t = Math.tan((view.fov * Math.PI / 180) / 2);
-    var aspect = canvas.clientWidth / canvas.clientHeight;
-    var x = (r2[0] / -r2[2]) / (t * aspect);
-    var yy = (r2[1] / -r2[2]) / t;
-    if (Math.abs(x) > 1.1 || Math.abs(yy) > 1.1) return null;
-    return { x: (x * 0.5 + 0.5) * canvas.clientWidth, y: (-yy * 0.5 + 0.5) * canvas.clientHeight };
-  }
-
-  var hotspotNodes = [];
-
-  function buildHotspots() {
-    hotspotNodes.forEach(function (node) { node.remove(); });
-    hotspotNodes = [];
-    if (customScene) return;
-
-    activeScene().hotspots.forEach(function (spot) {
-      var button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'hotspot';
-      button.innerHTML = '<i aria-hidden="true">↗</i><b></b>';
-      button.querySelector('b').textContent = spot.label;
-      button.title = 'Aller vers ' + spot.label;
-      button.addEventListener('click', function () { goTo(spot.target); });
-      viewer.appendChild(button);
-      hotspotNodes.push(button);
-      button._spot = spot;
-    });
-  }
-
-  function placeHotspots() {
-    hotspotNodes.forEach(function (node) {
-      var point = project(node._spot.yaw, node._spot.pitch);
-      if (!point) { node.style.display = 'none'; return; }
-      node.style.display = 'flex';
-      node.style.left = point.x + 'px';
-      node.style.top = point.y + 'px';
-    });
-  }
-
-  function goTo(index) {
-    customScene = null;
-    sceneIndex = index;
-    view.yaw = 0; view.pitch = -4;
-    var scene = SCENES[index];
-    roomName.textContent = scene.name;
-    uploadTexture(scene.image);
-    buildHotspots();
-    syncChips();
-  }
-
-  function syncChips() {
-    Array.prototype.forEach.call(roomBar.children, function (chip, i) {
-      chip.setAttribute('aria-pressed', String(!customScene && i === sceneIndex));
-    });
-  }
-
-  SCENES.forEach(function (scene, i) {
-    var chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'chip';
-    chip.textContent = scene.name;
-    chip.addEventListener('click', function () { goTo(i); });
-    roomBar.appendChild(chip);
-  });
-
-  /* --------------------------------------------------------- contrôles --- */
-  var pointers = {};
-  var pointerCount = 0;
-  var pinch = 0;
-
-  viewer.addEventListener('pointerdown', function (e) {
-    if (e.target.closest('.chip, .viewer-btn, .hotspot')) return;
-    viewer.setPointerCapture(e.pointerId);
-    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-    pointerCount++;
-    viewer.classList.add('grabbing');
-    if (hint) hint.style.opacity = '0';
-  });
-
-  viewer.addEventListener('pointermove', function (e) {
-    var previous = pointers[e.pointerId];
-    if (!previous) return;
-    var ids = Object.keys(pointers);
-    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-
-    if (ids.length >= 2) {
-      var a = pointers[ids[0]], b = pointers[ids[1]];
-      var distance = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinch > 0) view.fov = Math.max(35, Math.min(100, view.fov * (pinch / distance)));
-      pinch = distance;
-      return;
+    function show(index) {
+      current = index;
+      custom = false;
+      viewer.resetView();
+      viewer.setImage(DEMO[index].image);
+      viewer.setHotspots(DEMO[index].spots);
+      roomName.textContent = DEMO[index].name;
+      Array.prototype.forEach.call(roomBar.children, function (chip, i) {
+        chip.setAttribute('aria-pressed', String(i === index));
+      });
     }
 
-    // La sensibilité suit le champ de vision : zoomé, on tourne plus lentement.
-    var speed = 0.13 * view.fov / 75;
-    view.yaw -= (e.clientX - previous.x) * speed;
-    view.pitch = Math.max(-89, Math.min(89, view.pitch + (e.clientY - previous.y) * speed));
-  });
+    DEMO.forEach(function (scene, i) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip';
+      chip.textContent = scene.name;
+      chip.addEventListener('click', function () { show(i); });
+      roomBar.appendChild(chip);
+    });
 
-  function endPointer(e) {
-    if (!pointers[e.pointerId]) return;
-    delete pointers[e.pointerId];
-    pointerCount = Math.max(0, pointerCount - 1);
-    if (pointerCount < 2) pinch = 0;
-    if (pointerCount === 0) viewer.classList.remove('grabbing');
-  }
-  viewer.addEventListener('pointerup', endPointer);
-  viewer.addEventListener('pointercancel', endPointer);
+    viewer.onNavigate(function (spot) { show(spot.target); });
+    container.addEventListener('v3d-interact', function () { if (hint) hint.style.opacity = '0'; });
 
-  viewer.addEventListener('wheel', function (e) {
-    e.preventDefault();
-    view.fov = Math.max(35, Math.min(100, view.fov + e.deltaY * 0.05));
-  }, { passive: false });
+    el('fsBtn').addEventListener('click', function () {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (container.requestFullscreen) container.requestFullscreen();
+    });
 
-  canvas.tabIndex = 0;
-  canvas.setAttribute('role', 'application');
-  canvas.setAttribute('aria-label', 'Visite 360°. Flèches du clavier pour regarder autour de vous.');
-  canvas.addEventListener('keydown', function (e) {
-    var step = e.shiftKey ? 15 : 5;
-    if (e.key === 'ArrowLeft') view.yaw -= step;
-    else if (e.key === 'ArrowRight') view.yaw += step;
-    else if (e.key === 'ArrowUp') view.pitch = Math.min(89, view.pitch + step);
-    else if (e.key === 'ArrowDown') view.pitch = Math.max(-89, view.pitch - step);
-    else return;
-    e.preventDefault();
-  });
+    el('ownPano').addEventListener('change', function (event) {
+      var file = event.target.files && event.target.files[0];
+      if (!file) return;
+      var image = new Image();
+      image.onload = function () {
+        custom = true;
+        viewer.resetView();
+        viewer.setImage(image);
+        viewer.setHotspots([]);
+        roomName.textContent = file.name.replace(/\.[^.]+$/, '');
+        Array.prototype.forEach.call(roomBar.children, function (chip) {
+          chip.setAttribute('aria-pressed', 'false');
+        });
+        URL.revokeObjectURL(image.src);
+      };
+      image.onerror = function () { alert('Cette image n’a pas pu être chargée.'); };
+      image.src = URL.createObjectURL(file);
+    });
 
-  document.getElementById('fsBtn').addEventListener('click', function () {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else if (viewer.requestFullscreen) viewer.requestFullscreen();
-  });
+    show(0);
+    setTimeout(function () { if (hint && !custom) hint.style.opacity = '0'; }, 5000);
+  })();
 
-  /* Chargement d'un panorama personnel — le fichier ne quitte pas la machine. */
-  document.getElementById('ownPano').addEventListener('change', function (e) {
-    var file = e.target.files && e.target.files[0];
-    if (!file) return;
-    var image = new Image();
-    image.onload = function () {
-      customScene = { name: file.name.replace(/\.[^.]+$/, ''), hotspots: [] };
-      roomName.textContent = customScene.name;
-      view.yaw = 0; view.pitch = -4;
-      uploadTexture(image);
-      buildHotspots();
-      syncChips();
-      URL.revokeObjectURL(image.src);
+  /* ====================================================== formulaire === */
+
+  el('contactForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    var data = new FormData(event.target);
+    var lead = {
+      id: uid(),
+      name: data.get('name') || '',
+      email: data.get('email') || '',
+      phone: data.get('phone') || '',
+      city: data.get('city') || '',
+      profile: data.get('profile') || '',
+      message: data.get('message') || '',
+      createdAt: new Date().toISOString()
     };
-    image.onerror = function () { alert('Cette image n’a pas pu être chargée.'); };
-    image.src = URL.createObjectURL(file);
-  });
 
-  /* ----------------------------------------------- formulaire (mailto) --- */
-  /* Page autonome : sans serveur, la demande part par email depuis le client
-     du visiteur. Sur le site déployé, elle est enregistrée en base. */
-  document.getElementById('contactForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var data = new FormData(e.target);
+    // La demande est conservée dans l'espace privé, puis l'email est composé :
+    // sans serveur, c'est le seul moyen qu'elle vous parvienne réellement.
+    DB.put('leads', lead).catch(function () { /* stockage indisponible : on continue */ });
+
     var body = [
-      'Nom : ' + (data.get('name') || ''),
-      'Email : ' + (data.get('email') || ''),
-      'Téléphone : ' + (data.get('phone') || '—'),
-      'Ville : ' + (data.get('city') || ''),
-      'Profil : ' + (data.get('profile') || ''),
+      'Nom : ' + lead.name,
+      'Email : ' + lead.email,
+      'Téléphone : ' + (lead.phone || '—'),
+      'Ville : ' + lead.city,
+      'Profil : ' + lead.profile,
       '',
-      data.get('message') || ''
+      lead.message
     ].join('\n');
+
     window.location.href = 'mailto:' + CONTACT_EMAIL +
-      '?subject=' + encodeURIComponent('Demande de visite 3D — ' + (data.get('city') || '')) +
+      '?subject=' + encodeURIComponent('Demande de visite 3D — ' + lead.city) +
       '&body=' + encodeURIComponent(body);
   });
 
-  goTo(0);
-  render();
-  setTimeout(function () { if (hint) hint.style.opacity = '0'; }, 5000);
+  /* ========================================================= espace privé === */
+
+  (function initEspace() {
+    var espace = el('espace');
+    var loginScreen = el('loginScreen');
+    var desk = el('deskScreen');
+    var tourList = el('tourList');
+    var editor = el('tourEditor');
+
+    var tours = [];
+    var openId = null;
+    var viewer = null;
+    var pendingTarget = null;
+    var urls = [];
+
+    /* ------------------------------------------------------- ouverture --- */
+
+    function open() {
+      espace.setAttribute('data-open', '1');
+      document.body.style.overflow = 'hidden';
+      if (sessionStorage.getItem('v3d-auth') === '1') enter();
+    }
+
+    function close() {
+      espace.removeAttribute('data-open');
+      document.body.style.overflow = '';
+    }
+
+    function enter() {
+      loginScreen.hidden = true;
+      desk.hidden = false;
+      loadTours();
+      loadLeads();
+    }
+
+    el('openEspace').addEventListener('click', open);
+    el('closeLogin').addEventListener('click', close);
+    el('backToSite').addEventListener('click', close);
+    el('logout').addEventListener('click', function () {
+      sessionStorage.removeItem('v3d-auth');
+      desk.hidden = true;
+      loginScreen.hidden = false;
+      close();
+    });
+
+    el('loginForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (el('pass').value === ESPACE_PASSWORD) {
+        sessionStorage.setItem('v3d-auth', '1');
+        el('loginError').hidden = true;
+        el('pass').value = '';
+        enter();
+      } else {
+        el('loginError').hidden = false;
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && espace.getAttribute('data-open') === '1') close();
+    });
+
+    /* ---------------------------------------------------------- onglets --- */
+
+    function selectTab(name) {
+      var isTours = name === 'tours';
+      el('tabTours').hidden = !isTours;
+      el('tabLeads').hidden = isTours;
+      el('tabToursBtn').setAttribute('aria-selected', String(isTours));
+      el('tabLeadsBtn').setAttribute('aria-selected', String(!isTours));
+    }
+    el('tabToursBtn').addEventListener('click', function () { selectTab('tours'); });
+    el('tabLeadsBtn').addEventListener('click', function () { selectTab('leads'); loadLeads(); });
+
+    /* --------------------------------------------------------- demandes --- */
+
+    function loadLeads() {
+      return DB.all('leads').then(function (list) {
+        var target = el('leadList');
+        target.innerHTML = '';
+        if (!list.length) {
+          target.innerHTML = '<div class="empty">Aucune demande pour l’instant.</div>';
+          return;
+        }
+        list.sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+        list.forEach(function (lead) {
+          var card = document.createElement('div');
+          card.className = 'lead-card';
+          var head = document.createElement('div');
+          head.className = 'row row-between';
+
+          var who = document.createElement('div');
+          var name = document.createElement('b');
+          name.textContent = lead.name;
+          var meta = document.createElement('div');
+          meta.className = 'tiny';
+          meta.textContent = [lead.email, lead.city, lead.profile, lead.phone || 'sans téléphone',
+            new Date(lead.createdAt).toLocaleDateString('fr-FR')].filter(Boolean).join(' · ');
+          who.appendChild(name);
+          who.appendChild(meta);
+
+          var actions = document.createElement('div');
+          actions.className = 'row';
+          var mail = document.createElement('a');
+          mail.className = 'btn btn-ghost btn-sm';
+          mail.href = 'mailto:' + lead.email;
+          mail.textContent = 'Répondre';
+          var remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'mini mini-danger';
+          remove.textContent = '✕';
+          remove.title = 'Supprimer';
+          remove.addEventListener('click', function () {
+            DB.del('leads', lead.id).then(loadLeads);
+          });
+          actions.appendChild(mail);
+          actions.appendChild(remove);
+
+          head.appendChild(who);
+          head.appendChild(actions);
+          card.appendChild(head);
+
+          if (lead.message) {
+            var message = document.createElement('p');
+            message.className = 'muted';
+            message.style.margin = '10px 0 0';
+            message.textContent = lead.message;
+            card.appendChild(message);
+          }
+          target.appendChild(card);
+        });
+      }).catch(function () {
+        el('leadList').innerHTML = '<div class="empty">Stockage local indisponible dans ce navigateur.</div>';
+      });
+    }
+
+    /* ---------------------------------------------------------- visites --- */
+
+    function releaseUrls() {
+      urls.forEach(function (url) { URL.revokeObjectURL(url); });
+      urls = [];
+    }
+
+    function objectUrl(blob) {
+      var url = URL.createObjectURL(blob);
+      urls.push(url);
+      return url;
+    }
+
+    function loadTours() {
+      return DB.all('tours').then(function (list) {
+        tours = list.sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+        renderList();
+      }).catch(function () {
+        tourList.innerHTML = '<div class="empty">Stockage local indisponible dans ce navigateur.</div>';
+      });
+    }
+
+    function save(tour) {
+      return DB.put('tours', tour).then(loadTours);
+    }
+
+    function renderList() {
+      if (openId) return;
+      el('tourCount').textContent = tours.length
+        ? tours.length + ' visite' + (tours.length > 1 ? 's' : '') + ' enregistrée' + (tours.length > 1 ? 's' : '')
+        : 'Aucune visite pour l’instant.';
+      tourList.hidden = false;
+      editor.hidden = true;
+      tourList.innerHTML = '';
+
+      if (!tours.length) {
+        tourList.innerHTML = '<div class="empty">Créez une visite, ajoutez un panorama 360° par pièce, ' +
+          'reliez-les, et vous avez votre visite.</div>';
+        return;
+      }
+
+      tours.forEach(function (tour) {
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'tour-card';
+        var title = document.createElement('b');
+        title.textContent = tour.name;
+        var meta = document.createElement('span');
+        meta.className = 'tiny';
+        meta.textContent = (tour.city || 'ville non renseignée') + ' · ' + tour.rooms.length +
+          ' pièce' + (tour.rooms.length > 1 ? 's' : '') + (tour.video ? ' · vidéo' : '');
+        card.appendChild(title);
+        card.appendChild(meta);
+        card.addEventListener('click', function () { openTour(tour.id); });
+        tourList.appendChild(card);
+      });
+    }
+
+    el('newTour').addEventListener('click', function () {
+      var name = prompt('Nom du logement ?', 'Appartement — ');
+      if (!name) return;
+      var tour = { id: uid(), name: name.trim(), city: '', rooms: [], video: null, createdAt: new Date().toISOString() };
+      save(tour).then(function () { openTour(tour.id); });
+    });
+
+    function currentTour() {
+      return tours.filter(function (tour) { return tour.id === openId; })[0];
+    }
+
+    function openTour(id) {
+      openId = id;
+      tourList.hidden = true;
+      editor.hidden = false;
+      renderEditor(0);
+    }
+
+    function closeTour() {
+      openId = null;
+      if (viewer) { viewer.destroy(); viewer = null; }
+      releaseUrls();
+      renderList();
+    }
+
+    /* ------------------------------------------------------- l'éditeur --- */
+
+    function renderEditor(roomIndex) {
+      var tour = currentTour();
+      if (!tour) { closeTour(); return; }
+      if (viewer) { viewer.destroy(); viewer = null; }
+      releaseUrls();
+      pendingTarget = null;
+
+      var room = tour.rooms[roomIndex] || null;
+      editor.innerHTML = '';
+
+      /* --- en-tête --- */
+      var head = document.createElement('div');
+      head.className = 'row row-between';
+      head.style.marginBottom = '16px';
+      var back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'btn btn-ghost btn-sm';
+      back.textContent = '← Toutes mes visites';
+      back.addEventListener('click', closeTour);
+      var title = document.createElement('h1');
+      title.className = 'espace-h1';
+      title.textContent = tour.name;
+      var left = document.createElement('div');
+      left.appendChild(title);
+      head.appendChild(left);
+      head.appendChild(back);
+      editor.appendChild(head);
+
+      var grid = document.createElement('div');
+      grid.className = 'editor';
+      editor.appendChild(grid);
+
+      /* --- colonne gauche : la scène --- */
+      var stageCol = document.createElement('div');
+      stageCol.className = 'stack';
+      grid.appendChild(stageCol);
+
+      var modeSwitch = document.createElement('div');
+      modeSwitch.className = 'mode-switch';
+      stageCol.appendChild(modeSwitch);
+
+      var stage = document.createElement('div');
+      stage.className = 'stage';
+      stageCol.appendChild(stage);
+
+      var mode = { value: room ? '360' : (tour.video ? 'video' : '360') };
+
+      function paintStage() {
+        stage.innerHTML = '';
+        if (viewer) { viewer.destroy(); viewer = null; }
+
+        if (mode.value === 'video' && tour.video) {
+          var video = document.createElement('video');
+          video.src = objectUrl(tour.video);
+          video.controls = true;
+          video.playsInline = true;
+          stage.appendChild(video);
+          return;
+        }
+
+        if (!room) {
+          var empty = document.createElement('div');
+          empty.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;' +
+            'color:#cbbfb0;font-size:14px;text-align:center;padding:24px';
+          empty.textContent = 'Ajoutez un panorama 360° pour voir la visite ici.';
+          stage.appendChild(empty);
+          return;
+        }
+
+        var canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;cursor:grab';
+        stage.appendChild(canvas);
+        viewer = createViewer(stage, canvas);
+        if (!viewer) return;
+
+        var image = new Image();
+        image.onload = function () {
+          viewer.setImage(image);
+          viewer.setHotspots((room.hotspots || []).map(function (spot) {
+            var target = tour.rooms.filter(function (r) { return r.id === spot.target; })[0];
+            return { yaw: spot.yaw, pitch: spot.pitch, label: target ? target.name : '?', id: spot.id };
+          }));
+        };
+        image.src = objectUrl(room.blob);
+
+        viewer.onNavigate(function (spot) {
+          var source = (room.hotspots || []).filter(function (h) { return h.id === spot.id; })[0];
+          if (!source) return;
+          var index = tour.rooms.findIndex(function (r) { return r.id === source.target; });
+          if (index >= 0) renderEditor(index);
+        });
+
+        viewer.onPick(function (yaw, pitch) {
+          if (!pendingTarget) return;
+          room.hotspots = room.hotspots || [];
+          room.hotspots.push({ id: uid(), yaw: yaw, pitch: pitch, target: pendingTarget });
+          pendingTarget = null;
+          save(tour).then(function () { renderEditor(roomIndex); });
+        });
+      }
+
+      ['360', 'video'].forEach(function (value) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = value === '360' ? 'Visite 360°' : 'Vidéo walkthrough';
+        button.setAttribute('aria-selected', String(mode.value === value));
+        button.addEventListener('click', function () {
+          mode.value = value;
+          Array.prototype.forEach.call(modeSwitch.children, function (other, i) {
+            other.setAttribute('aria-selected', String((i === 0 ? '360' : 'video') === value));
+          });
+          paintStage();
+        });
+        modeSwitch.appendChild(button);
+      });
+
+      paintStage();
+
+      /* --- passages depuis la pièce courante --- */
+      if (room) {
+        var spotsCard = document.createElement('div');
+        spotsCard.className = 'card stack-sm';
+        stageCol.appendChild(spotsCard);
+
+        var spotsHead = document.createElement('div');
+        spotsHead.className = 'row row-between';
+        var spotsTitle = document.createElement('strong');
+        spotsTitle.style.fontSize = '14px';
+        spotsTitle.textContent = 'Passages depuis « ' + room.name + ' »';
+        spotsHead.appendChild(spotsTitle);
+
+        var fullscreen = document.createElement('button');
+        fullscreen.type = 'button';
+        fullscreen.className = 'btn btn-ghost btn-sm';
+        fullscreen.textContent = 'Aperçu voyageur';
+        fullscreen.addEventListener('click', function () {
+          if (stage.requestFullscreen) stage.requestFullscreen();
+        });
+        spotsHead.appendChild(fullscreen);
+        spotsCard.appendChild(spotsHead);
+
+        (room.hotspots || []).forEach(function (spot) {
+          var target = tour.rooms.filter(function (r) { return r.id === spot.target; })[0];
+          var line = document.createElement('div');
+          line.className = 'pass-row';
+          var label = document.createElement('span');
+          label.textContent = '→ ' + (target ? target.name : 'pièce supprimée') + ' (' + spot.yaw + '°)';
+          var remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'mini mini-danger';
+          remove.textContent = '✕';
+          remove.addEventListener('click', function () {
+            room.hotspots = room.hotspots.filter(function (h) { return h.id !== spot.id; });
+            save(tour).then(function () { renderEditor(roomIndex); });
+          });
+          line.appendChild(label);
+          line.appendChild(remove);
+          spotsCard.appendChild(line);
+        });
+
+        var others = tour.rooms.filter(function (r) { return r.id !== room.id; });
+        if (others.length) {
+          var select = document.createElement('select');
+          select.className = 'room-name';
+          select.style.cssText = 'border:1px solid var(--line);padding:8px;border-radius:2px';
+          select.innerHTML = '<option value="" disabled selected>Ajouter un passage vers…</option>';
+          others.forEach(function (other) {
+            var option = document.createElement('option');
+            option.value = other.id;
+            option.textContent = other.name;
+            select.appendChild(option);
+          });
+          select.addEventListener('change', function () {
+            pendingTarget = select.value;
+            select.selectedIndex = 0;
+            if (viewer) viewer.setPicking(true);
+            tip.hidden = false;
+          });
+          spotsCard.appendChild(select);
+
+          var tip = document.createElement('div');
+          tip.className = 'note';
+          tip.hidden = true;
+          tip.textContent = 'Cliquez maintenant dans l’image, à l’endroit où le visiteur devra cliquer pour changer de pièce.';
+          spotsCard.appendChild(tip);
+        } else {
+          var alone = document.createElement('p');
+          alone.className = 'muted';
+          alone.style.margin = '0';
+          alone.textContent = 'Ajoutez une deuxième pièce pour pouvoir créer un passage.';
+          spotsCard.appendChild(alone);
+        }
+      }
+
+      /* --- colonne droite : pièces, vidéo, fiche --- */
+      var side = document.createElement('div');
+      side.className = 'stack';
+      grid.appendChild(side);
+
+      /* pièces */
+      var roomsCard = document.createElement('div');
+      roomsCard.className = 'card stack-sm';
+      var roomsTitle = document.createElement('strong');
+      roomsTitle.style.fontSize = '14px';
+      roomsTitle.textContent = 'Pièces (' + tour.rooms.length + ')';
+      roomsCard.appendChild(roomsTitle);
+
+      tour.rooms.forEach(function (entry, index) {
+        var line = document.createElement('div');
+        line.className = 'room-row';
+        if (index === roomIndex) line.setAttribute('data-active', '1');
+        line.addEventListener('click', function () { renderEditor(index); });
+
+        var thumb = document.createElement('img');
+        thumb.className = 'room-thumb';
+        thumb.alt = '';
+        thumb.src = objectUrl(entry.blob);
+        line.appendChild(thumb);
+
+        var name = document.createElement('input');
+        name.className = 'room-name';
+        name.value = entry.name;
+        name.maxLength = 40;
+        name.addEventListener('click', function (event) { event.stopPropagation(); });
+        name.addEventListener('blur', function () {
+          var value = name.value.trim();
+          if (value && value !== entry.name) { entry.name = value; save(tour); }
+        });
+        line.appendChild(name);
+
+        [['↑', -1], ['↓', 1]].forEach(function (pair) {
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'mini';
+          button.textContent = pair[0];
+          button.disabled = (pair[1] === -1 && index === 0) || (pair[1] === 1 && index === tour.rooms.length - 1);
+          button.addEventListener('click', function (event) {
+            event.stopPropagation();
+            var swap = index + pair[1];
+            var moved = tour.rooms.splice(index, 1)[0];
+            tour.rooms.splice(swap, 0, moved);
+            save(tour).then(function () { renderEditor(swap); });
+          });
+          line.appendChild(button);
+        });
+
+        var remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'mini mini-danger';
+        remove.textContent = '✕';
+        remove.addEventListener('click', function (event) {
+          event.stopPropagation();
+          if (!confirm('Supprimer « ' + entry.name + ' » ?')) return;
+          tour.rooms = tour.rooms.filter(function (r) { return r.id !== entry.id; });
+          // Les passages qui menaient vers cette pièce n'ont plus de destination.
+          tour.rooms.forEach(function (other) {
+            other.hotspots = (other.hotspots || []).filter(function (h) { return h.target !== entry.id; });
+          });
+          save(tour).then(function () { renderEditor(0); });
+        });
+        line.appendChild(remove);
+
+        roomsCard.appendChild(line);
+      });
+
+      var drop = document.createElement('div');
+      drop.className = 'drop';
+      drop.innerHTML = '<strong style="font-size:13px">Ajouter une pièce</strong>' +
+        '<p class="tiny" style="margin:6px 0 0">Photo panoramique 360° équirectangulaire (rapport 2:1), ' +
+        'prise avec l’app Google Street View ou une caméra 360°.</p>';
+      var input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.addEventListener('change', function () {
+        var file = input.files && input.files[0];
+        if (!file) return;
+        var name = prompt('Nom de la pièce ?', 'Pièce ' + (tour.rooms.length + 1));
+        tour.rooms.push({
+          id: uid(),
+          name: (name || 'Pièce ' + (tour.rooms.length + 1)).trim(),
+          blob: file,
+          hotspots: []
+        });
+        save(tour).then(function () { renderEditor(tour.rooms.length - 1); });
+      });
+      drop.appendChild(input);
+      roomsCard.appendChild(drop);
+      side.appendChild(roomsCard);
+
+      /* vidéo walkthrough */
+      var videoCard = document.createElement('div');
+      videoCard.className = 'card stack-sm';
+      videoCard.innerHTML = '<strong style="font-size:14px">Vidéo walkthrough</strong>' +
+        '<p class="tiny" style="margin:0">Une vidéo filmée en marchant lentement dans le logement. ' +
+        'Le visiteur la regarde, il ne la contrôle pas — c’est le format des visites que vous voyez sur TikTok.</p>';
+      var videoInput = document.createElement('input');
+      videoInput.type = 'file';
+      videoInput.accept = 'video/*';
+      videoInput.addEventListener('change', function () {
+        var file = videoInput.files && videoInput.files[0];
+        if (!file) return;
+        tour.video = file;
+        save(tour).then(function () { renderEditor(roomIndex); });
+      });
+      videoCard.appendChild(videoInput);
+      if (tour.video) {
+        var dropVideo = document.createElement('button');
+        dropVideo.type = 'button';
+        dropVideo.className = 'btn btn-ghost btn-sm';
+        dropVideo.textContent = 'Retirer la vidéo';
+        dropVideo.addEventListener('click', function () {
+          tour.video = null;
+          save(tour).then(function () { renderEditor(roomIndex); });
+        });
+        videoCard.appendChild(dropVideo);
+      }
+      side.appendChild(videoCard);
+
+      /* fiche */
+      var infoCard = document.createElement('div');
+      infoCard.className = 'card stack-sm';
+      infoCard.innerHTML = '<strong style="font-size:14px">Fiche du logement</strong>';
+
+      [['Nom', 'name'], ['Ville', 'city']].forEach(function (pair) {
+        var field = document.createElement('div');
+        field.className = 'field';
+        var label = document.createElement('label');
+        label.textContent = pair[0];
+        var value = document.createElement('input');
+        value.value = tour[pair[1]] || '';
+        value.maxLength = 140;
+        value.addEventListener('blur', function () {
+          tour[pair[1]] = value.value.trim();
+          save(tour).then(function () { title.textContent = tour.name; });
+        });
+        field.appendChild(label);
+        field.appendChild(value);
+        infoCard.appendChild(field);
+      });
+
+      var removeTour = document.createElement('button');
+      removeTour.type = 'button';
+      removeTour.className = 'btn btn-ghost btn-sm';
+      removeTour.textContent = 'Supprimer cette visite';
+      removeTour.addEventListener('click', function () {
+        if (!confirm('Supprimer définitivement « ' + tour.name + ' » ?')) return;
+        DB.del('tours', tour.id).then(closeTour).then(loadTours);
+      });
+      infoCard.appendChild(removeTour);
+      side.appendChild(infoCard);
+    }
+  })();
 })();
 </script>
 </body>

@@ -25,6 +25,9 @@ const CONTENT_TYPES: Record<string, string> = {
   '.png': 'image/png',
   '.webp': 'image/webp',
   '.avif': 'image/avif',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
   '.glb': 'model/gltf-binary',
   '.gltf': 'model/gltf+json',
 };

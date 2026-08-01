@@ -66,9 +66,15 @@ l'information sur les 360° et le viewer l'étirerait n'importe comment.
 
 ### Les autres types de visite
 
-La fiche de chaque logement propose trois modes :
+La fiche de chaque logement propose quatre modes :
 
-- **Panoramas 360°** — le cas nominal, hébergé chez vous, décrit ci-dessus.
+- **Panoramas 360°** — le cas nominal, hébergé chez vous, décrit ci-dessus. Le
+  visiteur explore : il tourne la tête, il choisit où aller.
+- **Vidéo walkthrough** — une déambulation filmée au téléphone en marchant
+  lentement dans le logement. Le visiteur regarde, il ne contrôle pas. C'est le
+  format des visites qu'on voit passer sur les réseaux : plus spectaculaire,
+  plus facile à produire, mais moins convaincant pour lever un doute précis
+  (« la chambre est-elle vraiment séparée ? »). Les deux se complètent.
 - **Modèle 3D `.glb`** — pour un logement capturé en photogrammétrie avec
   Polycam ou Luma. Envoyez l'export `.glb` ; au-delà de ~60 Mo le chargement
   devient pénible sur mobile.
@@ -100,6 +106,39 @@ Airbnb exige des visuels fidèles.
 
 Sans clé d'API image configurée, la fonction reste utilisable : l'aperçu montre
 les photos d'origine dans l'habillage Volume3D, sans rien inventer.
+
+---
+
+## La version autonome : `standalone/volume3d.html`
+
+Un seul fichier, sans installation ni serveur. Il s'ouvre par double-clic et se
+dépose tel quel sur n'importe quel hébergement. Il contient la landing, un
+viewer 360° fonctionnel, et un espace privé accessible par le lien **« Mon
+espace »** de la barre de navigation.
+
+**Mot de passe par défaut : `Volume3D-2026`.** Pour le changer, ouvrez le
+fichier dans un éditeur de texte et modifiez la ligne `var ESPACE_PASSWORD =`
+en haut du script.
+
+Dans cet espace vous pouvez créer des visites, envoyer un panorama 360° par
+pièce, les relier par des points de passage en cliquant dans l'image, joindre
+une vidéo walkthrough, et relire les demandes envoyées depuis le formulaire.
+
+Trois limites à connaître, inhérentes à un fichier sans serveur :
+
+1. **Le mot de passe n'est pas une sécurité.** Il est écrit dans le fichier :
+   quiconque affiche le code source le lit. C'est un verrou de confort. La
+   version déployée, elle, vérifie le mot de passe côté serveur et signe la
+   session.
+2. **Les données restent dans ce navigateur, sur cet appareil.** Elles sont
+   enregistrées dans IndexedDB — ni synchronisées, ni sauvegardées. Vider les
+   données du navigateur les efface.
+3. **Pas de lien public.** Une visite créée ici se regarde sur cet appareil ;
+   elle ne peut pas être envoyée à un propriétaire. C'est la raison d'être de
+   la version déployée.
+
+Servez-vous-en comme d'une vitrine portable — en rendez-vous, même sans réseau
+— et de la version en ligne pour livrer.
 
 ---
 

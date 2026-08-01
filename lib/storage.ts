@@ -11,9 +11,12 @@ const BUCKET = process.env.SUPABASE_BUCKET ?? 'tours';
 /** Panoramas 20 Mo, modèles 3D 120 Mo : un .glb de logement est lourd. */
 export const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 export const MAX_MODEL_BYTES = 120 * 1024 * 1024;
+/** Une déambulation de 2 à 3 minutes filmée au téléphone tient largement dedans. */
+export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
 const MODEL_EXTENSIONS = new Set(['.glb', '.gltf']);
+const VIDEO_TYPES = new Set(['video/mp4', 'video/webm', 'video/quicktime']);
 
 export interface UploadResult {
   url: string;
@@ -39,6 +42,17 @@ export function assertModel(file: File): void {
   if (file.size > MAX_MODEL_BYTES) {
     throw new Error(
       `Modèle trop lourd (${Math.round(file.size / 1024 / 1024)} Mo). Maximum ${MAX_MODEL_BYTES / 1024 / 1024} Mo.`,
+    );
+  }
+}
+
+export function assertVideo(file: File): void {
+  if (!VIDEO_TYPES.has(file.type)) {
+    throw new Error(`Format non supporté (${file.type || 'inconnu'}). Utilisez MP4, WebM ou MOV.`);
+  }
+  if (file.size > MAX_VIDEO_BYTES) {
+    throw new Error(
+      `Vidéo trop lourde (${Math.round(file.size / 1024 / 1024)} Mo). Maximum ${MAX_VIDEO_BYTES / 1024 / 1024} Mo.`,
     );
   }
 }

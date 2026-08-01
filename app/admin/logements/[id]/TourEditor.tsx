@@ -16,6 +16,7 @@ import {
   updateProperty,
   updateScene,
   uploadModel,
+  uploadVideo,
   type ActionResult,
 } from '../../actions';
 
@@ -271,6 +272,8 @@ export function TourEditor({ property, scenes, hotspots, origin }: Props) {
 
           {property.mode === 'model' && <ModelUploadForm property={property} />}
 
+          {property.mode === 'video' && <VideoUploadForm property={property} />}
+
           <div className="card">
             <strong style={{ fontSize: 14 }}>Zone dangereuse</strong>
             <p className="muted" style={{ margin: '8px 0 12px' }}>
@@ -415,6 +418,39 @@ function ModelUploadForm({ property }: { property: Property }) {
   );
 }
 
+function VideoUploadForm({ property }: { property: Property }) {
+  const router = useRouter();
+  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (previous, formData) => {
+    const result = await uploadVideo(previous, formData);
+    if (result.ok) router.refresh();
+    return result;
+  }, null);
+
+  return (
+    <form action={formAction} className="card stack-sm">
+      <strong style={{ fontSize: 14 }}>Vidéo walkthrough</strong>
+      <p className="tiny" style={{ margin: 0 }}>
+        Une déambulation filmée au téléphone, en marchant lentement dans le logement. Le visiteur la regarde, il ne la
+        contrôle pas — c’est le format des visites vues sur les réseaux.
+      </p>
+      {property.videoUrl && (
+        <video src={property.videoUrl} controls playsInline style={{ width: '100%', borderRadius: 2, background: '#14100d' }} />
+      )}
+      <input name="video" type="file" accept="video/*" required />
+      <input type="hidden" name="propertyId" value={property.id} />
+      <p className="tiny" style={{ margin: 0 }}>MP4, WebM ou MOV, 200 Mo maximum.</p>
+      {state?.error && (
+        <div className="form-feedback form-feedback-error" role="alert">
+          {state.error}
+        </div>
+      )}
+      <button className="btn btn-dark btn-sm" type="submit" disabled={pending}>
+        {pending ? 'Envoi…' : property.videoUrl ? 'Remplacer la vidéo' : 'Envoyer la vidéo'}
+      </button>
+    </form>
+  );
+}
+
 function SettingsForm({ property }: { property: Property }) {
   const router = useRouter();
   const [mode, setMode] = useState(property.mode);
@@ -462,6 +498,7 @@ function SettingsForm({ property }: { property: Property }) {
         >
           <option value="pano">Panoramas 360° (hébergés ici)</option>
           <option value="model">Modèle 3D .glb (Polycam, Luma)</option>
+          <option value="video">Vidéo walkthrough (filmée sur place)</option>
           <option value="embed">Viewer externe (Matterport, Cupix)</option>
         </select>
       </div>

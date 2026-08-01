@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { expandPhoto, isAiConfigured } from '@/lib/ai-preview';
 import { SESSION_COOKIE, checkPassword, isAuthenticated, issueToken, sessionCookieOptions } from '@/lib/auth';
 import { randomId, uniqueSlug } from '@/lib/ids';
-import { assertImage, assertModel, putFile } from '@/lib/storage';
+import { assertImage, assertModel, assertVideo, putFile } from '@/lib/storage';
 import { getStore } from '@/lib/store';
 import type { Hotspot, Preview, PreviewShot, Property, Scene, TourMode } from '@/lib/types';
 import { ValidationError, email, httpUrl, number, oneOf, text } from '@/lib/validation';
@@ -78,6 +78,7 @@ export async function createProperty(_previous: ActionResult | null, formData: F
       mode: 'pano',
       embedUrl: '',
       modelUrl: '',
+      videoUrl: '',
       status: 'draft',
       createdAt: new Date().toISOString(),
       publishedAt: null,
@@ -98,7 +99,7 @@ export async function updateProperty(_previous: ActionResult | null, formData: F
     const property = await store.get('properties', id);
     if (!property) throw new ValidationError('Ce logement n’existe plus.');
 
-    const mode = oneOf<TourMode>(formData.get('mode') ?? property.mode, ['pano', 'model', 'embed'], 'mode');
+    const mode = oneOf<TourMode>(formData.get('mode') ?? property.mode, ['pano', 'model', 'video', 'embed'], 'mode');
     const embedUrl = httpUrl(formData.get('embedUrl'), 'lien du viewer externe', { required: false });
     if (mode === 'embed' && !embedUrl) {
       throw new ValidationError('Le mode « viewer externe » demande un lien Matterport ou Cupix.');
@@ -134,10 +135,11 @@ export async function setPropertyStatus(id: string, status: 'draft' | 'published
       const ready =
         (property.mode === 'pano' && scenes.length > 0) ||
         (property.mode === 'embed' && property.embedUrl !== '') ||
-        (property.mode === 'model' && property.modelUrl !== '');
+        (property.mode === 'model' && property.modelUrl !== '') ||
+        (property.mode === 'video' && property.videoUrl !== '');
       if (!ready) {
         throw new ValidationError(
-          'Rien à publier pour l’instant : ajoutez au moins une pièce, un modèle 3D ou un lien de viewer externe.',
+          'Rien à publier pour l’instant : ajoutez au moins une pièce, une vidéo, un modèle 3D ou un lien de viewer externe.',
         );
       }
     }
@@ -325,6 +327,22 @@ export async function uploadModel(_previous: ActionResult | null, formData: Form
 
     const { url } = await putFile('models', file, file.name);
     await store.update('properties', propertyId, { modelUrl: url, mode: 'model' });
+    revalidatePath(`/admin/logements/${propertyId}`);
+    return { ok: true };
+  });
+}
+
+export async function uploadVideo(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  return run(async () => {
+    await guard();
+    const store = getStore();
+    const propertyId = text(formData.get('propertyId'), 'logement', { max: 40 });
+    const file = formData.get('video');
+    if (!(file instanceof File) || file.size === 0) throw new ValidationError('Choisissez une vidéo.');
+    assertVideo(file);
+
+    const { url } = await putFile('videos', file, file.name);
+    await store.update('properties', propertyId, { videoUrl: url, mode: 'video' });
     revalidatePath(`/admin/logements/${propertyId}`);
     return { ok: true };
   });

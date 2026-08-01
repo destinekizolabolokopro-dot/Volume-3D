@@ -13,6 +13,8 @@ export type TourMode =
   | 'pano'
   /** Modèle 3D .glb issu de Polycam / Luma. */
   | 'model'
+  /** Vidéo de déambulation filmée sur place : le visiteur regarde, il ne navigue pas. */
+  | 'video'
   /** Viewer externe (Matterport, Cupix) affiché en iframe. */
   | 'embed';
 
@@ -34,6 +36,8 @@ export interface Property {
   embedUrl: string;
   /** Renseigné si mode === 'model'. */
   modelUrl: string;
+  /** Renseigné si mode === 'video'. */
+  videoUrl: string;
   status: PropertyStatus;
   createdAt: string;
   publishedAt: string | null;
