@@ -1,0 +1,258 @@
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  background: #14100d;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  color: #fff;
+  font-family: var(--sans, sans-serif);
+}
+
+.canvasHolder {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+}
+
+.canvasHolder canvas {
+  display: block;
+}
+
+.grabbing {
+  cursor: grabbing;
+}
+
+.picking {
+  cursor: crosshair;
+}
+
+/* ------------------------------------------------------------- hotspots --- */
+
+.hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+  transition: transform 0.15s ease;
+}
+
+.hotspot:hover,
+.hotspot:focus-visible {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.hotspotRing {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(20, 16, 13, 0.35);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+}
+
+.hotspotLabel {
+  background: rgba(20, 16, 13, 0.75);
+  padding: 3px 9px;
+  border-radius: 2px;
+  white-space: nowrap;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* ----------------------------------------------------------------- HUD --- */
+
+.roomBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  background: linear-gradient(transparent, rgba(15, 12, 10, 0.75));
+  scrollbar-width: thin;
+}
+
+.roomChip {
+  flex: none;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 2px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.roomChip:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.roomChipActive {
+  background: var(--accent, #b08a4a);
+  border-color: transparent;
+  color: #211c18;
+  font-weight: 600;
+}
+
+.topBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(rgba(15, 12, 10, 0.65), transparent);
+  pointer-events: none;
+}
+
+.topBar > * {
+  pointer-events: auto;
+}
+
+.sceneName {
+  font-family: var(--serif, serif);
+  font-size: 17px;
+  font-weight: 600;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.iconBtn {
+  background: rgba(20, 16, 13, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 2px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.iconBtn:hover {
+  background: rgba(20, 16, 13, 0.8);
+}
+
+/* -------------------------------------------------------------- états --- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+  padding: 24px;
+  background: #14100d;
+  font-size: 14px;
+  color: #cbbfb0;
+}
+
+.fadeMask {
+  position: absolute;
+  inset: 0;
+  background: #14100d;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.fadeMaskOn {
+  opacity: 1;
+}
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 76px;
+  transform: translateX(-50%);
+  background: rgba(20, 16, 13, 0.7);
+  padding: 8px 16px;
+  border-radius: 2px;
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: fadeOut 1s ease 3.5s both;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Filigrane des aperçus simulés : incrusté par-dessus le rendu, non masquable
+   sans modifier le code — c'est le garde-fou visuel du mode démarchage. */
+.watermark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.watermarkText {
+  font-size: clamp(14px, 2.4vw, 26px);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.22);
+  transform: rotate(-24deg);
+  white-space: nowrap;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 600px) {
+  .hotspotRing {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+  }
+  .hotspotLabel {
+    font-size: 12px;
+  }
+}

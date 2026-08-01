@@ -1,0 +1,125 @@
+/* Page de visite : le viewer occupe tout l'espace disponible, avec un bandeau
+   discret au-dessus et en dessous. Pensée pour être ouverte telle quelle ou
+   intégrée en iframe sur le site d'un propriétaire. */
+
+.tour-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: #14100d;
+  color: #f6f1ea;
+}
+
+.tour-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  background: #1b1613;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.tour-name {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.tour-city {
+  font-size: 12.5px;
+  color: #a2968a;
+}
+
+.tour-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #a2968a;
+  text-decoration: none;
+  flex: none;
+}
+
+.tour-brand:hover {
+  color: #e5dbcd;
+}
+
+.tour-brand b {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.tour-stage {
+  flex: 1;
+  position: relative;
+  min-height: 60vh;
+}
+
+/* Le viewer est calé sur les bords du conteneur plutôt qu'en hauteur relative :
+   `height: 100%` ne se résout pas dans un parent dont la hauteur vient de
+   `flex: 1`, et retomberait sur la hauteur minimale du composant.
+   Sélecteur en deux classes pour passer devant le module CSS du viewer. */
+.tour-page .tour-stage > * {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+
+.tour-embed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  font-size: 12.5px;
+  color: #a2968a;
+  background: #1b1613;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.tour-footer a {
+  color: #d8c9b2;
+}
+
+/* Bandeau permanent des aperçus simulés. Il n'existe pas de variante sans
+   avertissement : un aperçu généré par IA se signale toujours comme tel. */
+.demo-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #6b2f1c;
+  color: #ffe9df;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.demo-banner strong {
+  font-weight: 600;
+}
+
+.demo-expiry {
+  margin-left: auto;
+  white-space: nowrap;
+  color: #f0c3b0;
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .demo-expiry {
+    margin-left: 0;
+  }
+  .demo-banner {
+    flex-wrap: wrap;
+  }
+}

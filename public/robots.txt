@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+# Les aperçus de démarchage sont privés et non contractuels : jamais indexés.
+Disallow: /demo/
+Disallow: /admin/
