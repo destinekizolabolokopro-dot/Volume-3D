@@ -76,3 +76,34 @@ export const AGENCY_FEATURES = [
   'Interlocuteur dédié',
   'Renouvellement périodique possible',
 ];
+
+/**
+ * Objections réellement entendues en démarchage. Y répondre sur la page évite
+ * un aller-retour par mail et lève les freins avant la prise de rendez-vous.
+ */
+export const FAQ = [
+  {
+    q: 'Je peux mettre le lien directement dans mon annonce Airbnb ?',
+    a: "Airbnb filtre les liens externes dans les titres et descriptions : il y a de bonnes chances qu’il soit retiré. En revanche il fonctionne parfaitement dans la messagerie avec vos voyageurs, sur votre site personnel, sur Booking ou Abritel, en QR code dans le logement, et dans vos emails de confirmation. C’est là qu’il convertit le mieux, au moment où le voyageur hésite.",
+  },
+  {
+    q: 'Combien de temps chez moi, et que dois-je préparer ?',
+    a: "Vingt minutes pour un T2, une petite heure pour une grande maison. Rangez comme pour une arrivée voyageur, ouvrez les volets, c’est tout. Vous n’avez ni matériel à acheter ni logiciel à installer, et vous n’avez pas besoin de rester à côté de nous.",
+  },
+  {
+    q: 'Et si mon logement est loué toute l’année ?',
+    a: "On intervient entre deux séjours, pendant le créneau de ménage. Si vous passez par une conciergerie, on se cale directement avec elle.",
+  },
+  {
+    q: 'La visite reste en ligne combien de temps ?',
+    a: "Sans limite, et sans abonnement. Le prix est payé une fois, le lien reste actif. Si vous refaites la déco ou changez de mobilier, on repasse pour une mise à jour à tarif réduit.",
+  },
+  {
+    q: 'Ça marche sur téléphone ?',
+    a: "Oui, c’est même là que la majorité de vos voyageurs la regarderont. La visite se manipule au doigt, s’ouvre en plein écran, et ne demande aucune application.",
+  },
+  {
+    q: 'Vous couvrez ma région ?',
+    a: "France entière. Selon l’éloignement, on regroupe plusieurs logements sur une même tournée — dites-nous simplement où se trouve le vôtre.",
+  },
+];

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { expandPhoto, isAiConfigured } from '@/lib/ai-preview';
 import { SESSION_COOKIE, checkPassword, isAuthenticated, issueToken, sessionCookieOptions } from '@/lib/auth';
 import { randomId, uniqueSlug } from '@/lib/ids';
-import { assertImage, assertModel, assertVideo, putFile } from '@/lib/storage';
+import { assertImage, assertModel, assertVideo, putFile, putImage } from '@/lib/storage';
 import { getStore } from '@/lib/store';
 import type { Hotspot, Preview, PreviewShot, Property, Scene, TourMode } from '@/lib/types';
 import { ValidationError, email, httpUrl, number, oneOf, text } from '@/lib/validation';
@@ -174,6 +174,18 @@ export async function deleteProperty(id: string): Promise<ActionResult> {
 
 /* ============================================================= pièces === */
 
+/** « salon-01.jpg » → « Salon 01 ». Un nom faux se corrige plus vite qu'il ne se saisit. */
+function nameFromFile(filename: string, index: number): string {
+  const base = filename
+    .replace(/\.[^.]+$/, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60);
+  if (!base || /^(img|dsc|pano|photo|image)\s*\d*$/i.test(base)) return `Pièce ${index}`;
+  return base.charAt(0).toUpperCase() + base.slice(1);
+}
+
 export async function addScene(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
   return run(async () => {
     await guard();
@@ -182,26 +194,35 @@ export async function addScene(_previous: ActionResult | null, formData: FormDat
     const property = await store.get('properties', propertyId);
     if (!property) throw new ValidationError('Ce logement n’existe plus.');
 
-    const file = formData.get('image');
-    if (!(file instanceof File) || file.size === 0) throw new ValidationError('Choisissez une image panoramique.');
-    assertImage(file);
+    const files = formData.getAll('image').filter((entry): entry is File => entry instanceof File && entry.size > 0);
+    if (files.length === 0) throw new ValidationError('Choisissez au moins une image panoramique.');
+    if (files.length > 20) throw new ValidationError('Vingt panoramas maximum en une fois.');
+    files.forEach(assertImage);
 
     const existing = await store.list('scenes', { propertyId });
-    const { url } = await putFile('panos', file, file.name);
+    const given = text(formData.get('name'), 'nom de la pièce', { max: 60, required: false });
+    let last = '';
 
-    const scene: Scene = {
-      id: randomId(),
-      propertyId,
-      name: text(formData.get('name'), 'nom de la pièce', { max: 60, required: false }) || `Pièce ${existing.length + 1}`,
-      imageUrl: url,
-      position: existing.length,
-      initialYaw: 0,
-      initialPitch: 0,
-    };
+    // Envoi multiple : chaque fichier devient une pièce, nommée d'après le
+    // fichier — « salon.jpg » donne « Salon ». Renommable ensuite en un clic.
+    for (const [index, file] of files.entries()) {
+      const { url } = await putImage('panos', file, file.name);
+      const fallback = files.length === 1 && given ? given : nameFromFile(file.name, existing.length + index + 1);
+      const scene: Scene = {
+        id: randomId(),
+        propertyId,
+        name: fallback,
+        imageUrl: url,
+        position: existing.length + index,
+        initialYaw: 0,
+        initialPitch: 0,
+      };
+      await store.insert('scenes', scene);
+      last = scene.id;
+    }
 
-    await store.insert('scenes', scene);
     revalidatePath(`/admin/logements/${propertyId}`);
-    return { ok: true, id: scene.id };
+    return { ok: true, id: last };
   });
 }
 
@@ -342,7 +363,11 @@ export async function uploadVideo(_previous: ActionResult | null, formData: Form
     assertVideo(file);
 
     const { url } = await putFile('videos', file, file.name);
-    await store.update('properties', propertyId, { videoUrl: url, mode: 'video' });
+    // La vidéo s'ajoute aux panoramas, elle ne les remplace pas : le format
+    // ouvert par défaut ne bascule que si la visite n'a rien d'autre à montrer.
+    const scenes = await store.list('scenes', { propertyId });
+    const patch = scenes.length > 0 ? { videoUrl: url } : { videoUrl: url, mode: 'video' as const };
+    await store.update('properties', propertyId, patch);
     revalidatePath(`/admin/logements/${propertyId}`);
     return { ok: true };
   });
@@ -387,7 +412,7 @@ export async function createPreview(_previous: ActionResult | null, formData: Fo
 
     let generatedCount = 0;
     for (const [index, file] of files.entries()) {
-      const { url: sourceUrl } = await putFile('previews', file, file.name);
+      const { url: sourceUrl } = await putImage('previews', file, file.name);
 
       let generatedUrl = '';
       if (isAiConfigured()) {
@@ -398,7 +423,7 @@ export async function createPreview(_previous: ActionResult | null, formData: Fo
         if (expanded) {
           const extension = expanded.mimeType.includes('jpeg') ? '.jpg' : '.png';
           const blob = new Blob([new Uint8Array(expanded.buffer)], { type: expanded.mimeType });
-          const stored = await putFile('previews', blob, `extension${extension}`);
+          const stored = await putImage('previews', blob, `extension${extension}`);
           generatedUrl = stored.url;
           generatedCount += 1;
         }

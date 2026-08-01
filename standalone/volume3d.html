@@ -269,6 +269,30 @@ a:hover{color:#6b5220}
 @media(max-width:860px){.two-col,.grid-3,.pricing{grid-template-columns:1fr}}
 @media(max-width:560px){.grid-4{grid-template-columns:1fr}}
 
+/* ----------------------------------------------------------------- faq */
+.faq{border-top:1px solid var(--line)}
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-item summary{cursor:pointer;list-style:none;padding:20px 34px 20px 0;font-size:16.5px;font-weight:600;
+  color:var(--ink-strong);position:relative}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:22px;
+  font-weight:400;color:var(--accent);line-height:1}
+.faq-item[open] summary::after{content:'−'}
+.faq-item summary:hover{color:#6b5220}
+.faq-item p{margin:0 0 22px;padding-right:34px;font-size:15px;line-height:1.65;color:var(--ink-muted)}
+
+/* Sur téléphone, le bouton de rendez-vous disparaît dès qu'on fait défiler :
+   cette barre le garde à portée de pouce. */
+.sticky-cta{display:none}
+@media(max-width:760px){
+  .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:center;
+    justify-content:space-between;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));
+    background:rgba(246,241,234,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);
+    font-size:13px;color:var(--ink-muted)}
+  .sticky-cta .btn{flex:none}
+  .footer{padding-bottom:84px}
+}
+
 /* ------------------------------------------------------------- contact */
 .section-cta{background:var(--bg-warm);text-align:center;padding:88px var(--pad-x) 100px}
 .section-cta h2{font-size:38px;font-weight:700;margin:0 auto 18px;max-width:640px}
@@ -519,6 +543,51 @@ a:hover{color:#6b5220}
     </div>
   </section>
 
+  <!-- ============================================ questions fréquentes ===== -->
+  <section id="questions" class="section section-white">
+    <div class="wrap" style="max-width:820px">
+      <div class="section-head">
+        <div class="eyebrow">Questions fréquentes</div>
+        <h2>Ce qu’on nous demande le plus souvent</h2>
+      </div>
+      <div class="faq">
+        <details class="faq-item">
+          <summary>Je peux mettre le lien directement dans mon annonce Airbnb ?</summary>
+          <p>Airbnb filtre les liens externes dans les titres et descriptions : il y a de bonnes chances qu’il soit
+            retiré. En revanche il fonctionne parfaitement dans la messagerie avec vos voyageurs, sur votre site
+            personnel, sur Booking ou Abritel, en QR code dans le logement, et dans vos emails de confirmation. C’est
+            là qu’il convertit le mieux, au moment où le voyageur hésite.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Combien de temps chez moi, et que dois-je préparer ?</summary>
+          <p>Vingt minutes pour un T2, une petite heure pour une grande maison. Rangez comme pour une arrivée voyageur,
+            ouvrez les volets, c’est tout. Vous n’avez ni matériel à acheter ni logiciel à installer, et vous n’avez
+            pas besoin de rester à côté de nous.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Et si mon logement est loué toute l’année ?</summary>
+          <p>On intervient entre deux séjours, pendant le créneau de ménage. Si vous passez par une conciergerie, on se
+            cale directement avec elle.</p>
+        </details>
+        <details class="faq-item">
+          <summary>La visite reste en ligne combien de temps ?</summary>
+          <p>Sans limite, et sans abonnement. Le prix est payé une fois, le lien reste actif. Si vous refaites la déco
+            ou changez de mobilier, on repasse pour une mise à jour à tarif réduit.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Ça marche sur téléphone ?</summary>
+          <p>Oui, c’est même là que la majorité de vos voyageurs la regarderont. La visite se manipule au doigt,
+            s’ouvre en plein écran, et ne demande aucune application.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Vous couvrez ma région ?</summary>
+          <p>France entière. Selon l’éloignement, on regroupe plusieurs logements sur une même tournée — dites-nous
+            simplement où se trouve le vôtre.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <!-- ======================================================== contact ===== -->
   <section id="contact" class="section-cta">
     <h2>Prêt à montrer votre logement sous son meilleur jour ?</h2>
@@ -563,6 +632,11 @@ a:hover{color:#6b5220}
     </form>
   </section>
 </main>
+
+<div class="sticky-cta">
+  <span>Visite 3D livrée sous 48h</span>
+  <a class="btn btn-dark btn-sm" href="#contact">Prendre rendez-vous</a>
+</div>
 
 <!-- ============================================== espace privé ===== -->
 <section class="espace" id="espace" aria-label="Mon espace">

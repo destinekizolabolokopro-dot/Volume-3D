@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ModelViewer } from '@/components/ModelViewer';
-import { PanoViewer } from '@/components/PanoViewer';
 import { LogoMark } from '@/components/Logo';
+import { TourStage } from '@/components/TourStage';
 import { CONTACT_EMAIL } from '@/lib/content';
-import { bumpViews, findPublishedProperty, loadTour } from '@/lib/queries';
+import { availableFormats, bumpViews, findPublishedProperty, loadTour } from '@/lib/queries';
 import './tour.css';
 
 export const dynamic = 'force-dynamic';
@@ -31,6 +30,7 @@ export default async function TourPage({ params }: Params) {
 
   const { scenes, hotspots } = await loadTour(property.id);
   await bumpViews('properties', property.id, property.views);
+  const formats = availableFormats(property, scenes.length);
 
   return (
     <div className="tour-page">
@@ -48,30 +48,16 @@ export default async function TourPage({ params }: Params) {
       </header>
 
       <div className="tour-stage">
-        {property.mode === 'embed' && property.embedUrl ? (
-          <iframe
-            className="tour-embed"
-            src={property.embedUrl}
-            title={`Visite 3D — ${property.name}`}
-            allow="fullscreen; xr-spatial-tracking; accelerometer; gyroscope"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        ) : property.mode === 'video' && property.videoUrl ? (
-          <video
-            className="tour-video"
-            src={property.videoUrl}
-            controls
-            playsInline
-            preload="metadata"
-            title={`Visite vidéo — ${property.name}`}
-          />
-        ) : property.mode === 'model' && property.modelUrl ? (
-          <ModelViewer url={property.modelUrl} />
-        ) : (
-          <PanoViewer scenes={scenes} hotspots={hotspots} />
-        )}
+        <TourStage
+          formats={formats}
+          defaultFormat={property.mode}
+          name={property.name}
+          scenes={scenes}
+          hotspots={hotspots}
+          videoUrl={property.videoUrl}
+          modelUrl={property.modelUrl}
+          embedUrl={property.embedUrl}
+        />
       </div>
 
       <footer className="tour-footer">

@@ -822,6 +822,118 @@ h3 {
   text-transform: uppercase;
 }
 
+/* ------------------------------------------------------- démo vivante --- */
+
+/* La vraie visite, jouable depuis la landing : c'est l'argument le plus fort
+   de la page, il doit être manipulable sans cliquer sur quoi que ce soit. */
+.live-demo {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #14100d;
+  display: flex;
+}
+
+.live-demo > * {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+}
+
+.live-demo .badge-3d {
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- faq --- */
+
+.faq {
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 20px 34px 20px 0;
+  font-size: 16.5px;
+  font-weight: 600;
+  color: var(--ink-strong);
+  position: relative;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: '+';
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.faq-item[open] summary::after {
+  content: '−';
+}
+
+.faq-item summary:hover {
+  color: var(--link-hover);
+}
+
+.faq-item p {
+  margin: 0 0 22px;
+  padding-right: 34px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink-muted);
+}
+
+/* ------------------------------------------------ barre d'action mobile --- */
+
+/* Sur téléphone, le bouton de rendez-vous disparaît dès qu'on fait défiler.
+   Cette barre le garde à portée de pouce sans gêner la lecture. */
+.sticky-cta {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .sticky-cta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(246, 241, 234, 0.96);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+
+  .sticky-cta .btn {
+    flex: none;
+  }
+
+  /* Laisse la place à la barre pour ne pas masquer le pied de page. */
+  .footer {
+    padding-bottom: 84px;
+  }
+}
+
 /* ------------------------------------------------------------ contact --- */
 
 .section-cta {

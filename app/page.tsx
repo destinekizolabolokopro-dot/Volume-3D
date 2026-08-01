@@ -1,7 +1,9 @@
 import { ContactForm } from '@/components/ContactForm';
 import { Logo, LogoMark } from '@/components/Logo';
+import { PanoViewer } from '@/components/PanoViewer';
 import {
   AGENCY_FEATURES,
+  FAQ,
   CONTACT_EMAIL,
   HERO,
   OWNER_FEATURES,
@@ -9,8 +11,9 @@ import {
   STEPS,
   VALUE_PROPS,
 } from '@/lib/content';
+import { loadTour } from '@/lib/queries';
 import { getStore } from '@/lib/store';
-import type { Property } from '@/lib/types';
+import type { Hotspot, Property, Scene } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,11 +37,44 @@ async function featuredTour(): Promise<Property | null> {
 export default async function HomePage() {
   const featured = await featuredTour();
 
+  // La démonstration de la section « Avant / Après » est la vraie visite d'un
+  // logement publié : rien ne convainc mieux qu'un visiteur qui la manipule.
+  let demo: { scenes: Scene[]; hotspots: Hotspot[] } = { scenes: [], hotspots: [] };
+  if (featured) {
+    try {
+      demo = await loadTour(featured.id);
+    } catch {
+      demo = { scenes: [], hotspots: [] };
+    }
+  }
+  const hasDemo = demo.scenes.length > 0;
+
   return (
     <>
       <a className="skip-link" href="#contenu">
         Aller au contenu
       </a>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ProfessionalService',
+            name: 'Volume3D',
+            description:
+              'Visites virtuelles 3D pour propriétaires et conciergeries de locations saisonnières.',
+            areaServed: { '@type': 'Country', name: 'France' },
+            email: CONTACT_EMAIL,
+            priceRange: PRICE_PER_LISTING,
+            mainEntity: FAQ.map((item) => ({
+              '@type': 'Question',
+              name: item.q,
+              acceptedAnswer: { '@type': 'Answer', text: item.a },
+            })),
+          }),
+        }}
+      />
 
       <header className="nav">
         <Logo />
@@ -140,13 +176,11 @@ export default async function HomePage() {
               <div>
                 <div className="compare-label compare-label-on">AVEC visite 3D</div>
                 <div className="compare-card compare-card-on">
-                  {featured ? (
-                    <a href={`/v/${featured.slug}`} style={{ display: 'block', position: 'relative' }}>
-                      <div className="placeholder" style={{ aspectRatio: '16 / 9' }}>
-                        <span>Ouvrir la visite de « {featured.name} »</span>
-                        <div className="badge-3d">Visite virtuelle 3D</div>
-                      </div>
-                    </a>
+                  {hasDemo ? (
+                    <div className="live-demo">
+                      <PanoViewer scenes={demo.scenes} hotspots={demo.hotspots} showHint={false} />
+                      <div className="badge-3d">Essayez : faites glisser</div>
+                    </div>
                   ) : (
                     <div className="placeholder" style={{ aspectRatio: '16 / 9' }}>
                       <span>viewer 3d — capture à intégrer</span>
@@ -156,7 +190,9 @@ export default async function HomePage() {
                   <div className="compare-body">
                     <div className="listing-title">{featured ? featured.name : 'Studio cosy centre-ville'}</div>
                     <div className="listing-meta">
-                      Les voyageurs visitent chaque recoin avant de réserver — zéro surprise, zéro question
+                      {hasDemo
+                        ? 'Voici une vraie visite, telle que la reçoit un voyageur. Faites-la tourner.'
+                        : 'Les voyageurs visitent chaque recoin avant de réserver — zéro surprise, zéro question'}
                     </div>
                   </div>
                 </div>
@@ -250,12 +286,36 @@ export default async function HomePage() {
           </div>
         </section>
 
+        <section id="questions" className="section section-white">
+          <div className="wrap" style={{ maxWidth: 820 }}>
+            <div className="section-head">
+              <div className="eyebrow">Questions fréquentes</div>
+              <h2>Ce qu’on nous demande le plus souvent</h2>
+            </div>
+            <div className="faq">
+              {FAQ.map((item) => (
+                <details className="faq-item" key={item.q}>
+                  <summary>{item.q}</summary>
+                  <p>{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="contact" className="section-cta">
           <h2>Prêt à montrer votre logement sous son meilleur jour ?</h2>
           <p>Réponse sous 24h. Première visite 3D livrée cette semaine.</p>
           <ContactForm />
         </section>
       </main>
+
+      <div className="sticky-cta">
+        <span>Visite 3D livrée sous 48h</span>
+        <a className="btn btn-dark btn-sm" href="#contact">
+          Prendre rendez-vous
+        </a>
+      </div>
 
       <footer className="footer">
         <div className="brand">

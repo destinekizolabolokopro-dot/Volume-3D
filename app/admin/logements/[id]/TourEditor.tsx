@@ -107,7 +107,7 @@ export function TourEditor({ property, scenes, hotspots, origin }: Props) {
                   padding: 24,
                 }}
               >
-                {property.mode === 'pano'
+                {scenes.length === 0
                   ? 'Ajoutez un premier panorama pour voir la visite ici.'
                   : 'Aperçu disponible sur la page publique de la visite.'}
               </div>
@@ -270,9 +270,9 @@ export function TourEditor({ property, scenes, hotspots, origin }: Props) {
 
           <SettingsForm property={property} />
 
-          {property.mode === 'model' && <ModelUploadForm property={property} />}
+          <VideoUploadForm property={property} />
 
-          {property.mode === 'video' && <VideoUploadForm property={property} />}
+          {property.mode === 'model' && <ModelUploadForm property={property} />}
 
           <div className="card">
             <strong style={{ fontSize: 14 }}>Zone dangereuse</strong>
@@ -372,10 +372,12 @@ function AddSceneForm({ propertyId }: { propertyId: string }) {
     <form action={formAction} ref={formRef} className="file-drop stack-sm" style={{ marginTop: 6 }}>
       <strong style={{ fontSize: 13 }}>Ajouter une pièce</strong>
       <input name="propertyId" type="hidden" value={propertyId} />
-      <input name="name" placeholder="Nom de la pièce (ex. Salon)" maxLength={60} className="scene-name" />
-      <input name="image" type="file" accept="image/*" required />
+      <input name="name" placeholder="Nom de la pièce (facultatif)" maxLength={60} className="scene-name" />
+      <input name="image" type="file" accept="image/*" multiple required />
       <p className="tiny" style={{ margin: 0 }}>
-        Photo panoramique 360° équirectangulaire (rapport 2:1), issue de l’app Google Street View ou d’une caméra 360°.
+        Panoramas 360° équirectangulaires (rapport 2:1). Sélectionnez-en plusieurs d’un coup : chaque fichier devient
+        une pièce, nommée d’après son nom de fichier. Les images sont recompressées automatiquement pour rester rapides
+        sur mobile.
       </p>
       {state?.error && (
         <div className="form-feedback form-feedback-error" role="alert">
@@ -383,7 +385,7 @@ function AddSceneForm({ propertyId }: { propertyId: string }) {
         </div>
       )}
       <button className="btn btn-dark btn-sm" type="submit" disabled={pending}>
-        {pending ? 'Envoi…' : 'Ajouter la pièce'}
+        {pending ? 'Envoi…' : 'Ajouter la ou les pièces'}
       </button>
     </form>
   );
@@ -489,7 +491,7 @@ function SettingsForm({ property }: { property: Property }) {
       </div>
 
       <div className="field">
-        <label htmlFor="ed-mode">Type de visite</label>
+        <label htmlFor="ed-mode">Format ouvert par défaut</label>
         <select
           id="ed-mode"
           name="mode"
@@ -516,6 +518,11 @@ function SettingsForm({ property }: { property: Property }) {
         </div>
       )}
       {mode !== 'embed' && <input type="hidden" name="embedUrl" value={property.embedUrl} />}
+
+      <p className="tiny" style={{ margin: '-2px 0 0' }}>
+        Les formats que vous avez renseignés sont tous proposés au voyageur, qui bascule de l’un à l’autre. Celui-ci
+        est simplement affiché en premier.
+      </p>
 
       <div className="field">
         <label htmlFor="ed-notes">Notes internes</label>

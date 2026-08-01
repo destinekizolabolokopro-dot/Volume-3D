@@ -41,8 +41,11 @@ npm run typecheck  # vérification des types
 ## Le parcours, de bout en bout
 
 1. **Vous scannez le logement sur place.** Une photo panoramique 360° par pièce.
-2. **Vous créez le logement** dans `/admin` et vous **envoyez les panoramas**,
-   une pièce à la fois.
+2. **Vous créez le logement** dans `/admin` et vous **envoyez les panoramas**.
+   Sélectionnez tous les fichiers d'un coup : chaque image devient une pièce,
+   nommée d'après son fichier — `salon.jpg` donne « Salon ». Les images sont
+   recompressées automatiquement (largeur ramenée à 4096 px, JPEG progressif,
+   métadonnées EXIF supprimées avec la position GPS du logement).
 3. **Vous reliez les pièces** : dans l'éditeur, choisissez « Ajouter un passage
    vers… », puis cliquez dans l'image à l'endroit exact où le visiteur devra
    cliquer pour s'y rendre.
@@ -64,9 +67,15 @@ Le viewer attend des images **équirectangulaires**, au rapport **2:1**
 Une photo classique, même très grand angle, ne convient pas : il manque
 l'information sur les 360° et le viewer l'étirerait n'importe comment.
 
-### Les autres types de visite
+### Les formats de visite
 
-La fiche de chaque logement propose quatre modes :
+Un logement n'est **pas cantonné à un seul format**. Renseignez-en plusieurs et
+le voyageur bascule de l'un à l'autre grâce aux onglets en haut de la visite ;
+le champ « Format ouvert par défaut » de la fiche décide seulement lequel
+s'affiche en premier. La combinaison la plus efficace est **panoramas + vidéo** :
+la vidéo accroche, la 360° rassure.
+
+Quatre formats sont disponibles :
 
 - **Panoramas 360°** — le cas nominal, hébergé chez vous, décrit ci-dessus. Le
   visiteur explore : il tourne la tête, il choisit où aller.

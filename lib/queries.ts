@@ -1,6 +1,6 @@
 import 'server-only';
 import { getStore } from './store';
-import type { Hotspot, Preview, PreviewShot, Property, Scene } from './types';
+import type { Hotspot, Preview, PreviewShot, Property, Scene, TourMode } from './types';
 
 /** Visite publiée uniquement : un brouillon ne doit jamais être visible. */
 export async function findPublishedProperty(slug: string): Promise<Property | null> {
@@ -23,6 +23,23 @@ export async function loadTour(
   // On écarte les points de passage dont la pièce de destination a été supprimée.
   const hotspots = all.filter((hotspot) => ids.has(hotspot.sceneId) && ids.has(hotspot.targetSceneId));
   return { scenes, hotspots };
+}
+
+/**
+ * Formats effectivement proposables pour une visite, dans l'ordre d'affichage.
+ *
+ * Un logement n'est pas cantonné à un seul format : panoramas et vidéo de
+ * déambulation cohabitent volontiers, et le voyageur choisit. Le champ `mode`
+ * de la fiche ne décide plus que du format ouvert par défaut.
+ */
+export function availableFormats(property: Property, sceneCount: number): TourMode[] {
+  const formats: TourMode[] = [];
+  if (sceneCount > 0) formats.push('pano');
+  if (property.videoUrl) formats.push('video');
+  if (property.modelUrl) formats.push('model');
+  if (property.embedUrl) formats.push('embed');
+  // Le format par défaut passe en tête.
+  return formats.sort((a, b) => Number(b === property.mode) - Number(a === property.mode));
 }
 
 export async function findPreview(token: string): Promise<Preview | null> {
