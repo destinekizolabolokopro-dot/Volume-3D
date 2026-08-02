@@ -11,15 +11,29 @@
 export const PRICE_PER_LISTING = process.env.NEXT_PUBLIC_PRICE ?? '89€';
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'scan@volume3d.fr';
 
+/**
+ * Le titre du héros est découpé en lignes : chacune monte derrière son propre
+ * masque, comme un générique. Le découpage est donc éditorial, pas automatique.
+ */
 export const HERO = {
-  eyebrow: 'Pour propriétaires & conciergeries Airbnb',
-  headline: 'Une visite 3D qui transforme les curieux en réservations',
-  lede: "Nous venons scanner votre logement en 20 minutes. Vous recevez une visite 3D interactive, prête à intégrer dans votre annonce.",
+  eyebrow: 'Propriétaires & conciergeries — France entière',
+  lines: ['Franchir la porte', 'avant même', 'd’avoir réservé.'],
+  /** Ligne mise en italique accentué (index dans `lines`). */
+  accentLine: 1,
+  lede: "Nous scannons votre logement en vingt minutes. Vos voyageurs le parcourent ensuite pièce par pièce, depuis leur téléphone — et réservent sans hésiter.",
   stats: [
-    { value: '20 min', label: 'Sur place, une seule fois' },
-    { value: '48h', label: 'Livraison du lien' },
-    { value: '1 lien', label: 'Intégrable partout' },
+    { value: 20, suffix: ' min', label: 'Sur place, une fois' },
+    { value: 48, suffix: ' h', label: 'Avant livraison' },
+    { value: 1, suffix: ' lien', label: 'À partager partout' },
   ],
+};
+
+/** Phrase de respiration entre le héros et la démonstration. */
+export const MANIFESTO = {
+  before: 'Une annonce montre des photos. Une visite donne une ',
+  accent: 'impression',
+  after: ' — celle d’être déjà arrivé.',
+  sign: 'Volume3D — visites 3D pour la location courte durée',
 };
 
 export const STEPS = [
@@ -42,22 +56,18 @@ export const STEPS = [
 
 export const VALUE_PROPS = [
   {
-    letter: 'A',
     title: 'Plus de réservations',
     desc: 'Les voyageurs qui se projettent réservent plus vite et annulent moins.',
   },
   {
-    letter: 'B',
     title: 'Moins de questions',
     desc: "La visite répond à l'avance aux questions sur l'agencement, la taille, la luminosité.",
   },
   {
-    letter: 'C',
     title: 'Une annonce qui se démarque',
     desc: 'Rares sont les annonces avec une visite 3D — la vôtre sort du lot immédiatement.',
   },
   {
-    letter: 'D',
     title: 'Zéro contrainte',
     desc: "Un seul rendez-vous court, aucun matériel à acheter, aucune manipulation de votre côté.",
   },

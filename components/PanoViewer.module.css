@@ -80,52 +80,80 @@
 }
 
 .hotspotLabel {
-  background: rgba(20, 16, 13, 0.75);
-  padding: 3px 9px;
+  background: rgba(20, 16, 13, 0.72);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
   border-radius: 2px;
   white-space: nowrap;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 /* ----------------------------------------------------------------- HUD --- */
 
+/*
+  Sélecteur de pièces : même vocabulaire que les commandes de la page publique
+  — micro-typographie espacée sur un filet, jamais une pastille pleine. Posé sur
+  un dégradé qui rattache la commande à l'image sans la découper.
+*/
 .roomBar {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   display: flex;
-  gap: 8px;
-  padding: 14px 16px;
+  gap: clamp(16px, 4vw, 32px);
+  padding: 40px clamp(14px, 3vw, 24px) 16px;
   overflow-x: auto;
-  background: linear-gradient(transparent, rgba(15, 12, 10, 0.75));
-  scrollbar-width: thin;
+  background: linear-gradient(transparent, rgba(15, 12, 10, 0.82));
+  scrollbar-width: none;
+}
+
+.roomBar::-webkit-scrollbar {
+  display: none;
 }
 
 .roomChip {
   flex: none;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border-radius: 2px;
-  padding: 8px 14px;
-  font-size: 13px;
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 6px 0;
+  color: rgba(242, 236, 225, 0.66);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease;
+  transition: color 0.3s ease;
+}
+
+.roomChip::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .roomChip:hover {
-  background: rgba(255, 255, 255, 0.22);
+  color: #f7f3ec;
 }
 
 .roomChipActive {
-  background: var(--accent, #b08a4a);
-  border-color: transparent;
-  color: #211c18;
-  font-weight: 600;
+  color: #f7f3ec;
+}
+
+.roomChipActive::after {
+  transform: scaleX(1);
 }
 
 .topBar {
@@ -147,19 +175,22 @@
 }
 
 .sceneName {
-  font-family: var(--serif, serif);
-  font-size: 17px;
-  font-weight: 600;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-family: var(--display, serif);
+  font-size: clamp(19px, 2.2vw, 26px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
 }
 
 .iconBtn {
-  background: rgba(20, 16, 13, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(20, 16, 13, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   color: #fff;
   border-radius: 2px;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
+  backdrop-filter: blur(6px);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -205,15 +236,19 @@
 .hint {
   position: absolute;
   left: 50%;
-  bottom: 76px;
+  bottom: 86px;
   transform: translateX(-50%);
-  background: rgba(20, 16, 13, 0.7);
-  padding: 8px 16px;
+  padding: 9px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(20, 16, 13, 0.55);
+  backdrop-filter: blur(6px);
   border-radius: 2px;
-  font-size: 13px;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   white-space: nowrap;
   pointer-events: none;
-  animation: fadeOut 1s ease 3.5s both;
+  animation: fadeOut 1s ease 4s both;
 }
 
 @keyframes fadeOut {

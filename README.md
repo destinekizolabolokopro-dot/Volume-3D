@@ -259,30 +259,79 @@ intégration directe dans l'annonce Airbnb.
 
 ```
 app/
+  globals.css                  jetons de design et primitives partagées
+  fonts.css                    @font-face des fontes auto-hébergées (généré)
+  layout.tsx                   coquille HTML, métadonnées, préchargement des fontes
   page.tsx                     landing publique
-  v/[slug]/                    visite publique (panoramas, modèle 3D ou embed)
+  landing.css                  feuille de la landing (direction « Seuil »)
+  v/[slug]/                    visite publique (panoramas, vidéo, modèle 3D ou embed)
   demo/[token]/                aperçu de démarchage, filigrané et temporaire
+  espace/                      espace client : tableau de bord, biens, création, compte
   admin/
     actions.ts                 toutes les écritures (Server Actions, session vérifiée)
-    page.tsx                   tableau de bord : logements, aperçus, demandes
+    page.tsx                   tableau de bord interne
     logements/[id]/            éditeur de visite
+  editor.css                   éditeur de visite, partagé admin / espace client
+  api/chat/                    assistant du voyageur (Claude)
   api/contact/                 réception du formulaire
   api/files/[...path]/         service des fichiers en développement
 components/
+  HeroStage.tsx                panorama vivant du héros (unique contexte WebGL de la page)
+  landing/                     SiteChrome (navigation), Reveal, Counter
   PanoViewer.tsx               viewer 360° : rotation, zoom, passages, plein écran
+  TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
+  ChatWidget.tsx               assistant posé sur la visite
 lib/
   store.ts                     accès aux données (fichier JSON en dev, Supabase en prod)
+  accounts.ts                  comptes clients, mots de passe, sessions
+  assistant.ts                 invite système de l'assistant, garde-fous
   storage.ts / paths.ts        envoi de fichiers et sécurité des chemins
   sphere.ts                    conversions yaw/pitch ↔ vecteurs
   ai-preview.ts                extension IA des photos (aperçus uniquement)
+public/fonts/                  fontes woff2 auto-hébergées (latin + latin-ext)
 supabase/schema.sql            schéma à exécuter une fois
 ```
 
+### Direction artistique — « Seuil »
+
+Le service vend le fait de franchir une porte avant de réserver. Le site
+applique la même idée : il s'ouvre sur un espace habitable, puis avance par
+chapitres alternés — clair, sombre, clair — séparés par de grands silences.
+
+Trois règles tiennent l'ensemble, et rien ne doit les contredire :
+
+1. **Une seule scène WebGL par page.** Sur la landing, c'est le héros : le
+   visiteur manipule une vraie visite avant qu'on lui explique ce qu'on vend.
+   Tout le reste est du CSS.
+2. **Le mouvement imite une caméra.** Dérive lente, montée douce derrière un
+   masque, jamais de rebond ni d'élan artificiel. `prefers-reduced-motion`
+   coupe tout et laisse la page entièrement lisible.
+3. **Les respirations sont fluides.** Toutes les tailles et tous les rythmes
+   passent par `clamp()` : la page ne change jamais d'allure à un palier de
+   media query, elle se déforme continûment de 320 px à 2560 px.
+
+Les commandes de l'interface partagent un seul vocabulaire, de la landing à la
+page de visite : micro-typographie espacée en capitales, posée sur un filet qui
+se remplit en laiton quand l'élément est actif. Pas de pastille pleine, pas
+d'ombre portée décorative.
+
+**Typographie.** Cormorant Garamond pour le display, Jost pour l'interface —
+deux familles, pas une de plus. Les fichiers sont auto-hébergés dans
+`public/fonts` : la feuille de Google Fonts bloquait le rendu et ajoutait deux
+connexions au chemin critique. `app/fonts.css` est généré à partir de l'API
+Google Fonts et ne contient que les sous-ensembles latin et latin-ext.
+
+**Couleur.** Le laiton d'aplat (`--accent`) ne franchit le seuil AA ni sur
+l'ivoire ni sur l'anthracite : il ne sert donc jamais de couleur de texte fin.
+Deux déclinaisons existent pour cela — `--accent-deep` sur fond clair,
+`--accent-warm` sur fond sombre.
+
 ### Choix techniques notables
 
-- **Pas de comptes clients.** Un propriétaire reçoit un lien, rien d'autre à
-  retenir. Le back-office a un seul compte : le vôtre.
+- **Deux niveaux d'accès.** Le voyageur n'a besoin de rien : il ouvre un lien.
+  Le propriétaire abonné dispose d'un espace où il crée ses propres visites.
+  Le back-office `/admin` reste réservé à un seul compte : le vôtre.
 - **Deux implémentations de stockage** derrière la même interface, choisies
   automatiquement selon les variables d'environnement : on développe sans
   Supabase, on déploie avec.

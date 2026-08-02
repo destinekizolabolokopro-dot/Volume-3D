@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import './fonts.css';
 import './globals.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -44,12 +45,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Cormorant Garamond pour le display (lisibilité éditoriale aux grandes
+            tailles), Jost pour l'interface. Deux familles, deux fichiers dans le
+            chemin critique : ce sont les fontes variables latines, qui couvrent
+            à elles seules toutes les graisses employées. */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Domine:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap"
-          rel="stylesheet"
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/fonts/cormorant-garamond-400-latin.woff2"
+          crossOrigin="anonymous"
         />
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/jost-300-latin.woff2" crossOrigin="anonymous" />
       </head>
       <body>{children}</body>
     </html>

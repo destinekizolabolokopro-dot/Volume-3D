@@ -6,40 +6,66 @@
   background: #14100d;
 }
 
-/* Barre de choix du format : discrète, mais visible dès l'ouverture — le
-   voyageur doit savoir en un coup d'œil qu'il a deux façons de visiter. */
+/*
+  Barre de choix du format. Elle emprunte le vocabulaire de la page publique :
+  une micro-typographie espacée posée sur un filet, jamais une pastille pleine.
+  Le voyageur doit voir qu'il a deux façons de visiter sans que la commande ne
+  prenne le pas sur l'image.
+*/
 .switcher {
   display: flex;
-  gap: 6px;
-  padding: 10px 14px;
+  gap: clamp(18px, 3vw, 34px);
+  padding: 0 clamp(14px, 3vw, 26px);
   background: #1b1613;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.switcher::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
   flex: none;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #e6dcce;
-  border-radius: 2px;
-  padding: 8px 16px;
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 15px 0;
+  color: rgba(242, 236, 225, 0.62);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease;
+  transition: color 0.3s ease;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .tab:hover {
-  background: rgba(255, 255, 255, 0.16);
+  color: #f7f3ec;
 }
 
 .tab[aria-selected='true'] {
-  background: var(--accent);
-  border-color: transparent;
-  color: #211c18;
-  font-weight: 600;
+  color: #f7f3ec;
+}
+
+.tab[aria-selected='true']::after {
+  transform: scaleX(1);
 }
 
 .frame {
@@ -81,33 +107,55 @@
 .chapters {
   flex: none;
   display: flex;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: clamp(16px, 3vw, 30px);
+  padding: 0 clamp(14px, 3vw, 26px);
   overflow-x: auto;
+  scrollbar-width: none;
   background: #1b1613;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.chapters::-webkit-scrollbar {
+  display: none;
 }
 
 .chapter {
   flex: none;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #e6dcce;
-  border-radius: 2px;
-  padding: 8px 14px;
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 15px 0;
+  color: rgba(242, 236, 225, 0.62);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.chapter::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .chapter:hover {
-  background: rgba(255, 255, 255, 0.16);
+  color: #f7f3ec;
 }
 
 .chapter[aria-current='true'] {
-  background: var(--accent);
-  border-color: transparent;
-  color: #211c18;
-  font-weight: 600;
+  color: #f7f3ec;
+}
+
+.chapter[aria-current='true']::after {
+  transform: scaleX(1);
 }

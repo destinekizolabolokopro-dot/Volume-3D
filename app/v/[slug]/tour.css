@@ -14,40 +14,48 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 12px 20px;
+  gap: 20px;
+  padding: clamp(13px, 1.6vw, 20px) clamp(16px, 3vw, 30px);
   background: #1b1613;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .tour-name {
-  font-family: var(--serif);
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--display);
+  font-size: clamp(17px, 1.7vw, 21px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 .tour-city {
-  font-size: 12.5px;
-  color: #a2968a;
+  margin-top: 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 225, 0.5);
 }
 
 .tour-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: #a2968a;
+  gap: 9px;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 225, 0.5);
   text-decoration: none;
   flex: none;
+  transition: color 0.3s ease;
 }
 
 .tour-brand:hover {
-  color: #e5dbcd;
+  color: #f7f3ec;
 }
 
 .tour-brand b {
-  color: var(--accent);
-  font-weight: 700;
+  color: var(--accent-warm);
+  font-weight: 400;
 }
 
 .tour-stage {
@@ -88,61 +96,79 @@
 .tour-about {
   background: var(--bg);
   color: var(--ink);
-  padding: 48px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: clamp(56px, 8vw, 104px) clamp(20px, 5vw, 48px);
 }
 
 .tour-about-inner {
   max-width: 900px;
   margin: 0 auto;
   display: grid;
-  gap: 32px;
+  gap: clamp(36px, 5vw, 60px);
 }
 
 .tour-desc h2 {
-  font-family: var(--serif);
-  font-size: 22px;
-  margin: 0 0 12px;
+  font-family: var(--display);
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 0 0 clamp(16px, 2vw, 26px);
   color: var(--ink-strong);
 }
 
 .tour-desc p {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 16.5px;
+  font-weight: 300;
+  line-height: 1.78;
   color: var(--ink-muted);
   white-space: pre-wrap;
+  max-width: 62ch;
 }
 
 .tour-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: clamp(8px, 1.2vw, 16px);
 }
 
 .tour-gallery img {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
+  border-radius: 2px;
+  filter: saturate(0.96);
+  transition: filter 0.5s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tour-gallery img:hover {
+  filter: saturate(1.04);
+  transform: scale(1.012);
 }
 
 .tour-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
-  padding: 12px 20px;
-  font-size: 12.5px;
-  color: #a2968a;
+  padding: clamp(16px, 2vw, 24px) clamp(16px, 3vw, 30px);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: rgba(242, 236, 225, 0.45);
   background: #1b1613;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .tour-footer a {
-  color: #d8c9b2;
+  color: rgba(242, 236, 225, 0.72);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.tour-footer a:hover {
+  color: #f7f3ec;
 }
 
 /* Bandeau permanent des aperçus simulés. Il n'existe pas de variante sans

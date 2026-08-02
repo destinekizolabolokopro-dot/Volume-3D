@@ -58,6 +58,7 @@
 
 .admin-h1 {
   font-family: var(--serif);
+  font-weight: 600;
   font-size: 26px;
   margin: 0 0 4px;
 }
@@ -70,6 +71,7 @@
 
 .admin-h2 {
   font-family: var(--serif);
+  font-weight: 600;
   font-size: 19px;
   margin: 0 0 14px;
   display: flex;

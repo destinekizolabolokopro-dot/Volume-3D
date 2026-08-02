@@ -11,6 +11,17 @@ const nextConfig = {
     // des Server Actions (1 Mo) rejetterait chaque envoi.
     serverActions: { bodySizeLimit: '25mb' },
   },
+  // Les fontes sont auto-hébergées et versionnées avec le dépôt : elles ne
+  // changent que si on les remplace, donc elles peuvent être mises en cache
+  // définitivement par le navigateur et le CDN.
+  async headers() {
+    return [
+      {
+        source: '/fonts/:file*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+    ];
+  },
   // L'alias « @/ » de tsconfig n'est pas appliqué à la couche client par le
   // compilateur : on le déclare explicitement pour les deux bundlers.
   turbopack: { resolveAlias: { '@': projectRoot } },

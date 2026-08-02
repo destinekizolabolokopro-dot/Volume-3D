@@ -5,9 +5,7 @@
 
 .shell {
   min-height: 100dvh;
-  background:
-    radial-gradient(900px 420px at 12% -8%, rgba(176, 138, 74, 0.1), transparent 65%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .topbar {
@@ -31,15 +29,16 @@
   padding: 16px 0;
   text-decoration: none;
   color: var(--ink-strong);
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: 17px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 20px;
+  letter-spacing: 0.01em;
   flex: none;
 }
 
 .topbar-brand i {
   font-style: normal;
-  color: var(--accent);
+  color: var(--accent-deep);
 }
 
 /* Onglets principaux : Tableau de bord · Mes biens · Création */
@@ -52,14 +51,29 @@
 
 .tab {
   position: relative;
-  padding: 22px 16px;
-  font-size: 14.5px;
-  font-weight: 500;
+  padding: 24px 0;
+  margin-right: 28px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--ink-soft);
   text-decoration: none;
   white-space: nowrap;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color 0.3s ease;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .tab:hover {
@@ -68,8 +82,10 @@
 
 .tab[aria-current='page'] {
   color: var(--ink-strong);
-  font-weight: 600;
-  border-bottom-color: var(--accent);
+}
+
+.tab[aria-current='page']::after {
+  transform: scaleX(1);
 }
 
 .topbar-side {
@@ -88,7 +104,8 @@
     gap: 10px;
   }
   .tab {
-    padding: 14px 12px;
+    padding: 15px 0;
+    margin-right: 20px;
   }
   .topbar-brand {
     padding: 14px 0;
@@ -117,10 +134,12 @@
 }
 
 .page-head h1 {
-  font-family: var(--serif);
-  font-size: 30px;
-  margin: 0 0 6px;
-  letter-spacing: -0.02em;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(30px, 3.2vw, 42px);
+  line-height: 1.08;
+  margin: 0 0 8px;
+  letter-spacing: -0.018em;
 }
 
 .page-head p {
@@ -170,6 +189,7 @@
 
 .stat-value {
   font-family: var(--serif);
+  font-weight: 600;
   font-size: 34px;
   font-weight: 700;
   line-height: 1;
@@ -206,6 +226,7 @@
 
 .panel-head h2 {
   font-family: var(--serif);
+  font-weight: 600;
   font-size: 19px;
   margin: 0;
 }
@@ -259,6 +280,7 @@
 .empty strong {
   display: block;
   font-family: var(--serif);
+  font-weight: 600;
   font-size: 17px;
   color: var(--ink-strong);
   margin-bottom: 8px;
@@ -485,6 +507,7 @@
 
 .plan-price {
   font-family: var(--serif);
+  font-weight: 600;
   font-size: 22px;
   font-weight: 700;
   margin: 6px 0 4px;
@@ -515,24 +538,26 @@
 }
 
 .auth-aside {
-  padding: 56px;
-  color: #f6f1ea;
+  padding: clamp(40px, 6vw, 76px);
+  color: #f7f3ec;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 22px;
+  gap: clamp(24px, 3vw, 38px);
   background:
-    radial-gradient(700px 400px at 20% 10%, rgba(176, 138, 74, 0.22), transparent 60%),
+    radial-gradient(760px 440px at 24% 8%, rgba(198, 148, 90, 0.2), transparent 62%),
     var(--dark);
 }
 
 .auth-aside h2 {
-  font-family: var(--serif);
-  font-size: 32px;
-  line-height: 1.2;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
   margin: 0;
-  color: #f6f1ea;
-  max-width: 15ch;
+  color: #f7f3ec;
+  max-width: 14ch;
 }
 
 .auth-aside ul {
@@ -540,16 +565,22 @@
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 12px;
-  font-size: 15px;
-  color: #cbbfb0;
-  max-width: 42ch;
+  gap: 0;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: rgba(242, 236, 225, 0.7);
+  max-width: 40ch;
 }
 
-.auth-aside li::before {
-  content: '—';
-  color: var(--accent);
-  margin-right: 10px;
+/* Une liste de promesses se lit mieux sur des filets que sur des puces. */
+.auth-aside li {
+  padding: 15px 0;
+  border-top: 1px solid rgba(242, 236, 225, 0.14);
+}
+
+.auth-aside li:last-child {
+  border-bottom: 1px solid rgba(242, 236, 225, 0.14);
 }
 
 .auth-main {
@@ -566,35 +597,57 @@
 }
 
 .auth-card h1 {
-  font-family: var(--serif);
-  font-size: 26px;
-  margin: 20px 0 6px;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 22px 0 8px;
 }
 
+/* Deux onglets, pas deux boutons : un filet suffit à dire lequel est actif. */
 .auth-switch {
   display: flex;
-  gap: 4px;
-  background: #ece5db;
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  margin: 22px 0 24px;
+  gap: 28px;
+  border-bottom: 1px solid var(--line);
+  margin: 28px 0 30px;
 }
 
 .auth-switch button {
-  flex: 1;
+  position: relative;
   border: 0;
   background: none;
-  padding: 10px;
-  border-radius: 2px;
+  padding: 0 0 13px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--ink-soft);
   cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.auth-switch button::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.auth-switch button:hover {
+  color: var(--ink-strong);
 }
 
 .auth-switch button[aria-selected='true'] {
-  background: #fff;
   color: var(--ink-strong);
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(20, 16, 13, 0.1);
+}
+
+.auth-switch button[aria-selected='true']::after {
+  transform: scaleX(1);
 }

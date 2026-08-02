@@ -1,56 +1,54 @@
 import { ContactForm } from '@/components/ContactForm';
-import { Logo, LogoMark } from '@/components/Logo';
-import { PanoViewer } from '@/components/PanoViewer';
+import { HeroStage } from '@/components/HeroStage';
+import { LogoMark } from '@/components/Logo';
+import { Counter } from '@/components/landing/Counter';
+import { Reveal } from '@/components/landing/Reveal';
+import { SiteChrome } from '@/components/landing/SiteChrome';
 import {
   AGENCY_FEATURES,
-  FAQ,
   CONTACT_EMAIL,
+  FAQ,
   HERO,
+  MANIFESTO,
   OWNER_FEATURES,
   PRICE_PER_LISTING,
   STEPS,
   VALUE_PROPS,
 } from '@/lib/content';
-import { loadTour } from '@/lib/queries';
 import { getStore } from '@/lib/store';
-import type { Hotspot, Property, Scene } from '@/lib/types';
+import './landing.css';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * Récupère la visite mise en avant dans la section « Avant / Après ».
- * Tant qu'aucun logement n'est publié, la section retombe sur le visuel
- * de substitution du prototype.
+ * Panorama du héros.
+ *
+ * On prend la première pièce d'un logement publié : le visiteur manipule donc
+ * une vraie visite dès la première seconde. Sans logement en ligne, le héros
+ * dessine sa propre scène (voir `HeroStage`) plutôt que d'afficher un placeholder.
  */
-async function featuredTour(): Promise<Property | null> {
+async function heroPanorama(): Promise<string | undefined> {
   try {
+    const store = getStore();
     const slug = process.env.NEXT_PUBLIC_FEATURED_SLUG;
-    const published = await getStore().list('properties', { status: 'published' });
-    if (published.length === 0) return null;
-    return published.find((property) => property.slug === slug) ?? published[0];
+    const published = await store.list('properties', { status: 'published' });
+    const property = published.find((item) => item.slug === slug) ?? published[0];
+    if (!property) return undefined;
+
+    const scenes = await store.list('scenes', { propertyId: property.id });
+    if (scenes.length === 0) return undefined;
+    return [...scenes].sort((a, b) => a.position - b.position)[0].imageUrl;
   } catch {
-    // La landing doit rester en ligne même si la base est injoignable.
-    return null;
+    // La page d'accueil doit rester en ligne même si la base est injoignable.
+    return undefined;
   }
 }
 
 export default async function HomePage() {
-  const featured = await featuredTour();
-
-  // La démonstration de la section « Avant / Après » est la vraie visite d'un
-  // logement publié : rien ne convainc mieux qu'un visiteur qui la manipule.
-  let demo: { scenes: Scene[]; hotspots: Hotspot[] } = { scenes: [], hotspots: [] };
-  if (featured) {
-    try {
-      demo = await loadTour(featured.id);
-    } catch {
-      demo = { scenes: [], hotspots: [] };
-    }
-  }
-  const hasDemo = demo.scenes.length > 0;
+  const panorama = await heroPanorama();
 
   return (
-    <>
+    <div className="landing">
       <a className="skip-link" href="#contenu">
         Aller au contenu
       </a>
@@ -76,229 +74,243 @@ export default async function HomePage() {
         }}
       />
 
-      <header className="nav">
-        <Logo />
-        <nav className="nav-links" aria-label="Navigation principale">
-          <a className="nav-hide-sm" href="#comment-ca-marche">
-            Comment ça marche
-          </a>
-          <a className="nav-hide-sm" href="#tarifs">
-            Tarifs
-          </a>
-          <a className="nav-hide-sm" href="/espace">
-            Mon espace
-          </a>
-          <a className="btn btn-accent btn-sm" href="#contact">
-            Prendre rendez-vous
-          </a>
-        </nav>
-      </header>
+      <SiteChrome />
 
       <main id="contenu">
-        <section className="hero">
-          <div className="hero-blob" aria-hidden="true" />
+        {/* ---------------------------------------------------------- héros --- */}
+        <section className="hero" id="accueil">
+          <HeroStage imageUrl={panorama} />
 
-          <div className="hero-copy">
-            <div className="pill">
-              <span className="pill-dot" aria-hidden="true" />
-              {HERO.eyebrow}
-            </div>
-            <h1>{HERO.headline}</h1>
-            <p className="hero-lede">{HERO.lede}</p>
+          <div className="hero-inner">
+            <p className="kicker">{HERO.eyebrow}</p>
+
+            <h1>
+              {HERO.lines.map((line, index) => (
+                <span
+                  className="hero-line"
+                  key={line}
+                  style={{ '--line-delay': `${120 + index * 120}ms` } as React.CSSProperties}
+                >
+                  <span>{index === HERO.accentLine ? <em>{line}</em> : line}</span>
+                </span>
+              ))}
+            </h1>
+
+            <p className="hero-sub">{HERO.lede}</p>
+
             <div className="hero-actions">
-              <a className="btn btn-dark" href="#contact">
-                Prendre rendez-vous →
+              <a className="cta cta-light" href="#contact">
+                Réserver un scan
               </a>
-              <a className="link-underline" href="#exemple">
-                Voir un exemple de visite
+              <a className="quiet-link" href="#seuil">
+                Voir la différence <i aria-hidden="true">→</i>
               </a>
-            </div>
-            <div className="stats">
-              {HERO.stats.map((stat) => (
-                <div key={stat.label}>
-                  <div className="stat-value">{stat.value}</div>
-                  <div className="stat-label">{stat.label}</div>
-                </div>
-              ))}
             </div>
           </div>
 
-          <div className="hero-visual">
-            <div className="listing-card">
-              <div className="placeholder">
-                <span>visite 3d — capture d’écran à intégrer</span>
-                <div className="badge-360">
-                  <i aria-hidden="true" /> Visite interactive 360°
-                </div>
+          <dl className="hero-rail">
+            {HERO.stats.map((stat) => (
+              <div key={stat.label}>
+                <dt>{stat.label}</dt>
+                <dd>
+                  <Counter value={stat.value} suffix={stat.suffix} />
+                </dd>
               </div>
-              <div className="listing-body">
-                <div className="listing-title">Appartement lumineux — Le Marais</div>
-                <div className="listing-meta">Paris 3e · 4,97 ★ (128 avis)</div>
-              </div>
-            </div>
-            <div className="callout">
-              <strong>+38%</strong>
-              de clics sur les annonces avec visite 3D*
-            </div>
-          </div>
-        </section>
-
-        <section id="exemple" className="section section-white">
-          <div className="wrap">
-            <div className="section-head">
-              <div className="eyebrow">Avant / Après</div>
-              <h2>La même annonce, un tout autre niveau de confiance</h2>
-            </div>
-
-            <div className="two-col">
-              <div>
-                <div className="compare-label">SANS visite 3D</div>
-                <div className="compare-card">
-                  <div className="photo-grid">
-                    <div className="placeholder placeholder-light">
-                      <span>photo salon</span>
-                    </div>
-                    <div className="photo-stack">
-                      <div className="placeholder placeholder-light">
-                        <span>photo</span>
-                      </div>
-                      <div className="placeholder placeholder-light">
-                        <span>photo</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="compare-body">
-                    <div className="listing-title">Studio cosy centre-ville</div>
-                    <div className="listing-meta">
-                      « Est-ce que la chambre est séparée ? » — question reçue 6× ce mois-ci
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div className="compare-label compare-label-on">AVEC visite 3D</div>
-                <div className="compare-card compare-card-on">
-                  {hasDemo ? (
-                    <div className="live-demo">
-                      <PanoViewer scenes={demo.scenes} hotspots={demo.hotspots} showHint={false} />
-                      <div className="badge-3d">Essayez : faites glisser</div>
-                    </div>
-                  ) : (
-                    <div className="placeholder" style={{ aspectRatio: '16 / 9' }}>
-                      <span>viewer 3d — capture à intégrer</span>
-                      <div className="badge-3d">Visite virtuelle 3D</div>
-                    </div>
-                  )}
-                  <div className="compare-body">
-                    <div className="listing-title">{featured ? featured.name : 'Studio cosy centre-ville'}</div>
-                    <div className="listing-meta">
-                      {hasDemo
-                        ? 'Voici une vraie visite, telle que la reçoit un voyageur. Faites-la tourner.'
-                        : 'Les voyageurs visitent chaque recoin avant de réserver — zéro surprise, zéro question'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <p className="footnote">
-              *Ordre de grandeur issu d’études sectorielles sur l’impact des visites virtuelles dans l’immobilier
-              locatif — les résultats varient selon le logement et l’annonce.
+            ))}
+            <p className="hero-hint">
+              <span>Faites glisser l’image</span>
             </p>
-          </div>
+          </dl>
         </section>
 
-        <section id="comment-ca-marche" className="section">
-          <div className="wrap">
-            <div className="section-head">
-              <div className="eyebrow">Le déroulé</div>
-              <h2>Comment ça marche</h2>
-              <p>Aucune contrainte technique de votre côté — on s’occupe de tout, sur place.</p>
-            </div>
-            <div className="grid-3">
-              {STEPS.map((step) => (
-                <article className="step-card" key={step.n}>
-                  <div className="step-n">{step.n}</div>
-                  <h3>{step.title}</h3>
-                  <p>{step.desc}</p>
-                </article>
-              ))}
-            </div>
-          </div>
+        {/* ------------------------------------------------------ manifeste --- */}
+        <section className="manifesto">
+          <Reveal className="manifesto-inner">
+            <p>
+              {MANIFESTO.before}
+              <em>{MANIFESTO.accent}</em>
+              {MANIFESTO.after}
+            </p>
+            <p className="manifesto-sign">{MANIFESTO.sign}</p>
+          </Reveal>
         </section>
 
-        <section className="section section-dark">
-          <div className="wrap">
-            <div className="section-head">
-              <div className="eyebrow">Pourquoi la 3D</div>
-              <h2>Ce que ça change pour votre annonce</h2>
-            </div>
-            <div className="grid-4">
-              {VALUE_PROPS.map((prop) => (
-                <article className="value-card" key={prop.letter}>
-                  <div className="value-icon" aria-hidden="true">
-                    {prop.letter}
+        {/* --------------------------------------------------- avant / après --- */}
+        <section className="chapter chapter-dark" id="seuil">
+          <div className="chapter-inner">
+            <Reveal className="chapter-head">
+              <p className="kicker">Le seuil</p>
+              <h2 className="display">
+                Vingt photos ne font pas <em>une pièce</em>.
+              </h2>
+              <p className="lead">
+                Une galerie se feuillette. Une visite se traverse : on tourne la tête, on passe une
+                porte, on mesure la hauteur sous plafond. C’est là que le doute tombe.
+              </p>
+            </Reveal>
+
+            <div className="compare">
+              <Reveal>
+                <div className="plate plate-flat" aria-hidden="true">
+                  {/* Une mosaïque de vignettes muettes : c'est exactement ce que
+                      le voyageur reçoit aujourd'hui, et rien de plus. */}
+                  <div className="plate-tiles">
+                    {Array.from({ length: 6 }, (_, index) => (
+                      <span key={index} />
+                    ))}
                   </div>
+                </div>
+                <div className="plate-caption">
+                  <div>
+                    <h3>Une annonce ordinaire</h3>
+                    <p>
+                      Des photos cadrées au grand-angle, dans un ordre qu’on subit. Le voyageur
+                      reconstruit le logement dans sa tête — et se trompe.
+                    </p>
+                  </div>
+                  <span className="plate-tag">Avant</span>
+                </div>
+              </Reveal>
+
+              <Reveal delay={140}>
+                <div className="plate plate-deep">
+                  <div className="plate-arch" aria-hidden="true">
+                    <svg viewBox="0 0 120 170" role="presentation">
+                      <path
+                        className="arch-open"
+                        d="M14 170V64a46 46 0 0 1 92 0v106Z"
+                      />
+                      <path
+                        className="arch-frame"
+                        d="M2 170V64a58 58 0 0 1 116 0v106"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div className="plate-caption">
+                  <div>
+                    <h3>La même annonce, avec la visite</h3>
+                    <p>
+                      Un lien, et le voyageur est dedans. Il circule d’une pièce à l’autre, à son
+                      rythme, sur son téléphone, sans rien installer.
+                    </p>
+                  </div>
+                  <span className="plate-tag">Après</span>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------- méthode --- */}
+        <section className="chapter" id="methode">
+          <div className="chapter-inner">
+            <Reveal className="chapter-head">
+              <p className="kicker">La méthode</p>
+              <h2 className="display">Trois étapes. Une seule de votre côté.</h2>
+              <p className="lead">
+                Vous n’achetez pas de matériel, vous n’installez rien, vous ne manipulez aucun
+                logiciel. Vous ouvrez la porte, on s’occupe du reste.
+              </p>
+            </Reveal>
+
+            <ol className="steps">
+              {STEPS.map((step, index) => (
+                <Reveal as="li" className="step" key={step.n} delay={index * 90}>
+                  <span className="step-n">{step.n}</span>
+                  <div className="step-body">
+                    <h3>{step.title}</h3>
+                    <p>{step.desc}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------- valeurs --- */}
+        <section className="chapter chapter-dark">
+          <div className="chapter-inner">
+            <Reveal className="chapter-head">
+              <p className="kicker">Ce que ça change</p>
+              <h2 className="display">L’effet se voit sur l’annonce.</h2>
+            </Reveal>
+
+            <div className="values">
+              {VALUE_PROPS.map((prop, index) => (
+                <Reveal as="article" className="value" key={prop.title} delay={index * 80}>
+                  <p className="value-index">{String(index + 1).padStart(2, '0')}</p>
                   <h3>{prop.title}</h3>
                   <p>{prop.desc}</p>
-                </article>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="tarifs" className="section">
-          <div className="section-head">
-            <div className="eyebrow">Tarifs</div>
-            <h2>Simple, sans engagement</h2>
-            <p>Lancement en France entière — places limitées ce mois-ci.</p>
-          </div>
-          <div className="pricing">
-            <article className="price-card">
-              <div className="price-kicker">Propriétaire</div>
-              <div className="price-row">
-                <span className="price-value">{PRICE_PER_LISTING}</span>
-                <span className="price-unit">/ logement</span>
-              </div>
-              <ul className="price-features">
-                {OWNER_FEATURES.map((feature) => (
-                  <li key={feature}>✓ {feature}</li>
-                ))}
-              </ul>
-              <a className="btn btn-dark btn-block btn-sm" href="#contact">
-                Réserver ma visite 3D
-              </a>
-            </article>
+        {/* ---------------------------------------------------------- tarifs --- */}
+        <section className="chapter" id="tarifs">
+          <div className="chapter-inner">
+            <Reveal className="chapter-head is-centered">
+              <p className="kicker">Tarifs</p>
+              <h2 className="display">Payé une fois. En ligne pour toujours.</h2>
+              <p className="lead">
+                Pas d’abonnement caché, pas de frais d’hébergement. Le lien reste actif tant que le
+                logement est le vôtre.
+              </p>
+            </Reveal>
 
-            <article className="price-card price-card-dark">
-              <div className="price-badge">Conciergeries</div>
-              <div className="price-kicker">Volume / abonnement</div>
-              <div className="price-row">
-                <span className="price-value">Sur devis</span>
-              </div>
-              <ul className="price-features">
-                {AGENCY_FEATURES.map((feature) => (
-                  <li key={feature}>✓ {feature}</li>
-                ))}
-              </ul>
-              <a className="btn btn-accent btn-block btn-sm" href="#contact">
-                Demander un devis
-              </a>
-            </article>
+            <div className="offers">
+              <Reveal as="article" className="offer">
+                <p className="offer-name">Propriétaire</p>
+                <p className="offer-price">
+                  <strong>{PRICE_PER_LISTING}</strong>
+                  <span>par logement</span>
+                </p>
+                <ul>
+                  {OWNER_FEATURES.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <a className="cta" href="#contact">
+                  Réserver ma visite
+                </a>
+              </Reveal>
+
+              <Reveal as="article" className="offer offer-dark" delay={120}>
+                <span className="offer-flag">Conciergeries</span>
+                <p className="offer-name">Volume & abonnement</p>
+                <p className="offer-price">
+                  <strong>Sur devis</strong>
+                </p>
+                <ul>
+                  {AGENCY_FEATURES.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <a className="cta cta-light" href="#contact">
+                  Demander un devis
+                </a>
+              </Reveal>
+            </div>
           </div>
         </section>
 
-        <section id="questions" className="section section-white">
-          <div className="wrap" style={{ maxWidth: 820 }}>
-            <div className="section-head">
-              <div className="eyebrow">Questions fréquentes</div>
-              <h2>Ce qu’on nous demande le plus souvent</h2>
-            </div>
-            <div className="faq">
+        {/* -------------------------------------------------------- questions --- */}
+        <section className="chapter" id="questions">
+          <div className="chapter-inner">
+            <Reveal className="chapter-head is-centered">
+              <p className="kicker">Questions</p>
+              <h2 className="display">Ce qu’on nous demande le plus.</h2>
+            </Reveal>
+
+            <div className="faq-list">
               {FAQ.map((item) => (
-                <details className="faq-item" key={item.q}>
-                  <summary>{item.q}</summary>
+                <details className="faq-row" key={item.q}>
+                  <summary>
+                    {item.q}
+                    <span className="sign" aria-hidden="true" />
+                  </summary>
                   <p>{item.a}</p>
                 </details>
               ))}
@@ -306,31 +318,42 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section id="contact" className="section-cta">
-          <h2>Prêt à montrer votre logement sous son meilleur jour ?</h2>
-          <p>Réponse sous 24h. Première visite 3D livrée cette semaine.</p>
-          <ContactForm />
+        {/* ---------------------------------------------------------- contact --- */}
+        <section className="contact" id="contact">
+          <div className="contact-inner">
+            <Reveal>
+              <p className="kicker">Prendre rendez-vous</p>
+              <h2>
+                Ouvrons la porte de <em>votre logement</em>.
+              </h2>
+              <p className="lead">
+                Réponse sous 24 h, créneau de scan dans la semaine. Dites-nous simplement où se
+                trouve le logement.
+              </p>
+            </Reveal>
+            <Reveal className="contact-form" delay={120}>
+              <ContactForm />
+            </Reveal>
+          </div>
         </section>
       </main>
 
-      <div className="sticky-cta">
-        <span>Visite 3D livrée sous 48h</span>
-        <a className="btn btn-dark btn-sm" href="#contact">
-          Prendre rendez-vous
-        </a>
-      </div>
-
-      <footer className="footer">
-        <div className="brand">
-          <LogoMark size={20} />
-          <span className="brand-name" style={{ fontSize: 16 }}>
-            Volume3D
+      <footer className="site-foot">
+        <div className="site-foot-inner">
+          <span className="brand">
+            <LogoMark size={22} adaptive />
+            <span className="mark-name">
+              Volume<i>3D</i>
+            </span>
+          </span>
+          <span>
+            France entière · <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+          </span>
+          <span>
+            <a href="/espace">Espace client</a>
           </span>
         </div>
-        <div>
-          France entière · <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-        </div>
       </footer>
-    </>
+    </div>
   );
 }
