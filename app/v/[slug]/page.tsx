@@ -5,7 +5,7 @@ import { LogoMark } from '@/components/Logo';
 import { TourStage } from '@/components/TourStage';
 import { CONTACT_EMAIL } from '@/lib/content';
 import { isAssistantConfigured } from '@/lib/assistant';
-import { availableFormats, bumpViews, findPublishedProperty, loadTour } from '@/lib/queries';
+import { availableFormats, bumpViews, findPublishedProperty, loadPlan, loadTour } from '@/lib/queries';
 import { getStore } from '@/lib/store';
 import './tour.css';
 
@@ -33,12 +33,13 @@ export default async function TourPage({ params }: Params) {
 
   const { scenes, hotspots } = await loadTour(property.id);
   const store = getStore();
-  const [chapters, photos] = await Promise.all([
+  const [chapters, photos, { plan, doors: planDoors }] = await Promise.all([
     store.list('chapters', { propertyId: property.id }),
     store.list('photos', { propertyId: property.id }),
+    loadPlan(property.id),
   ]);
   await bumpViews('properties', property.id, property.views);
-  const formats = availableFormats(property, scenes.length);
+  const formats = availableFormats(property, scenes.length, plan !== null);
   const assistantOn = property.chatEnabled && isAssistantConfigured();
 
   return (
@@ -67,6 +68,9 @@ export default async function TourPage({ params }: Params) {
           modelUrl={property.modelUrl}
           embedUrl={property.embedUrl}
           chapters={chapters}
+          plan={plan}
+          planDoors={planDoors}
+          photos={photos}
         />
       </div>
 

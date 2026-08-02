@@ -16,7 +16,9 @@ export type TourMode =
   /** Vidéo de déambulation filmée sur place : le visiteur regarde, il ne navigue pas. */
   | 'video'
   /** Viewer externe (Matterport, Cupix) affiché en iframe. */
-  | 'embed';
+  | 'embed'
+  /** Volume reconstruit depuis un plan, avec les photos posées sur les murs. */
+  | 'plan';
 
 export type PropertyStatus = 'draft' | 'published';
 
@@ -105,6 +107,73 @@ export interface Photo {
   url: string;
   caption: string;
   position: number;
+  /** Pièce du plan où la photo a été prise. Vide si non rattachée. */
+  roomId: string;
+  /** Mur de cette pièce sur lequel l'accrocher, dans l'ordre du polygone. */
+  wallIndex: number;
+}
+
+/* ==========================================================================
+   Visite reconstruite depuis un plan
+
+   Le plan apporte la géométrie — des dimensions mesurées, pas devinées — et
+   les photos apportent l'apparence. Les deux ensemble donnent un volume
+   parcourable et honnête : rien n'y est inventé. C'est la seule façon de
+   produire une visite sans passer par une capture 360° sur place.
+   ========================================================================== */
+
+/** Point du plan, en mètres. x vers la droite, y vers le bas, comme sur l'image. */
+export interface PlanPoint {
+  x: number;
+  y: number;
+}
+
+export interface PlanRoom {
+  /** Identifiant lisible : « salon », « chambre-1 ». */
+  id: string;
+  name: string;
+  /** Polygone fermé de la pièce, en mètres, sens indifférent. */
+  points: PlanPoint[];
+  /** Hauteur sous plafond, en mètres. */
+  height: number;
+}
+
+export type PlanOpeningKind = 'door' | 'opening' | 'window';
+
+/**
+ * Ouverture dans un mur.
+ *
+ * `to` vaut la chaîne vide quand l'ouverture donne sur l'extérieur ou sur le
+ * palier : une fenêtre ne mène nulle part, une porte palière non plus.
+ */
+export interface PlanDoor {
+  id: string;
+  planId: string;
+  from: string;
+  to: string;
+  a: PlanPoint;
+  b: PlanPoint;
+  kind: PlanOpeningKind;
+  /** Hauteur du linteau au-dessus du sol, en mètres. */
+  height: number;
+  /** Hauteur d'allège : 0 pour une porte, ~0,9 m pour une fenêtre. */
+  sill: number;
+}
+
+export interface FloorPlan {
+  id: string;
+  propertyId: string;
+  /** Image du plan telle qu'envoyée, conservée pour vérification. */
+  imageUrl: string;
+  rooms: PlanRoom[];
+  /** Surface totale annoncée par le propriétaire, en m². Sert au recalage. */
+  declaredArea: number;
+  /** Modèle qui a lu le plan, et quand. La géométrie doit rester traçable. */
+  readBy: string;
+  readAt: string;
+  /** Le propriétaire a relu et corrigé la lecture automatique. */
+  confirmed: boolean;
+  createdAt: string;
 }
 
 /**
@@ -192,6 +261,8 @@ export interface Database {
   scenes: Scene[];
   hotspots: Hotspot[];
   photos: Photo[];
+  plans: FloorPlan[];
+  planDoors: PlanDoor[];
   chapters: Chapter[];
   chatMessages: ChatMessage[];
   previews: Preview[];
@@ -205,6 +276,8 @@ export const EMPTY_DB: Database = {
   scenes: [],
   hotspots: [],
   photos: [],
+  plans: [],
+  planDoors: [],
   chapters: [],
   chatMessages: [],
   previews: [],

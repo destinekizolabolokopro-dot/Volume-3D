@@ -90,6 +90,9 @@ Quatre formats sont disponibles :
 - **Modèle 3D `.glb`** — pour un logement capturé en photogrammétrie avec
   Polycam ou Luma. Envoyez l'export `.glb` ; au-delà de ~60 Mo le chargement
   devient pénible sur mobile.
+- **Plan 3D** — pour un logement dont on n'a pas de panorama. On lit le plan,
+  on en tire le volume, et les photos du propriétaire viennent s'accrocher sur
+  les murs qu'elles montrent. Voir la section dédiée plus bas.
 - **Viewer externe** — collez un lien Matterport ou Cupix : la page de visite
   garde votre habillage et affiche leur viewer à l'intérieur.
 
@@ -203,6 +206,63 @@ Servez-vous-en comme d'une vitrine portable — en rendez-vous, même sans rése
 
 ---
 
+## Une visite à partir du plan et des photos
+
+Le cas est fréquent : le propriétaire n'a pas de panorama 360°, mais il a **son
+plan** et **ses photos**. Ces deux documents se complètent exactement.
+
+- Le **plan** contient la géométrie : la forme des pièces, leurs dimensions, où
+  sont les portes. C'est ce qu'une photo ne contient jamais.
+- Les **photos** contiennent l'apparence : les couleurs, les matières, le
+  mobilier. C'est ce qu'un plan ne contient jamais.
+
+Assemblés, ils donnent un volume parcourable où **rien n'est inventé**. Ce n'est
+pas une photo à 360°, et la page de visite ne le prétend pas : c'est le logement
+en volume, avec ses vraies photos posées aux bons endroits.
+
+### Comment ça marche
+
+1. Dans la fiche du bien, section **« Visite depuis le plan »**, envoyez l'image
+   du plan et indiquez la **surface annoncée**.
+2. Le modèle relève le plan : contour de chaque pièce en mètres, position des
+   portes et des fenêtres. Il ne dessine rien — il transcrit ce qui est sur
+   l'image, et signale quand le document n'est pas un plan.
+3. La surface que vous avez indiquée sert de **mètre étalon** : les proportions
+   viennent du plan, l'échelle vient de vous. Un plan sans cotes lisibles reste
+   donc à la bonne taille.
+4. **Vous relisez.** Les surfaces obtenues s'affichent pièce par pièce. Tant que
+   vous n'avez pas confirmé, le format n'apparaît pas dans la visite —
+   `loadPlan()` ne sert que les plans confirmés.
+5. Bouton **« Ranger les photos dans les pièces »** : le modèle regarde vos
+   photos et dit laquelle montre quoi. Une photo qu'il ne sait pas rattacher
+   reste sans pièce plutôt que d'être placée au hasard.
+
+### Ce qui protège la fiabilité
+
+Une lecture automatique se trompe. Trois filtres, dans cet ordre :
+
+| Où | Quoi |
+|---|---|
+| `lib/plan.ts` — `parsePlanReading` | Le JSON du modèle est validé champ par champ. Hauteur aberrante ramenée au standard, identifiants normalisés, passage vers une pièce inexistante coupé. |
+| `lib/plan.ts` — `assertPlanIsUsable` | Refus pur et simple : pièce de moins d'un m², contour à deux points, porte de six mètres, identifiants en double. |
+| L'écran de relecture | Le propriétaire confirme, ou ne confirme pas. C'est lui qui connaît son logement. |
+
+Ces deux premières fonctions sont **pures** — pas de réseau, pas de rendu — et
+couvertes par les tests (`tests/plan.test.ts`, `tests/plan-reader.test.ts`).
+C'est volontaire : l'appel au modèle n'est qu'un transport, alors que c'est là
+que se décide si une géométrie est publiable.
+
+### Un point de géométrie
+
+Le viewer perce les murs plutôt que de poser des portes dessus. Pour chaque mur,
+les ouvertures sont projetées dessus (`projectOnWall`), fusionnées, puis les
+**portions pleines** sont calculées par complément (`solidSpans`). Le linteau et
+l'allège sont ajoutés par-dessus. C'est ce qui permet à une porte déclarée une
+seule fois de percer les deux pièces qu'elle sépare, sans qu'on ait à la
+déclarer deux fois.
+
+---
+
 ## Mise en ligne
 
 ### 1. Base de données et stockage (Supabase, offre gratuite)
@@ -277,11 +337,15 @@ app/
   api/files/[...path]/         service des fichiers en développement
 components/
   PanoViewer.tsx               viewer 360° : rotation, zoom, passages, plein écran
+  PlanViewer.tsx               viewer du volume reconstruit depuis un plan
+  PlanPanel.tsx                relevé du plan et relecture, dans l'éditeur
   TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
   landing/                     SiteNav, DemoTour, DemoVideo, Reveal, icônes
 lib/
+  plan.ts                      géométrie des visites depuis un plan + validation du relevé
+  plan-reader.ts               lecture du plan et rattachement des photos (Claude, vision)
   demo.ts                      pièces et points de passage de la démonstration publique
   store.ts                     accès aux données (fichier JSON en dev, Supabase en prod)
   accounts.ts                  comptes clients, mots de passe, sessions

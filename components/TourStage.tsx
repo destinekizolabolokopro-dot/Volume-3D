@@ -3,7 +3,8 @@
 import { useRef, useState } from 'react';
 import { ModelViewer } from './ModelViewer';
 import { PanoViewer } from './PanoViewer';
-import type { Chapter, Hotspot, Scene, TourMode } from '@/lib/types';
+import { PlanViewer } from './PlanViewer';
+import type { Chapter, FloorPlan, Hotspot, Photo, PlanDoor, Scene, TourMode } from '@/lib/types';
 import styles from './TourStage.module.css';
 
 export interface TourStageProps {
@@ -17,6 +18,11 @@ export interface TourStageProps {
   embedUrl: string;
   /** Repères de la vidéo, pour sauter directement à une pièce. */
   chapters: Chapter[];
+  /** Plan lu et confirmé, si le logement en a un. */
+  plan: FloorPlan | null;
+  planDoors: PlanDoor[];
+  /** Photos du bien : accrochées aux murs dans le format « plan ». */
+  photos: Photo[];
 }
 
 const LABELS: Record<TourMode, string> = {
@@ -24,6 +30,7 @@ const LABELS: Record<TourMode, string> = {
   video: 'Vidéo',
   model: 'Modèle 3D',
   embed: 'Visite 3D',
+  plan: 'Plan 3D',
 };
 
 const HINTS: Record<TourMode, string> = {
@@ -31,6 +38,7 @@ const HINTS: Record<TourMode, string> = {
   video: 'Une déambulation filmée dans le logement',
   model: 'Le logement en volume, vu de l’extérieur',
   embed: 'Visite interactive',
+  plan: 'Le logement en volume, photos à l’appui',
 };
 
 /**
@@ -50,6 +58,9 @@ export function TourStage({
   modelUrl,
   embedUrl,
   chapters,
+  plan,
+  planDoors,
+  photos,
 }: TourStageProps) {
   const [active, setActive] = useState<TourMode>(
     formats.includes(defaultFormat) ? defaultFormat : (formats[0] ?? 'pano'),
@@ -89,6 +100,8 @@ export function TourStage({
 
       <div className={styles.frame}>
         {active === 'pano' && <PanoViewer scenes={scenes} hotspots={hotspots} />}
+
+        {active === 'plan' && plan && <PlanViewer plan={plan} doors={planDoors} photos={photos} />}
 
         {active === 'video' && (
           <div className={styles.videoWrap}>

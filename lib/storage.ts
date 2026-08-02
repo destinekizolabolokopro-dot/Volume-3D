@@ -6,6 +6,7 @@ import { UPLOAD_DIR, extensionOf } from './paths';
 import { supabaseAdmin } from './store';
 
 export { contentTypeFor, resolveLocalFile } from './paths';
+import { resolveLocalFile } from './paths';
 
 const BUCKET = process.env.SUPABASE_BUCKET ?? 'tours';
 
@@ -125,4 +126,40 @@ export async function putFile(folder: string, file: File | Blob, filename: strin
   await fs.mkdir(path.dirname(target), { recursive: true });
   await fs.writeFile(target, buffer);
   return { url: `/api/files/${key}`, bytes: buffer.byteLength };
+}
+
+/**
+ * Relit une image déjà stockée et la rend encodée pour l'API du modèle.
+ *
+ * Elle est redimensionnée au passage : pour reconnaître une pièce, 1024 px de
+ * large suffisent largement, et une photo de 4 Mo coûterait des jetons sans
+ * rien apporter au jugement.
+ */
+export async function readImageAsBase64(
+  url: string,
+): Promise<{ base64: string; mediaType: 'image/jpeg' }> {
+  const bytes = await readStored(url);
+  const resized = await sharp(bytes).rotate().resize(1024, 1024, { fit: 'inside' }).jpeg({ quality: 80 }).toBuffer();
+  return { base64: resized.toString('base64'), mediaType: 'image/jpeg' };
+}
+
+/** Rend le contenu binaire d'un fichier déjà envoyé, quel que soit le stockage. */
+async function readStored(url: string): Promise<Buffer> {
+  const client = supabaseAdmin();
+  if (client) {
+    // En production les fichiers sont dans le bucket : l'URL publique se
+    // termine par le chemin de l'objet.
+    const marker = `/${BUCKET}/`;
+    const at = url.indexOf(marker);
+    const objectPath = at >= 0 ? url.slice(at + marker.length) : url;
+    const { data, error } = await client.storage.from(BUCKET).download(objectPath);
+    if (error || !data) throw new Error(`Fichier illisible : ${error?.message ?? url}`);
+    return Buffer.from(await data.arrayBuffer());
+  }
+
+  // En développement, /api/files/<dossier>/<nom> pointe vers .data/uploads.
+  const segments = url.replace(/^\/api\/files\//, '').split('/').filter(Boolean);
+  const local = resolveLocalFile(segments);
+  if (!local) throw new Error(`Chemin de fichier refusé : ${url}`);
+  return fs.readFile(local);
 }

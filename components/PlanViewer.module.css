@@ -1,0 +1,162 @@
+/*
+  Habillage de la visite reconstruite depuis un plan.
+
+  Il reprend exactement les commandes du viewer 360° — même pastilles de pièce,
+  mêmes repères de passage, même barre de titre. Pour le voyageur, les deux
+  formats doivent se manipuler pareil ; seule l'image change.
+*/
+
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  background: #0f1418;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  color: #fff;
+  font-family: var(--sans, sans-serif);
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+}
+
+.canvas canvas {
+  display: block;
+}
+
+.grabbing {
+  cursor: grabbing;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 320px;
+  padding: 24px;
+  background: #0f1418;
+  color: #9aa2ad;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ---------------------------------------------------- passages entre pièces */
+
+.exit {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
+  transition: transform 0.15s ease;
+}
+
+.exit:hover,
+.exit:focus-visible {
+  transform: translate(-50%, -50%) scale(1.07);
+}
+
+.exitRing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  /* Assez opaque pour que la flèche reste lisible sur un mur clair. */
+  background: rgba(15, 20, 24, 0.62);
+  backdrop-filter: blur(3px);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.exitLabel {
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(16, 22, 28, 0.72);
+  backdrop-filter: blur(4px);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------- bandeaux */
+
+.topBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(rgba(15, 20, 24, 0.55), transparent);
+  pointer-events: none;
+}
+
+.roomName {
+  font-size: clamp(16px, 1.6vw, 19px);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+}
+
+.roomBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  padding: 34px 14px 14px;
+  overflow-x: auto;
+  background: linear-gradient(transparent, rgba(10, 14, 18, 0.6));
+  scrollbar-width: none;
+}
+
+.roomBar::-webkit-scrollbar {
+  display: none;
+}
+
+.roomChip {
+  flex: none;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 100px;
+  background: rgba(16, 22, 28, 0.55);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.roomChip:hover {
+  background: rgba(16, 22, 28, 0.78);
+}
+
+.roomChipActive {
+  background: #fff;
+  border-color: #fff;
+  color: var(--ink-strong, #0f1418);
+}
+
+.roomChipActive:hover {
+  background: #fff;
+}

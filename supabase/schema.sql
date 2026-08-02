@@ -54,7 +54,11 @@ create table if not exists photos (
   "propertyId" text not null references properties (id) on delete cascade,
   url          text not null,
   caption      text not null default '',
-  position     integer not null default 0
+  position     integer not null default 0,
+  -- Rattachement au plan, quand le logement en a un : la pièce montrée par la
+  -- photo, et le mur sur lequel on l'accroche dans la visite en volume.
+  "roomId"     text not null default '',
+  "wallIndex"  integer not null default 0
 );
 
 create index if not exists photos_property_idx on photos ("propertyId", position);
@@ -144,6 +148,39 @@ create table if not exists leads (
   handled     boolean not null default false
 );
 
+-- Plan relevé d'un logement.
+--
+-- Les contours des pièces sont stockés en jsonb : ce sont des polygones de
+-- longueur variable, qu'on ne lit jamais autrement que par plan entier. Les
+-- ouvertures, elles, sont dans leur propre table : on les filtre par plan et on
+-- les modifie une par une quand le propriétaire corrige un passage.
+create table if not exists plans (
+  id             text primary key,
+  "propertyId"   text not null references properties(id) on delete cascade,
+  "imageUrl"     text not null default '',
+  rooms          jsonb not null default '[]'::jsonb,
+  "declaredArea" double precision not null default 0,
+  "readBy"       text not null default '',
+  "readAt"       text not null default '',
+  confirmed      boolean not null default false,
+  "createdAt"    text not null
+);
+
+create table if not exists "planDoors" (
+  id       text primary key,
+  "planId" text not null references plans(id) on delete cascade,
+  "from"   text not null default '',
+  "to"     text not null default '',
+  a        jsonb not null,
+  b        jsonb not null,
+  kind     text not null default 'door',
+  height   double precision not null default 2.05,
+  sill     double precision not null default 0
+);
+
+create index if not exists plans_property on plans("propertyId");
+create index if not exists plan_doors_plan on "planDoors"("planId");
+
 -- Rien n'est accessible sans la clé service_role : aucune politique n'est créée.
 alter table accounts       enable row level security;
 alter table properties     enable row level security;
@@ -155,6 +192,8 @@ alter table hotspots       enable row level security;
 alter table previews       enable row level security;
 alter table "previewShots" enable row level security;
 alter table leads          enable row level security;
+alter table plans          enable row level security;
+alter table "planDoors"    enable row level security;
 
 -- =============================================================================
 -- Stockage des fichiers

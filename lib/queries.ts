@@ -1,6 +1,6 @@
 import 'server-only';
 import { getStore } from './store';
-import type { Hotspot, Preview, PreviewShot, Property, Scene, TourMode } from './types';
+import type { FloorPlan, Hotspot, PlanDoor, Preview, PreviewShot, Property, Scene, TourMode } from './types';
 
 /** Visite publiée uniquement : un brouillon ne doit jamais être visible. */
 export async function findPublishedProperty(slug: string): Promise<Property | null> {
@@ -11,6 +11,21 @@ export async function findPublishedProperty(slug: string): Promise<Property | nu
 export async function findPropertyBySlug(slug: string): Promise<Property | null> {
   const [property] = await getStore().list('properties', { slug });
   return property ?? null;
+}
+
+/**
+ * Plan confirmé d'un logement, et ses ouvertures.
+ *
+ * Un plan non confirmé n'est jamais servi au voyageur : la lecture automatique
+ * peut se tromper, et une visite aux dimensions fausses vaut moins que pas de
+ * visite du tout.
+ */
+export async function loadPlan(propertyId: string): Promise<{ plan: FloorPlan | null; doors: PlanDoor[] }> {
+  const store = getStore();
+  const [plan] = await store.list('plans', { propertyId, confirmed: true });
+  if (!plan) return { plan: null, doors: [] };
+  const doors = await store.list('planDoors', { planId: plan.id });
+  return { plan, doors };
 }
 
 export async function loadTour(
@@ -32,9 +47,10 @@ export async function loadTour(
  * déambulation cohabitent volontiers, et le voyageur choisit. Le champ `mode`
  * de la fiche ne décide plus que du format ouvert par défaut.
  */
-export function availableFormats(property: Property, sceneCount: number): TourMode[] {
+export function availableFormats(property: Property, sceneCount: number, hasPlan = false): TourMode[] {
   const formats: TourMode[] = [];
   if (sceneCount > 0) formats.push('pano');
+  if (hasPlan) formats.push('plan');
   if (property.videoUrl) formats.push('video');
   if (property.modelUrl) formats.push('model');
   if (property.embedUrl) formats.push('embed');

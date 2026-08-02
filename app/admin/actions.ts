@@ -7,7 +7,8 @@ import { expandPhoto, isAiConfigured } from '@/lib/ai-preview';
 import { currentAccount } from '@/lib/accounts';
 import { SESSION_COOKIE, checkPassword, isAuthenticated, issueToken, sessionCookieOptions } from '@/lib/auth';
 import { randomId, uniqueSlug } from '@/lib/ids';
-import { assertImage, assertModel, assertVideo, putFile, putImage } from '@/lib/storage';
+import { assertImage, assertModel, assertVideo, putFile, putImage, readImageAsBase64 } from '@/lib/storage';
+import { assignPhotos, isPlanReaderConfigured, readPlan } from '@/lib/plan-reader';
 import { TimecodeError, parseTimecode } from '@/lib/timecode';
 import { getStore } from '@/lib/store';
 import type { Chapter, Hotspot, Photo, Preview, PreviewShot, Property, Scene, TourMode } from '@/lib/types';
@@ -400,6 +401,9 @@ export async function addPhotos(_previous: ActionResult | null, formData: FormDa
         url,
         caption: text(file.name.replace(/\.[^.]+$/, ''), 'légende', { max: 120, required: false }),
         position: existing.length + index,
+        // Rattachement à une pièce du plan : fait plus tard, à la main.
+        roomId: '',
+        wallIndex: 0,
       };
       await store.insert('photos', photo);
     }
@@ -503,6 +507,153 @@ export async function uploadVideo(_previous: ActionResult | null, formData: Form
     const patch = scenes.length > 0 ? { videoUrl: url } : { videoUrl: url, mode: 'video' as const };
     await store.update('properties', propertyId, patch);
     revalidatePath(`/admin/logements/${propertyId}`);
+    return { ok: true };
+  });
+}
+
+/* ================================================ visite depuis un plan === */
+
+/**
+ * Lit le plan d'un logement et en tire un volume parcourable.
+ *
+ * Deux principes tiennent cette fonction :
+ *
+ *  1. **La géométrie n'est pas inventée.** Le modèle relève ce qui est dessiné
+ *     sur le plan ; ce qui ne s'y trouve pas n'apparaît pas dans la visite.
+ *  2. **Rien n'est publié sans relecture.** Le plan est enregistré avec
+ *     `confirmed: false`, et `loadPlan` ne sert que les plans confirmés. Une
+ *     lecture automatique se trompe : c'est au propriétaire de valider les
+ *     dimensions de son propre logement avant qu'un voyageur les voie.
+ */
+export async function readPropertyPlan(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const propertyId = text(formData.get('propertyId'), 'logement', { max: 40 });
+    await authorizeProperty(propertyId);
+
+    if (!isPlanReaderConfigured()) {
+      throw new ValidationError('La lecture de plan n’est pas configurée sur ce site (clé Anthropic absente).');
+    }
+
+    const file = formData.get('plan');
+    if (!(file instanceof File) || file.size === 0) throw new ValidationError('Choisissez l’image du plan.');
+    assertImage(file);
+
+    const declaredArea = Number(formData.get('area') ?? 0);
+    if (!Number.isFinite(declaredArea) || declaredArea < 5 || declaredArea > 2000) {
+      throw new ValidationError('Indiquez la surface du logement, en m².');
+    }
+    const hint = text(formData.get('hint'), 'précisions', { max: 400, required: false });
+
+    // Le plan est conservé tel quel : c'est la pièce justificative du relevé.
+    const { url } = await putImage('plans', file, file.name);
+    const bytes = Buffer.from(await file.arrayBuffer());
+
+    const reading = await readPlan({
+      imageBase64: bytes.toString('base64'),
+      mediaType: (file.type as 'image/jpeg') || 'image/jpeg',
+      declaredArea,
+      hint,
+    });
+
+    // Un seul plan par logement : le relire remplace le précédent.
+    for (const previous of await store.list('plans', { propertyId })) {
+      await store.remove('planDoors', { planId: previous.id });
+      await store.remove('plans', { id: previous.id });
+    }
+
+    const planId = randomId();
+    await store.insert('plans', {
+      id: planId,
+      propertyId,
+      imageUrl: url,
+      rooms: reading.rooms,
+      declaredArea,
+      readBy: reading.model,
+      readAt: new Date().toISOString(),
+      confirmed: false,
+      createdAt: new Date().toISOString(),
+    });
+    for (const opening of reading.doors) {
+      await store.insert('planDoors', { ...opening, planId });
+    }
+
+    revalidatePath(`/admin/logements/${propertyId}`);
+    revalidatePath(`/espace/biens/${propertyId}`);
+    return { ok: true };
+  });
+}
+
+/**
+ * Range les photos du bien dans les pièces relevées.
+ *
+ * Une photo que le modèle ne sait pas rattacher reste sans pièce : mieux vaut
+ * un mur nu qu'une photo de cuisine accrochée dans la chambre.
+ */
+export async function sortPhotosIntoPlan(propertyId: string): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    await authorizeProperty(propertyId);
+    if (!isPlanReaderConfigured()) throw new ValidationError('Lecture automatique non configurée.');
+
+    const [plan] = await store.list('plans', { propertyId });
+    if (!plan) throw new ValidationError('Lisez d’abord le plan du logement.');
+    const photos = await store.list('photos', { propertyId });
+    if (photos.length === 0) throw new ValidationError('Ajoutez d’abord des photos.');
+
+    const encoded = await Promise.all(
+      photos.map(async (photo) => ({
+        id: photo.id,
+        url: photo.url,
+        caption: photo.caption,
+        ...(await readImageAsBase64(photo.url)),
+      })),
+    );
+
+    const assignments = await assignPhotos(plan.rooms, encoded);
+    // On repart d'une page blanche : une photo absente du nouveau rattachement
+    // doit être détachée, pas conservée dans son ancienne pièce.
+    for (const photo of photos) {
+      const match = assignments.find((entry) => entry.photoId === photo.id);
+      await store.update('photos', photo.id, {
+        roomId: match?.roomId ?? '',
+        wallIndex: match?.wallIndex ?? 0,
+      });
+    }
+
+    revalidatePath(`/admin/logements/${propertyId}`);
+    revalidatePath(`/espace/biens/${propertyId}`);
+    return { ok: true, message: `${assignments.length} photo(s) rattachée(s) sur ${photos.length}.` };
+  });
+}
+
+/** Le propriétaire a relu le relevé : la visite « Plan 3D » devient publiable. */
+export async function confirmPlan(planId: string, confirmed: boolean): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const plan = await store.get('plans', planId);
+    if (!plan) throw new ValidationError('Plan introuvable.');
+    await authorizeProperty(plan.propertyId);
+    await store.update('plans', planId, { confirmed });
+    revalidatePath(`/admin/logements/${plan.propertyId}`);
+    revalidatePath(`/espace/biens/${plan.propertyId}`);
+    return { ok: true };
+  });
+}
+
+export async function deletePlan(planId: string): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const plan = await store.get('plans', planId);
+    if (!plan) return { ok: true };
+    await authorizeProperty(plan.propertyId);
+    await store.remove('planDoors', { planId });
+    await store.remove('plans', { id: planId });
+    revalidatePath(`/admin/logements/${plan.propertyId}`);
+    revalidatePath(`/espace/biens/${plan.propertyId}`);
     return { ok: true };
   });
 }

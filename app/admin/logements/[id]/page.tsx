@@ -1,9 +1,11 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { LogoMark } from '@/components/Logo';
+import { PlanPanel } from '@/components/PlanPanel';
 import { PropertyExtras } from '@/components/PropertyExtras';
 import { loadTour } from '@/lib/queries';
 import { requireAuth } from '@/lib/require-auth';
+import { isPlanReaderConfigured } from '@/lib/plan-reader';
 import { getStore } from '@/lib/store';
 import { logout } from '../../actions';
 import { TourEditor } from './TourEditor';
@@ -29,10 +31,15 @@ export default async function PropertyEditorPage({ params }: Params) {
 
   const { scenes, hotspots } = await loadTour(property.id);
   const store = getStore();
-  const [photos, chapters] = await Promise.all([
+  const [photos, chapters, plans] = await Promise.all([
     store.list('photos', { propertyId: property.id }),
     store.list('chapters', { propertyId: property.id }),
+    store.list('plans', { propertyId: property.id }),
   ]);
+  // On charge le plan même non confirmé : c'est ici qu'on le relit avant de
+  // décider de le publier.
+  const plan = plans[0] ?? null;
+  const planDoors = plan ? await store.list('planDoors', { planId: plan.id }) : [];
   const origin = await currentOrigin();
 
   return (
@@ -72,12 +79,21 @@ export default async function PropertyEditorPage({ params }: Params) {
           hotspots={hotspots}
           origin={origin}
           extras={
-            <PropertyExtras
-              propertyId={property.id}
-              photos={[...photos].sort((first, second) => first.position - second.position)}
-              chapters={chapters}
-              hasVideo={property.videoUrl !== ''}
-            />
+            <>
+              <PropertyExtras
+                propertyId={property.id}
+                photos={[...photos].sort((first, second) => first.position - second.position)}
+                chapters={chapters}
+                hasVideo={property.videoUrl !== ''}
+              />
+              <PlanPanel
+                propertyId={property.id}
+                plan={plan}
+                doors={planDoors}
+                photos={photos}
+                readerConfigured={isPlanReaderConfigured()}
+              />
+            </>
           }
         />
       </main>
