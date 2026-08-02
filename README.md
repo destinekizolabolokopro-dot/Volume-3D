@@ -290,9 +290,7 @@ lib/
   sphere.ts                    conversions yaw/pitch ↔ vecteurs
   ai-preview.ts                extension IA des photos (aperçus uniquement)
 scripts/
-  demo-rooms.mjs               cotes des trois pièces de démonstration
-  draw-room.js                 dessin d'un panorama équirectangulaire de pièce
-  generate-demo.mjs            écrit public/demo/*.jpg
+  generate-demo.mjs            prépare public/demo/*.jpg depuis les sources CC0
   record-demo.mjs              filme la visite réelle, écrit public/demo/visite.*
 public/
   fonts/                       Inter en woff2 (latin + latin-ext)
@@ -328,13 +326,27 @@ avec le code. La page d'accueil est donc identique sur toute installation, y
 compris neuve, elle n'expose jamais le logement d'un client, et elle ne dépend
 pas de la disponibilité de la base.
 
-Les trois panoramas sont **dessinés**, pas photographiés : `scripts/draw-room.js`
-construit une image équirectangulaire à partir des cotes d'une pièce (demi-
-largeur, hauteur sous plafond, hauteur d'objectif) et de la position des
-ouvertures et des meubles. Le point délicat est que l'arête horizontale d'un mur
-plat n'est pas une droite dans une équirectangulaire : sa hauteur angulaire suit
-`atan(h / r(θ))`, et `r` varie avec le cap. Chaque élément est donc tracé le long
-de cette courbe — sans quoi les fenêtres apparaissent bombées sur la sphère.
+Les trois panoramas sont de **vraies photographies 360°**, pas des images de
+synthèse. Une première version dessinait les pièces au canevas à partir de leurs
+cotes ; le rendu restait une illustration, et une illustration ne démontre pas un
+service qui vend justement du réalisme. Les sources viennent de
+[Poly Haven](https://polyhaven.com), en CC0 — domaine public, usage commercial
+autorisé, attribution non requise (elle est faite ici par correction) :
+
+| Pièce         | Source Poly Haven |
+| ------------- | ----------------- |
+| Salon         | `lythwood_lounge` |
+| Chambre       | `hotel_room`      |
+| Salle de bain | `modern_bathroom` |
+
+**À remplacer par un vrai logement dès le premier scan livré.** Il suffit de
+déposer trois fichiers dans `public/demo/` et d'ajuster `lib/demo.ts` : les caps
+de départ de chaque pièce et la position des points de passage sur les portes.
+
+Un détail à connaître pour ces réglages : les caps se lisent facilement sur le
+panorama à plat — la colonne `x` d'une image de largeur `W` correspond au cap
+`360 × x / W` — mais le viewer compte les siens depuis une autre origine. La
+fonction `facing()` de `lib/demo.ts` fait la conversion, en un seul endroit.
 
 La vidéo, elle, n'est pas une maquette : `scripts/record-demo.mjs` pilote la
 visite réelle de la page d'accueil et filme la fenêtre. Ce qui est montré ne peut

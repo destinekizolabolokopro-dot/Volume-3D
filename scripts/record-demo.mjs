@@ -96,33 +96,26 @@ await wait(2200);
 /* -------------------------------------------------------------- scénario --- */
 
 // Salon : on regarde autour de soi, doucement, dans les deux sens.
-await pan(page, -540, 0, 5200);
+await pan(page, -560, 0, 5400);
 await wait(900);
-await pan(page, 300, -70, 3200);
+await pan(page, 320, -60, 3200);
 await wait(700);
-await pan(page, 240, 60, 2800);
+await pan(page, 260, 50, 2800);
 await wait(900);
 
-// On passe dans la chambre en cliquant le point de passage posé sur la porte.
-const toBedroom = page.locator('button', { hasText: 'Chambre' }).first();
-if (await toBedroom.count()) {
-  await toBedroom.click();
-  await wait(2400);
-  await pan(page, -460, 0, 4600);
+// On passe dans la chambre, puis dans la salle de bain, par la barre des pièces.
+for (const [room, sweep] of [
+  ['Chambre', -480],
+  ['Salle de bain', 420],
+]) {
+  const chip = page.locator('[class*="roomChip"]', { hasText: room }).first();
+  if (!(await chip.count())) continue;
+  await chip.click();
+  await wait(2600);
+  await pan(page, sweep, 0, 4600);
   await wait(700);
-  await pan(page, 220, 0, 2400);
-  await wait(900);
-}
-
-// Puis dans la cuisine, par la barre des pièces.
-const toKitchen = page.locator('button', { hasText: 'Cuisine' }).first();
-if (await toKitchen.count()) {
-  await toKitchen.click();
-  await wait(2400);
-  await pan(page, 420, 0, 4200);
-  await wait(700);
-  await pan(page, -240, 0, 2400);
-  await wait(1400);
+  await pan(page, -sweep * 0.5, 0, 2400);
+  await wait(1200);
 }
 
 await context.close();

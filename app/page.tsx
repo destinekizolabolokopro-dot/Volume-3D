@@ -97,7 +97,7 @@ export default function HomePage() {
                 <span>
                   <strong>Exemple de visite livrée.</strong> Faites glisser pour regarder autour de vous.
                 </span>
-                <span>Salon · Chambre · Cuisine</span>
+                <span>Salon · Chambre · Salle de bain</span>
               </p>
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function HomePage() {
             <Reveal>
               <DemoVideo src="/demo/visite" poster="/demo/poster.jpg" />
               <p className="video-legend">
-                <span>Visite de démonstration · 40 secondes · sans son</span>
+                <span>Visite de démonstration · 45 secondes · sans son</span>
                 <span>Fonctionne sur téléphone, tablette et ordinateur, sans application</span>
               </p>
             </Reveal>
