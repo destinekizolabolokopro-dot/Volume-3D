@@ -6,8 +6,8 @@
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  background: #14100d;
-  color: #f6f1ea;
+  background: #0f1418;
+  color: #e9edf2;
 }
 
 .tour-header {
@@ -16,7 +16,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: clamp(13px, 1.6vw, 20px) clamp(16px, 3vw, 30px);
-  background: #1b1613;
+  background: #161c22;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -54,7 +54,7 @@
 }
 
 .tour-brand b {
-  color: var(--accent-warm);
+  color: #7fb0ff;
   font-weight: 400;
 }
 
@@ -88,7 +88,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #14100d;
+  background: #0f1418;
 }
 
 /* Sous la visite : ce que la visite ne montre pas — le texte du propriétaire
@@ -157,7 +157,7 @@
   font-weight: 300;
   letter-spacing: 0.1em;
   color: rgba(242, 236, 225, 0.45);
-  background: #1b1613;
+  background: #161c22;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 

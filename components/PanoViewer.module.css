@@ -3,7 +3,7 @@
   width: 100%;
   height: 100%;
   min-height: 320px;
-  background: #14100d;
+  background: #0f1418;
   overflow: hidden;
   touch-action: none;
   user-select: none;
@@ -58,9 +58,11 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  background: rgba(20, 16, 13, 0.35);
-  backdrop-filter: blur(2px);
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  /* Assez opaque pour que la flèche blanche reste lisible, y compris posée sur
+     un mur clair : c'est le seul repère de navigation dans l'image. */
+  background: rgba(15, 20, 24, 0.62);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -80,23 +82,20 @@
 }
 
 .hotspotLabel {
-  background: rgba(20, 16, 13, 0.72);
+  background: rgba(16, 22, 28, 0.72);
   backdrop-filter: blur(4px);
   padding: 4px 10px;
-  border-radius: 2px;
+  border-radius: 100px;
   white-space: nowrap;
-  font-size: 10.5px;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 12.5px;
+  font-weight: 500;
 }
 
 /* ----------------------------------------------------------------- HUD --- */
 
 /*
-  Sélecteur de pièces : même vocabulaire que les commandes de la page publique
-  — micro-typographie espacée sur un filet, jamais une pastille pleine. Posé sur
-  un dégradé qui rattache la commande à l'image sans la découper.
+  Sélecteur de pièces : des boutons lisibles posés sur un dégradé sombre. Le
+  voyageur doit pouvoir en changer sans réfléchir, y compris au pouce.
 */
 .roomBar {
   position: absolute;
@@ -104,10 +103,10 @@
   right: 0;
   bottom: 0;
   display: flex;
-  gap: clamp(16px, 4vw, 32px);
-  padding: 40px clamp(14px, 3vw, 24px) 16px;
+  gap: 8px;
+  padding: 44px 14px 14px;
   overflow-x: auto;
-  background: linear-gradient(transparent, rgba(15, 12, 10, 0.82));
+  background: linear-gradient(transparent, rgba(10, 14, 18, 0.72));
   scrollbar-width: none;
 }
 
@@ -117,43 +116,32 @@
 
 .roomChip {
   flex: none;
-  position: relative;
-  background: none;
-  border: 0;
-  padding: 6px 0;
-  color: rgba(242, 236, 225, 0.66);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 100px;
+  background: rgba(16, 22, 28, 0.55);
+  backdrop-filter: blur(8px);
+  color: #fff;
   font-family: inherit;
-  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
   white-space: nowrap;
-  transition: color 0.3s ease;
-}
-
-.roomChip::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .roomChip:hover {
-  color: #f7f3ec;
+  background: rgba(16, 22, 28, 0.78);
 }
 
 .roomChipActive {
-  color: #f7f3ec;
+  background: #fff;
+  border-color: #fff;
+  color: var(--ink-strong);
 }
 
-.roomChipActive::after {
-  transform: scaleX(1);
+.roomChipActive:hover {
+  background: #fff;
 }
 
 .topBar {
@@ -175,20 +163,19 @@
 }
 
 .sceneName {
-  font-family: var(--display, serif);
-  font-size: clamp(19px, 2.2vw, 26px);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+  font-size: clamp(16px, 1.6vw, 19px);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
 }
 
 .iconBtn {
   background: rgba(20, 16, 13, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.24);
   color: #fff;
-  border-radius: 2px;
-  width: 40px;
-  height: 40px;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
   backdrop-filter: blur(6px);
   transition: background-color 0.3s ease, border-color 0.3s ease;
   display: flex;
@@ -215,7 +202,7 @@
   gap: 10px;
   text-align: center;
   padding: 24px;
-  background: #14100d;
+  background: #0f1418;
   font-size: 14px;
   color: #cbbfb0;
 }
@@ -223,7 +210,7 @@
 .fadeMask {
   position: absolute;
   inset: 0;
-  background: #14100d;
+  background: #0f1418;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.28s ease;
@@ -236,16 +223,13 @@
 .hint {
   position: absolute;
   left: 50%;
-  bottom: 86px;
+  bottom: 80px;
   transform: translateX(-50%);
-  padding: 9px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(20, 16, 13, 0.55);
-  backdrop-filter: blur(6px);
-  border-radius: 2px;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  padding: 8px 15px;
+  border-radius: 100px;
+  background: rgba(16, 22, 28, 0.62);
+  backdrop-filter: blur(8px);
+  font-size: 13px;
   white-space: nowrap;
   pointer-events: none;
   animation: fadeOut 1s ease 4s both;

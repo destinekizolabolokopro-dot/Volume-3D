@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#f6f1ea',
+  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
 };
@@ -45,18 +45,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <head>
-        {/* Cormorant Garamond pour le display (lisibilité éditoriale aux grandes
-            tailles), Jost pour l'interface. Deux familles, deux fichiers dans le
-            chemin critique : ce sont les fontes variables latines, qui couvrent
-            à elles seules toutes les graisses employées. */}
-        <link
-          rel="preload"
-          as="font"
-          type="font/woff2"
-          href="/fonts/cormorant-garamond-400-latin.woff2"
-          crossOrigin="anonymous"
-        />
-        <link rel="preload" as="font" type="font/woff2" href="/fonts/jost-300-latin.woff2" crossOrigin="anonymous" />
+        {/* Une seule fonte pour tout le site : un seul fichier dans le chemin
+            critique. Inter est variable, ce fichier couvre toutes les graisses. */}
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400-latin.woff2" crossOrigin="anonymous" />
       </head>
       <body>{children}</body>
     </html>

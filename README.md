@@ -260,10 +260,10 @@ intégration directe dans l'annonce Airbnb.
 ```
 app/
   globals.css                  jetons de design et primitives partagées
-  fonts.css                    @font-face des fontes auto-hébergées (généré)
-  layout.tsx                   coquille HTML, métadonnées, préchargement des fontes
-  page.tsx                     landing publique
-  landing.css                  feuille de la landing (direction « Seuil »)
+  fonts.css                    @font-face de la fonte auto-hébergée (généré)
+  layout.tsx                   coquille HTML, métadonnées, préchargement de la fonte
+  page.tsx                     page publique
+  landing.css                  feuille de la page publique
   v/[slug]/                    visite publique (panoramas, vidéo, modèle 3D ou embed)
   demo/[token]/                aperçu de démarchage, filigrané et temporaire
   espace/                      espace client : tableau de bord, biens, création, compte
@@ -276,56 +276,79 @@ app/
   api/contact/                 réception du formulaire
   api/files/[...path]/         service des fichiers en développement
 components/
-  HeroStage.tsx                panorama vivant du héros (unique contexte WebGL de la page)
-  landing/                     SiteChrome (navigation), Reveal, Counter
   PanoViewer.tsx               viewer 360° : rotation, zoom, passages, plein écran
   TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
+  landing/                     SiteNav, DemoTour, DemoVideo, Reveal, icônes
 lib/
+  demo.ts                      pièces et points de passage de la démonstration publique
   store.ts                     accès aux données (fichier JSON en dev, Supabase en prod)
   accounts.ts                  comptes clients, mots de passe, sessions
   assistant.ts                 invite système de l'assistant, garde-fous
   storage.ts / paths.ts        envoi de fichiers et sécurité des chemins
   sphere.ts                    conversions yaw/pitch ↔ vecteurs
   ai-preview.ts                extension IA des photos (aperçus uniquement)
-public/fonts/                  fontes woff2 auto-hébergées (latin + latin-ext)
+scripts/
+  demo-rooms.mjs               cotes des trois pièces de démonstration
+  draw-room.js                 dessin d'un panorama équirectangulaire de pièce
+  generate-demo.mjs            écrit public/demo/*.jpg
+  record-demo.mjs              filme la visite réelle, écrit public/demo/visite.*
+public/
+  fonts/                       Inter en woff2 (latin + latin-ext)
+  demo/                        panoramas, vidéo et vignette de la démonstration
 supabase/schema.sql            schéma à exécuter une fois
 ```
 
-### Direction artistique — « Seuil »
+### Parti pris de la page publique
 
-Le service vend le fait de franchir une porte avant de réserver. Le site
-applique la même idée : il s'ouvre sur un espace habitable, puis avance par
-chapitres alternés — clair, sombre, clair — séparés par de grands silences.
+Le lecteur visé est le **propriétaire qui loue son logement**, pas le voyageur
+qui le réserve. La page ne cherche donc pas à faire rêver : elle montre l'outil,
+dit ce qu'il change pour lui, et donne le prix. Trois règles la tiennent :
 
-Trois règles tiennent l'ensemble, et rien ne doit les contredire :
+1. **La démonstration passe avant le discours.** Le premier écran contient une
+   vraie visite, manipulable à la souris ou au doigt — pas une capture, pas une
+   promesse. Une section plus bas montre en vidéo ce que reçoit le voyageur.
+2. **Une seule couleur d'accent**, réservée à ce sur quoi on peut agir. Sa
+   luminance est choisie pour franchir le seuil AA dans les deux sens : texte
+   bleu sur blanc, et texte blanc sur aplat bleu.
+3. **Aucun effet qui ne serve pas la lecture.** Les apparitions au défilement
+   durent une demi-seconde, ne se jouent qu'une fois, et `prefers-reduced-motion`
+   les supprime entièrement.
 
-1. **Une seule scène WebGL par page.** Sur la landing, c'est le héros : le
-   visiteur manipule une vraie visite avant qu'on lui explique ce qu'on vend.
-   Tout le reste est du CSS.
-2. **Le mouvement imite une caméra.** Dérive lente, montée douce derrière un
-   masque, jamais de rebond ni d'élan artificiel. `prefers-reduced-motion`
-   coupe tout et laisse la page entièrement lisible.
-3. **Les respirations sont fluides.** Toutes les tailles et tous les rythmes
-   passent par `clamp()` : la page ne change jamais d'allure à un palier de
-   media query, elle se déforme continûment de 320 px à 2560 px.
+Une seule fonte pour tout le site — Inter, auto-hébergée dans `public/fonts`. La
+feuille distante de Google Fonts bloquait le rendu et ajoutait deux connexions
+au chemin critique ; `app/fonts.css` est généré à partir de leur API et ne
+contient que les sous-ensembles latin et latin-ext.
 
-Les commandes de l'interface partagent un seul vocabulaire, de la landing à la
-page de visite : micro-typographie espacée en capitales, posée sur un filet qui
-se remplit en laiton quand l'élément est actif. Pas de pastille pleine, pas
-d'ombre portée décorative.
+### La démonstration publique
 
-**Typographie.** Cormorant Garamond pour le display, Jost pour l'interface —
-deux familles, pas une de plus. Les fichiers sont auto-hébergés dans
-`public/fonts` : la feuille de Google Fonts bloquait le rendu et ajoutait deux
-connexions au chemin critique. `app/fonts.css` est généré à partir de l'API
-Google Fonts et ne contient que les sous-ensembles latin et latin-ext.
+Elle ne vient pas de la base de données : ce sont des fichiers fixes, versionnés
+avec le code. La page d'accueil est donc identique sur toute installation, y
+compris neuve, elle n'expose jamais le logement d'un client, et elle ne dépend
+pas de la disponibilité de la base.
 
-**Couleur.** Le laiton d'aplat (`--accent`) ne franchit le seuil AA ni sur
-l'ivoire ni sur l'anthracite : il ne sert donc jamais de couleur de texte fin.
-Deux déclinaisons existent pour cela — `--accent-deep` sur fond clair,
-`--accent-warm` sur fond sombre.
+Les trois panoramas sont **dessinés**, pas photographiés : `scripts/draw-room.js`
+construit une image équirectangulaire à partir des cotes d'une pièce (demi-
+largeur, hauteur sous plafond, hauteur d'objectif) et de la position des
+ouvertures et des meubles. Le point délicat est que l'arête horizontale d'un mur
+plat n'est pas une droite dans une équirectangulaire : sa hauteur angulaire suit
+`atan(h / r(θ))`, et `r` varie avec le cap. Chaque élément est donc tracé le long
+de cette courbe — sans quoi les fenêtres apparaissent bombées sur la sphère.
+
+La vidéo, elle, n'est pas une maquette : `scripts/record-demo.mjs` pilote la
+visite réelle de la page d'accueil et filme la fenêtre. Ce qui est montré ne peut
+donc pas diverger du produit.
+
+Pour régénérer les deux (Playwright et ffmpeg requis, aucun des deux n'est une
+dépendance du site) :
+
+```bash
+npx playwright@1.62 install chromium
+npm run demo:images
+npm run build && npm run start &      # la vidéo filme le site en fonctionnement
+npm run demo:video
+```
 
 ### Choix techniques notables
 

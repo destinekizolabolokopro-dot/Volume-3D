@@ -3,12 +3,11 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Révélation à l'entrée dans le champ.
+ * Apparition à l'entrée dans le champ.
  *
- * Un seul IntersectionObserver par élément, un seul déclenchement, puis
- * l'observation s'arrête : aucun travail au défilement une fois l'élément vu.
- * L'animation elle-même est purement CSS (opacité + translation), donc portée
- * par le compositeur et sans impact sur le fil principal.
+ * Un observateur par élément, un seul déclenchement, puis l'observation
+ * s'arrête : rien à calculer au défilement une fois l'élément vu. L'animation
+ * est purement CSS, donc portée par le compositeur.
  */
 export function Reveal({
   children,
@@ -27,7 +26,6 @@ export function Reveal({
     const node = ref.current;
     if (!node) return;
 
-    // Sans animation demandée, l'élément est visible immédiatement.
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       node.dataset.shown = '1';
       return;
@@ -39,7 +37,9 @@ export function Reveal({
         node.dataset.shown = '1';
         observer.disconnect();
       },
-      { rootMargin: '0px 0px -12% 0px', threshold: 0.08 },
+      // Aucune marge négative : un bloc situé tout en bas de page doit pouvoir
+      // se révéler même quand le défilement ne peut plus l'éloigner du bord.
+      { rootMargin: '0px', threshold: 0.01 },
     );
     observer.observe(node);
     return () => observer.disconnect();

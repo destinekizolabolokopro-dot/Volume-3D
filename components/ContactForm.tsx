@@ -88,7 +88,7 @@ export function ContactForm() {
         </div>
       )}
 
-      <button className="btn btn-dark" type="submit" disabled={status === 'sending'}>
+      <button className="btn btn-accent" type="submit" disabled={status === 'sending'}>
         {status === 'sending' ? 'Envoi…' : 'Demander un créneau'}
       </button>
 
