@@ -173,6 +173,88 @@ export const pointAt = (wall: Segment, t: number): PlanPoint => ({
   y: wall.a.y + (wall.b.y - wall.a.y) * t,
 });
 
+/* ------------------------------------------------------------ déplacement */
+
+/** Distance d'un point à un segment, en mètres. */
+export function distanceToSegment(point: PlanPoint, segment: Segment): number {
+  const dx = segment.b.x - segment.a.x;
+  const dy = segment.b.y - segment.a.y;
+  const lengthSquared = dx * dx + dy * dy;
+  if (lengthSquared < EPSILON) return distance(point, segment.a);
+  const t = Math.max(
+    0,
+    Math.min(1, ((point.x - segment.a.x) * dx + (point.y - segment.a.y) * dy) / lengthSquared),
+  );
+  return distance(point, { x: segment.a.x + t * dx, y: segment.a.y + t * dy });
+}
+
+/**
+ * Vrai si le visiteur peut se tenir là.
+ *
+ * Il ne suffit pas d'être dans le polygone : il faut aussi ne pas avoir le nez
+ * dans le mur. La marge représente l'encombrement du visiteur — sans elle, on
+ * peut avancer jusqu'à traverser la cloison et voir la pièce d'à côté.
+ */
+export function canStandAt(room: PlanRoom, point: PlanPoint, margin = 0.35): boolean {
+  if (!containsPoint(room, point)) return false;
+  return roomWalls(room).every((wall) => distanceToSegment(point, wall) >= margin);
+}
+
+/**
+ * Ramène un déplacement à ce qui est franchissable.
+ *
+ * On tente le pas complet ; s'il est bloqué, on tente chaque axe séparément.
+ * C'est ce qui permet de glisser le long d'un mur au lieu de s'y coller net,
+ * comportement attendu de n'importe quelle visite où l'on marche.
+ */
+export function slideMove(room: PlanRoom, from: PlanPoint, to: PlanPoint, margin = 0.35): PlanPoint {
+  if (canStandAt(room, to, margin)) return to;
+  const alongX = { x: to.x, y: from.y };
+  if (canStandAt(room, alongX, margin)) return alongX;
+  const alongY = { x: from.x, y: to.y };
+  if (canStandAt(room, alongY, margin)) return alongY;
+  return from;
+}
+
+/**
+ * Point atteignable le plus avancé sur le trajet vers une cible.
+ *
+ * Une tape tombe souvent au-delà d'un mur — dans une pièce de quatre mètres,
+ * c'est même le cas le plus fréquent. Ne rien faire donnerait l'impression que
+ * la commande est cassée : on avance donc aussi loin que possible dans cette
+ * direction, ce qui est exactement ce qu'on attend en tapant sur un mur.
+ *
+ * Recherche par dichotomie sur le segment, ce qui converge au centimètre en une
+ * douzaine d'essais quelle que soit la distance.
+ */
+export function reachableToward(
+  room: PlanRoom,
+  from: PlanPoint,
+  to: PlanPoint,
+  margin = 0.35,
+  precision = 0.01,
+): PlanPoint | null {
+  // Le point de départ d'abord : si le visiteur n'est pas dans la pièce, rien
+  // ne doit le téléporter à l'intérieur.
+  if (!canStandAt(room, from, margin)) return null;
+  if (canStandAt(room, to, margin)) return to;
+
+  let low = 0;
+  let high = 1;
+  const at = (t: number) => ({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
+  const span = distance(from, to);
+  if (span < precision) return null;
+
+  while ((high - low) * span > precision) {
+    const middle = (low + high) / 2;
+    if (canStandAt(room, at(middle), margin)) low = middle;
+    else high = middle;
+  }
+  const result = at(low);
+  // Un pas de moins d'un centimètre ne vaut pas la peine d'être joué.
+  return distance(from, result) < precision ? null : result;
+}
+
 /* ------------------------------------------------------------- navigation */
 
 /** Les pièces accessibles depuis une pièce donnée, via une ouverture franchissable. */

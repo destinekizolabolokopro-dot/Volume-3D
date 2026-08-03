@@ -160,3 +160,34 @@
 .roomChipActive:hover {
   background: #fff;
 }
+
+/* Indication de prise en main : elle s'efface d'elle-même, une visite n'est pas
+   un logiciel qu'on apprend. */
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 80px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 8px 15px;
+  border-radius: 100px;
+  background: rgba(16, 22, 28, 0.62);
+  backdrop-filter: blur(8px);
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: fadeOut 1s ease 5s both;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint {
+    animation: none;
+  }
+}

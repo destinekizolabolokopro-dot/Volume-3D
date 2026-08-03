@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   PlanError,
+  canStandAt,
+  distanceToSegment,
+  reachableToward,
+  slideMove,
   assertPlanIsUsable,
   containsPoint,
   exitsFrom,
@@ -210,4 +214,58 @@ test('rescaleToArea ne touche à rien sous 2 % d’écart', () => {
 test('rescaleToArea ignore une surface non renseignée', () => {
   const rooms = [rectangle('salon')];
   assert.equal(rescaleToArea(rooms, [], 0).factor, 1);
+});
+
+/* ------------------------------------------------------------ déplacement */
+
+test('distanceToSegment mesure la distance au segment, pas à la droite', () => {
+  const wall = { a: { x: 0, y: 0 }, b: { x: 4, y: 0 } };
+  assert.equal(distanceToSegment({ x: 2, y: 3 }, wall), 3);
+  // Au-delà de l'extrémité, c'est la distance au bout du segment qui compte.
+  assert.equal(distanceToSegment({ x: 8, y: 0 }, wall), 4);
+  assert.equal(distanceToSegment({ x: -3, y: 4 }, wall), 5);
+});
+
+test('canStandAt refuse le centre du mur et accepte le centre de la pièce', () => {
+  const room = rectangle('salon');
+  assert.ok(canStandAt(room, { x: 2, y: 1.5 }));
+  // À dix centimètres du mur, on aurait le nez dedans.
+  assert.ok(!canStandAt(room, { x: 0.1, y: 1.5 }));
+  assert.ok(!canStandAt(room, { x: 9, y: 9 }));
+});
+
+test('slideMove laisse glisser le long du mur au lieu de bloquer net', () => {
+  const room = rectangle('salon');
+  const from = { x: 2, y: 1.5 };
+  // Pas entièrement libre : accepté tel quel.
+  assert.deepEqual(slideMove(room, from, { x: 2.5, y: 1.5 }), { x: 2.5, y: 1.5 });
+  // Vers le mur de gauche en diagonale : le déplacement latéral passe, pas
+  // la composante qui traverse la cloison.
+  const slid = slideMove(room, from, { x: -1, y: 2 });
+  assert.equal(slid.x, 2);
+  assert.equal(slid.y, 2);
+  // Droit dans le mur : on ne bouge pas.
+  assert.deepEqual(slideMove(room, { x: 0.5, y: 1.5 }, { x: -2, y: 1.5 }), { x: 0.5, y: 1.5 });
+});
+
+test('reachableToward avance jusqu’au mur quand la cible est au-delà', () => {
+  const room = rectangle('salon'); // 4 × 3
+  const from = { x: 2, y: 1.5 };
+
+  // Cible hors de la pièce, droit devant : on s'arrête à la marge du mur.
+  const stopped = reachableToward(room, from, { x: 2, y: 9 });
+  assert.ok(stopped);
+  assert.ok(Math.abs(stopped.x - 2) < 1e-9);
+  assert.ok(Math.abs(stopped.y - (3 - 0.35)) < 0.02);
+
+  // Cible atteignable : rendue telle quelle.
+  assert.deepEqual(reachableToward(room, from, { x: 2.5, y: 1.5 }), { x: 2.5, y: 1.5 });
+});
+
+test('reachableToward ne rend rien quand il n’y a pas un centimètre à gagner', () => {
+  const room = rectangle('salon');
+  // Déjà collé à la marge du mur du haut, cible encore plus haut.
+  assert.equal(reachableToward(room, { x: 2, y: 0.35 }, { x: 2, y: -5 }), null);
+  // Départ hors de la pièce : rien à faire.
+  assert.equal(reachableToward(room, { x: 9, y: 9 }, { x: 2, y: 1.5 }), null);
 });

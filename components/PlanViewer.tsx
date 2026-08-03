@@ -7,8 +7,10 @@ import {
   pointAt,
   planBounds,
   projectOnWall,
+  reachableToward,
   roomCenter,
   roomWalls,
+  slideMove,
   solidSpans,
   type Interval,
 } from '@/lib/plan';
@@ -24,6 +26,8 @@ const MAX_FOV = 95;
 const DEFAULT_FOV = 72;
 /** Degrés parcourus par pixel de glissement, à 72° de champ. */
 const DRAG_SENSITIVITY = 0.13;
+/** Vitesse de marche, en mètres par seconde. Un pas de promenade, pas une course. */
+const WALK_SPEED = 1.5;
 
 export interface PlanViewerProps {
   plan: FloorPlan;
@@ -59,6 +63,8 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
   const [roomId, setRoomId] = useState(() => initialRoomId ?? rooms[0]?.id ?? '');
   const [exits, setExits] = useState<ScreenExit[]>([]);
   const [dragging, setDragging] = useState(false);
+  /** Pièce dans laquelle la caméra a déjà été posée. */
+  const placedIn = useRef('');
 
   const room = useMemo(() => rooms.find((r) => r.id === roomId) ?? rooms[0], [rooms, roomId]);
 
@@ -74,6 +80,9 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
     view: { yaw: number; pitch: number; fov: number };
+    walk: { to: { x: number; y: number } | null; keys: Set<string> };
+    /** Pièce courante, relue par la boucle de rendu pour borner la marche. */
+    room: PlanRoom | null;
   } | null>(null);
 
   /* ------------------------------------------------------------ la scène --- */
@@ -94,8 +103,12 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0f1418);
     const camera = new THREE.PerspectiveCamera(DEFAULT_FOV, 1, 0.05, 200);
+    /* `walk` porte la marche : `to` est la destination visée par une tape au
+       sol, `keys` les touches maintenues. La position réelle reste celle de la
+       caméra — c'est elle qui fait foi. */
     const view = { yaw: 0, pitch: -11, fov: DEFAULT_FOV };
-    three.current = { renderer, scene, camera, view };
+    const walk = { to: null as { x: number; y: number } | null, keys: new Set<string>() };
+    three.current = { renderer, scene, camera, view, walk, room: null };
 
     // Lumière douce et sans direction marquée : on éclaire pour lire le volume,
     // pas pour simuler un ensoleillement qu'on ne connaît pas.
@@ -157,10 +170,68 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
     const observer = new ResizeObserver(resize);
     observer.observe(holder);
 
+    /**
+     * Avance d'un pas, en restant dans la pièce.
+     *
+     * Deux commandes cohabitent : les touches, pour l'ordinateur, et la
+     * destination posée par une tape au sol, pour le téléphone — c'est là que
+     * le clavier n'existe pas. La position est bornée par `slideMove`, donc on
+     * longe les murs au lieu de les traverser.
+     */
+    const step = (elapsed: number) => {
+      const current = three.current?.room;
+      if (!current) return;
+      const here = { x: camera.position.x + origin.x, y: camera.position.z + origin.y };
+
+      let direction = { x: 0, y: 0 };
+      if (walk.keys.size > 0) {
+        // Le repère de marche suit le regard : « avancer » veut dire « vers ce
+        // que je regarde », pas « vers le nord du plan ».
+        const yaw = view.yaw * (Math.PI / 180);
+        const forward = { x: Math.sin(yaw), y: -Math.cos(yaw) };
+        const right = { x: Math.cos(yaw), y: Math.sin(yaw) };
+        if (walk.keys.has('avant')) direction = { x: direction.x + forward.x, y: direction.y + forward.y };
+        if (walk.keys.has('arriere')) direction = { x: direction.x - forward.x, y: direction.y - forward.y };
+        if (walk.keys.has('droite')) direction = { x: direction.x + right.x, y: direction.y + right.y };
+        if (walk.keys.has('gauche')) direction = { x: direction.x - right.x, y: direction.y - right.y };
+        walk.to = null;
+      } else if (walk.to) {
+        const dx = walk.to.x - here.x;
+        const dy = walk.to.y - here.y;
+        const remaining = Math.hypot(dx, dy);
+        // Arrivé : on relâche la destination pour ne pas osciller autour.
+        if (remaining < 0.12) walk.to = null;
+        else direction = { x: dx / remaining, y: dy / remaining };
+      }
+
+      const length = Math.hypot(direction.x, direction.y);
+      if (length < 0.001) return;
+
+      const distance = WALK_SPEED * elapsed;
+      const target = {
+        x: here.x + (direction.x / length) * distance,
+        y: here.y + (direction.y / length) * distance,
+      };
+      const allowed = slideMove(current, here, target);
+      camera.position.x = allowed.x - origin.x;
+      camera.position.z = allowed.y - origin.y;
+    };
+
     let frame = 0;
-    const tick = () => {
+    let previous = performance.now();
+    const tick = (now: number) => {
       frame = requestAnimationFrame(tick);
-      if (document.hidden) return;
+      if (document.hidden) {
+        previous = now;
+        return;
+      }
+      // Le pas dépend du temps écoulé, jamais du nombre d'images : la vitesse
+      // de marche doit être la même sur un téléphone à 30 img/s et un écran
+      // à 120 Hz.
+      const elapsed = Math.min(0.05, (now - previous) / 1000);
+      previous = now;
+      step(elapsed);
+
       const yaw = view.yaw * (Math.PI / 180);
       const pitch = view.pitch * (Math.PI / 180);
       camera.lookAt(
@@ -346,6 +417,16 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
   useEffect(() => {
     const context = three.current;
     if (!context || !room) return;
+    context.room = room;
+    /* La caméra n'est replacée qu'au changement de pièce. Cet effet dépend
+       aussi des ouvertures et des photos — deux tableaux dont l'identité change
+       à chaque rendu du parent — et sans ce garde-fou, le visiteur serait
+       ramené au centre de la pièce dès qu'il commence à marcher. */
+    if (placedIn.current === room.id) return;
+    placedIn.current = room.id;
+
+    context.walk.to = null;
+    context.walk.keys.clear();
     const centre = roomCenter(room);
     context.camera.position.set(centre.x - origin.x, EYE, centre.y - origin.y);
 
@@ -425,9 +506,15 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
     if (!holder) return;
     const pointers = new Map<number, { x: number; y: number }>();
 
+    /* Une tape courte pose une destination, un glissement fait tourner la tête.
+       On distingue les deux à la levée du doigt, sur la distance parcourue :
+       c'est le geste attendu sur téléphone, où il n'y a pas de clavier. */
+    let pressedAt = { x: 0, y: 0, time: 0 };
+
     const onDown = (event: PointerEvent) => {
       holder.setPointerCapture(event.pointerId);
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      pressedAt = { x: event.clientX, y: event.clientY, time: performance.now() };
       setDragging(true);
     };
     const onMove = (event: PointerEvent) => {
@@ -445,6 +532,59 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
     const onUp = (event: PointerEvent) => {
       pointers.delete(event.pointerId);
       if (pointers.size === 0) setDragging(false);
+
+      const travelled = Math.hypot(event.clientX - pressedAt.x, event.clientY - pressedAt.y);
+      const held = performance.now() - pressedAt.time;
+      if (travelled > 8 || held > 500) return;
+
+      const context = three.current;
+      const current = context?.room;
+      if (!context || !current) return;
+
+      // Où le doigt a-t-il touché le sol ? On lance un rayon depuis la caméra
+      // et on cherche son intersection avec le plan du sol.
+      const box = holder.getBoundingClientRect();
+      const ndc = new THREE.Vector2(
+        ((event.clientX - box.left) / box.width) * 2 - 1,
+        -((event.clientY - box.top) / box.height) * 2 + 1,
+      );
+      const ray = new THREE.Raycaster();
+      ray.setFromCamera(ndc, context.camera);
+      const ground = new THREE.Vector3();
+      if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), ground)) return;
+
+      const target = { x: ground.x + origin.x, y: ground.z + origin.y };
+      const here = {
+        x: context.camera.position.x + origin.x,
+        y: context.camera.position.z + origin.y,
+      };
+      // Une tape tombe souvent derrière un mur : on avance alors aussi loin
+      // que possible dans cette direction, au lieu de ne rien faire.
+      context.walk.to = reachableToward(current, here, target);
+    };
+
+    /* Clavier : flèches et ZQSD / WASD, pour l'ordinateur. */
+    const KEYS: Record<string, string> = {
+      ArrowUp: 'avant',
+      ArrowDown: 'arriere',
+      ArrowLeft: 'gauche',
+      ArrowRight: 'droite',
+      KeyW: 'avant',
+      KeyZ: 'avant',
+      KeyS: 'arriere',
+      KeyA: 'gauche',
+      KeyQ: 'gauche',
+      KeyD: 'droite',
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      const move = KEYS[event.code];
+      if (!move || !three.current) return;
+      event.preventDefault();
+      three.current.walk.keys.add(move);
+    };
+    const onKeyUp = (event: KeyboardEvent) => {
+      const move = KEYS[event.code];
+      if (move) three.current?.walk.keys.delete(move);
     };
     const onWheel = (event: WheelEvent) => {
       const context = three.current;
@@ -458,14 +598,18 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
     holder.addEventListener('pointerup', onUp);
     holder.addEventListener('pointercancel', onUp);
     holder.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
     return () => {
       holder.removeEventListener('pointerdown', onDown);
       holder.removeEventListener('pointermove', onMove);
       holder.removeEventListener('pointerup', onUp);
       holder.removeEventListener('pointercancel', onUp);
       holder.removeEventListener('wheel', onWheel);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
     };
-  }, []);
+  }, [origin]);
 
   if (!room) return <div className={styles.empty}>Ce plan ne contient aucune pièce.</div>;
 
@@ -499,6 +643,8 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
       <div className={styles.topBar}>
         <span className={styles.roomName}>{room.name}</span>
       </div>
+
+      <p className={styles.hint}>Touchez le sol pour avancer · glissez pour regarder</p>
 
       {showRoomBar && rooms.length > 1 ? (
         <div className={styles.roomBar}>
