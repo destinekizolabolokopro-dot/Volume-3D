@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { EspaceNav } from '@/components/EspaceNav';
 import { FactsPanel } from '@/components/FactsPanel';
+import { JourneyBar } from '@/components/JourneyBar';
 import { PlanPanel } from '@/components/PlanPanel';
 import { PropertyExtras } from '@/components/PropertyExtras';
 import { TourEditor } from '@/app/admin/logements/[id]/TourEditor';
@@ -9,6 +10,7 @@ import { loadTour } from '@/lib/queries';
 import { requireAccount } from '@/lib/require-account';
 import { isFactsReaderConfigured } from '@/lib/facts-reader';
 import { reviewIntake } from '@/lib/intake';
+import { reviewJourney } from '@/lib/journey';
 import { isPlanReaderConfigured } from '@/lib/plan-reader';
 import { getStore } from '@/lib/store';
 
@@ -46,6 +48,15 @@ export default async function BienPage({ params }: Params) {
   const planDoors = plan ? await store.list('planDoors', { planId: plan.id }) : [];
   // Ce qui manque au dossier : calcul déterministe, aucun appel de modèle.
   const intake = reviewIntake(plan, planDoors, photos);
+  // Où en est le dossier : dérivé de l'état, jamais stocké.
+  const journey = reviewJourney({
+    property,
+    sceneCount: scenes.length,
+    photoCount: photos.length,
+    plan,
+    intake,
+    facts: property.facts ?? [],
+  });
   const origin = await currentOrigin();
 
   return (
@@ -65,6 +76,8 @@ export default async function BienPage({ params }: Params) {
             ← Mes biens
           </a>
         </div>
+
+        <JourneyBar journey={journey} />
 
         <TourEditor
           property={property}

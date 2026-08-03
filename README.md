@@ -272,11 +272,30 @@ déclarer deux fois.
 
 ---
 
-## Le dossier : ce qui manque, et la fiche du logement
+## Le dossier : où j'en suis, ce qui manque, et la fiche
 
 Un propriétaire qui envoie son plan et ses photos ne sait pas s'il en a envoyé
-assez. La fiche du bien répond à cette question dans deux blocs, toujours dans
-cet ordre : **ce qu'il reste à faire**, puis **les questions**.
+assez. La fiche du bien répond à cette question à trois endroits : une bande
+d'avancement en haut de page, puis **ce qu'il reste à faire**, puis **les
+questions**.
+
+### Le parcours
+
+`lib/journey.ts` dérive de l'état du dossier — jamais stocké — les étapes
+franchies et celle en cours : **le logement → la visite → les photos → la
+vérification → la fiche → la publication**. Sous les étapes, une phrase dit
+l'action précise, pas un pourcentage : « Prochaine étape — la vérification :
+il manque une photo pour le dégagement. »
+
+Deux principes :
+
+- **Rien n'est verrouillé.** La bande n'est pas cliquable et n'impose aucun
+  ordre : tout reste modifiable plus bas dans la page. Une bande qui
+  prétendrait naviguer promettrait un cheminement que l'éditeur n'impose pas.
+- **Deux routes mènent à une visite publiable** — des panoramas 360° (ou une
+  vidéo, un modèle, un viewer externe), ou un plan relevé et des photos.
+  L'étape de vérification ne concerne que la seconde : elle n'apparaît au
+  parcours que si un plan existe.
 
 ### Le contrôle de complétude
 
@@ -325,7 +344,8 @@ Trois règles tiennent l'ensemble :
 
 Les réponses confirmées nourrissent l'assistant : c'est ce qui lui permet de
 répondre « oui, il y a un lave-linge » au lieu de renvoyer vers le
-propriétaire. Couvert par `tests/intake.test.ts` et `tests/facts.test.ts`.
+propriétaire. Couvert par `tests/intake.test.ts`, `tests/facts.test.ts` et
+`tests/journey.test.ts`.
 
 ---
 
@@ -406,6 +426,7 @@ components/
   PlanViewer.tsx               viewer du volume reconstruit depuis un plan
   PlanPanel.tsx                relevé du plan et relecture, dans l'éditeur
   FactsPanel.tsx               ce qu'il reste à faire, et la fiche du logement
+  JourneyBar.tsx               bande d'avancement en haut de la fiche d'un bien
   TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
@@ -414,6 +435,7 @@ lib/
   plan.ts                      géométrie des visites depuis un plan, marche, validation du relevé
   plan-reader.ts               lecture du plan et rattachement des photos (Claude, vision)
   intake.ts                    contrôle de complétude du dossier, sans appel à un modèle
+  journey.ts                   étapes du dossier, de la création à la publication
   facts.ts                     catalogue des questions, arbitrage propriétaire / IA
   facts-reader.ts              pré-remplissage de la fiche depuis les photos (Claude, vision)
   demo.ts                      pièces et points de passage de la démonstration publique
