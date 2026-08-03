@@ -1,11 +1,14 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { EspaceNav } from '@/components/EspaceNav';
+import { FactsPanel } from '@/components/FactsPanel';
 import { PlanPanel } from '@/components/PlanPanel';
 import { PropertyExtras } from '@/components/PropertyExtras';
 import { TourEditor } from '@/app/admin/logements/[id]/TourEditor';
 import { loadTour } from '@/lib/queries';
 import { requireAccount } from '@/lib/require-account';
+import { isFactsReaderConfigured } from '@/lib/facts-reader';
+import { reviewIntake } from '@/lib/intake';
 import { isPlanReaderConfigured } from '@/lib/plan-reader';
 import { getStore } from '@/lib/store';
 
@@ -41,6 +44,8 @@ export default async function BienPage({ params }: Params) {
   // décider de le publier.
   const plan = plans[0] ?? null;
   const planDoors = plan ? await store.list('planDoors', { planId: plan.id }) : [];
+  // Ce qui manque au dossier : calcul déterministe, aucun appel de modèle.
+  const intake = reviewIntake(plan, planDoors, photos);
   const origin = await currentOrigin();
 
   return (
@@ -80,6 +85,13 @@ export default async function BienPage({ params }: Params) {
                 doors={planDoors}
                 photos={photos}
                 readerConfigured={isPlanReaderConfigured()}
+              />
+              <FactsPanel
+                propertyId={property.id}
+                facts={property.facts ?? []}
+                intake={intake}
+                readerConfigured={isFactsReaderConfigured()}
+                hasPhotos={photos.length > 0}
               />
             </>
           }

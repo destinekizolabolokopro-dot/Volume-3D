@@ -46,7 +46,12 @@
 
 @media (max-width: 1000px) {
   .editor {
-    grid-template-columns: 1fr;
+    /* `1fr` vaut `minmax(auto, 1fr)` : la colonne ne descend jamais sous la
+       largeur min-content de son contenu, et sur un téléphone c'est la page
+       entière qui se met à défiler horizontalement. `minmax(0, 1fr)` autorise
+       la colonne à rétrécir ; à l'intérieur, chaque bloc gère son propre
+       débordement. */
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -170,7 +170,10 @@ export function PlanPanel({
           <div className="note" style={{ marginTop: 16 }}>
             {plan.confirmed ? (
               <>
-                <strong>Relevé confirmé.</strong> Le format « Plan 3D » est visible par vos voyageurs.
+                {/* Espaces insécables autour des guillemets : sans elles, le
+                    chevron fermant part seul à la ligne suivante. */}
+                <strong>Relevé confirmé.</strong> Le format «&nbsp;Plan 3D&nbsp;» est visible par vos
+                voyageurs.
               </>
             ) : (
               <>
@@ -194,13 +197,16 @@ export function PlanPanel({
               {plan.confirmed ? 'Retirer de la visite' : 'Confirmer et publier ce format'}
             </button>
             <button
-              className="mini-btn mini-btn-danger"
+              className="btn btn-ghost btn-sm btn-danger"
               type="button"
               disabled={pending}
-              onClick={() => start(async () => {
-                await deletePlan(plan.id);
-                router.refresh();
-              })}
+              onClick={() => {
+                if (!confirm('Supprimer le plan relevé ? Les pièces et les passages seront perdus.')) return;
+                start(async () => {
+                  await deletePlan(plan.id);
+                  router.refresh();
+                });
+              }}
             >
               Supprimer le plan
             </button>

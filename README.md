@@ -126,8 +126,8 @@ son adresse directement. L'administrateur, lui, voit et modifie tout.
 
 Sur chaque page de visite, un bouton « Une question sur ce logement ? » ouvre un
 assistant qui répond aux voyageurs à partir de la description, du nom des
-pièces, des repères vidéo et des légendes de photos. Il tourne sur l'API Claude
-(`claude-opus-5`).
+pièces, des repères vidéo, des légendes de photos et de la **fiche du logement**
+renseignée par le propriétaire. Il tourne sur l'API Claude (`claude-opus-5`).
 
 Ce qu'il ne fait pas, volontairement :
 
@@ -237,6 +237,15 @@ en volume, avec ses vraies photos posées aux bons endroits.
    photos et dit laquelle montre quoi. Une photo qu'il ne sait pas rattacher
    reste sans pièce plutôt que d'être placée au hasard.
 
+Dans la visite, le visiteur ne saute pas de point de vue en point de vue : il
+**marche**. Au doigt sur mobile, aux flèches ou en ZQSD au clavier. Les murs
+l'arrêtent (`canStandAt` impose 35 cm de marge), et un déplacement qui buterait
+contre un mur **glisse le long** au lieu de se bloquer net (`slideMove`) — c'est
+la différence entre une pièce qu'on explore et une pièce où l'on se coince dans
+les angles. Un appui derrière un mur avance aussi loin que possible dans cette
+direction plutôt que de ne rien faire (`reachableToward`). Ces trois fonctions
+sont pures et testées dans `tests/plan.test.ts`.
+
 ### Ce qui protège la fiabilité
 
 Une lecture automatique se trompe. Trois filtres, dans cet ordre :
@@ -260,6 +269,63 @@ les ouvertures sont projetées dessus (`projectOnWall`), fusionnées, puis les
 l'allège sont ajoutés par-dessus. C'est ce qui permet à une porte déclarée une
 seule fois de percer les deux pièces qu'elle sépare, sans qu'on ait à la
 déclarer deux fois.
+
+---
+
+## Le dossier : ce qui manque, et la fiche du logement
+
+Un propriétaire qui envoie son plan et ses photos ne sait pas s'il en a envoyé
+assez. La fiche du bien répond à cette question dans deux blocs, toujours dans
+cet ordre : **ce qu'il reste à faire**, puis **les questions**.
+
+### Le contrôle de complétude
+
+`lib/intake.ts` compare ce que le plan annonce à ce qui a été reçu. C'est
+**déterministe** — aucun appel à un modèle, donc aucun « il manque peut-être
+quelque chose ». Chaque manque a un code stable et un message qui dit quoi
+faire :
+
+| Code | Ce que voit le propriétaire | Gravité |
+|---|---|---|
+| `plan-manquant` | « Envoyez le plan du logement : c'est lui qui donne les dimensions de chaque pièce. » | bloquant |
+| `photos-manquantes` | « Ajoutez au moins une photo par pièce : Séjour, Chambre, Cuisine. » | bloquant |
+| `piece-sans-photo` | « Il manque une photo pour **la chambre**. » — un message par pièce, nommée | bloquant |
+| `aucun-passage` | « Aucun passage n'a été trouvé entre les pièces : le visiteur ne pourrait pas circuler. » | bloquant |
+| `plan-non-confirme` | « Relisez les dimensions relevées, puis confirmez le plan. » | bloquant |
+| `photos-non-rattachees` | « 2 photos ne sont rattachées à aucune pièce : elles n'apparaîtront pas dans la visite. » | conseil |
+
+Deux détails qui changent l'usage : les **placards et pièces de moins de 2 m²**
+ne réclament pas de photo — personne ne visite un placard —, et l'article suit
+le genre du nom (« **la** salle d'eau », « **le** bureau »). Un message qui
+écorche le français fait douter du reste.
+
+### La fiche du logement
+
+`lib/facts.ts` tient un catalogue de dix questions, séparées selon une ligne
+nette : ce qu'une photo **peut** montrer (meublé ou non, douche ou baignoire,
+équipements, luminosité) et ce qu'elle **ne peut pas** (l'adresse, les écoles
+du quartier, le nombre de couchages, ce qui rend le logement différent).
+
+Le bouton **« Pré-remplir depuis les photos »** envoie les photos au modèle,
+qui ne répond qu'aux premières (`lib/facts-reader.ts`). Il lui est demandé
+explicitement de **laisser vide plutôt que de deviner** : une case vide se
+corrige en un clic, une réponse fausse se découvre à l'arrivée du voyageur.
+
+Trois règles tiennent l'ensemble :
+
+1. **Une réponse d'IA est marquée `source: 'ia'`** et porte l'étiquette
+   « Proposé » à l'écran. Tant qu'elle n'est pas enregistrée par le
+   propriétaire, `factsForAssistant` et `factsForDescription` l'ignorent : elle
+   n'atteint **ni la présentation publique, ni l'assistant des visites**.
+2. **Le propriétaire l'emporte toujours.** `mergeFacts` refuse qu'une lecture
+   automatique écrase une réponse humaine, même postérieure.
+3. **Hors catalogue, rien ne passe.** `parseFactAnswers` rejette une clé
+   inventée et une option qui n'est pas dans la liste, plutôt que de la
+   déformer pour la faire rentrer.
+
+Les réponses confirmées nourrissent l'assistant : c'est ce qui lui permet de
+répondre « oui, il y a un lave-linge » au lieu de renvoyer vers le
+propriétaire. Couvert par `tests/intake.test.ts` et `tests/facts.test.ts`.
 
 ---
 
@@ -339,13 +405,17 @@ components/
   PanoViewer.tsx               viewer 360° : rotation, zoom, passages, plein écran
   PlanViewer.tsx               viewer du volume reconstruit depuis un plan
   PlanPanel.tsx                relevé du plan et relecture, dans l'éditeur
+  FactsPanel.tsx               ce qu'il reste à faire, et la fiche du logement
   TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
   landing/                     SiteNav, DemoTour, DemoVideo, Reveal, icônes
 lib/
-  plan.ts                      géométrie des visites depuis un plan + validation du relevé
+  plan.ts                      géométrie des visites depuis un plan, marche, validation du relevé
   plan-reader.ts               lecture du plan et rattachement des photos (Claude, vision)
+  intake.ts                    contrôle de complétude du dossier, sans appel à un modèle
+  facts.ts                     catalogue des questions, arbitrage propriétaire / IA
+  facts-reader.ts              pré-remplissage de la fiche depuis les photos (Claude, vision)
   demo.ts                      pièces et points de passage de la démonstration publique
   store.ts                     accès aux données (fichier JSON en dev, Supabase en prod)
   accounts.ts                  comptes clients, mots de passe, sessions

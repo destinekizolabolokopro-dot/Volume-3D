@@ -36,7 +36,9 @@ create table if not exists properties (
   description   text not null default '',
   notes         text not null default '',
   "chatEnabled" boolean not null default true,
-  mode          text not null default 'pano' check (mode in ('pano', 'model', 'video', 'embed')),
+  mode          text not null default 'pano' check (mode in ('pano', 'model', 'video', 'embed', 'plan')),
+  -- Fiche de renseignements : réponses de l'IA et du propriétaire, en jsonb.
+  facts         jsonb not null default '[]'::jsonb,
   "embedUrl"    text not null default '',
   "modelUrl"    text not null default '',
   "videoUrl"    text not null default '',

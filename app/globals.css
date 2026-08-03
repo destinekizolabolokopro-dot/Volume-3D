@@ -205,6 +205,14 @@ p {
   color: var(--ink-strong);
 }
 
+/* Bouton d'une action destructrice, porté par un libellé et non par une croix :
+   on le pose sur .btn-ghost, discret tant qu'on ne le survole pas. */
+.btn-danger:hover {
+  background: #f6e3df;
+  color: #7c2f1e;
+  border-color: #e0bcb3;
+}
+
 .btn-sm {
   padding: 8px 14px;
   font-size: 14px;
@@ -270,6 +278,38 @@ p {
   font-weight: 500;
   color: var(--ink-muted);
   margin-bottom: 6px;
+}
+
+/* Groupe de cases à cocher. Le fieldset porte la sémantique — la légende
+   annonce la question avant que le lecteur d'écran n'énumère les cases — mais
+   pas son habillage par défaut : ni bordure, ni retrait. */
+.field-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.field-group legend {
+  padding: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+
+/* `.field input` impose 100 % de largeur, ce qui n'a aucun sens pour une case
+   à cocher : elle garde sa taille propre et son libellé reste lisible. */
+.field-group label {
+  margin-bottom: 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.field-group input[type='checkbox'] {
+  width: auto;
+  flex: none;
+  accent-color: var(--accent);
 }
 
 .field input,

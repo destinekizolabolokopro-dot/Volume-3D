@@ -9,9 +9,11 @@ import { SESSION_COOKIE, checkPassword, isAuthenticated, issueToken, sessionCook
 import { randomId, uniqueSlug } from '@/lib/ids';
 import { assertImage, assertModel, assertVideo, putFile, putImage, readImageAsBase64 } from '@/lib/storage';
 import { assignPhotos, isPlanReaderConfigured, readPlan } from '@/lib/plan-reader';
+import { isFactsReaderConfigured, readFactsFromPhotos } from '@/lib/facts-reader';
+import { FACT_QUESTIONS, factsForDescription, mergeFacts } from '@/lib/facts';
 import { TimecodeError, parseTimecode } from '@/lib/timecode';
 import { getStore } from '@/lib/store';
-import type { Chapter, Hotspot, Photo, Preview, PreviewShot, Property, Scene, TourMode } from '@/lib/types';
+import type { Chapter, Hotspot, Photo, Preview, PreviewShot, Property, PropertyFact, Scene, TourMode } from '@/lib/types';
 import { ValidationError, email, httpUrl, number, oneOf, text } from '@/lib/validation';
 
 export interface ActionResult {
@@ -126,6 +128,8 @@ export async function createProperty(_previous: ActionResult | null, formData: F
       modelUrl: '',
       videoUrl: '',
       status: 'draft',
+      // La fiche se remplit ensuite, à partir des photos puis du questionnaire.
+      facts: [],
       createdAt: new Date().toISOString(),
       publishedAt: null,
       views: 0,
@@ -654,6 +658,86 @@ export async function deletePlan(planId: string): Promise<ActionResult> {
     await store.remove('plans', { id: planId });
     revalidatePath(`/admin/logements/${plan.propertyId}`);
     revalidatePath(`/espace/biens/${plan.propertyId}`);
+    return { ok: true };
+  });
+}
+
+/* ============================================ fiche de renseignements === */
+
+/**
+ * Pré-remplit la fiche à partir des photos du bien.
+ *
+ * Le modèle ne répond qu'aux questions dont la réponse se voit. Ses réponses
+ * sont marquées `source: 'ia'` : elles s'affichent au propriétaire pour
+ * confirmation, et ni la présentation publique ni l'assistant ne les servent
+ * tant qu'il ne les a pas validées.
+ */
+export async function prefillFacts(propertyId: string): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const property = await authorizeProperty(propertyId);
+    if (!isFactsReaderConfigured()) throw new ValidationError('Lecture automatique non configurée.');
+
+    const photos = await store.list('photos', { propertyId });
+    if (photos.length === 0) throw new ValidationError('Ajoutez d’abord des photos du logement.');
+
+    const encoded = await Promise.all(
+      photos.slice(0, 12).map(async (photo) => ({
+        id: photo.id,
+        caption: photo.caption,
+        ...(await readImageAsBase64(photo.url)),
+      })),
+    );
+
+    const found = await readFactsFromPhotos(encoded);
+    const facts = mergeFacts(property.facts ?? [], found);
+    await store.update('properties', propertyId, { facts });
+
+    revalidatePath(`/admin/logements/${propertyId}`);
+    revalidatePath(`/espace/biens/${propertyId}`);
+    return {
+      ok: true,
+      message: found.length
+        ? `${found.length} réponse(s) proposée(s) d’après vos photos. Vérifiez-les.`
+        : 'Les photos n’ont pas permis de répondre. Remplissez la fiche à la main.',
+    };
+  });
+}
+
+/**
+ * Enregistre les réponses du propriétaire.
+ *
+ * Toute réponse passée ici devient `source: 'proprietaire'`, donc définitive :
+ * une relecture automatique ultérieure ne l'écrasera pas.
+ */
+export async function saveFacts(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  return run(async () => {
+    const store = getStore();
+    const propertyId = text(formData.get('propertyId'), 'logement', { max: 40 });
+    const property = await authorizeProperty(propertyId);
+
+    const answers: PropertyFact[] = [];
+    for (const question of FACT_QUESTIONS) {
+      const raw =
+        question.kind === 'multi'
+          ? formData.getAll(`fait-${question.key}`).map(String).join(', ')
+          : String(formData.get(`fait-${question.key}`) ?? '');
+      const value = raw.trim().slice(0, 400);
+      if (value) answers.push({ key: question.key, value, source: 'proprietaire' });
+    }
+
+    const facts = mergeFacts(property.facts ?? [], answers);
+    const patch: Partial<Property> = { facts };
+    // La présentation publique n'est proposée que si elle est encore vide :
+    // un texte écrit par le propriétaire ne doit jamais être remplacé.
+    if (!property.description.trim()) {
+      const draft = factsForDescription(facts);
+      if (draft) patch.description = draft;
+    }
+    await store.update('properties', propertyId, patch);
+
+    revalidatePath(`/admin/logements/${propertyId}`);
+    revalidatePath(`/espace/biens/${propertyId}`);
     return { ok: true };
   });
 }

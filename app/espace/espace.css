@@ -236,13 +236,45 @@
   font-size: 13px;
 }
 
+/* Titre des blocs partagés avec le back-office (PlanPanel, FactsPanel). Ces
+   composants servent des deux côtés ; sans cette règle ici, leurs titres
+   retombaient sur le h2 par défaut du navigateur — 24 px sans empattement au
+   milieu d'une page en 19 px sérif. */
+.admin-h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 19px;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-h2 small {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+/* `minmax(0, 1fr)` et non la colonne implicite : une pile verticale doit
+   occuper la largeur qu'on lui donne, jamais celle que réclame son contenu.
+   Sans cette borne, un champ un peu large fait défiler la page entière
+   horizontalement sur un téléphone. */
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
+/* `minmax(0, 1fr)` et non la colonne implicite : une pile verticale doit
+   occuper la largeur qu'on lui donne, jamais celle que réclame son contenu.
+   Sans cette borne, un champ un peu large fait défiler la page entière
+   horizontalement sur un téléphone. */
 .stack-sm {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 9px;
 }
 

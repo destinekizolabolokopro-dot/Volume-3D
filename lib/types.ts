@@ -71,6 +71,8 @@ export interface Property {
   /** Renseigné si mode === 'video'. */
   videoUrl: string;
   status: PropertyStatus;
+  /** Fiche de renseignements : ce que l'IA a vu, ce que le propriétaire a confirmé. */
+  facts: PropertyFact[];
   createdAt: string;
   publishedAt: string | null;
   views: number;
@@ -239,6 +241,19 @@ export interface PreviewShot {
   sourceUrl: string;
   /** Version étendue par IA. Vide tant que la génération n'a pas abouti. */
   generatedUrl: string;
+}
+
+/**
+ * Réponse à une question de la fiche de renseignements.
+ *
+ * `source` n'est pas décoratif : une réponse lue par l'IA sur une photo n'a pas
+ * le même statut qu'une réponse du propriétaire. Seule la seconde est servie
+ * aux voyageurs et à l'assistant.
+ */
+export interface PropertyFact {
+  key: string;
+  value: string;
+  source: 'ia' | 'proprietaire';
 }
 
 /** Demande entrante depuis le formulaire de la landing. */

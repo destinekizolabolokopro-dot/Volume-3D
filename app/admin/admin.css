@@ -77,6 +77,9 @@
   display: flex;
   align-items: baseline;
   gap: 10px;
+  /* Sur un téléphone, la précision passe sous le titre plutôt que de le
+     comprimer sur deux lignes à côté d'elle. */
+  flex-wrap: wrap;
 }
 
 .admin-h2 small {
@@ -195,13 +198,23 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
+/* `minmax(0, 1fr)` et non la colonne implicite : une pile verticale doit
+   occuper la largeur qu'on lui donne, jamais celle que réclame son contenu.
+   Sans cette borne, un champ un peu large fait défiler la page entière
+   horizontalement sur un téléphone. */
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
+/* `minmax(0, 1fr)` et non la colonne implicite : une pile verticale doit
+   occuper la largeur qu'on lui donne, jamais celle que réclame son contenu.
+   Sans cette borne, un champ un peu large fait défiler la page entière
+   horizontalement sur un téléphone. */
 .stack-sm {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
 }
 

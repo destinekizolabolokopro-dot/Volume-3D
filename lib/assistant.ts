@@ -1,5 +1,6 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
+import { factsForAssistant } from './facts';
 import type { Chapter, Photo, Property, Scene } from './types';
 
 /**
@@ -38,6 +39,14 @@ function describeProperty({ property, scenes, chapters, photos }: AssistantConte
   }
   const captions = photos.map((photo) => photo.caption).filter(Boolean);
   if (captions.length > 0) lines.push(`Photos disponibles : ${captions.join(', ')}`);
+
+  /* La fiche de renseignements est la principale source de l'assistant : c'est
+     là que se trouvent le nombre de couchages, les équipements, le quartier.
+     `factsForAssistant` n'y met que les réponses confirmées par le
+     propriétaire — jamais les suppositions de la lecture automatique. */
+  const facts = factsForAssistant(property.facts ?? []);
+  if (facts) lines.push(`\nRenseignements confirmés par le propriétaire :\n${facts}`);
+
   return lines.join('\n');
 }
 

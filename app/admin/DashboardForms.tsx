@@ -196,7 +196,7 @@ export function PreviewRow({ preview, origin }: { preview: Preview; origin: stri
 
       {!expired && (
         <div style={{ marginTop: 12 }}>
-          <CopyField value={`${origin}/demo/${preview.token}`} label={preview.id} />
+          <CopyField value={`${origin}/demo/${preview.token}`} label={preview.id} name="le lien de l’aperçu" />
         </div>
       )}
 

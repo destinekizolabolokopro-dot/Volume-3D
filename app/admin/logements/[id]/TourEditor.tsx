@@ -177,6 +177,7 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
               {otherScenes.length > 0 && (
                 <div className="row" style={{ marginTop: 4 }}>
                   <select
+                    aria-label="Ajouter un passage vers une autre pièce"
                     className="scene-name"
                     style={{ border: '1px solid var(--line)', padding: 8, borderRadius: 2, flex: '1 1 180px' }}
                     defaultValue=""
@@ -216,6 +217,7 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img className="scene-thumb" src={scene.imageUrl} alt="" loading="lazy" />
                   <input
+                    aria-label="Nom de la pièce"
                     className="scene-name"
                     defaultValue={scene.name}
                     maxLength={60}
@@ -344,11 +346,11 @@ function PublishPanel({
           <p className="tiny" style={{ margin: '6px 0 0' }}>
             Lien à envoyer au propriétaire :
           </p>
-          <CopyField value={tourUrl} label={`tour-${property.id}`} />
+          <CopyField value={tourUrl} label={`tour-${property.id}`} name="le lien de la visite" />
           <p className="tiny" style={{ margin: '6px 0 0' }}>
             Code d’intégration pour son site :
           </p>
-          <CopyField value={embedSnippet} label={`embed-${property.id}`} />
+          <CopyField value={embedSnippet} label={`embed-${property.id}`} name="le code d’intégration" />
           <p className="tiny" style={{ margin: 0 }}>
             {property.views} vue{property.views > 1 ? 's' : ''} depuis la publication.
           </p>
@@ -376,8 +378,14 @@ function AddSceneForm({ propertyId }: { propertyId: string }) {
     <form action={formAction} ref={formRef} className="file-drop stack-sm" style={{ marginTop: 6 }}>
       <strong style={{ fontSize: 13 }}>Ajouter une pièce</strong>
       <input name="propertyId" type="hidden" value={propertyId} />
-      <input name="name" placeholder="Nom de la pièce (facultatif)" maxLength={60} className="scene-name" />
-      <input name="image" type="file" accept="image/*" multiple required />
+      <input
+        aria-label="Nom de la pièce"
+        name="name"
+        placeholder="Nom de la pièce (facultatif)"
+        maxLength={60}
+        className="scene-name"
+      />
+      <input aria-label="Panoramas 360° à envoyer" name="image" type="file" accept="image/*" multiple required />
       <p className="tiny" style={{ margin: 0 }}>
         Panoramas 360° équirectangulaires (rapport 2:1). Sélectionnez-en plusieurs d’un coup : chaque fichier devient
         une pièce, nommée d’après son nom de fichier. Les images sont recompressées automatiquement pour rester rapides
@@ -408,7 +416,7 @@ function ModelUploadForm({ property }: { property: Property }) {
       <strong style={{ fontSize: 14 }}>Modèle 3D</strong>
       <input type="hidden" name="propertyId" value={property.id} />
       {property.modelUrl && <p className="tiny" style={{ margin: 0 }}>Un modèle est déjà en place — envoyer un nouveau fichier le remplace.</p>}
-      <input name="model" type="file" accept=".glb,.gltf" required />
+      <input aria-label="Modèle 3D à envoyer" name="model" type="file" accept=".glb,.gltf" required />
       <p className="tiny" style={{ margin: 0 }}>
         Export .glb depuis Polycam ou Luma. Au-delà de 60 Mo, le chargement devient lent sur mobile.
       </p>
@@ -442,7 +450,7 @@ function VideoUploadForm({ property }: { property: Property }) {
       {property.videoUrl && (
         <video src={property.videoUrl} controls playsInline style={{ width: '100%', borderRadius: 2, background: '#14100d' }} />
       )}
-      <input name="video" type="file" accept="video/*" required />
+      <input aria-label="Vidéo à envoyer" name="video" type="file" accept="video/*" required />
       <input type="hidden" name="propertyId" value={property.id} />
       <p className="tiny" style={{ margin: 0 }}>MP4, WebM ou MOV, 200 Mo maximum.</p>
       {state?.error && (

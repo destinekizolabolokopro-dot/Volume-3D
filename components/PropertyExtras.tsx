@@ -77,6 +77,7 @@ export function PropertyExtras({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="scene-thumb" src={photo.url} alt="" loading="lazy" />
             <input
+              aria-label="Légende de la photo"
               className="scene-name"
               defaultValue={photo.caption}
               maxLength={120}
@@ -104,7 +105,7 @@ export function PropertyExtras({
 
         <form action={photoAction} ref={photoForm} className="file-drop stack-sm">
           <input type="hidden" name="propertyId" value={propertyId} />
-          <input name="photos" type="file" accept="image/*" multiple required />
+          <input aria-label="Photos à envoyer" name="photos" type="file" accept="image/*" multiple required />
           {photoState?.error && (
             <div className="form-feedback form-feedback-error" role="alert">
               {photoState.error}
@@ -150,6 +151,7 @@ export function PropertyExtras({
           <input type="hidden" name="propertyId" value={propertyId} />
           <div className="row" style={{ gap: 8 }}>
             <input
+              aria-label="Nom de la pièce du repère"
               name="label"
               className="scene-name"
               placeholder="Nom de la pièce"
@@ -158,6 +160,7 @@ export function PropertyExtras({
               style={{ flex: '1 1 140px', border: '1px solid var(--line)', padding: 8, borderRadius: 2 }}
             />
             <input
+              aria-label="Minute du repère dans la vidéo"
               name="time"
               className="scene-name"
               placeholder="1:30"
