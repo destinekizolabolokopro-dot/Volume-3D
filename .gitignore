@@ -7,3 +7,6 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# Dossier de travail du générateur de la version un seul fichier.
+.standalone-build/

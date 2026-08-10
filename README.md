@@ -175,34 +175,58 @@ les photos d'origine dans l'habillage Volume3D, sans rien inventer.
 
 ## La version autonome : `standalone/volume3d.html`
 
-Un seul fichier, sans installation ni serveur. Il s'ouvre par double-clic et se
-dépose tel quel sur n'importe quel hébergement. Il contient la landing, un
-viewer 360° fonctionnel, et un espace privé accessible par le lien **« Mon
-espace »** de la barre de navigation.
+Un seul fichier, sans installation ni serveur. Il s'ouvre par double-clic,
+fonctionne **sans réseau**, et se dépose tel quel sur n'importe quel
+hébergement. C'est la vitrine à sortir en rendez-vous.
 
-**Mot de passe par défaut : `Volume3D-2026`.** Pour le changer, ouvrez le
-fichier dans un éditeur de texte et modifiez la ligne `var ESPACE_PASSWORD =`
-en haut du script.
+Il n'est pas écrit à la main : `npm run standalone` **extrait le site en
+fonctionnement** — le HTML que le serveur rend, la feuille de style qu'il sert,
+les images et la vidéo — et remplace chaque adresse de fichier par son contenu.
+Ce qu'on montre au propriétaire ne peut donc pas diverger du produit.
 
-Dans cet espace vous pouvez créer des visites, envoyer un panorama 360° par
-pièce, les relier par des points de passage en cliquant dans l'image, joindre
-une vidéo walkthrough, et relire les demandes envoyées depuis le formulaire.
+Quatre écrans, atteignables par la barre en bas : l'accueil, la visite
+publique, le tableau de bord du client, et la fiche d'un bien.
 
-Trois limites à connaître, inhérentes à un fichier sans serveur :
+Ce qui **fonctionne vraiment** dedans, pas en image :
 
-1. **Le mot de passe n'est pas une sécurité.** Il est écrit dans le fichier :
-   quiconque affiche le code source le lit. C'est un verrou de confort. La
-   version déployée, elle, vérifie le mot de passe côté serveur et signe la
-   session.
-2. **Les données restent dans ce navigateur, sur cet appareil.** Elles sont
-   enregistrées dans IndexedDB — ni synchronisées, ni sauvegardées. Vider les
-   données du navigateur les efface.
-3. **Pas de lien public.** Une visite créée ici se regarde sur cet appareil ;
-   elle ne peut pas être envoyée à un propriétaire. C'est la raison d'être de
-   la version déployée.
+- **Le viewer 360°** — rotation, zoom, changement de pièce, points de passage
+  cliquables. Le rendu passe par un shader d'une vingtaine de lignes qui, pour
+  chaque pixel, calcule la direction du regard et va lire la couleur
+  correspondante dans l'image équirectangulaire. Embarquer un moteur 3D complet
+  coûterait un mégaoctet et ne ferait rien de plus.
+- **La marche dans le volume reconstruit depuis le plan** — murs percés par les
+  ouvertures, photos accrochées sur les murs qu'elles montrent, ciel visible par
+  les fenêtres. Les règles de déplacement sont celles de `lib/plan.ts`, portées
+  à l'identique : marge de 35 cm, glissement le long des murs, avancée jusqu'au
+  point atteignable.
+- **La vidéo walkthrough**, embarquée dans le fichier.
+- **L'assistant**, hors ligne. Il répond à partir de la description, du relevé
+  du plan et des pièces — et **annonce comme absent** ce qui n'y figure pas,
+  exactement comme la version en ligne. Aucune supposition.
+- **Le questionnaire** de la fiche d'un bien. Chaque réponse met à jour, en
+  direct, le bloc « ce qu'il reste à faire » et la bande d'avancement.
 
-Servez-vous-en comme d'une vitrine portable — en rendez-vous, même sans réseau
-— et de la version en ligne pour livrer.
+Trois limites, inhérentes à un fichier sans serveur :
+
+1. **Rien n'est enregistré**, sauf les réponses du questionnaire, gardées dans
+   le navigateur de l'appareil. Un bandeau le dit en haut de l'écran.
+2. **On ne crée pas de visite dedans.** C'est une démonstration du produit, pas
+   une version réduite du produit : ni envoi de panorama, ni relevé de plan, ni
+   lien public à envoyer à un propriétaire.
+3. **Le fichier pèse environ 8 Mo.** Ce sont les panoramas, les photos et la
+   vidéo, tous embarqués. C'est le prix du « fonctionne sans réseau ».
+
+Pour le régénérer (Playwright requis, ce n'est pas une dépendance du site) :
+
+```bash
+npm run build && npm run start &     # le générateur lit le site en marche
+npm run standalone
+```
+
+Variables utiles : `V3D_BASE` (adresse du site, `http://localhost:3000` par
+défaut), `V3D_EMAIL` / `V3D_PASSWORD` (le compte client dont on extrait
+l'espace), `V3D_CHROMIUM` (chemin du navigateur, quand il n'est pas là où
+Playwright l'attend), `V3D_DEST` (fichier de sortie).
 
 ---
 
@@ -448,6 +472,11 @@ lib/
 scripts/
   generate-demo.mjs            prépare public/demo/*.jpg depuis les sources CC0
   record-demo.mjs              filme la visite réelle, écrit public/demo/visite.*
+  standalone/                  génère standalone/volume3d.html depuis le site en marche
+    extract.mjs                relève le HTML rendu, la feuille de style, les fichiers
+    assemble.mjs               recolle le tout en un seul fichier
+    app.js                     viewer 360° et marche dans le volume, en WebGL nu
+    wire.js                    rebranche les boutons que React animait
 public/
   fonts/                       Inter en woff2 (latin + latin-ext)
   demo/                        panoramas, vidéo et vignette de la démonstration
