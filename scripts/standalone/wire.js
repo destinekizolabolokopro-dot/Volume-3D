@@ -408,16 +408,71 @@
       }
 
       if (/Télécharger le plan/.test(label)) {
-        button.addEventListener('click', function () {
-          var img = el('img[alt^="Plan de"]', kit);
-          if (!img) return;
-          var link = document.createElement('a');
-          link.href = img.src;
-          link.download = 'plan-logement.svg';
-          link.click();
-        });
+        button.addEventListener('click', function () { savePlan(kit, button); });
       }
     });
+  }
+
+  /**
+   * Enregistre le plan.
+   *
+   * Ouvert en local — le cas nominal, un fichier sur un disque — un lien
+   * `download` suffit. Affiché dans un cadre qui refuse les téléchargements
+   * directs, il faut passer par l'hôte, qui demande son accord au lecteur et
+   * n'accepte que quelques formats : on rastérise alors le plan en PNG.
+   *
+   * Aucun des deux chemins n'est supposé disponible : on essaie, et on le dit
+   * quand ça n'aboutit pas.
+   */
+  function savePlan(kit, button) {
+    var img = el('img[alt^="Plan de"]', kit);
+    if (!img) return;
+
+    var say = function (text) {
+      var was = button.textContent;
+      button.textContent = text;
+      setTimeout(function () { button.textContent = was; }, 2200);
+    };
+
+    var host = window.claude && typeof window.claude.use === 'function' ? window.claude : null;
+    if (!host) {
+      var link = document.createElement('a');
+      link.href = img.src;
+      link.download = 'plan-logement.svg';
+      link.click();
+      return;
+    }
+
+    host.use('downloads').then(function (downloads) {
+      if (!downloads) { say('Indisponible ici'); return; }
+      toPng(img, function (blob) {
+        if (!blob) { say('Échec du rendu'); return; }
+        downloads.save({ filename: 'plan-logement.png', data: blob }).then(
+          function () { say('Enregistré ✓'); },
+          function (error) {
+            say(error && error.code === 'declined' ? 'Annulé' : 'Indisponible ici');
+          },
+        );
+      });
+    });
+  }
+
+  /** Rastérise le plan : le SVG est autonome, le canevas n'est donc pas souillé. */
+  function toPng(img, done) {
+    var source = new Image();
+    source.onload = function () {
+      var canvas = document.createElement('canvas');
+      canvas.width = source.naturalWidth || 1200;
+      canvas.height = source.naturalHeight || 900;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) { done(null); return; }
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+      try { canvas.toBlob(done, 'image/png'); } catch (e) { done(null); }
+    };
+    source.onerror = function () { done(null); };
+    source.src = img.src;
   }
 
   /* ------------------------------------------------------- ancres ------- */
