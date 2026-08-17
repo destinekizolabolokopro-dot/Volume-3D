@@ -4,6 +4,7 @@ import { LogoMark } from '@/components/Logo';
 import { FactsPanel } from '@/components/FactsPanel';
 import { JourneyBar } from '@/components/JourneyBar';
 import { PlanPanel } from '@/components/PlanPanel';
+import { PublishKit } from '@/components/PublishKit';
 import { PropertyExtras } from '@/components/PropertyExtras';
 import { loadTour } from '@/lib/queries';
 import { requireAuth } from '@/lib/require-auth';
@@ -120,6 +121,16 @@ export default async function PropertyEditorPage({ params }: Params) {
               />
             </>
           }
+        />
+
+        {/* Hors de l'éditeur : le plan à publier a besoin de toute la largeur,
+            et ce bloc s'adresse à l'annonce, pas à la visite. */}
+        <PublishKit
+          property={property}
+          plan={plan}
+          doors={planDoors}
+          facts={property.facts ?? []}
+          tourUrl={`${origin}/v/${property.slug}`}
         />
       </main>
     </div>

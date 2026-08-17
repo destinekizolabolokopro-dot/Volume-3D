@@ -373,6 +373,69 @@ propriétaire. Couvert par `tests/intake.test.ts`, `tests/facts.test.ts` et
 
 ---
 
+## Ce que le propriétaire emporte pour son annonce
+
+Le plan et la fiche servaient jusqu'ici au produit lui-même. Ils contiennent
+pourtant tout ce qu'il faut pour **rédiger l'annonce** — la surface mesurée, le
+nom des pièces, les équipements, le quartier. Le bloc « À publier sur votre
+annonce », en bas de la fiche d'un bien, le lui rend sous une forme
+directement utilisable.
+
+### Le plan redessiné
+
+`lib/floorplan-svg.ts` reprend la géométrie du relevé et la dessine aux
+conventions du dessin d'architecture : murs épais percés par les ouvertures,
+portes en arc de battement, fenêtres en trait fin double, nom et surface de
+chaque pièce, échelle d'un mètre. Le propriétaire le télécharge en SVG et le
+dépose dans les photos de son annonce — Airbnb affiche les plans, et un plan
+net répond à la moitié des questions avant qu'on les pose.
+
+Deux détails qui font la différence entre un plan lisible et un plan raté :
+
+- **Les murs sont percés, pas recouverts.** Les ouvertures sont projetées sur
+  chaque mur puis les portions pleines calculées par complément — le même
+  `solidSpans` que le viewer 3D. Une porte déclarée une fois perce les deux
+  pièces qu'elle sépare.
+- **La taille du libellé suit la largeur de la pièce.** Un dégagement fait
+  1,40 m de large ; un nom à taille fixe en dépasse et va mordre sur la pièce
+  voisine, ce qui se lit comme une erreur de relevé.
+
+Le plan n'apparaît qu'une fois le relevé **confirmé** : un relevé non relu n'a
+rien à faire sur une annonce publique.
+
+### L'annonce rédigée
+
+`lib/listing.ts` assemble un titre, une description, des points forts et le
+message à envoyer au voyageur. Deux règles le tiennent :
+
+1. **Rien n'est inventé.** Chaque phrase vient d'une réponse confirmée par le
+   propriétaire ou d'une mesure prise sur le plan. Une réponse encore marquée
+   `source: 'ia'` est ignorée — comme partout ailleurs dans ce projet.
+2. **Aucun modèle n'est appelé.** Le texte est assemblé par des règles : il
+   fonctionne sans clé d'API, et rend deux fois le même résultat pour le même
+   dossier. C'est ce qu'on attend d'un outil, pas d'un générateur.
+
+Ce que ça implique en pratique :
+
+| Contrainte | Ce que le code en fait |
+|---|---|
+| Airbnb coupe le titre à 50 caractères | Le titre empile typologie, luminosité, surface et lieu, et s'arrête avant la limite plutôt que d'être tronqué en plein mot. |
+| Airbnb filtre les liens externes des descriptions | Le lien de la visite n'apparaît **que** dans le message au voyageur, à envoyer par la messagerie une fois le contact établi. |
+| « à Le Marais » disqualifie un texte français | `atPlace` fait la contraction : au, aux, à la, à l'. |
+| Personne ne réserve pour un couloir | Les pièces de circulation sont relevées, dessinées sur le plan, mais tues dans le texte. |
+| « Métro Saint-Paul » est un nom propre | Le texte libre du propriétaire garde sa casse. |
+
+La typologie suit l'usage français : `T2` compte les pièces principales — le
+séjour et les chambres — et laisse de côté cuisine, salle d'eau et
+dégagements.
+
+Enfin, le bloc dit **ce qui manque** pour faire mieux : sans nombre de
+couchages, sans équipements, sans ce qui rend le logement différent, l'annonce
+sort moins dans les filtres. Couvert par `tests/floorplan-svg.test.ts` et
+`tests/listing.test.ts`.
+
+---
+
 ## Mise en ligne
 
 ### 1. Base de données et stockage (Supabase, offre gratuite)
@@ -451,6 +514,7 @@ components/
   PlanPanel.tsx                relevé du plan et relecture, dans l'éditeur
   FactsPanel.tsx               ce qu'il reste à faire, et la fiche du logement
   JourneyBar.tsx               bande d'avancement en haut de la fiche d'un bien
+  PublishKit.tsx               le plan et les textes à emporter sur l'annonce
   TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
@@ -460,6 +524,8 @@ lib/
   plan-reader.ts               lecture du plan et rattachement des photos (Claude, vision)
   intake.ts                    contrôle de complétude du dossier, sans appel à un modèle
   journey.ts                   étapes du dossier, de la création à la publication
+  floorplan-svg.ts             le plan redessiné, à joindre à l'annonce
+  listing.ts                   titre, description et message, déduits du dossier
   facts.ts                     catalogue des questions, arbitrage propriétaire / IA
   facts-reader.ts              pré-remplissage de la fiche depuis les photos (Claude, vision)
   demo.ts                      pièces et points de passage de la démonstration publique
