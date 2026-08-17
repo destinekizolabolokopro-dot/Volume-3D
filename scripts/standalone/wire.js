@@ -373,6 +373,53 @@
     });
   }
 
+  /* --------------------------------------- à publier sur votre annonce --- */
+
+  /*
+   * Le bloc « À publier » est rendu par le serveur, textes compris : il ne reste
+   * qu'à rebrancher les deux gestes utiles, copier et télécharger. Le plan est
+   * déjà dans la page sous forme de data URI, donc le téléchargement fonctionne
+   * hors ligne comme le reste.
+   */
+  var kit = els('section.card', espace || document).find(function (c) {
+    return /À publier sur votre annonce/.test(c.textContent || '');
+  });
+  if (kit) {
+    els('button', kit).forEach(function (button) {
+      var label = (button.textContent || '').trim();
+
+      if (label === 'Copier') {
+        button.addEventListener('click', function () {
+          var field = button.closest('.field');
+          var source = field && (el('textarea', field) || el('input', field));
+          if (!source) return;
+          var done = function () {
+            var was = button.textContent;
+            button.textContent = 'Copié ✓';
+            setTimeout(function () { button.textContent = was; }, 1600);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(source.value).then(done, function () { source.select(); });
+          } else {
+            source.select();
+            done();
+          }
+        });
+      }
+
+      if (/Télécharger le plan/.test(label)) {
+        button.addEventListener('click', function () {
+          var img = el('img[alt^="Plan de"]', kit);
+          if (!img) return;
+          var link = document.createElement('a');
+          link.href = img.src;
+          link.download = 'plan-logement.svg';
+          link.click();
+        });
+      }
+    });
+  }
+
   /* ------------------------------------------------------- ancres ------- */
 
   document.addEventListener('click', function (e) {
