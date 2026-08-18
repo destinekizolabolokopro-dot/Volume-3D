@@ -236,13 +236,17 @@ export function PanoViewer({
       setFading(true);
       setScreenHotspots([]);
       // Laisse le fondu au noir se jouer avant de changer de panorama.
-      window.setTimeout(() => {
-        setSceneId(targetId);
-        onSceneChange?.(targetId);
-      }, 220);
+      window.setTimeout(() => setSceneId(targetId), 220);
     },
-    [sceneId, onSceneChange],
+    [sceneId],
   );
+
+  /* Un seul point d'annonce, sur l'état plutôt que sur chaque geste : la pièce
+     d'arrivée et les clics du bandeau étaient jusqu'ici muets, alors que la
+     navigation par point de passage prévenait. */
+  useEffect(() => {
+    if (sceneId) onSceneChange?.(sceneId);
+  }, [sceneId, onSceneChange]);
 
   useEffect(() => {
     const holder = holderRef.current;

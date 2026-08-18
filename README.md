@@ -373,6 +373,69 @@ propriétaire. Couvert par `tests/intake.test.ts`, `tests/facts.test.ts` et
 
 ---
 
+## Ce que les voyageurs regardent
+
+Le tableau de bord savait compter les ouvertures d'une visite. Il ne savait pas
+dire **ce qui retient l'attention**, et c'est pourtant la seule donnée sur
+laquelle un propriétaire peut agir : si quatre visiteurs sur cinq ne dépassent
+jamais le séjour, ce n'est pas la chambre qui est en cause, c'est le passage
+qui y mène.
+
+### Le parti pris : agréger à l'écriture
+
+Il n'existe **aucune ligne par visiteur, ni même par session**. Le navigateur
+envoie des durées, le serveur les ajoute à un compteur par logement, par jour
+et par pièce. Trois conséquences, toutes voulues :
+
+- **Rien de personnel n'est jamais enregistré.** Pas d'identifiant, pas de
+  cookie, pas d'adresse IP. Il n'y a donc rien à anonymiser, rien à purger, et
+  rien à déclarer — ce qui, pour un service vendu à des propriétaires français,
+  se dit en une phrase.
+- **La table ne grossit pas avec le trafic**, seulement avec les jours et les
+  pièces. Mille visiteurs coûtent autant de place qu'un seul.
+- **On perd le détail par visiteur.** C'est le prix, assumé : ce détail ne
+  servirait à rien à un propriétaire, et beaucoup à qui voudrait profiler ses
+  voyageurs.
+
+### Côté visiteur
+
+Une horloge par pièce, qui ne tourne que pendant que la pièce est affichée
+**et** que l'onglet est au premier plan — sans quoi la « pièce la plus
+regardée » serait celle sur laquelle on part déjeuner. L'envoi part une seule
+fois, quand la page disparaît, par `sendBeacon` : ni requête à chaque
+changement de pièce, ni battement régulier.
+
+### Côté serveur : un point d'entrée public tenu court
+
+`/api/attention` n'est pas authentifié — un voyageur n'a pas de compte. Tout ce
+qui arrive est donc traité comme hostile :
+
+| Barrière | Ce qu'elle arrête |
+|---|---|
+| La visite doit exister et être publiée | Un identifiant inventé n'écrit rien |
+| Les identifiants de pièce viennent de la base, jamais du corps de la requête | Une pièce inventée pour gonfler un compteur |
+| Durée au-delà du **double** de la borne : écartée, pas ramenée | Un lot forgé qui se ferait créditer le maximum à chaque envoi |
+| Plafond appliqué **après** fusion des entrées | Le contournement par découpage d'une longue durée |
+| Débit limité par logement et par adresse | Les rafales |
+| Réponse toujours `200`, quoi qu'il arrive | Le sondage de la base par les codes d'erreur |
+
+Six attaques passées sur le point d'entrée — pièce inventée, visite
+inexistante, durée forgée, corps informe, JSON cassé, corps énorme — n'ont
+rien écrit.
+
+### Ce qui s'affiche
+
+Un graphique ne dit pas quoi faire : la phrase du haut porte la conclusion, les
+barres ne servent qu'à la vérifier. Et **tant que le nombre de visites ne
+permet pas de conclure, on le dit** au lieu d'afficher une tendance tirée de
+trois visiteurs.
+
+Le seuil de « déséquilibre » suit la part équitable — `1/n` — et non un 50 %
+fixe : sur un logement de deux pièces, l'une dépasse forcément la moitié, et
+signaler cela comme une anomalie décrédibiliserait tout le reste.
+
+---
+
 ## Ce que le propriétaire emporte pour son annonce
 
 Le plan et la fiche servaient jusqu'ici au produit lui-même. Ils contiennent
@@ -515,6 +578,7 @@ components/
   FactsPanel.tsx               ce qu'il reste à faire, et la fiche du logement
   JourneyBar.tsx               bande d'avancement en haut de la fiche d'un bien
   PublishKit.tsx               le plan et les textes à emporter sur l'annonce
+  AttentionPanel.tsx           les pièces regardées, dans le tableau de bord
   TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
@@ -524,6 +588,8 @@ lib/
   plan-reader.ts               lecture du plan et rattachement des photos (Claude, vision)
   intake.ts                    contrôle de complétude du dossier, sans appel à un modèle
   journey.ts                   étapes du dossier, de la création à la publication
+  attention.ts                 ce que les voyageurs regardent, agrégé à l'écriture
+  attention-client.ts          l'horloge par pièce, côté visiteur
   floorplan-svg.ts             le plan redessiné, à joindre à l'annonce
   listing.ts                   titre, description et message, déduits du dossier
   facts.ts                     catalogue des questions, arbitrage propriétaire / IA

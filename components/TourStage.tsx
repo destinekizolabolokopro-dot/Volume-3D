@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AttentionTracker } from '@/lib/attention-client';
 import { ModelViewer } from './ModelViewer';
 import { PanoViewer } from './PanoViewer';
 import { PlanViewer } from './PlanViewer';
@@ -23,6 +24,8 @@ export interface TourStageProps {
   planDoors: PlanDoor[];
   /** Photos du bien : accrochées aux murs dans le format « plan ». */
   photos: Photo[];
+  /** Nom de la visite. Vide pour ne rien mesurer — l'éditeur et les aperçus. */
+  slug?: string;
 }
 
 const LABELS: Record<TourMode, string> = {
@@ -61,7 +64,18 @@ export function TourStage({
   plan,
   planDoors,
   photos,
+  slug = '',
 }: TourStageProps) {
+  /**
+   * Mesure de l'attention.
+   *
+   * Elle ne tourne que sur une visite publiée — l'éditeur et les aperçus de
+   * démarchage passent un `slug` vide, et ne comptent donc rien : les allers et
+   * venues du propriétaire dans son propre éditeur fausseraient ses chiffres.
+   */
+  const tracker = useMemo(() => (slug ? new AttentionTracker(slug) : null), [slug]);
+  useEffect(() => tracker?.start(), [tracker]);
+
   const [active, setActive] = useState<TourMode>(
     formats.includes(defaultFormat) ? defaultFormat : (formats[0] ?? 'pano'),
   );
@@ -99,9 +113,13 @@ export function TourStage({
       )}
 
       <div className={styles.frame}>
-        {active === 'pano' && <PanoViewer scenes={scenes} hotspots={hotspots} />}
+        {active === 'pano' && (
+          <PanoViewer scenes={scenes} hotspots={hotspots} onSceneChange={(id) => tracker?.enter(id)} />
+        )}
 
-        {active === 'plan' && plan && <PlanViewer plan={plan} doors={planDoors} photos={photos} />}
+        {active === 'plan' && plan && (
+          <PlanViewer plan={plan} doors={planDoors} photos={photos} onRoomChange={(id) => tracker?.enter(id)} />
+        )}
 
         {active === 'video' && (
           <div className={styles.videoWrap}>

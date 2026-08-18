@@ -35,6 +35,8 @@ export interface PlanViewerProps {
   photos: Photo[];
   initialRoomId?: string;
   showRoomBar?: boolean;
+  /** Averti à chaque changement de pièce. Sert à la mesure de l'attention. */
+  onRoomChange?: (roomId: string) => void;
 }
 
 interface ScreenExit {
@@ -55,7 +57,14 @@ interface ScreenExit {
  * C'est la seule façon de produire une visite parcourable sans capture 360°
  * sur place. Ce n'est pas une photo à 360°, et la page de visite le dit.
  */
-export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = true }: PlanViewerProps) {
+export function PlanViewer({
+  plan,
+  doors,
+  photos,
+  initialRoomId,
+  showRoomBar = true,
+  onRoomChange,
+}: PlanViewerProps) {
   const holderRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +76,12 @@ export function PlanViewer({ plan, doors, photos, initialRoomId, showRoomBar = t
   const placedIn = useRef('');
 
   const room = useMemo(() => rooms.find((r) => r.id === roomId) ?? rooms[0], [rooms, roomId]);
+
+  // On annonce la pièce affichée, la première comprise : sans cet effet, le
+  // temps passé dans la pièce d'arrivée ne serait jamais compté.
+  useEffect(() => {
+    if (room?.id) onRoomChange?.(room.id);
+  }, [room?.id, onRoomChange]);
 
   /* Le repère du plan est recentré une fois pour toutes : les coordonnées 3D
      restent petites, ce qui évite les pertes de précision loin de l'origine. */

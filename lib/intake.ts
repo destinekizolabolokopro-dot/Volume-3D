@@ -48,7 +48,13 @@ const isMinor = (room: PlanRoom): boolean => MINOR_ROOM.test(room.name) || roomA
 /** Accord en genre du nom de pièce, pour un message qui se lit bien. */
 const feminine = /^(chambre|cuisine|salle|entrée|buanderie|terrasse|véranda|mezzanine)/i;
 
-const article = (name: string): string => (feminine.test(name.trim()) ? 'la' : 'le');
+/**
+ * Article défini d'un nom de pièce.
+ *
+ * Exporté : plusieurs modules composent des phrases avec un nom de pièce, et
+ * une seconde liste de noms féminins finirait par diverger de celle-ci.
+ */
+export const article = (name: string): string => (feminine.test(name.trim()) ? 'la' : 'le');
 
 /**
  * Confronte le plan relevé aux photos reçues.

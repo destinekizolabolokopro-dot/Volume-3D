@@ -71,6 +71,7 @@ export default async function TourPage({ params }: Params) {
           plan={plan}
           planDoors={planDoors}
           photos={photos}
+          slug={property.slug}
         />
       </div>
 

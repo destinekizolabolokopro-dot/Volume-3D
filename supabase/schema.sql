@@ -183,6 +183,30 @@ create table if not exists "planDoors" (
 create index if not exists plans_property on plans("propertyId");
 create index if not exists plan_doors_plan on "planDoors"("planId");
 
+-- -----------------------------------------------------------------------------
+-- Attention des voyageurs
+--
+-- Un compteur par logement, par jour et par pièce. Il n'existe AUCUNE ligne par
+-- visiteur ni par session : le serveur reçoit des durées et les additionne ici.
+-- Rien de personnel n'est donc jamais enregistré — ni identifiant, ni cookie,
+-- ni adresse — et la table ne grossit qu'avec les jours et les pièces, pas avec
+-- le trafic.
+--
+-- La clé primaire porte les trois dimensions ; c'est elle qui rend l'écriture
+-- idempotente sans avoir à chercher la ligne au préalable.
+-- -----------------------------------------------------------------------------
+create table if not exists attention (
+  id           text primary key,             -- {propertyId}:{jour}:{roomId}
+  "propertyId" text not null references properties(id) on delete cascade,
+  day          text not null,                -- AAAA-MM-JJ, UTC
+  "roomId"     text not null,
+  seconds      integer not null default 0,
+  opens        integer not null default 0
+);
+
+create index if not exists attention_property on attention("propertyId");
+create index if not exists attention_day on attention(day);
+
 -- Rien n'est accessible sans la clé service_role : aucune politique n'est créée.
 alter table accounts       enable row level security;
 alter table properties     enable row level security;
@@ -196,6 +220,7 @@ alter table "previewShots" enable row level security;
 alter table leads          enable row level security;
 alter table plans          enable row level security;
 alter table "planDoors"    enable row level security;
+alter table attention      enable row level security;
 
 -- =============================================================================
 -- Stockage des fichiers

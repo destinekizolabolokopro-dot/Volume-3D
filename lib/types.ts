@@ -270,6 +270,10 @@ export interface Lead {
   handled: boolean;
 }
 
+import type { RoomAttention } from './attention';
+
+export type { RoomAttention };
+
 export interface Database {
   accounts: Account[];
   properties: Property[];
@@ -283,6 +287,8 @@ export interface Database {
   previews: Preview[];
   previewShots: PreviewShot[];
   leads: Lead[];
+  /* Compteurs d'attention, agrégés par logement, jour et pièce. */
+  attention: RoomAttention[];
 }
 
 export const EMPTY_DB: Database = {
@@ -298,4 +304,5 @@ export const EMPTY_DB: Database = {
   previews: [],
   previewShots: [],
   leads: [],
+  attention: [],
 };

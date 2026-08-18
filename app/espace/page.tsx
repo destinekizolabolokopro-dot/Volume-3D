@@ -1,4 +1,5 @@
 import { EspaceNav } from '@/components/EspaceNav';
+import { AttentionPanel } from '@/components/AttentionPanel';
 import { PLAN_LABELS, PLAN_LIMITS } from '@/lib/accounts';
 import { isAssistantConfigured } from '@/lib/assistant';
 import { requireAccount } from '@/lib/require-account';
@@ -34,6 +35,18 @@ export default async function EspaceDashboard() {
   const limit = PLAN_LIMITS[account.plan as Plan] ?? 1;
   const recent = [...messages].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 6);
   const byName = new Map(properties.map((property) => [property.id, property.name] as const));
+
+  // Attention mesurée sur l'ensemble des biens du compte, et le nom des pièces
+  // pour l'afficher — panoramas et pièces du plan confondus.
+  const allAttention = await store.list('attention');
+  const attention = allAttention.filter((row) => ids.has(row.propertyId));
+  const [allScenes, allPlans] = await Promise.all([store.list('scenes'), store.list('plans')]);
+  const attentionRooms = [
+    ...allScenes.filter((scene) => ids.has(scene.propertyId)).map((scene) => ({ id: scene.id, name: scene.name })),
+    ...allPlans
+      .filter((plan) => ids.has(plan.propertyId) && plan.confirmed)
+      .flatMap((plan) => plan.rooms.map((room) => ({ id: room.id, name: room.name }))),
+  ];
 
   const week = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const questionsThisWeek = messages.filter((message) => Date.parse(message.createdAt) > week).length;
@@ -73,6 +86,8 @@ export default async function EspaceDashboard() {
             questions. Contactez-nous pour l’activer.
           </div>
         )}
+
+        <AttentionPanel rows={attention} rooms={attentionRooms} />
 
         <section className="panel">
           <div className="panel-head">
