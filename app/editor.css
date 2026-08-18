@@ -26,13 +26,18 @@
 }
 
 .tag-draft {
-  background: #eee6db;
-  color: #7a6c5c;
+  background: var(--bg-sunk);
+  color: var(--ink-soft);
 }
 
 .tag-live {
-  background: #d9e8d4;
-  color: #35592c;
+  background: var(--positive-wash);
+  color: var(--positive);
+}
+
+.tag-demo {
+  background: var(--danger-wash);
+  color: var(--danger);
 }
 
 /* -------------------------------------------------------------- éditeur --- */
@@ -61,7 +66,7 @@
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--line);
-  background: #14100d;
+  background: var(--dark);
 }
 
 .scene-row {
@@ -76,7 +81,7 @@
 
 .scene-row-active {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(176, 138, 74, 0.18);
+  box-shadow: 0 0 0 2px rgba(14, 110, 102, 0.18);
 }
 
 .scene-thumb {
@@ -85,7 +90,7 @@
   object-fit: cover;
   border-radius: 2px;
   flex: none;
-  background: #e8ddcd;
+  background: var(--bg-sunk);
 }
 
 .scene-name {
@@ -102,7 +107,7 @@
 
 .scene-name:focus {
   outline: 1px solid var(--line);
-  background: #fbf8f4;
+  background: var(--bg-alt);
 }
 
 .mini-btn {
@@ -119,14 +124,14 @@
 }
 
 .mini-btn:hover {
-  background: #f3efe8;
+  background: var(--bg-alt);
   color: var(--ink-strong);
 }
 
 .mini-btn-danger:hover {
-  background: #f6e3df;
-  color: #7c2f1e;
-  border-color: #e0bcb3;
+  background: var(--danger-wash);
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .hotspot-row {
@@ -135,7 +140,7 @@
   gap: 8px;
   font-size: 13px;
   padding: 7px 10px;
-  background: #faf7f2;
+  background: var(--bg-alt);
   border-radius: 2px;
 }
 
@@ -145,19 +150,19 @@
 }
 
 .callout-box {
-  background: #fbf5ea;
-  border: 1px solid #e6d6b8;
+  background: var(--bg-alt);
+  border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   padding: 12px 14px;
   font-size: 13px;
   line-height: 1.5;
-  color: #6b5220;
+  color: var(--warning);
 }
 
 .callout-warn {
-  background: #fdf1ec;
-  border-color: #e6c3b5;
-  color: #7c3a24;
+  background: var(--danger-wash);
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .link-box {
@@ -174,7 +179,7 @@
   padding: 9px 10px;
   border: 1px solid var(--line);
   border-radius: 2px;
-  background: #faf7f2;
+  background: var(--bg-alt);
   color: var(--ink);
 }
 
@@ -182,7 +187,7 @@
   border: 1px dashed var(--line);
   border-radius: var(--radius-sm);
   padding: 16px;
-  background: #faf7f2;
+  background: var(--bg-alt);
   font-size: 13.5px;
 }
 

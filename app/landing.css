@@ -431,7 +431,7 @@
   border: 0;
   padding: 0;
   cursor: pointer;
-  background: rgba(15, 20, 24, 0.28);
+  background: rgba(20, 18, 15, 0.28);
   transition: background-color 0.2s ease, opacity 0.25s ease;
 }
 
@@ -440,7 +440,7 @@
 }
 
 .video-cover:hover {
-  background: rgba(15, 20, 24, 0.36);
+  background: rgba(20, 18, 15, 0.36);
 }
 
 .video-play {
@@ -453,7 +453,7 @@
   color: var(--ink-strong);
   font-size: 15px;
   font-weight: 500;
-  box-shadow: 0 8px 30px -8px rgba(15, 20, 24, 0.5);
+  box-shadow: 0 8px 30px -8px rgba(20, 18, 15, 0.5);
 }
 
 .video-play svg {
@@ -585,7 +585,7 @@
 }
 
 .compare-col[data-good='1'] {
-  border-color: #cfe0fb;
+  border-color: var(--accent-wash);
   background: linear-gradient(180deg, var(--accent-wash), #ffffff 62%);
 }
 
@@ -834,7 +834,7 @@
   margin: 16px 0 0;
   font-size: 16.5px;
   line-height: 1.6;
-  color: #a7b0bb;
+  color: var(--ink-on-dark-soft);
   max-width: 44ch;
 }
 
@@ -845,7 +845,7 @@
   display: grid;
   gap: 11px;
   font-size: 15px;
-  color: #c3cad3;
+  color: var(--ink-on-dark-soft);
 }
 
 .cta-list li {
@@ -857,7 +857,7 @@
 .cta-list svg {
   flex: none;
   margin-top: 3px;
-  color: #5fa8ff;
+  color: var(--accent-on-dark);
 }
 
 .cta-card {

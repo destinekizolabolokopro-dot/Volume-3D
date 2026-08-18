@@ -34,7 +34,7 @@ export function DemoVideo({ src, poster }: { src: string; poster: string }) {
       >
         <source src={`${src}.mp4`} type="video/mp4" />
         <source src={`${src}.webm`} type="video/webm" />
-        Votre navigateur ne peut pas lire cette vidéo.
+        <span style={{ color: 'var(--ink-on-dark)' }}>Votre navigateur ne peut pas lire cette vidéo.</span>
       </video>
 
       <button type="button" className="video-cover" hidden={started} onClick={start}>

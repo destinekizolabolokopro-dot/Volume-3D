@@ -6,8 +6,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--dark, #211c18);
-  color: #fdf6ee;
+  background: var(--dark, #151f1d);
+  color: var(--ink-on-dark);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 3px;
   padding: 13px 20px;
@@ -15,12 +15,12 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 18px 40px -14px rgba(20, 16, 13, 0.55);
+  box-shadow: 0 18px 40px -14px rgba(20, 18, 15, 0.55);
   transition: transform 0.18s ease, background-color 0.18s ease;
 }
 
 .launcher:hover {
-  background: #2f2822;
+  background: var(--dark-alt);
   transform: translateY(-2px);
 }
 
@@ -28,18 +28,18 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent, #b08a4a);
-  box-shadow: 0 0 0 0 rgba(176, 138, 74, 0.7);
+  background: var(--accent, #0e6e66);
+  box-shadow: 0 0 0 0 rgba(14, 110, 102, 0.7);
   animation: ping 2.4s ease-out infinite;
 }
 
 @keyframes ping {
   0% {
-    box-shadow: 0 0 0 0 rgba(176, 138, 74, 0.7);
+    box-shadow: 0 0 0 0 rgba(14, 110, 102, 0.7);
   }
   70%,
   100% {
-    box-shadow: 0 0 0 9px rgba(176, 138, 74, 0);
+    box-shadow: 0 0 0 9px rgba(14, 110, 102, 0);
   }
 }
 
@@ -52,11 +52,11 @@
   max-height: min(560px, calc(100dvh - 40px));
   display: flex;
   flex-direction: column;
-  background: #fffdfa;
-  color: #2a2521;
-  border: 1px solid rgba(42, 37, 33, 0.12);
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid rgba(39, 35, 32, 0.12);
   border-radius: 4px;
-  box-shadow: 0 30px 70px -20px rgba(20, 16, 13, 0.5);
+  box-shadow: 0 30px 70px -20px rgba(20, 18, 15, 0.5);
   overflow: hidden;
   font-family: inherit;
 }
@@ -67,8 +67,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 14px 16px;
-  background: var(--dark, #211c18);
-  color: #fdf6ee;
+  background: var(--dark, #151f1d);
+  color: var(--ink-on-dark);
 }
 
 .head strong {
@@ -80,14 +80,14 @@
 .sub {
   display: block;
   font-size: 12px;
-  color: #b6a996;
+  color: var(--ink-on-dark-soft);
   margin-top: 2px;
 }
 
 .close {
   background: none;
   border: 0;
-  color: #b6a996;
+  color: var(--ink-on-dark-soft);
   font-size: 15px;
   cursor: pointer;
   padding: 2px 4px;
@@ -119,14 +119,14 @@
 
 .fromBot {
   align-self: flex-start;
-  background: #f2ece2;
-  color: #3a332c;
+  background: var(--bg-sunk);
+  color: var(--ink-muted);
 }
 
 .fromUser {
   align-self: flex-end;
-  background: var(--dark, #211c18);
-  color: #fdf6ee;
+  background: var(--dark, #151f1d);
+  color: var(--ink-on-dark);
 }
 
 .typing {
@@ -139,7 +139,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #a2937f;
+  background: var(--ink-on-dark-soft);
   display: block;
   animation: blink 1.2s ease-in-out infinite;
 }
@@ -172,26 +172,26 @@
 
 .chip {
   background: #fff;
-  border: 1px solid rgba(42, 37, 33, 0.14);
+  border: 1px solid rgba(39, 35, 32, 0.14);
   border-radius: 3px;
   padding: 8px 12px;
   font-family: inherit;
   font-size: 13px;
-  color: #5a4f43;
+  color: var(--ink-soft);
   cursor: pointer;
   text-align: left;
 }
 
 .chip:hover {
-  border-color: var(--accent, #b08a4a);
-  color: #211c18;
+  border-color: var(--accent, #0e6e66);
+  color: var(--dark);
 }
 
 .error {
   font-size: 13px;
-  color: #7c3a24;
-  background: #fdf1ec;
-  border: 1px solid #e6c3b5;
+  color: var(--danger);
+  background: var(--danger-wash);
+  border: 1px solid var(--danger);
   border-radius: 3px;
   padding: 9px 12px;
 }
@@ -200,7 +200,7 @@
   display: flex;
   gap: 8px;
   padding: 12px 14px 6px;
-  border-top: 1px solid rgba(42, 37, 33, 0.1);
+  border-top: 1px solid rgba(39, 35, 32, 0.1);
 }
 
 .composer input {
@@ -209,7 +209,7 @@
   font-family: inherit;
   font-size: 14px;
   padding: 10px 12px;
-  border: 1px solid rgba(42, 37, 33, 0.16);
+  border: 1px solid rgba(39, 35, 32, 0.16);
   border-radius: 3px;
   background: #fff;
   color: inherit;
@@ -217,8 +217,8 @@
 
 .composer input:focus {
   outline: none;
-  border-color: var(--accent, #b08a4a);
-  box-shadow: 0 0 0 3px rgba(176, 138, 74, 0.16);
+  border-color: var(--accent, #0e6e66);
+  box-shadow: 0 0 0 3px rgba(14, 110, 102, 0.16);
 }
 
 .composer button {
@@ -226,8 +226,8 @@
   width: 42px;
   border: 0;
   border-radius: 3px;
-  background: var(--dark, #211c18);
-  color: #fdf6ee;
+  background: var(--dark, #151f1d);
+  color: var(--ink-on-dark);
   font-size: 17px;
   cursor: pointer;
 }
@@ -242,7 +242,7 @@
   padding: 6px 14px 12px;
   font-size: 11px;
   line-height: 1.45;
-  color: #a2937f;
+  color: var(--ink-on-dark-soft);
 }
 
 @media (max-width: 520px) {

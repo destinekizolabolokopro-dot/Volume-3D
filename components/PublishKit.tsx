@@ -257,7 +257,7 @@ function Field({
       ) : (
         <input id={`kit-${label}`} readOnly value={value} />
       )}
-      <p className="hint" style={warn ? { color: '#8a2b23' } : undefined}>
+      <p className="hint" style={warn ? { color: 'var(--danger)' } : undefined}>
         {hint}
       </p>
     </div>

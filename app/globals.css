@@ -21,31 +21,62 @@
    ========================================================================= */
 
 :root {
+  /* ---------------------------------------------------------------- fonds
+     Neutres CHAUDS et très désaturés — le papier d'une agence, pas l'écran
+     d'un tableur. Ils sont volontairement d'une autre famille que l'accent :
+     dans la version précédente, neutres et accent partageaient la même teinte
+     (h≈215), et rien ne se détachait de rien. */
   --bg: #ffffff;
-  /* Fond des sections alternées : assez proche du blanc pour ne pas découper
-     la page en bandes, assez distinct pour marquer un changement de sujet. */
-  --bg-alt: #f7f8fa;
-  --bg-sunk: #f1f3f6;
-  --dark: #0f1418;
+  --bg-alt: #f8f7f4;
+  --bg-sunk: #f0eee8;
 
-  --ink: #1c232b;
-  --ink-strong: #0f1418;
-  --ink-muted: #58616d;
-  --ink-soft: #5f6874;
-  --ink-faint: #858d99;
-  --ink-on-dark: #e9edf2;
+  /* Surfaces sombres : mêmes neutres, tirés vers la teinte de l'accent, pour
+     que l'ensemble reste une seule famille. */
+  --dark: #151f1d;
+  --dark-alt: #1e2b28;
 
-  /* Un seul accent, fonctionnel : il signale ce sur quoi on peut agir. Sa
-     luminance est choisie pour franchir le seuil AA dans les deux sens — texte
-     bleu sur blanc, et texte blanc sur aplat bleu. */
-  --accent: #1a63dc;
-  --accent-strong: #144fb0;
+  /* ---------------------------------------------------------------- encres
+     Chaque valeur est mesurée contre les trois fonds. `--ink-faint` porte le
+     texte des mentions ; il franchit AA lui aussi, ce qui n'était pas le cas
+     avant (3,35 sur blanc). */
+  --ink-strong: #14120f; /* 18,7 sur blanc */
+  --ink: #272320; /* 15,6 */
+  --ink-muted: #544e46; /* 8,2 */
+  --ink-soft: #655e55; /* 6,4 */
+  --ink-faint: #726b60; /* 5,3 — AA sur blanc et sur le fond alterné */
+  --ink-on-dark: #e9edeb; /* 14,3 sur --dark */
+  --ink-on-dark-soft: #a9b6b3; /* 8,1 */
+
+  /* ---------------------------------------------------------------- accent
+     Un pétrole profond : l'encre bleu-vert du dessin d'architecture. Il tient
+     6,1 dans les deux sens — texte accentué sur blanc, et texte blanc sur
+     aplat — ce qui autorise le même ton pour un lien et pour un bouton plein.
+     Il est réservé à ce sur quoi on peut agir. */
+  --accent: #0e6e66;
+  --accent-strong: #0a564f;
+  --accent-wash: #e2f0ee;
   --accent-ink: #ffffff;
-  --accent-wash: #eaf1fe;
-  --positive: #157a4a;
+  /* Sur fond sombre, le pétrole profond tombe à 2,8 : il faut sa version
+     claire, sans quoi le nom de la marque y devient illisible. */
+  --accent-on-dark: #4fb3a6;
 
-  --line: #e4e7ec;
-  --line-strong: #d3d8e0;
+  /* ------------------------------------------------------------- les sens
+     Distinctes de l'accent, et jamais employées à sa place : une couleur qui
+     veut dire deux choses ne veut plus rien dire. */
+  --positive: #1c6b45;
+  --warning: #8a5712;
+  --danger: #a5382a;
+  --danger-wash: #fbeeeb;
+  --positive-wash: #e6f1ea;
+  --warning-wash: #f7efe2;
+
+  /* -------------------------------------------------------------- traits
+     `--line` est décoratif. `--line-strong` borde les contrôles — champs,
+     boutons fantômes — et franchit donc le seuil de 3:1 exigé pour la limite
+     d'un composant d'interface. */
+  --line: #e4e1d9;
+  --line-strong: #948d7f;
+  --line-soft: #cfcabe;
 
   --link: var(--accent);
   --link-hover: var(--accent-strong);
@@ -58,8 +89,10 @@
 
   --radius: 10px;
   --radius-sm: 6px;
-  --shadow-soft: 0 1px 2px rgba(15, 20, 24, 0.04), 0 8px 24px -12px rgba(15, 20, 24, 0.12);
-  --shadow-lift: 0 1px 2px rgba(15, 20, 24, 0.05), 0 18px 40px -18px rgba(15, 20, 24, 0.2);
+  /* Ombres teintées du neutre chaud plutôt que du noir pur : une ombre grise
+     sur un fond chaud se voit comme une salissure. */
+  --shadow-soft: 0 1px 2px rgba(20, 18, 15, 0.04), 0 8px 24px -12px rgba(20, 18, 15, 0.14);
+  --shadow-lift: 0 1px 2px rgba(20, 18, 15, 0.05), 0 18px 40px -18px rgba(20, 18, 15, 0.22);
 }
 
 /* ---------------------------------------------------------------- base --- */
@@ -180,7 +213,7 @@ p {
 }
 
 .btn-dark:hover {
-  background: #232c36;
+  background: var(--dark-alt);
   color: #fff;
 }
 
@@ -208,9 +241,24 @@ p {
 /* Bouton d'une action destructrice, porté par un libellé et non par une croix :
    on le pose sur .btn-ghost, discret tant qu'on ne le survole pas. */
 .btn-danger:hover {
-  background: #f6e3df;
-  color: #7c2f1e;
-  border-color: #e0bcb3;
+  background: var(--danger-wash);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Bouton posé sur une barre sombre. `.btn-ghost` y était employé avec une
+   couleur de texte claire forcée en ligne — sur son fond blanc, le libellé
+   devenait invisible. */
+.btn-on-dark {
+  background: transparent;
+  color: var(--ink-on-dark);
+  border-color: rgba(233, 237, 235, 0.32);
+}
+
+.btn-on-dark:hover {
+  background: rgba(233, 237, 235, 0.12);
+  color: #fff;
+  border-color: rgba(233, 237, 235, 0.5);
 }
 
 .btn-sm {
@@ -251,6 +299,36 @@ p {
 }
 
 /* ----------------------------------------------------------- formulaires --- */
+
+/* Ces trois primitives vivaient dans la feuille de l'espace client alors que
+   des composants partagés — la fiche du logement, le relevé du plan, le kit à
+   publier — les emploient des deux côtés. Dans le back-office, elles
+   retombaient sur les styles par défaut du navigateur. */
+
+.hint {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 6px 0 0;
+}
+.note {
+  background: var(--bg-alt);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 13px 15px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--warning);
+}
+.note-warn {
+  background: var(--danger-wash);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.form-grid {
+  display: grid;
+  gap: 18px;
+}
+
 
 .form {
   max-width: 620px;
@@ -362,15 +440,15 @@ p {
 }
 
 .form-feedback-ok {
-  background: #e9f5ef;
-  color: #14563a;
-  border: 1px solid #bfe0d0;
+  background: var(--positive-wash);
+  color: var(--positive);
+  border: 1px solid var(--positive);
 }
 
 .form-feedback-error {
-  background: #fdeceb;
-  color: #8a2b23;
-  border: 1px solid #f3c6c2;
+  background: var(--danger-wash);
+  color: var(--danger);
+  border: 1px solid var(--danger);
 }
 
 /* Piège à robots : invisible pour un humain, rempli par les scripts. */

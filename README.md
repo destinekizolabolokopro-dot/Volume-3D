@@ -549,6 +549,51 @@ public/
 supabase/schema.sql            schéma à exécuter une fois
 ```
 
+### La palette, et pourquoi celle-là
+
+Elle a été refaite après un audit chiffré, pas au jugé. Trois constats :
+
+1. **L'accent et les neutres partageaient la même teinte** — tout était entre
+   h207 et h220, l'accent n'étant qu'un bleu plus saturé. Rien ne se détachait
+   de rien, et l'ensemble lisait « gabarit par défaut ».
+2. **`--ink-faint`, qui porte toutes les mentions, ne tenait que 3,35** sur
+   blanc, sous le seuil AA de 4,5.
+3. **Le back-office était resté sur la palette « hôtellerie »** — ocre, brun,
+   crème — abandonnée sur la page publique. Les deux moitiés du produit ne se
+   ressemblaient plus.
+
+D'où la direction : **neutres chauds très désaturés** — le papier d'une agence
+— et un **accent pétrole** froid. C'est l'appariement du dessin
+d'architecture, encre bleu-vert sur papier, et il éloigne des bleus de Booking
+et de Matterport sans partir dans le décoratif. Les deux familles de teinte
+sont franchement séparées : 149° d'écart, contre 5° auparavant.
+
+Quelques valeurs, mesurées :
+
+| Rôle | Valeur | Contraste |
+|---|---|---|
+| `--ink` sur blanc | `#272320` | 15,6 — AAA |
+| `--ink-faint` sur `--bg-alt` | `#726b60` | 4,9 — AA (contre 3,3 avant) |
+| `--accent` sur blanc | `#0e6e66` | 6,1 — AA |
+| blanc sur `--accent` | | 6,1 — le même ton sert au lien et au bouton plein |
+| `--accent-on-dark` sur `--dark` | `#4fb3a6` | 6,7 — le pétrole profond y tombait à 2,8 |
+| `--line-strong` sur blanc | `#948d7f` | 3,3 — seuil exigé pour la limite d'un contrôle |
+
+Trois règles tiennent l'ensemble :
+
+- **Un seul accent, réservé à ce sur quoi on peut agir.** Les couleurs de sens
+  — `--positive`, `--warning`, `--danger` — sont distinctes et ne servent
+  jamais d'accent : une couleur qui veut dire deux choses ne veut plus rien
+  dire.
+- **Aucune couleur codée en dur** hors de `:root`. Feuilles de zone, modules
+  CSS et styles en ligne passent tous par un jeton — c'est ce qui avait laissé
+  le back-office et le widget d'assistant sur l'ancienne palette.
+- **Le contraste se mesure sur le rendu, pas dans la feuille.** Un script
+  parcourt chaque page, relève la couleur effective de chaque texte visible et
+  celle du premier ancêtre qui peint un fond, applique la composition alpha, et
+  compare au seuil correspondant à la taille et à la graisse. Les onze écrans
+  passent AA.
+
 ### Parti pris de la page publique
 
 Le lecteur visé est le **propriétaire qui loue son logement**, pas le voyageur

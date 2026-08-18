@@ -63,7 +63,7 @@ export default async function PropertyEditorPage({ params }: Params) {
     <div className="admin">
       <header className="admin-bar">
         <div className="admin-bar-brand">
-          <LogoMark size={20} />
+          <LogoMark size={20} onDark />
           <span>
             Volume<span>3D</span>
           </span>
@@ -76,7 +76,7 @@ export default async function PropertyEditorPage({ params }: Params) {
             </a>
           )}
           <form action={logout}>
-            <button type="submit" className="btn btn-ghost btn-sm" style={{ color: '#e6dcce', borderColor: '#4a4038' }}>
+            <button type="submit" className="btn btn-on-dark btn-sm">
               Déconnexion
             </button>
           </form>

@@ -3,7 +3,7 @@
   width: 100%;
   height: 100%;
   min-height: 320px;
-  background: #0f1418;
+  background: var(--dark);
   overflow: hidden;
   touch-action: none;
   user-select: none;
@@ -61,7 +61,7 @@
   border: 2px solid rgba(255, 255, 255, 0.92);
   /* Assez opaque pour que la flèche blanche reste lisible, y compris posée sur
      un mur clair : c'est le seul repère de navigation dans l'image. */
-  background: rgba(15, 20, 24, 0.62);
+  background: rgba(20, 18, 15, 0.62);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
@@ -82,7 +82,7 @@
 }
 
 .hotspotLabel {
-  background: rgba(16, 22, 28, 0.72);
+  background: rgba(20, 18, 15, 0.72);
   backdrop-filter: blur(4px);
   padding: 4px 10px;
   border-radius: 100px;
@@ -106,7 +106,7 @@
   gap: 8px;
   padding: 44px 14px 14px;
   overflow-x: auto;
-  background: linear-gradient(transparent, rgba(10, 14, 18, 0.72));
+  background: linear-gradient(transparent, rgba(20, 18, 15, 0.72));
   scrollbar-width: none;
 }
 
@@ -119,7 +119,7 @@
   padding: 8px 14px;
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 100px;
-  background: rgba(16, 22, 28, 0.55);
+  background: rgba(20, 18, 15, 0.55);
   backdrop-filter: blur(8px);
   color: #fff;
   font-family: inherit;
@@ -131,7 +131,7 @@
 }
 
 .roomChip:hover {
-  background: rgba(16, 22, 28, 0.78);
+  background: rgba(20, 18, 15, 0.78);
 }
 
 .roomChipActive {
@@ -154,7 +154,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px;
-  background: linear-gradient(rgba(15, 12, 10, 0.65), transparent);
+  background: linear-gradient(rgba(20, 18, 15, 0.65), transparent);
   pointer-events: none;
 }
 
@@ -170,7 +170,7 @@
 }
 
 .iconBtn {
-  background: rgba(20, 16, 13, 0.5);
+  background: rgba(20, 18, 15, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.24);
   color: #fff;
   border-radius: 8px;
@@ -187,7 +187,7 @@
 }
 
 .iconBtn:hover {
-  background: rgba(20, 16, 13, 0.8);
+  background: rgba(20, 18, 15, 0.8);
 }
 
 /* -------------------------------------------------------------- états --- */
@@ -202,15 +202,15 @@
   gap: 10px;
   text-align: center;
   padding: 24px;
-  background: #0f1418;
+  background: var(--dark);
   font-size: 14px;
-  color: #cbbfb0;
+  color: var(--ink-on-dark-soft);
 }
 
 .fadeMask {
   position: absolute;
   inset: 0;
-  background: #0f1418;
+  background: var(--dark);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.28s ease;
@@ -227,7 +227,7 @@
   transform: translateX(-50%);
   padding: 8px 15px;
   border-radius: 100px;
-  background: rgba(16, 22, 28, 0.62);
+  background: rgba(20, 18, 15, 0.62);
   backdrop-filter: blur(8px);
   font-size: 13px;
   white-space: nowrap;

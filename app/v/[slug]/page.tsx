@@ -50,7 +50,7 @@ export default async function TourPage({ params }: Params) {
           {property.city && <div className="tour-city">{property.city}</div>}
         </div>
         <a className="tour-brand" href="/" target="_blank" rel="noopener noreferrer">
-          <LogoMark size={18} />
+          <LogoMark size={18} onDark />
           <span>
             Visite par Volume<b>3D</b>
           </span>

@@ -17,7 +17,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 0 28px;
-  background: rgba(246, 241, 234, 0.92);
+  background: rgba(248, 247, 244, 0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
@@ -318,21 +318,7 @@
   margin-bottom: 8px;
 }
 
-.note {
-  background: #fbf5ea;
-  border: 1px solid #e6d6b8;
-  border-radius: var(--radius-sm);
-  padding: 13px 15px;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: #6b5220;
-}
 
-.note-warn {
-  background: #fdf1ec;
-  border-color: #e6c3b5;
-  color: #7c3a24;
-}
 
 /* ------------------------------------------------------- liste de biens --- */
 
@@ -362,7 +348,7 @@
 
 .bien-cover {
   aspect-ratio: 16 / 10;
-  background: repeating-linear-gradient(135deg, #eee6db, #eee6db 10px, #e2d7c6 10px, #e2d7c6 20px);
+  background: repeating-linear-gradient(135deg, var(--bg-sunk), var(--bg-sunk) 10px, var(--line) 10px, var(--line) 20px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -378,7 +364,7 @@
 .bien-cover span {
   font-family: var(--mono);
   font-size: 11.5px;
-  color: #8a7c6b;
+  color: var(--ink-soft);
 }
 
 .bien-body {
@@ -405,13 +391,13 @@
 }
 
 .badge-live {
-  background: #d9e8d4;
-  color: #35592c;
+  background: var(--positive-wash);
+  color: var(--positive);
 }
 
 .badge-draft {
-  background: rgba(33, 28, 24, 0.82);
-  color: #e9e0d3;
+  background: rgba(21, 31, 29, 0.82);
+  color: var(--ink-on-dark);
 }
 
 /* --------------------------------------------------------- questions --- */
@@ -449,10 +435,6 @@
   max-width: 720px;
 }
 
-.form-grid {
-  display: grid;
-  gap: 18px;
-}
 
 .form-two {
   display: grid;
@@ -466,17 +448,12 @@
   }
 }
 
-.hint {
-  font-size: 12.5px;
-  color: var(--ink-soft);
-  margin: 6px 0 0;
-}
 
 .drop {
   border: 1px dashed var(--line);
   border-radius: var(--radius-sm);
   padding: 18px;
-  background: #faf7f2;
+  background: var(--bg-alt);
 }
 
 .drop input[type='file'] {
@@ -528,7 +505,7 @@
 
 .plan:has(input:checked) {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(176, 138, 74, 0.22);
+  box-shadow: 0 0 0 2px rgba(14, 110, 102, 0.22);
 }
 
 .plan-name {
@@ -571,13 +548,13 @@
 
 .auth-aside {
   padding: clamp(40px, 6vw, 76px);
-  color: #f7f3ec;
+  color: var(--bg-sunk);
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: clamp(24px, 3vw, 38px);
   background:
-    radial-gradient(760px 440px at 24% 8%, rgba(198, 148, 90, 0.2), transparent 62%),
+    radial-gradient(760px 440px at 24% 8%, rgba(14, 110, 102, 0.2), transparent 62%),
     var(--dark);
 }
 
@@ -588,7 +565,7 @@
   line-height: 1.08;
   letter-spacing: -0.018em;
   margin: 0;
-  color: #f7f3ec;
+  color: var(--bg-sunk);
   max-width: 14ch;
 }
 
@@ -601,18 +578,18 @@
   font-size: 14.5px;
   font-weight: 300;
   line-height: 1.6;
-  color: rgba(242, 236, 225, 0.7);
+  color: rgba(233, 237, 235, 0.7);
   max-width: 40ch;
 }
 
 /* Une liste de promesses se lit mieux sur des filets que sur des puces. */
 .auth-aside li {
   padding: 15px 0;
-  border-top: 1px solid rgba(242, 236, 225, 0.14);
+  border-top: 1px solid rgba(233, 237, 235, 0.14);
 }
 
 .auth-aside li:last-child {
-  border-bottom: 1px solid rgba(242, 236, 225, 0.14);
+  border-bottom: 1px solid rgba(233, 237, 235, 0.14);
 }
 
 .auth-main {

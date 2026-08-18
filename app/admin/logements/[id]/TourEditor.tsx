@@ -103,7 +103,7 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#cbbfb0',
+                  color: 'var(--ink-on-dark-soft)',
                   fontSize: 14,
                   textAlign: 'center',
                   padding: 24,
@@ -448,7 +448,7 @@ function VideoUploadForm({ property }: { property: Property }) {
         contrôle pas — c’est le format des visites vues sur les réseaux.
       </p>
       {property.videoUrl && (
-        <video src={property.videoUrl} controls playsInline style={{ width: '100%', borderRadius: 2, background: '#14100d' }} />
+        <video src={property.videoUrl} controls playsInline style={{ width: '100%', borderRadius: 2, background: 'var(--dark)' }} />
       )}
       <input aria-label="Vidéo à envoyer" name="video" type="file" accept="video/*" required />
       <input type="hidden" name="propertyId" value={property.id} />

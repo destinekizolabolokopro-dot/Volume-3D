@@ -2,7 +2,9 @@
 
 .admin {
   min-height: 100dvh;
-  background: #f3efe8;
+  /* Le fond le plus sourd des trois : sur `--bg-alt`, les cartes blanches ne
+     se détachaient plus du fond et la page devenait un aplat. */
+  background: var(--bg-sunk);
 }
 
 .admin-bar {
@@ -12,12 +14,12 @@
   gap: 16px;
   flex-wrap: wrap;
   padding: 14px 28px;
-  background: #211c18;
-  color: #f6f1ea;
+  background: var(--dark);
+  color: var(--bg-alt);
 }
 
 .admin-bar a {
-  color: #e6dcce;
+  color: var(--ink-on-dark);
   text-decoration: none;
   font-size: 14px;
 }
@@ -37,7 +39,9 @@
 }
 
 .admin-bar-brand span {
-  color: var(--accent);
+  /* Le pétrole profond ne tient que 2,8 sur la barre sombre : c'est sa version
+     claire qui y porte le nom de la marque. */
+  color: var(--accent-on-dark);
 }
 
 .admin-nav {
@@ -150,19 +154,15 @@
 }
 
 .tag-draft {
-  background: #eee6db;
-  color: #7a6c5c;
+  background: var(--bg-sunk);
+  color: var(--ink-soft);
 }
 
 .tag-live {
-  background: #d9e8d4;
-  color: #35592c;
+  background: var(--positive-wash);
+  color: var(--positive);
 }
 
-.tag-demo {
-  background: #f4ddd3;
-  color: #7c3a24;
-}
 
 .property-card {
   display: block;
@@ -226,11 +226,11 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: #211c18;
+  background: var(--dark);
 }
 
 .login-card {
-  background: #f6f1ea;
+  background: var(--bg-alt);
   border-radius: var(--radius);
   padding: 36px;
   width: 100%;
