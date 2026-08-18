@@ -43,6 +43,7 @@ export default async function AdminHome() {
           </span>
         </div>
         <nav className="admin-nav">
+          <a href="/admin/demarchage">Fiche de démarchage</a>
           <a href="/" target="_blank" rel="noopener noreferrer">
             Voir le site ↗
           </a>

@@ -242,3 +242,229 @@
   font-size: 21px;
   margin: 18px 0 6px;
 }
+
+/* ------------------------------------------------- fiche de démarchage --- */
+
+/*
+ * Une feuille A4 qu'on prépare à l'écran et qu'on imprime. À l'écran elle est
+ * posée sur le fond comme une feuille sur une table ; à l'impression, elle est
+ * seule sur la page — le reste de l'interface disparaît.
+ */
+
+.sheet-wrap {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.sheet {
+  width: 210mm;
+  min-height: 297mm;
+  max-width: 100%;
+  background: #fff;
+  color: var(--ink);
+  padding: 18mm 16mm 14mm;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid var(--ink-strong);
+}
+
+.sheet-brand {
+  font-weight: 650;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--ink-strong);
+}
+
+.sheet-brand span {
+  color: var(--accent);
+}
+
+.sheet-kicker {
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.sheet-title {
+  font-size: 33px;
+  line-height: 1.12;
+  letter-spacing: -0.028em;
+  font-weight: 650;
+  margin: 26px 0 4px;
+  text-wrap: balance;
+}
+
+.sheet-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 54mm;
+  gap: 14mm;
+  align-items: start;
+  margin-top: 18px;
+  flex: 1;
+}
+
+.sheet-lead {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin: 0 0 20px;
+}
+
+.sheet-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 13px;
+}
+
+.sheet-points li {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  padding-left: 16px;
+  position: relative;
+}
+
+.sheet-points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.sheet-points strong {
+  color: var(--ink-strong);
+  font-weight: 600;
+}
+
+.sheet-price {
+  margin: 24px 0 0;
+  font-size: 15px;
+  color: var(--ink-muted);
+}
+
+.sheet-price span {
+  font-size: 26px;
+  font-weight: 650;
+  color: var(--ink-strong);
+  letter-spacing: -0.02em;
+  margin-right: 6px;
+}
+
+.sheet-qr {
+  text-align: center;
+}
+
+.sheet-qr img {
+  width: 100%;
+  max-width: 54mm;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.sheet-qr p {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.sheet-qr-empty {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 24px 12px;
+  color: var(--ink-soft);
+}
+
+.sheet-foot {
+  margin-top: 22px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.sheet-note {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.sheet-contact {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.sheet-contact strong {
+  color: var(--ink-strong);
+}
+
+@media (max-width: 780px) {
+  .sheet {
+    width: 100%;
+    min-height: 0;
+    padding: 24px 20px;
+  }
+  .sheet-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .sheet-qr img {
+    max-width: 160px;
+  }
+  .sheet-title {
+    font-size: 26px;
+  }
+}
+
+/* --------------------------------------------------------- impression --- */
+
+@media print {
+  /* Seule la feuille part à l'imprimante. */
+  .no-print,
+  .admin-bar,
+  .admin-h1,
+  .admin-sub {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .admin-main {
+    padding: 0;
+    max-width: none;
+  }
+  .sheet-wrap {
+    margin: 0;
+  }
+  .sheet {
+    width: auto;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+}

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { floorPlanDataUri, floorPlanFileName, renderFloorPlan } from '@/lib/floorplan-svg';
 import { buildListing, TITLE_LIMIT } from '@/lib/listing';
+import { qrDataUri, qrSvg } from '@/lib/qrcode';
 import type { FloorPlan, PlanDoor, Property, PropertyFact } from '@/lib/types';
 
 /**
@@ -59,17 +60,32 @@ export function PublishKit({
     }
   }
 
-  function downloadPlan() {
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
+  /** Propose un SVG au téléchargement. */
+  function save(content: string, filename: string) {
+    const url = URL.createObjectURL(new Blob([content], { type: 'image/svg+xml' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = floorPlanFileName(property.name);
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
   }
 
+  function downloadPlan() {
+    save(svg, floorPlanFileName(property.name));
+  }
+
   const titleTooLong = listing.title.length > TITLE_LIMIT;
+
+  // Correction haute : un QR imprimé finit taché, plié ou décollé à un coin.
+  const qr = useMemo(
+    () => (tourUrl ? qrDataUri(tourUrl, { ec: 'H', size: 420, label: `Visite de ${property.name}` }) : ''),
+    [tourUrl, property.name],
+  );
+
+  function downloadQr() {
+    const svg = qrSvg(tourUrl, { ec: 'H', size: 420, label: `Visite de ${property.name}` });
+    save(svg, `qr-${floorPlanFileName(property.name).replace(/^plan-|\.svg$/g, '')}.svg`);
+  }
 
   return (
     <section className="card">
@@ -112,6 +128,41 @@ export function PublishKit({
           {plan
             ? 'Confirmez le relevé du plan ci-dessus pour obtenir le plan à publier.'
             : 'Envoyez le plan du logement pour obtenir un plan redessiné, à joindre à votre annonce.'}
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------ le QR */}
+
+      {qr && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 18,
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            padding: '16px 0 22px',
+            borderTop: '1px solid var(--line)',
+            marginBottom: 4,
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qr}
+            alt={`QR code vers la visite de ${property.name}`}
+            width={132}
+            height={132}
+            style={{ border: '1px solid var(--line)', borderRadius: 'var(--radius-sm)', flex: 'none' }}
+          />
+          <div style={{ flex: '1 1 260px', minWidth: 0 }}>
+            <strong style={{ display: 'block', marginBottom: 4 }}>Le QR de votre visite</strong>
+            <p className="tiny" style={{ margin: '0 0 10px' }}>
+              À imprimer et à poser dans le logement — sur le livret d’accueil, près de la porte, sur le
+              frigo. Un voyageur déjà sur place le montre à ses amis ; c’est votre annonce qui tourne.
+            </p>
+            <button className="btn btn-ghost btn-sm" type="button" onClick={downloadQr}>
+              Télécharger le QR
+            </button>
+          </div>
         </div>
       )}
 
