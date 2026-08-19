@@ -9,6 +9,7 @@ import {
   doorOpening,
   sample,
   verticalFov,
+  viewPitch,
   type CaptionText,
   type Journey,
 } from '@/lib/journey-path';
@@ -279,7 +280,9 @@ function MovingTour({
       const pose = sample(journey, cursor);
       camera.position.set(pose.x - origin.x, EYE, pose.y - origin.y);
       const yaw = (pose.yaw * Math.PI) / 180;
-      const pitch = (pose.pitch * Math.PI) / 180;
+      /* L'assiette suit la forme du cadre : sur un téléphone tenu debout, le
+         quart haut de l'image est du plafond nu. Voir `viewPitch`. */
+      const pitch = (viewPitch(pose.pitch, camera.aspect) * Math.PI) / 180;
       camera.lookAt(
         camera.position.x + Math.cos(pitch) * Math.sin(yaw),
         camera.position.y + Math.sin(pitch),

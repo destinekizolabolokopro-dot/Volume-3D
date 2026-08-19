@@ -20,6 +20,7 @@ import {
   type ViewKey,
   verticalFov,
   viewAt,
+  viewPitch,
 } from '../lib/journey-path.ts';
 import { containsPoint, distanceToSegment, roomWalls } from '../lib/plan.ts';
 import type { PlanDoor, PlanRoom } from '../lib/types.ts';
@@ -460,6 +461,32 @@ test('le champ de vision s’élargit sur un écran étroit, et pas au-delà du 
   // Une valeur absurde ne fait pas tomber le rendu.
   assert.equal(verticalFov(74, 0), 74);
   assert.equal(verticalFov(74, Number.NaN), 74);
+});
+
+test('sur un cadre allongé, le regard s’incline pour montrer autre chose que du plafond', () => {
+  /*
+   * Sur un téléphone tenu debout, le champ vertical s'ouvre à son plafond pour
+   * garder de la largeur. Le quart haut de l'image tombe alors sur du plâtre :
+   * dans une pièce de deux mètres soixante, tout ce qui dépasse quatorze degrés
+   * au-dessus de l'horizon est du plafond nu. Ce qu'on est venu voir est en
+   * dessous.
+   */
+  const bureau = viewPitch(-9, 16 / 9);
+  assert.equal(bureau, -9, 'un écran large ne doit rien changer à l’assiette');
+  assert.equal(viewPitch(-9, 4 / 3), -9, 'le 4/3 est la limite, pas encore un cadre allongé');
+
+  const telephone = viewPitch(-9, 390 / 844);
+  assert.ok(telephone < -9, `le regard devrait s’incliner, il vaut ${telephone}`);
+  assert.ok(telephone > -16, `l’inclinaison ne doit pas donner l’impression de regarder ses pieds, elle vaut ${telephone}`);
+
+  /* La bascule est continue : sans cela, un simple redimensionnement de la
+     fenêtre ferait sauter le cadrage d'un cran. */
+  const doux = viewPitch(-9, 1.1);
+  assert.ok(doux < -9 && doux > telephone, `le cadre intermédiaire doit être entre les deux, il vaut ${doux}`);
+
+  // Une valeur absurde ne fait pas tomber le rendu.
+  assert.equal(viewPitch(-9, 0), -9);
+  assert.equal(viewPitch(-9, Number.NaN), -9);
 });
 
 test('dans un couloir, on regarde le fond et non le mur qu’on longe', () => {

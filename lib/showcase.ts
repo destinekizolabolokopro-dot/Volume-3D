@@ -249,8 +249,29 @@ export const SHOWCASE_MASSING: Massing[] = [
   { roomId: 'sejour', x: 4.62, y: 0.55, w: 0.03, d: 0.21, h: 0.03, base: 1.19, tone: 'laiton' },
   { roomId: 'sejour', x: 4.31, y: 0.32, w: 1.6, d: 0.04, h: 0.48, base: 0.945, tone: 'cabinet' },
   { roomId: 'sejour', x: 4.31, y: 0.47, w: 1.6, d: 0.34, h: 0.62, base: 1.45, shape: 'placard', portes: 3, tone: 'cabinet' },
-  // Le placard d'entrée, contre la façade.
-  { roomId: 'sejour', x: 0.6, y: 1.1, w: 0.6, d: 1.6, h: 2.05, shape: 'placard', tone: 'cabinet' },
+  /* Le placard d'entrée, contre le mur ouest.
+     Il descendait jusqu'au nu de la façade et occupait donc le seul mètre où
+     un rideau pouvait pendre à gauche de la fenêtre. Vingt-cinq centimètres
+     plus loin de la façade, quarante de moins de long : il tient toujours son
+     rôle — c'est le placard d'entrée, on le voit en franchissant la porte — et
+     la fenêtre récupère ses deux côtés. */
+  { roomId: 'sejour', x: 0.6, y: 1.35, w: 0.6, d: 1.2, h: 2.05, shape: 'placard', tone: 'cabinet' },
+  /*
+   * Les rideaux de la fenêtre sur rue.
+   *
+   * C'est la fenêtre du séjour : deux mètres vingt d'ouverture, la seule chose
+   * du logement qu'une annonce mette en avant, et le premier plan de presque
+   * toutes les vues de la pièce. Elle était nue, alors que celle de la chambre,
+   * deux fois plus petite, était habillée — l'incohérence se voyait plus que
+   * l'absence.
+   *
+   * Ils débordent l'ouverture des deux côtés et s'arrêtent à six centimètres du
+   * parquet, comme des rideaux qu'on a fait tomber juste : posés au ras du
+   * tableau, ils fermeraient la fenêtre au lieu de l'encadrer.
+   */
+  { roomId: 'sejour', x: 0.79, y: 0.4, w: 0.32, d: 0.17, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 3.34, y: 0.4, w: 0.32, d: 0.17, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 2.07, y: 0.4, w: 2.88, d: 0.028, h: 0.028, base: 2.42, tone: 'laiton' },
 
   /* ------------------------------------------------------------ chambre --- */
   { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.6, d: 2.0, h: 0.4, tone: 'bois' },

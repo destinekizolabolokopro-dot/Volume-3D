@@ -1019,6 +1019,49 @@ function facadeTexture(tone: number, disposables: Bin[]): THREE.Texture {
   const travees = 13;
   const hauteurEtage = H / (etages + 0.5);
   const pas = W / travees;
+
+  /*
+   * Ce qu'on ajoute ici n'est pas du décor : c'est ce qui donne une adresse.
+   *
+   * La façade d'en face est dans le champ de chaque fenêtre du logement, donc
+   * dans la moitié des images de la visite. Réduite à des trous sombres dans un
+   * aplat, elle se lit comme un fond peint — et un fond peint derrière une
+   * fenêtre par ailleurs juste est ce qui ramène toute l'image au rang de
+   * maquette.
+   *
+   * Trois traits suffisent, et ce sont ceux qu'on voit depuis n'importe quelle
+   * fenêtre parisienne : le bandeau qui marque chaque plancher, le balcon
+   * filant en fer forgé, et le zinc du dernier niveau au-dessus d'une corniche.
+   * Aucun ne coûte de géométrie — tout est peint dans la texture.
+   */
+
+  // Le calcaire n'est pas d'un seul ton : chaque travée a vieilli à sa façon.
+  for (let travee = 0; travee < travees; travee += 1) {
+    const ecart = (bruit(travee, 7, 13) - 0.5) * 0.06;
+    context.fillStyle =
+      ecart > 0 ? `rgba(255,255,255,${ecart.toFixed(3)})` : `rgba(24,20,16,${(-ecart).toFixed(3)})`;
+    context.fillRect(travee * pas, 0, pas, H);
+  }
+
+  // Le bandeau de plancher : un ressaut clair, et son ombre juste dessous.
+  for (let etage = 1; etage <= etages; etage += 1) {
+    const y = H - etage * hauteurEtage;
+    context.fillStyle = 'rgba(255,255,255,0.15)';
+    context.fillRect(0, y - 2, W, 2.5);
+    context.fillStyle = 'rgba(24,20,16,0.1)';
+    context.fillRect(0, y + 0.5, W, 1.5);
+  }
+
+  /* Le zinc du comble, sous lequel court la corniche. C'est la ligne qui dit
+     « Paris » avant même qu'on ait compté les étages. */
+  const comble = hauteurEtage * 0.5;
+  context.fillStyle = 'rgba(74,78,82,0.34)';
+  context.fillRect(0, 0, W, comble - 4);
+  context.fillStyle = 'rgba(255,255,255,0.24)';
+  context.fillRect(0, comble - 4.5, W, 4.5);
+  context.fillStyle = 'rgba(24,20,16,0.13)';
+  context.fillRect(0, comble, W, 2);
+
   for (let etage = 0; etage < etages; etage += 1) {
     for (let travee = 0; travee < travees; travee += 1) {
       /* Deux fenêtres sur trente sont éteintes ou masquées : une grille
@@ -1036,6 +1079,28 @@ function facadeTexture(tone: number, disposables: Bin[]): THREE.Texture {
       context.fillStyle = `rgba(26,24,22,${nuit.toFixed(3)})`;
       context.fillRect(x, y, largeur, hauteur);
     }
+  }
+
+  /*
+   * Les balcons filants, au deuxième et au dernier étage habitable.
+   *
+   * Ce n'est pas un choix d'esthète : la loi de 1859 impose l'alignement des
+   * balcons, et l'usage les a mis à ces deux niveaux-là. C'est pour cela qu'une
+   * façade parisienne se reconnaît de dos, sans en lire un seul détail — deux
+   * lignes horizontales sombres à des hauteurs précises.
+   */
+  for (const etage of [etages - 3, etages - 1]) {
+    if (etage < 0) continue;
+    const appui = H - (etage + 1) * hauteurEtage + hauteurEtage * 0.72;
+    const rampe = hauteurEtage * 0.3;
+    // La dalle de pierre, en léger débord.
+    context.fillStyle = 'rgba(255,255,255,0.2)';
+    context.fillRect(0, appui, W, 2.5);
+    // Les barreaux de fonte, puis la main courante qui les tient.
+    context.fillStyle = 'rgba(30,28,26,0.4)';
+    for (let x = 1; x < W; x += 3.2) context.fillRect(x, appui - rampe, 1.1, rampe);
+    context.fillStyle = 'rgba(30,28,26,0.52)';
+    context.fillRect(0, appui - rampe, W, 1.8);
   }
 
   const texture = new THREE.CanvasTexture(canvas);

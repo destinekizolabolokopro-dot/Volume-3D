@@ -306,6 +306,37 @@ export function verticalFov(base: number, aspect: number): number {
   return Math.min(MAX_VERTICAL_FOV, held);
 }
 
+/*
+ * L'assiette du regard suit la forme de l'écran.
+ *
+ * Sur un téléphone tenu debout, le champ vertical s'ouvre à quatre-vingt-quatre
+ * degrés pour garder de la largeur. Le quart haut de l'image tombe alors sur du
+ * plafond nu — dans une pièce de deux mètres soixante, tout ce qui est à plus de
+ * quatorze degrés au-dessus de l'horizon est du plâtre. Or ce qu'on est venu
+ * voir est en dessous : les meubles, le sol, ce qui donne son échelle à la
+ * pièce. Un centimètre de plafond de plus n'apprend rien ; un centimètre de sol
+ * de plus montre le parquet, le tapis, le pied du lit.
+ *
+ * On incline donc un peu plus le regard quand le cadre s'allonge. Pas beaucoup :
+ * six degrés déplacent l'horizon d'un dixième de la hauteur de l'image, ce qui
+ * suffit à faire entrer le mobilier et ne suffit pas à donner l'impression de
+ * regarder ses pieds.
+ *
+ * En dessous du 4/3 seulement — un écran d'ordinateur n'a pas ce problème, et le
+ * même supplément d'assiette y ferait pencher une image déjà bien composée.
+ */
+const TALL_ASPECT = 4 / 3;
+const TALL_TILT = 6;
+
+export function viewPitch(base: number, aspect: number): number {
+  if (!Number.isFinite(aspect) || aspect <= 0) return base;
+  if (aspect >= TALL_ASPECT) return base;
+  /* La bascule est progressive : entre le 4/3 et le format d'un téléphone,
+     rien ne justifie un seuil, et un seuil se verrait au redimensionnement. */
+  const part = Math.min(1, (TALL_ASPECT - aspect) / (TALL_ASPECT - 0.5));
+  return base - TALL_TILT * part;
+}
+
 /* ============================================================ lecture t → */
 
 /** Position au sol à l'instant `t`. Vitesse constante entre deux points. */
