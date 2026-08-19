@@ -56,8 +56,57 @@ export interface Entrance {
    aussi, et les deux ne doivent pas en avoir deux versions. */
 const SKIN = WALL_SKIN;
 const FACADE = WALL_FACADE;
-/** Hauteur des plinthes. Un détail minuscule qui fait « pièce » plutôt que « boîte ». */
-const SKIRTING = 0.09;
+/* La hauteur des plinthes et des corniches est portée par leur profil, plus
+   bas : `PROFIL_PLINTHE` et `PROFIL_CORNICHE`. */
+
+/* ------------------------------------------------------------ moulures --- */
+
+/*
+ * Une plinthe n'est pas un parallélépipède.
+ *
+ * Rendue en bloc, elle donne une bande de couleur au bas du mur : elle occupe
+ * la bonne place mais ne fait rien, parce qu'un bloc n'a que deux orientations
+ * et que les deux reçoivent la même lumière que le mur. Ce qui fait une plinthe,
+ * c'est son profil — deux ou trois redans où l'ombre s'accroche et se pose en
+ * traits horizontaux. C'est exactement ce que l'œil cherche pour lire la
+ * hauteur d'une pièce, et c'est pour cela qu'un menuisier moulure une planche
+ * qui pourrait rester droite.
+ *
+ * Les profils sont donnés en mètres dans le plan vertical perpendiculaire au
+ * mur : x est la saillie depuis la face du mur, y la hauteur depuis le sol pour
+ * une plinthe, depuis le bas du bandeau pour une corniche. Ils sont extrudés le
+ * long du mur, ce qui donne exactement ce que donne une moulure : une section
+ * constante sur toute la longueur.
+ *
+ * Les valeurs sont celles d'un profil courant de menuiserie parisienne — une
+ * plinthe de neuf centimètres à doucine, une corniche à gorge de douze — pas
+ * une invention. C'est ce qui fait que la scène ne ressemble pas à un rendu.
+ */
+type Profil = [number, number][];
+
+/** Plinthe à doucine : montant droit, deux redans, retour au mur. */
+const PROFIL_PLINTHE: Profil = [
+  [0, 0],
+  [0.019, 0],
+  [0.019, 0.062],
+  [0.014, 0.07],
+  [0.014, 0.076],
+  [0.009, 0.082],
+  [0.009, 0.088],
+  [0, 0.09],
+];
+
+/** Corniche à gorge : la diagonale creuse, puis deux ressauts vers le plafond. */
+const PROFIL_CORNICHE: Profil = [
+  [0, 0],
+  [0.048, 0.052],
+  [0.048, 0.07],
+  [0.036, 0.081],
+  [0.036, 0.097],
+  [0.016, 0.112],
+  [0.016, 0.12],
+  [0, 0.12],
+];
 
 /** Réutilisés à chaque pièce plutôt que réalloués : la construction en pose
  *  quelques milliers. */
@@ -144,7 +193,8 @@ function box(w: number, h: number, d: number, radius: number): THREE.BufferGeome
   if (r < 0.0006) return new THREE.BoxGeometry(w, h, d);
   return new RoundedBoxGeometry(w, h, d, 1, r);
 }
-/** Hauteur de la corniche, au raccord du mur et du plafond. */
+/** Hauteur de la corniche, au raccord du mur et du plafond. Elle doit
+ *  correspondre au dernier point de `PROFIL_CORNICHE`. */
 const CORNICE = 0.12;
 
 /* --------------------------------------------------------- fusion --- */
@@ -189,6 +239,13 @@ class Batch {
   /** Verse les objets fusionnés dans un groupe, et rend les géométries sources. */
   flush(group: THREE.Group, disposables: { dispose(): void }[]): void {
     for (const [material, lot] of this.lots) {
+      /* Certains matériaux ne doivent rien projeter. Le cas qui compte est le
+         verre : la carte d'ombre est un tampon de profondeur, elle ignore la
+         transparence, et une vitre y écrit exactement comme un mur. Les
+         fenêtres étaient donc murées du point de vue du soleil, et le logement
+         entier rendait par temps couvert — sans qu'aucune valeur d'éclairage ne
+         soit fausse. */
+      const casts = material.userData?.sansOmbre !== true;
       const merged = lot.length === 1 ? lot[0] : mergeGeometries(lot, false);
       if (!merged) {
         // La fusion refuse des attributs incompatibles : on retombe sur des
@@ -196,7 +253,7 @@ class Batch {
         for (const geometry of lot) {
           disposables.push(geometry);
           const mesh = new THREE.Mesh(geometry, material);
-          mesh.castShadow = true;
+          mesh.castShadow = casts;
           mesh.receiveShadow = true;
           group.add(mesh);
         }
@@ -205,7 +262,7 @@ class Batch {
       if (merged !== lot[0]) for (const geometry of lot) geometry.dispose();
       disposables.push(merged);
       const mesh = new THREE.Mesh(merged, material);
-      mesh.castShadow = true;
+      mesh.castShadow = casts;
       mesh.receiveShadow = true;
       group.add(mesh);
     }
@@ -392,7 +449,7 @@ export function buildInterior({
        sans effacer le soleil, qui doit rester la source qu'on lit. */
     scene.environmentIntensity = 1.05;
   }
-  lights(scene, Math.max(box.maxX - box.minX, box.maxY - box.minY));
+  lights(scene, Math.max(box.maxX - box.minX, box.maxY - box.minY), rooms, doors, origin);
   scene.add(ground(bin));
   scene.add(surroundings(rooms, doors, origin, bin));
   scene.add(shell(rooms, doors, origin, bin));
@@ -454,7 +511,98 @@ function sky(disposables: { dispose(): void }[]): THREE.Mesh {
  * Il n'éclaire ni la chambre ni la salle d'eau ; c'est ce qui doit arriver, et
  * c'est justement ce qui rend la scène crédible.
  */
-function lights(scene: THREE.Scene, extent: number): void {
+/**
+ * D'où vient le soleil.
+ *
+ * Il venait d'une direction fixe, choisie une fois pour la démonstration et
+ * sans rapport avec le logement. Pour ce plan-là, elle tombait à peu près
+ * juste ; pour le plan d'un client, elle pouvait aussi bien arriver par un mur
+ * aveugle, et la visite entière rendait alors par temps couvert.
+ *
+ * On le place donc en fonction du bien : dehors, en face de la plus grande
+ * ouverture, à trente-quatre degrés au-dessus de l'horizon — la hauteur d'un
+ * soleil de milieu de matinée à Paris, celle qui fait entrer la lumière loin
+ * dans la pièce sans écraser les volumes — et décalé de vingt-cinq degrés sur
+ * le côté. Ce décalage n'est pas cosmétique : de face, la tache au sol est un
+ * rectangle qui recopie la fenêtre et se lit comme une erreur ; de biais, c'est
+ * un parallélogramme, et c'est ce que fait le soleil.
+ */
+function sunDirection(rooms: PlanRoom[], doors: PlanDoor[]): THREE.Vector3 {
+  /* Les fenêtres, avec leur largeur et la direction vers laquelle elles
+     regardent. */
+  const baies: { largeur: number; cap: number; x: number; y: number }[] = [];
+  for (const door of doors) {
+    if (door.kind !== 'window') continue;
+    const largeur = Math.hypot(door.b.x - door.a.x, door.b.y - door.a.y);
+    if (largeur < 0.2) continue;
+    const middle = { x: (door.a.x + door.b.x) / 2, y: (door.a.y + door.b.y) / 2 };
+    const along = Math.atan2(door.b.y - door.a.y, door.b.x - door.a.x);
+    let out = { x: Math.cos(along + Math.PI / 2), y: Math.sin(along + Math.PI / 2) };
+    const dedans = { x: middle.x + out.x * 0.2, y: middle.y + out.y * 0.2 };
+    if (rooms.some((room) => containsPoint(room, dedans))) out = { x: -out.x, y: -out.y };
+    baies.push({ largeur, cap: Math.atan2(out.y, out.x), x: middle.x, y: middle.y });
+  }
+  // Sans fenêtre relevée, on garde une direction franche plutôt que rien.
+  if (baies.length === 0) return new THREE.Vector3(-4, 7, -11);
+
+  /*
+   * L'azimut qui éclaire le plus de vitrage.
+   *
+   * Une première version plaçait le soleil devant la plus grande baie. Pour un
+   * studio à une fenêtre c'est la même chose ; pour un logement qui en a trois,
+   * cela revenait à en éclairer une et à laisser les deux autres au gris. On
+   * cherche donc la direction qui maximise la surface vitrée *projetée* — la
+   * somme des largeurs pondérées par le cosinus de l'angle d'incidence, ce qui
+   * est exactement la quantité de lumière que la façade reçoit. Le résultat est
+   * un compromis quand les fenêtres regardent ailleurs, et la solution évidente
+   * quand elles regardent toutes du même côté.
+   */
+  let meilleurCap = baies[0].cap;
+  let meilleur = -1;
+  for (let pas = 0; pas < 36; pas += 1) {
+    const cap = (pas * Math.PI) / 18;
+    let recu = 0;
+    for (const baie of baies) {
+      const incidence = Math.cos(cap - baie.cap);
+      if (incidence > 0) recu += baie.largeur * incidence;
+    }
+    if (recu > meilleur) {
+      meilleur = recu;
+      meilleurCap = cap;
+    }
+  }
+
+  /*
+   * Puis le décalage et la hauteur.
+   *
+   * Trente-quatre degrés au-dessus de l'horizon : la hauteur d'un soleil de
+   * milieu de matinée à Paris, celle qui fait entrer la lumière loin dans la
+   * pièce sans écraser les volumes. Et vingt-cinq degrés sur le côté — ce
+   * décalage n'est pas cosmétique : de face, la tache au sol est un rectangle
+   * qui recopie la fenêtre et se lit comme une erreur ; de biais, c'est un
+   * parallélogramme, et c'est ce que fait le soleil.
+   */
+  const ECART = (25 * Math.PI) / 180;
+  const HAUTEUR = (34 * Math.PI) / 180;
+  const cap = meilleurCap + ECART;
+  const portee = 16;
+  /* Le soleil est placé au-dessus du centre du logement plutôt qu'au-dessus
+     d'une fenêtre : la carte d'ombre est centrée sur la cible, et une source
+     décentrée en gaspillerait la moitié. */
+  return new THREE.Vector3(
+    Math.cos(cap) * portee,
+    Math.tan(HAUTEUR) * portee,
+    Math.sin(cap) * portee,
+  );
+}
+
+function lights(
+  scene: THREE.Scene,
+  extent: number,
+  rooms: PlanRoom[],
+  doors: PlanDoor[],
+  origin: PlanPoint,
+): void {
   /*
    * L'équilibre a été refait quand la carte d'environnement est arrivée.
    *
@@ -473,7 +621,7 @@ function lights(scene: THREE.Scene, extent: number): void {
   scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 0.6));
 
   const sun = new THREE.DirectionalLight(0xfff0d6, 2.4);
-  sun.position.set(-4, 7, -11);
+  sun.position.copy(sunDirection(rooms, doors));
   sun.castShadow = true;
   /* Mille vingt-quatre pixels pour un logement entier donnaient une ombre en
      escalier sur le nez des marches et le bord des tablettes. Le coût d'une
@@ -856,6 +1004,7 @@ function shell(
     transparent: true,
     opacity: 0.12,
     depthWrite: false,
+    userData: { sansOmbre: true },
   });
   disposables.push(wall, joinery, parquet, carrelage, ceiling, glass);
 
@@ -970,11 +1119,43 @@ function shell(
         batch.add(geometry, material, matrix.compose(position, quaternion, echelle));
       };
 
+      /**
+       * Pose une moulure : le profil est extrudé le long du mur, depuis sa face.
+       *
+       * Le repère local du profil est (saillie, hauteur) ; l'extrusion se fait
+       * selon z. La matrice envoie donc x sur la normale intérieure du mur, y
+       * vers le haut, z le long du mur — et la translation place l'origine au
+       * début du tronçon, sur la face du mur et non sur la ligne du plan.
+       */
+      const moulding = (
+        from: number,
+        to: number,
+        bottom: number,
+        profil: Profil,
+        material: THREE.Material,
+      ) => {
+        const run = (to - from) * length;
+        if (run < 0.02) return;
+        const shape = new THREE.Shape(profil.map(([x, y]) => new THREE.Vector2(x, y)));
+        const geometry = new THREE.ExtrudeGeometry(shape, {
+          depth: run,
+          bevelEnabled: false,
+          curveSegments: 1,
+        });
+        const start = pointAt(segment, from);
+        const dir = { x: Math.cos(angle), y: Math.sin(angle) };
+        const placement = new THREE.Matrix4().set(
+          normal.x, 0, dir.x, start.x - origin.x + normal.x * thickness,
+          0,        1, 0,     bottom,
+          normal.y, 0, dir.y, start.y - origin.y + normal.y * thickness,
+          0,        0, 0,     1,
+        );
+        batch.add(geometry, material, placement);
+      };
+
       for (const span of solidSpans(openings)) {
         panel(span.from, span.to, 0, shellTop, wall);
-        // La plinthe déborde légèrement de la peau du mur, sinon elle ne se
-        // détache pas et ne sert à rien.
-        panel(span.from, span.to, 0, SKIRTING, joinery, thickness + 0.018);
+        moulding(span.from, span.to, 0, PROFIL_PLINTHE, joinery);
       }
       for (const { span, door } of framed) {
         if (door.sill > 0.01) panel(span.from, span.to, 0, door.sill, wall);
@@ -991,7 +1172,7 @@ function shell(
          n'arrive dans aucun immeuble ancien et se lit immédiatement comme une
          maquette. */
       for (const span of solidSpans(openings)) {
-        panel(span.from, span.to, room.height - CORNICE, CORNICE, joinery, thickness + 0.05);
+        moulding(span.from, span.to, room.height - CORNICE, PROFIL_CORNICHE, joinery);
       }
     }
   }
@@ -1131,6 +1312,8 @@ function contactShadow(disposables: { dispose(): void }[]): THREE.Material {
     map: texture,
     transparent: true,
     depthWrite: false,
+    // Une tache peinte au sol n'a pas d'épaisseur : elle ne doit rien projeter.
+    userData: { sansOmbre: true },
   });
   disposables.push(texture, material);
   return material;
