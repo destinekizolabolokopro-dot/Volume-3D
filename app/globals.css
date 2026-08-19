@@ -103,6 +103,14 @@
   box-sizing: border-box;
 }
 
+/* La règle du navigateur pour `[hidden]` est `display: none` sur l'élément nu :
+   n'importe quelle classe qui pose un `display` la bat, et l'élément reste
+   visible. Les onglets de l'éditeur se cachent par cet attribut. */
+[hidden] {
+  display: none !important;
+}
+
+
 html {
   scroll-behavior: smooth;
 }

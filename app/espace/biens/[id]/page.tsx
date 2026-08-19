@@ -103,14 +103,16 @@ export default async function BienPage({ params }: Params) {
           scenes={scenes}
           hotspots={hotspots}
           origin={origin}
-          extras={
-            <>
+          sections={{
+            contenu: (
               <PropertyExtras
                 propertyId={property.id}
-                photos={[...photos].sort((a, b) => a.position - b.position)}
+                photos={[...photos].sort((first, second) => first.position - second.position)}
                 chapters={chapters}
                 hasVideo={property.videoUrl !== ''}
               />
+            ),
+            plan: (
               <PlanPanel
                 propertyId={property.id}
                 plan={plan}
@@ -118,6 +120,8 @@ export default async function BienPage({ params }: Params) {
                 photos={photos}
                 readerConfigured={isPlanReaderConfigured()}
               />
+            ),
+            fiche: (
               <FactsPanel
                 propertyId={property.id}
                 facts={property.facts ?? []}
@@ -125,18 +129,17 @@ export default async function BienPage({ params }: Params) {
                 readerConfigured={isFactsReaderConfigured()}
                 hasPhotos={photos.length > 0}
               />
-            </>
-          }
-        />
-
-        {/* Hors de l'éditeur : le plan à publier a besoin de toute la largeur,
-            et ce bloc s'adresse à l'annonce, pas à la visite. */}
-        <PublishKit
-          property={property}
-          plan={plan}
-          doors={planDoors}
-          facts={property.facts ?? []}
-          tourUrl={`${origin}/v/${property.slug}`}
+            ),
+            annonce: (
+              <PublishKit
+                property={property}
+                plan={plan}
+                doors={planDoors}
+                facts={property.facts ?? []}
+                tourUrl={`${origin}/v/${property.slug}`}
+              />
+            ),
+          }}
         />
       </main>
     </div>

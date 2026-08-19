@@ -734,15 +734,43 @@ a.pro-meter:hover .pro-meter-label {
   color: var(--ink-faint);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 700px) {
   .pro-head {
     align-items: flex-start;
   }
+
+  /*
+   * Sur un téléphone, la marque, les onglets et la déconnexion ne tiennent pas
+   * sur une ligne : les onglets étaient réduits à cent pixels et le premier
+   * libellé se coupait au milieu d'un mot. Ils passent sur leur propre ligne,
+   * où ils défilent.
+   */
   .pro-bar {
-    padding-bottom: 6px;
+    min-height: 0;
+    padding-top: 10px;
+    padding-bottom: 0;
+    row-gap: 0;
+  }
+  .pro-tabs {
+    order: 3;
+    flex-basis: 100%;
+    /* De quoi faire défiler jusqu'au bord de l'écran plutôt que de s'arrêter
+       sur la marge de la barre. */
+    margin: 0 calc(-1 * clamp(16px, 3vw, 28px));
+    padding: 0 clamp(16px, 3vw, 28px);
+  }
+  .pro-tab {
+    padding: 12px 12px;
+  }
+  .pro-bar-side {
+    margin-left: auto;
   }
   .pro-who {
     display: none;
+  }
+  .pro-subtab {
+    padding: 9px 10px;
+    font-size: 13.5px;
   }
 }
 
@@ -913,4 +941,60 @@ a.pro-meter:hover .pro-meter-label {
   .grid-2 {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* --------------------------------------------------- onglets internes --- */
+
+/*
+ * Les onglets d'un dossier.
+ *
+ * L'éditeur d'un logement empilait dix panneaux dans une colonne de 300 px :
+ * sept mille pixels de haut, et une moitié de page vide à gauche. Ce sont
+ * pourtant des tâches distinctes — poser les passages, ranger les photos,
+ * relire le plan, remplir la fiche — qu'on ne fait jamais en même temps.
+ *
+ * Ils se distinguent de `.pro-tab` : ceux-là sont dans la barre sombre et
+ * changent de page ; ceux-ci sont dans la page et changent de vue.
+ */
+.pro-subtabs {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pro-subtab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  padding: 9px 14px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  cursor: pointer;
+  /* La bordure basse est posée en permanence, transparente : sans elle,
+     l'onglet actif grandit de 2 px et toute la rangée bouge. */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -3px;
+  transition: color 0.12s ease;
+}
+
+.pro-subtab:hover {
+  color: var(--ink-strong);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.pro-subtab[aria-selected='true'] {
+  color: var(--ink-strong);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+/* Un panneau seul n'a pas besoin de toute la largeur : au-delà, les libellés
+   se retrouvent à un écran de leur champ. */
+.editor-narrow {
+  max-width: 720px;
 }

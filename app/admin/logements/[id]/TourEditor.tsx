@@ -1,10 +1,18 @@
-'use client';
+"use client";
 
-import { useActionState, useCallback, useMemo, useRef, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { CopyField } from '@/components/CopyField';
-import { PanoViewer } from '@/components/PanoViewer';
-import type { Hotspot, Property, Scene } from '@/lib/types';
+import {
+  useActionState,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+import { useRouter } from "next/navigation";
+import { CopyField } from "@/components/CopyField";
+import { PanoViewer } from "@/components/PanoViewer";
+import { Tag } from "@/components/pro/Pro";
+import type { Hotspot, Property, Scene } from "@/lib/types";
 import {
   addHotspot,
   addScene,
@@ -18,26 +26,52 @@ import {
   uploadModel,
   uploadVideo,
   type ActionResult,
-} from '../../actions';
+} from "../../actions";
+
+type TabKey = "visite" | "contenu" | "plan" | "fiche" | "annonce" | "reglages";
 
 interface Props {
   property: Property;
   scenes: Scene[];
   hotspots: Hotspot[];
   origin: string;
-  /** Blocs supplémentaires (photos, repères vidéo) rendus dans la colonne latérale. */
-  extras?: React.ReactNode;
+  /**
+   * Les blocs que la page monte elle-même, rangés par onglet.
+   *
+   * Ils arrivaient avant en un seul bloc opaque, versé dans la colonne de
+   * droite : dix panneaux à la suite dans une colonne de 300 px, sept mille
+   * pixels de haut, et rien à gauche pour les accompagner. Nommer les fentes
+   * permet de les répartir.
+   */
+  sections?: {
+    /** Photos, chapitres vidéo. */
+    contenu?: React.ReactNode;
+    /** Le plan du logement et la visite qui en découle. */
+    plan?: React.ReactNode;
+    /** La fiche du logement et ce qu'il reste à renseigner. */
+    fiche?: React.ReactNode;
+    /** Ce qu'on recopie dans l'annonce : plan, QR, titre, description. */
+    annonce?: React.ReactNode;
+  };
 }
 
-export function TourEditor({ property, scenes, hotspots, origin, extras }: Props) {
+export function TourEditor({
+  property,
+  scenes,
+  hotspots,
+  origin,
+  sections,
+}: Props) {
   const router = useRouter();
-  const [currentSceneId, setCurrentSceneId] = useState(scenes[0]?.id ?? '');
+  const [currentSceneId, setCurrentSceneId] = useState(scenes[0]?.id ?? "");
   const [pendingTarget, setPendingTarget] = useState<string | null>(null);
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useState("");
+  const [tab, setTab] = useState<TabKey>("visite");
   const [pending, start] = useTransition();
   const liveView = useRef({ yaw: 0, pitch: 0 });
 
-  const current = scenes.find((scene) => scene.id === currentSceneId) ?? scenes[0] ?? null;
+  const current =
+    scenes.find((scene) => scene.id === currentSceneId) ?? scenes[0] ?? null;
   const currentHotspots = useMemo(
     () => hotspots.filter((hotspot) => hotspot.sceneId === current?.id),
     [hotspots, current?.id],
@@ -45,11 +79,35 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
   const otherScenes = scenes.filter((scene) => scene.id !== current?.id);
   const tourUrl = `${origin}/v/${property.slug}`;
 
+  /* Les onglets existants dépendent du dossier : un logement sans plan n'a pas
+     d'onglet « Plan », et une visite par panoramas n'a pas de modèle 3D. */
+  const tabs: { key: TabKey; label: string }[] = [
+    {
+      key: "visite",
+      label: property.mode === "pano" ? "Visite et pièces" : "Visite",
+    },
+    ...(sections?.contenu
+      ? [{ key: "contenu" as const, label: "Photos et vidéo" }]
+      : []),
+    ...(sections?.plan ? [{ key: "plan" as const, label: "Plan" }] : []),
+    ...(sections?.fiche
+      ? [{ key: "fiche" as const, label: "Fiche du logement" }]
+      : []),
+    ...(sections?.annonce
+      ? [{ key: "annonce" as const, label: "À publier sur l’annonce" }]
+      : []),
+    { key: "reglages", label: "Réglages" },
+  ];
+
   const act = useCallback(
     (fn: () => Promise<ActionResult>, successMessage?: string) => {
       start(async () => {
         const result = await fn();
-        setNotice(result.ok ? (successMessage ?? '') : (result.error ?? 'Opération impossible.'));
+        setNotice(
+          result.ok
+            ? (successMessage ?? "")
+            : (result.error ?? "Opération impossible."),
+        );
         router.refresh();
       });
     },
@@ -62,8 +120,14 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
       const target = pendingTarget;
       setPendingTarget(null);
       act(
-        () => addHotspot({ sceneId: current.id, targetSceneId: target, yaw, pitch }),
-        'Passage ajouté.',
+        () =>
+          addHotspot({
+            sceneId: current.id,
+            targetSceneId: target,
+            yaw,
+            pitch,
+          }),
+        "Passage ajouté.",
       );
     },
     [pendingTarget, current, act],
@@ -77,11 +141,39 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
         </div>
       )}
 
-      <div className="editor">
+      {/* La publication reste au-dessus des onglets : c'est l'état du dossier
+          et l'action qui compte, on ne doit pas avoir à la chercher. */}
+      <PublishPanel
+        property={property}
+        tourUrl={tourUrl}
+        pending={pending}
+        act={act}
+      />
+
+      <div
+        className="pro-subtabs"
+        role="tablist"
+        aria-label="Sections du logement"
+      >
+        {tabs.map((entry) => (
+          <button
+            key={entry.key}
+            type="button"
+            role="tab"
+            className="pro-subtab"
+            aria-selected={entry.key === tab}
+            onClick={() => setTab(entry.key)}
+          >
+            {entry.label}
+          </button>
+        ))}
+      </div>
+
+      <div hidden={tab !== "visite"} className="editor">
         {/* ------------------------------------------------------- scène --- */}
         <div className="stack">
           <div className="stage">
-            {property.mode === 'pano' && current ? (
+            {property.mode === "pano" && current ? (
               <PanoViewer
                 key={current.id}
                 scenes={scenes}
@@ -98,38 +190,45 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
             ) : (
               <div
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--ink-on-dark-soft)',
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--ink-on-dark-soft)",
                   fontSize: 14,
-                  textAlign: 'center',
+                  textAlign: "center",
                   padding: 24,
                 }}
               >
                 {scenes.length === 0
-                  ? 'Ajoutez un premier panorama pour voir la visite ici.'
-                  : 'Aperçu disponible sur la page publique de la visite.'}
+                  ? "Ajoutez un premier panorama pour voir la visite ici."
+                  : "Aperçu disponible sur la page publique de la visite."}
               </div>
             )}
           </div>
 
           {pendingTarget && (
             <div className="callout-box">
-              <strong>Cliquez dans l’image</strong> à l’endroit où le visiteur devra cliquer pour aller vers «{' '}
-              {scenes.find((scene) => scene.id === pendingTarget)?.name} ».{' '}
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPendingTarget(null)}>
+              <strong>Cliquez dans l’image</strong> à l’endroit où le visiteur
+              devra cliquer pour aller vers «{" "}
+              {scenes.find((scene) => scene.id === pendingTarget)?.name} ».{" "}
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => setPendingTarget(null)}
+              >
                 Annuler
               </button>
             </div>
           )}
 
-          {property.mode === 'pano' && current && (
+          {property.mode === "pano" && current && (
             <div className="card stack-sm">
               <div className="row row-between">
-                <strong style={{ fontSize: 14 }}>Passages depuis « {current.name} »</strong>
+                <strong style={{ fontSize: 14 }}>
+                  Passages depuis « {current.name} »
+                </strong>
                 <button
                   type="button"
                   className="btn btn-ghost btn-sm"
@@ -141,7 +240,7 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
                           initialYaw: liveView.current.yaw,
                           initialPitch: liveView.current.pitch,
                         }),
-                      'Vue de départ enregistrée.',
+                      "Vue de départ enregistrée.",
                     )
                   }
                   title="Le visiteur arrivera face à ce que vous voyez actuellement"
@@ -152,20 +251,29 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
 
               {currentHotspots.length === 0 ? (
                 <p className="muted" style={{ margin: 0 }}>
-                  Aucun passage. Sans passage, le visiteur devra utiliser la barre des pièces en bas du viewer.
+                  Aucun passage. Sans passage, le visiteur devra utiliser la
+                  barre des pièces en bas du viewer.
                 </p>
               ) : (
                 currentHotspots.map((hotspot) => (
                   <div className="hotspot-row" key={hotspot.id}>
                     <span>
-                      → {scenes.find((scene) => scene.id === hotspot.targetSceneId)?.name ?? 'pièce supprimée'}{' '}
+                      →{" "}
+                      {scenes.find(
+                        (scene) => scene.id === hotspot.targetSceneId,
+                      )?.name ?? "pièce supprimée"}{" "}
                       <em className="tiny">({Math.round(hotspot.yaw)}°)</em>
                     </span>
                     <button
                       type="button"
                       className="mini-btn mini-btn-danger"
                       disabled={pending}
-                      onClick={() => act(() => deleteHotspot(hotspot.id), 'Passage supprimé.')}
+                      onClick={() =>
+                        act(
+                          () => deleteHotspot(hotspot.id),
+                          "Passage supprimé.",
+                        )
+                      }
                       title="Supprimer ce passage"
                     >
                       ✕
@@ -179,11 +287,17 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
                   <select
                     aria-label="Ajouter un passage vers une autre pièce"
                     className="scene-name"
-                    style={{ border: '1px solid var(--line)', padding: 8, borderRadius: 2, flex: '1 1 180px' }}
+                    style={{
+                      border: "1px solid var(--line)",
+                      padding: 8,
+                      borderRadius: 2,
+                      flex: "1 1 180px",
+                    }}
                     defaultValue=""
                     onChange={(event) => {
-                      if (event.target.value) setPendingTarget(event.target.value);
-                      event.target.value = '';
+                      if (event.target.value)
+                        setPendingTarget(event.target.value);
+                      event.target.value = "";
                     }}
                   >
                     <option value="" disabled>
@@ -201,21 +315,24 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
           )}
         </div>
 
-        {/* -------------------------------------------------- colonne --- */}
+        {/* ------------------------------------------------- les pièces --- */}
         <div className="stack">
-          <PublishPanel property={property} tourUrl={tourUrl} pending={pending} act={act} />
-
-          {property.mode === 'pano' && (
+          {property.mode === "pano" && (
             <div className="card stack-sm">
               <strong style={{ fontSize: 14 }}>Pièces ({scenes.length})</strong>
               {scenes.map((scene, index) => (
                 <div
                   key={scene.id}
-                  className={`scene-row ${scene.id === current?.id ? 'scene-row-active' : ''}`}
+                  className={`scene-row ${scene.id === current?.id ? "scene-row-active" : ""}`}
                   onClick={() => setCurrentSceneId(scene.id)}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="scene-thumb" src={scene.imageUrl} alt="" loading="lazy" />
+                  <img
+                    className="scene-thumb"
+                    src={scene.imageUrl}
+                    alt=""
+                    loading="lazy"
+                  />
                   <input
                     aria-label="Nom de la pièce"
                     className="scene-name"
@@ -224,7 +341,8 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
                     onClick={(event) => event.stopPropagation()}
                     onBlur={(event) => {
                       const value = event.target.value.trim();
-                      if (value && value !== scene.name) act(() => updateScene(scene.id, { name: value }));
+                      if (value && value !== scene.name)
+                        act(() => updateScene(scene.id, { name: value }));
                     }}
                   />
                   <button
@@ -258,8 +376,10 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
                     title="Supprimer la pièce"
                     onClick={(event) => {
                       event.stopPropagation();
-                      if (confirm(`Supprimer « ${scene.name} » et ses passages ?`)) {
-                        act(() => deleteScene(scene.id), 'Pièce supprimée.');
+                      if (
+                        confirm(`Supprimer « ${scene.name} » et ses passages ?`)
+                      ) {
+                        act(() => deleteScene(scene.id), "Pièce supprimée.");
                       }
                     }}
                   >
@@ -271,33 +391,57 @@ export function TourEditor({ property, scenes, hotspots, origin, extras }: Props
               <AddSceneForm propertyId={property.id} />
             </div>
           )}
+        </div>
+      </div>
 
-          <SettingsForm property={property} />
-
+      {sections?.contenu && (
+        <div hidden={tab !== "contenu"} className="stack">
           <VideoUploadForm property={property} />
+          {sections.contenu}
+        </div>
+      )}
 
-          {extras}
+      {sections?.plan && (
+        <div hidden={tab !== "plan"} className="stack">
+          {sections.plan}
+        </div>
+      )}
 
-          {property.mode === 'model' && <ModelUploadForm property={property} />}
+      {sections?.fiche && (
+        <div hidden={tab !== "fiche"} className="stack">
+          {sections.fiche}
+        </div>
+      )}
 
-          <div className="card">
-            <strong style={{ fontSize: 14 }}>Zone dangereuse</strong>
-            <p className="muted" style={{ margin: '8px 0 12px' }}>
-              La suppression retire le logement, ses pièces et ses passages. Le lien public cessera de fonctionner.
-            </p>
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              disabled={pending}
-              onClick={() => {
-                if (confirm(`Supprimer définitivement « ${property.name} » ?`)) {
-                  start(() => void deleteProperty(property.id));
-                }
-              }}
-            >
-              Supprimer ce logement
-            </button>
-          </div>
+      {sections?.annonce && (
+        <div hidden={tab !== "annonce"} className="stack">
+          {sections.annonce}
+        </div>
+      )}
+
+      <div hidden={tab !== "reglages"} className="editor-narrow stack">
+        <SettingsForm property={property} />
+
+        {property.mode === "model" && <ModelUploadForm property={property} />}
+
+        <div className="card">
+          <strong style={{ fontSize: 14 }}>Zone dangereuse</strong>
+          <p className="muted" style={{ margin: "8px 0 12px" }}>
+            La suppression retire le logement, ses pièces et ses passages. Le
+            lien public cessera de fonctionner.
+          </p>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            disabled={pending}
+            onClick={() => {
+              if (confirm(`Supprimer définitivement « ${property.name} » ?`)) {
+                start(() => void deleteProperty(property.id));
+              }
+            }}
+          >
+            Supprimer ce logement
+          </button>
         </div>
       </div>
     </div>
@@ -317,42 +461,65 @@ function PublishPanel({
   pending: boolean;
   act: (fn: () => Promise<ActionResult>, message?: string) => void;
 }) {
-  const published = property.status === 'published';
+  const published = property.status === "published";
   const embedSnippet = `<iframe src="${tourUrl}" width="100%" height="600" style="border:0" allowfullscreen loading="lazy" title="Visite 3D — ${property.name}"></iframe>`;
 
   return (
     <div className="card stack-sm">
       <div className="row row-between">
         <strong style={{ fontSize: 14 }}>Publication</strong>
-        <span className={`tag ${published ? 'tag-live' : 'tag-draft'}`}>{published ? 'En ligne' : 'Brouillon'}</span>
+        <Tag tone={published ? "live" : "draft"}>
+          {published ? "En ligne" : "Brouillon"}
+        </Tag>
       </div>
 
-      <button
-        type="button"
-        className={published ? 'btn btn-ghost btn-sm' : 'btn btn-accent btn-sm'}
-        disabled={pending}
-        onClick={() =>
-          act(
-            () => setPropertyStatus(property.id, published ? 'draft' : 'published'),
-            published ? 'Visite dépubliée.' : 'Visite en ligne — le lien est actif.',
-          )
-        }
-      >
-        {published ? 'Dépublier' : 'Publier la visite'}
-      </button>
+      {/* Dans une pile en grille, un bouton seul prend toute la largeur de la
+          carte : il ressemblait à une barre de titre plus qu'à une action. */}
+      <div className="row">
+        <button
+          type="button"
+          className={
+            published ? "btn btn-ghost btn-sm" : "btn btn-accent btn-sm"
+          }
+          disabled={pending}
+          onClick={() =>
+            act(
+              () =>
+                setPropertyStatus(
+                  property.id,
+                  published ? "draft" : "published",
+                ),
+              published
+                ? "Visite dépubliée."
+                : "Visite en ligne — le lien est actif.",
+            )
+          }
+        >
+          {published ? "Dépublier" : "Publier la visite"}
+        </button>
+      </div>
 
       {published && (
         <>
-          <p className="tiny" style={{ margin: '6px 0 0' }}>
+          <p className="tiny" style={{ margin: "6px 0 0" }}>
             Lien à envoyer au propriétaire :
           </p>
-          <CopyField value={tourUrl} label={`tour-${property.id}`} name="le lien de la visite" />
-          <p className="tiny" style={{ margin: '6px 0 0' }}>
+          <CopyField
+            value={tourUrl}
+            label={`tour-${property.id}`}
+            name="le lien de la visite"
+          />
+          <p className="tiny" style={{ margin: "6px 0 0" }}>
             Code d’intégration pour son site :
           </p>
-          <CopyField value={embedSnippet} label={`embed-${property.id}`} name="le code d’intégration" />
+          <CopyField
+            value={embedSnippet}
+            label={`embed-${property.id}`}
+            name="le code d’intégration"
+          />
           <p className="tiny" style={{ margin: 0 }}>
-            {property.views} vue{property.views > 1 ? 's' : ''} depuis la publication.
+            {property.views} vue{property.views > 1 ? "s" : ""} depuis la
+            publication.
           </p>
         </>
       )}
@@ -365,7 +532,10 @@ function PublishPanel({
 function AddSceneForm({ propertyId }: { propertyId: string }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (previous, formData) => {
+  const [state, formAction, pending] = useActionState<
+    ActionResult | null,
+    FormData
+  >(async (previous, formData) => {
     const result = await addScene(previous, formData);
     if (result.ok) {
       formRef.current?.reset();
@@ -375,7 +545,12 @@ function AddSceneForm({ propertyId }: { propertyId: string }) {
   }, null);
 
   return (
-    <form action={formAction} ref={formRef} className="file-drop stack-sm" style={{ marginTop: 6 }}>
+    <form
+      action={formAction}
+      ref={formRef}
+      className="file-drop stack-sm"
+      style={{ marginTop: 6 }}
+    >
       <strong style={{ fontSize: 13 }}>Ajouter une pièce</strong>
       <input name="propertyId" type="hidden" value={propertyId} />
       <input
@@ -385,19 +560,31 @@ function AddSceneForm({ propertyId }: { propertyId: string }) {
         maxLength={60}
         className="scene-name"
       />
-      <input aria-label="Panoramas 360° à envoyer" name="image" type="file" accept="image/*" multiple required />
+      <input
+        aria-label="Panoramas 360° à envoyer"
+        name="image"
+        type="file"
+        accept="image/*"
+        multiple
+        required
+      />
       <p className="tiny" style={{ margin: 0 }}>
-        Panoramas 360° équirectangulaires (rapport 2:1). Sélectionnez-en plusieurs d’un coup : chaque fichier devient
-        une pièce, nommée d’après son nom de fichier. Les images sont recompressées automatiquement pour rester rapides
-        sur mobile.
+        Panoramas 360° équirectangulaires (rapport 2:1). Sélectionnez-en
+        plusieurs d’un coup : chaque fichier devient une pièce, nommée d’après
+        son nom de fichier. Les images sont recompressées automatiquement pour
+        rester rapides sur mobile.
       </p>
       {state?.error && (
         <div className="form-feedback form-feedback-error" role="alert">
           {state.error}
         </div>
       )}
-      <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
-        {pending ? 'Envoi…' : 'Ajouter la ou les pièces'}
+      <button
+        className="btn btn-accent btn-sm"
+        type="submit"
+        disabled={pending}
+      >
+        {pending ? "Envoi…" : "Ajouter la ou les pièces"}
       </button>
     </form>
   );
@@ -405,7 +592,10 @@ function AddSceneForm({ propertyId }: { propertyId: string }) {
 
 function ModelUploadForm({ property }: { property: Property }) {
   const router = useRouter();
-  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (previous, formData) => {
+  const [state, formAction, pending] = useActionState<
+    ActionResult | null,
+    FormData
+  >(async (previous, formData) => {
     const result = await uploadModel(previous, formData);
     if (result.ok) router.refresh();
     return result;
@@ -415,18 +605,33 @@ function ModelUploadForm({ property }: { property: Property }) {
     <form action={formAction} className="card stack-sm">
       <strong style={{ fontSize: 14 }}>Modèle 3D</strong>
       <input type="hidden" name="propertyId" value={property.id} />
-      {property.modelUrl && <p className="tiny" style={{ margin: 0 }}>Un modèle est déjà en place — envoyer un nouveau fichier le remplace.</p>}
-      <input aria-label="Modèle 3D à envoyer" name="model" type="file" accept=".glb,.gltf" required />
+      {property.modelUrl && (
+        <p className="tiny" style={{ margin: 0 }}>
+          Un modèle est déjà en place — envoyer un nouveau fichier le remplace.
+        </p>
+      )}
+      <input
+        aria-label="Modèle 3D à envoyer"
+        name="model"
+        type="file"
+        accept=".glb,.gltf"
+        required
+      />
       <p className="tiny" style={{ margin: 0 }}>
-        Export .glb depuis Polycam ou Luma. Au-delà de 60 Mo, le chargement devient lent sur mobile.
+        Export .glb depuis Polycam ou Luma. Au-delà de 60 Mo, le chargement
+        devient lent sur mobile.
       </p>
       {state?.error && (
         <div className="form-feedback form-feedback-error" role="alert">
           {state.error}
         </div>
       )}
-      <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
-        {pending ? 'Envoi…' : 'Envoyer le modèle'}
+      <button
+        className="btn btn-accent btn-sm"
+        type="submit"
+        disabled={pending}
+      >
+        {pending ? "Envoi…" : "Envoyer le modèle"}
       </button>
     </form>
   );
@@ -434,7 +639,10 @@ function ModelUploadForm({ property }: { property: Property }) {
 
 function VideoUploadForm({ property }: { property: Property }) {
   const router = useRouter();
-  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (previous, formData) => {
+  const [state, formAction, pending] = useActionState<
+    ActionResult | null,
+    FormData
+  >(async (previous, formData) => {
     const result = await uploadVideo(previous, formData);
     if (result.ok) router.refresh();
     return result;
@@ -444,22 +652,44 @@ function VideoUploadForm({ property }: { property: Property }) {
     <form action={formAction} className="card stack-sm">
       <strong style={{ fontSize: 14 }}>Vidéo walkthrough</strong>
       <p className="tiny" style={{ margin: 0 }}>
-        Une déambulation filmée au téléphone, en marchant lentement dans le logement. Le visiteur la regarde, il ne la
-        contrôle pas — c’est le format des visites vues sur les réseaux.
+        Une déambulation filmée au téléphone, en marchant lentement dans le
+        logement. Le visiteur la regarde, il ne la contrôle pas — c’est le
+        format des visites vues sur les réseaux.
       </p>
       {property.videoUrl && (
-        <video src={property.videoUrl} controls playsInline style={{ width: '100%', borderRadius: 2, background: 'var(--dark)' }} />
+        <video
+          src={property.videoUrl}
+          controls
+          playsInline
+          style={{ width: "100%", borderRadius: 2, background: "var(--dark)" }}
+        />
       )}
-      <input aria-label="Vidéo à envoyer" name="video" type="file" accept="video/*" required />
+      <input
+        aria-label="Vidéo à envoyer"
+        name="video"
+        type="file"
+        accept="video/*"
+        required
+      />
       <input type="hidden" name="propertyId" value={property.id} />
-      <p className="tiny" style={{ margin: 0 }}>MP4, WebM ou MOV, 200 Mo maximum.</p>
+      <p className="tiny" style={{ margin: 0 }}>
+        MP4, WebM ou MOV, 200 Mo maximum.
+      </p>
       {state?.error && (
         <div className="form-feedback form-feedback-error" role="alert">
           {state.error}
         </div>
       )}
-      <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
-        {pending ? 'Envoi…' : property.videoUrl ? 'Remplacer la vidéo' : 'Envoyer la vidéo'}
+      <button
+        className="btn btn-accent btn-sm"
+        type="submit"
+        disabled={pending}
+      >
+        {pending
+          ? "Envoi…"
+          : property.videoUrl
+            ? "Remplacer la vidéo"
+            : "Envoyer la vidéo"}
       </button>
     </form>
   );
@@ -468,7 +698,10 @@ function VideoUploadForm({ property }: { property: Property }) {
 function SettingsForm({ property }: { property: Property }) {
   const router = useRouter();
   const [mode, setMode] = useState(property.mode);
-  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (previous, formData) => {
+  const [state, formAction, pending] = useActionState<
+    ActionResult | null,
+    FormData
+  >(async (previous, formData) => {
     const result = await updateProperty(previous, formData);
     if (result.ok) router.refresh();
     return result;
@@ -481,25 +714,52 @@ function SettingsForm({ property }: { property: Property }) {
 
       <div className="field">
         <label htmlFor="ed-name">Nom</label>
-        <input id="ed-name" name="name" defaultValue={property.name} required maxLength={140} />
+        <input
+          id="ed-name"
+          name="name"
+          defaultValue={property.name}
+          required
+          maxLength={140}
+        />
       </div>
       <div className="field">
         <label htmlFor="ed-city">Ville</label>
-        <input id="ed-city" name="city" defaultValue={property.city} maxLength={120} />
+        <input
+          id="ed-city"
+          name="city"
+          defaultValue={property.city}
+          maxLength={120}
+        />
       </div>
       <div className="grid-2">
         <div className="field">
           <label htmlFor="ed-owner">Propriétaire</label>
-          <input id="ed-owner" name="ownerName" defaultValue={property.ownerName} maxLength={140} />
+          <input
+            id="ed-owner"
+            name="ownerName"
+            defaultValue={property.ownerName}
+            maxLength={140}
+          />
         </div>
         <div className="field">
           <label htmlFor="ed-phone">Téléphone</label>
-          <input id="ed-phone" name="ownerPhone" defaultValue={property.ownerPhone} maxLength={40} />
+          <input
+            id="ed-phone"
+            name="ownerPhone"
+            defaultValue={property.ownerPhone}
+            maxLength={40}
+          />
         </div>
       </div>
       <div className="field">
         <label htmlFor="ed-email">Email</label>
-        <input id="ed-email" name="ownerEmail" type="email" defaultValue={property.ownerEmail} maxLength={200} />
+        <input
+          id="ed-email"
+          name="ownerEmail"
+          type="email"
+          defaultValue={property.ownerEmail}
+          maxLength={200}
+        />
       </div>
 
       <div className="field">
@@ -508,7 +768,7 @@ function SettingsForm({ property }: { property: Property }) {
           id="ed-mode"
           name="mode"
           defaultValue={property.mode}
-          onChange={(event) => setMode(event.target.value as Property['mode'])}
+          onChange={(event) => setMode(event.target.value as Property["mode"])}
         >
           <option value="pano">Panoramas 360° (hébergés ici)</option>
           <option value="model">Modèle 3D .glb (Polycam, Luma)</option>
@@ -517,7 +777,7 @@ function SettingsForm({ property }: { property: Property }) {
         </select>
       </div>
 
-      {mode === 'embed' && (
+      {mode === "embed" && (
         <div className="field">
           <label htmlFor="ed-embed">Lien du viewer externe</label>
           <input
@@ -529,11 +789,13 @@ function SettingsForm({ property }: { property: Property }) {
           />
         </div>
       )}
-      {mode !== 'embed' && <input type="hidden" name="embedUrl" value={property.embedUrl} />}
+      {mode !== "embed" && (
+        <input type="hidden" name="embedUrl" value={property.embedUrl} />
+      )}
 
-      <p className="tiny" style={{ margin: '-2px 0 0' }}>
-        Les formats que vous avez renseignés sont tous proposés au voyageur, qui bascule de l’un à l’autre. Celui-ci
-        est simplement affiché en premier.
+      <p className="tiny" style={{ margin: "-2px 0 0" }}>
+        Les formats que vous avez renseignés sont tous proposés au voyageur, qui
+        bascule de l’un à l’autre. Celui-ci est simplement affiché en premier.
       </p>
 
       <div className="field">
@@ -546,25 +808,49 @@ function SettingsForm({ property }: { property: Property }) {
           rows={5}
           placeholder="T2 de 42 m² au 3e étage, chambre séparée, cuisine équipée…"
         />
-        <p className="tiny" style={{ margin: '6px 0 0' }}>
-          Affichée sous la visite, et utilisée par l’assistant pour répondre aux voyageurs.
+        <p className="tiny" style={{ margin: "6px 0 0" }}>
+          Affichée sous la visite, et utilisée par l’assistant pour répondre aux
+          voyageurs.
         </p>
       </div>
 
       <div className="field">
-        <label htmlFor="ed-chat" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500 }}>
-          <input id="ed-chat" name="chatEnabled" type="checkbox" defaultChecked={property.chatEnabled} style={{ width: 'auto' }} />
+        <label
+          htmlFor="ed-chat"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontWeight: 500,
+          }}
+        >
+          <input
+            id="ed-chat"
+            name="chatEnabled"
+            type="checkbox"
+            defaultChecked={property.chatEnabled}
+            style={{ width: "auto" }}
+          />
           Activer l’assistant sur cette visite
         </label>
-        <p className="tiny" style={{ margin: '6px 0 0' }}>
-          Il répond aux questions des voyageurs à partir de la description et des pièces, sans jamais inventer.
+        <p className="tiny" style={{ margin: "6px 0 0" }}>
+          Il répond aux questions des voyageurs à partir de la description et
+          des pièces, sans jamais inventer.
         </p>
       </div>
 
       <div className="field">
         <label htmlFor="ed-notes">Notes internes</label>
-        <textarea id="ed-notes" name="notes" defaultValue={property.notes} maxLength={4000} rows={3} />
-        <p className="tiny" style={{ margin: '6px 0 0' }}>Jamais affichées publiquement.</p>
+        <textarea
+          id="ed-notes"
+          name="notes"
+          defaultValue={property.notes}
+          maxLength={4000}
+          rows={3}
+        />
+        <p className="tiny" style={{ margin: "6px 0 0" }}>
+          Jamais affichées publiquement.
+        </p>
       </div>
 
       {state?.error && (
@@ -573,8 +859,12 @@ function SettingsForm({ property }: { property: Property }) {
         </div>
       )}
 
-      <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
-        {pending ? 'Enregistrement…' : 'Enregistrer'}
+      <button
+        className="btn btn-accent btn-sm"
+        type="submit"
+        disabled={pending}
+      >
+        {pending ? "Enregistrement…" : "Enregistrer"}
       </button>
     </form>
   );
