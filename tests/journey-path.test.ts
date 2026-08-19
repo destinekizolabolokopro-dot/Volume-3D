@@ -6,6 +6,7 @@ import {
   captionOpacity,
   describeRoom,
   doorOpening,
+  freeRun,
   heading,
   lerpAngle,
   metres,
@@ -14,11 +15,11 @@ import {
   shortestArc,
   smoothstep,
   tourOrder,
-  verticalFov,
-  viewAt,
   type Caption,
   type PathPoint,
   type ViewKey,
+  verticalFov,
+  viewAt,
 } from '../lib/journey-path.ts';
 import { containsPoint, distanceToSegment, roomWalls } from '../lib/plan.ts';
 import type { PlanDoor, PlanRoom } from '../lib/types.ts';
@@ -39,6 +40,12 @@ const rooms: PlanRoom[] = [
       { x: 0, y: 4 },
     ],
   },
+  /* Le dégagement descend jusqu'à 4,40 m, comme dans le plan livré, et pas
+     jusqu'à 3,00 comme ici auparavant : la salle d'eau commence à 3,20, donc la
+     porte déclarée entre les deux ne reposait sur aucun mur commun et laissait
+     vingt centimètres de vide entre les deux pièces. Le plan de démonstration a
+     été corrigé de ce défaut ; ce jeu d'essai ne l'avait pas suivi, si bien
+     qu'il mesurait le cadrage sur un logement impossible. */
   {
     id: 'degagement',
     name: 'Dégagement',
@@ -46,8 +53,8 @@ const rooms: PlanRoom[] = [
     points: [
       { x: 5.2, y: 1.2 },
       { x: 6.6, y: 1.2 },
-      { x: 6.6, y: 3 },
-      { x: 5.2, y: 3 },
+      { x: 6.6, y: 4.4 },
+      { x: 5.2, y: 4.4 },
     ],
   },
   {
@@ -88,7 +95,7 @@ const doors: PlanDoor[] = [
   door('entree', 'sejour', '', { x: 0, y: 2.4 }, { x: 0, y: 3.3 }),
   door('pd1', 'sejour', 'degagement', { x: 5.2, y: 1.6 }, { x: 5.2, y: 2.5 }, 'opening'),
   door('pd2', 'degagement', 'chambre', { x: 6.6, y: 1.4 }, { x: 6.6, y: 2.3 }),
-  door('pd3', 'degagement', 'salle-eau', { x: 6.7, y: 3.2 }, { x: 7.5, y: 3.2 }),
+  door('pd3', 'degagement', 'salle-eau', { x: 6.6, y: 3.3 }, { x: 6.6, y: 4.0 }),
   door('pd4', 'sejour', '', { x: 1, y: 0 }, { x: 3.2, y: 0 }, 'window', 0.85),
   door('pd5', 'chambre', '', { x: 10, y: 0.6 }, { x: 10, y: 2 }, 'window', 0.9),
   door('pd6', 'salle-eau', '', { x: 8.6, y: 3.7 }, { x: 8.6, y: 4.4 }, 'window', 1.2),
@@ -494,18 +501,19 @@ test('le regard ne bute jamais sur un mur pendant qu’on marche', () => {
    */
   const journey = buildJourney(rooms, doors, { closing: { kicker: 'k', title: 't', text: 'x' } });
 
-  /** Distance parcourue par le regard avant de sortir du logement. */
+  /*
+   * On appelle le rayon du moteur de cadrage, pas une copie.
+   *
+   * La copie qui vivait ici s'arrêtait quand le point sortait du logement. Deux
+   * pièces mitoyennes partagent leur ligne de plan : un regard tiré du
+   * dégagement vers la salle d'eau traversait donc la cloison sans rien
+   * rencontrer, et ce contrôle annonçait deux mètres trente-cinq de dégagement
+   * là où l'image montrait un aplat de peinture plein cadre. Le contrôle et le
+   * défaut qu'il devait attraper reposaient sur la même erreur.
+   */
   const reach = (t: number) => {
     const pose = sample(journey, t);
-    const dx = Math.sin((pose.yaw * Math.PI) / 180);
-    const dy = -Math.cos((pose.yaw * Math.PI) / 180);
-    let seen = 0;
-    for (let step = 0.05; step <= 12; step += 0.05) {
-      const point = { x: pose.x + dx * step, y: pose.y + dy * step };
-      if (!rooms.some((room) => containsPoint(room, point))) break;
-      seen = step;
-    }
-    return seen;
+    return freeRun(rooms, doors, { x: pose.x, y: pose.y }, pose.yaw);
   };
 
   /* On ne juge que la marche. À l'arrêt, une salle d'eau de trois mètres carrés
@@ -519,26 +527,46 @@ test('le regard ne bute jamais sur un mur pendant qu’on marche', () => {
   };
 
   const dehors = journey.doorOpens.to;
-  let pire = { t: 0, d: 99 };
   let serres = 0;
   let mesures = 0;
+  let suite = 0;
+  let pireSuite = { t: 0, n: 0 };
   for (let index = 0; index <= 400; index += 1) {
     const t = index / 400;
     if (t < dehors || parked(t)) continue;
     const d = reach(t);
     mesures += 1;
     if (d < 1.5) serres += 1;
-    if (d < pire.d) pire = { t, d };
+    if (d < 0.9) {
+      suite += 1;
+      if (suite > pireSuite.n) pireSuite = { t, n: suite };
+    } else {
+      suite = 0;
+    }
   }
 
-  /* Deux seuils, parce qu'il y a deux défauts distincts.
-     Le nez au mur : à moins de quatre-vingt-dix centimètres, il n'y a plus
-     d'image du tout. Un virage à angle droit dans un couloir d'un mètre
-     quarante passe légitimement près — un humain qui tourne là voit le mur,
-     lui aussi — mais il ne s'y arrête pas. */
+  /*
+   * Deux seuils, parce qu'il y a deux défauts distincts — et le premier se
+   * mesure en durée, pas en distance.
+   *
+   * Une mesure instantanée a été essayée d'abord : « jamais moins de quatre-
+   * vingt-dix centimètres ». Elle est intenable dès que le rayon cesse de
+   * traverser les cloisons, et elle l'est pour une raison géométrique et non
+   * par négligence : une salle d'eau fait un mètre quatre-vingts de large, donc
+   * un demi-tour pris dans son embrasure balaie forcément un mur à cinquante
+   * centimètres, quel que soit le chemin choisi. Un humain qui sort d'une salle
+   * de bains voit ce mur lui aussi. Ce qui compte est qu'il ne s'y arrête pas.
+   *
+   * On mesure donc la durée du mur : combien d'instants consécutifs le regard
+   * reste-t-il buté. Un balayage traverse en un ou deux échantillons sur
+   * quatre cents ; un cadrage qui vise un mur y reste. C'est bien ce second
+   * cas qu'un contrôle en image a fini par montrer — le regard tenu sur une
+   * cloison pendant tout un tronçon du dégagement — et c'est celui-là qui doit
+   * échouer.
+   */
   assert.ok(
-    pire.d > 0.9,
-    `à t=${pire.t.toFixed(3)} le regard bute à ${pire.d.toFixed(2)} m : c’est le nez au mur`,
+    pireSuite.n <= 2,
+    `le regard reste buté sur un mur pendant ${pireSuite.n} instants d’affilée (jusqu’à t=${pireSuite.t.toFixed(3)}) : ce n’est plus un balayage, c’est un cadrage`,
   );
 
   /* Le mur tenu : c'est celui-là qui abîmait la visite. Un virage sur place au

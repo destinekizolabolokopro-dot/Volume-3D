@@ -1745,6 +1745,9 @@ function furniture(
   const position = new THREE.Vector3();
   const echelle = new THREE.Vector3(1, 1, 1);
 
+  /** Le verre des parois de douche, construit à la première qui s'en sert. */
+  let vitre: THREE.MeshStandardMaterial | undefined;
+
   /** Le matériau d'une teinte, construit une fois pour toute la scène. */
   const matiere = (tone: FurnitureTone): THREE.Material => {
     let material = materials.get(tone);
@@ -1896,6 +1899,68 @@ function furniture(
           'laiton',
         );
       }
+    } else if (item.shape === 'vitrage') {
+      /*
+       * Une paroi de douche, en verre.
+       *
+       * Elle était rendue opaque, dans le grège des placards : deux panneaux
+       * de trois centimètres et demi montant à un mètre quatre-vingt-dix, donc
+       * une dalle beige de deux mètres carrés en plein milieu d'une pièce qui
+       * en fait trois et demi. À l'image, la salle d'eau n'était plus une
+       * salle d'eau mais un mur — on n'y voyait ni la douche, ni la vasque,
+       * ni la fenêtre que la légende annonce.
+       *
+       * Le verre est ce qui distingue une douche d'un placard, et c'est aussi
+       * ce qui rend une petite pièce montrable : une paroi transparente laisse
+       * voir le carrelage derrière elle, donc la profondeur de la pièce.
+       * Le même verre que les fenêtres — assez pour dire qu'il y en a, pas
+       * assez pour éteindre ce qu'il y a derrière — et comme elles, il ne
+       * porte pas d'ombre : la carte d'ombres est un tampon de profondeur, elle
+       * ignore la transparence, et une paroi qui projette une ombre pleine
+       * plonge la douche dans le noir.
+       */
+      if (!vitre) {
+        vitre = new THREE.MeshStandardMaterial({
+          vertexColors: true,
+          color: 0xdce9f2,
+          roughness: ROUGHNESS.verre,
+          metalness: 0,
+          transparent: true,
+          opacity: 0.14,
+          depthWrite: false,
+          userData: { sansOmbre: true },
+        });
+        disposables.push(vitre);
+      }
+      const geometry = box(item.w, item.h, item.d, CHANFREIN_BATI);
+      position.set(item.x - origin.x, base + item.h / 2, item.y - origin.y);
+      quaternion.setFromAxisAngle(AXE_Y, spin);
+      batch.add(geometry, vitre, matrix.compose(position, quaternion, echelle), (x, y, z) =>
+        daylightAt(jour, x, y, z),
+      );
+      /*
+       * Le montant : une paroi de verre sans profilé flotte, et c'est le
+       * profilé qui donne son épaisseur au vitrage.
+       *
+       * Deux teintes ont été essayées avant celle-ci. En laiton, il devenait
+       * la première chose qu'on regardait dans la pièce. En sombre, il se
+       * détachait pire encore : le montant qui ferme la paroi de la douche
+       * tombe devant la fenêtre, et une barre noire à contre-jour est ce qui
+       * se voit le plus dans une image. Dans le grège du bac, il disparaît
+       * contre le ciel et se lit quand même contre le carrelage, parce qu'il
+       * ne reçoit pas la lumière sous le même angle que lui.
+       */
+      const montant = 0.018;
+      const alongW = item.w >= item.d;
+      part(
+        alongW ? montant : item.w + 0.004,
+        item.h,
+        alongW ? item.d + 0.004 : montant,
+        alongW ? (item.w - montant) / 2 : 0,
+        base + item.h / 2,
+        alongW ? 0 : (item.d - montant) / 2,
+        item.tone,
+      );
     } else if (item.shape === 'rideau') {
       /*
        * Un rideau, en plis alternés.

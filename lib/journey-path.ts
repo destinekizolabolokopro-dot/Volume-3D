@@ -601,14 +601,77 @@ const OPEN_SAMPLES = 72;
 const OPEN_SPREAD = 12;
 const OPEN_STEP = 0.1;
 const OPEN_MAX = 14;
+/** Jeu admis entre le point de franchissement et le segment de la porte. */
+const PASSAGE_JEU = 0.12;
 
-function freeRun(rooms: PlanRoom[], from: PlanPoint, yaw: number): number {
+/** La pièce qui contient un point, ou `null` si le point est hors du logement. */
+function roomAt(rooms: PlanRoom[], point: PlanPoint): PlanRoom | null {
+  for (const room of rooms) if (containsPoint(room, point)) return room;
+  return null;
+}
+
+/** Distance d'un point au segment [a, b]. */
+function toSegment(point: PlanPoint, a: PlanPoint, b: PlanPoint): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const carre = dx * dx + dy * dy;
+  const t = carre === 0 ? 0 : Math.min(1, Math.max(0, ((point.x - a.x) * dx + (point.y - a.y) * dy) / carre));
+  return Math.hypot(point.x - (a.x + t * dx), point.y - (a.y + t * dy));
+}
+
+/** Y a-t-il une ouverture entre ces deux pièces, à cet endroit-là du mur ? */
+function passeParUneOuverture(
+  doors: PlanDoor[],
+  a: string,
+  b: string,
+  point: PlanPoint,
+): boolean {
+  for (const door of doors) {
+    if (door.kind === 'window') continue;
+    const relie = (door.from === a && door.to === b) || (door.from === b && door.to === a);
+    if (!relie) continue;
+    if (toSegment(point, door.a, door.b) <= PASSAGE_JEU) return true;
+  }
+  return false;
+}
+
+/**
+ * Jusqu'où porte le regard, murs compris.
+ *
+ * La première version s'arrêtait quand le rayon sortait du logement, et c'est
+ * une erreur qu'une image a fini par montrer : deux pièces mitoyennes partagent
+ * leur ligne de plan, donc un rayon tiré du dégagement vers la salle d'eau
+ * passait à travers la cloison sans rien rencontrer. Le calcul annonçait deux
+ * mètres trente-cinq de dégagement là où il y avait un mur à soixante-dix
+ * centimètres — et le cadrage, qui élit l'axe le plus ouvert, élisait donc ce
+ * mur-là. À l'écran : un aplat de peinture plein cadre, en pleine marche.
+ *
+ * Le contrôle automatique censé attraper exactement ce défaut partageait le
+ * même rayon, ce qui explique qu'il passait. Il appelle maintenant cette
+ * fonction-ci, pour qu'il n'y ait qu'une définition de « voir loin ».
+ *
+ * Franchir une cloison n'est permis qu'au droit d'une ouverture reliant
+ * réellement les deux pièces. Les fenêtres ne comptent pas : elles donnent sur
+ * la rue, et une enfilade qui se termine dehors n'est pas une enfilade.
+ */
+export function freeRun(
+  rooms: PlanRoom[],
+  doors: PlanDoor[],
+  from: PlanPoint,
+  yaw: number,
+): number {
   const dx = Math.sin((yaw * Math.PI) / 180);
   const dy = -Math.cos((yaw * Math.PI) / 180);
   let reach = 0;
+  let courante = roomAt(rooms, from);
   for (let step = OPEN_STEP; step <= OPEN_MAX; step += OPEN_STEP) {
     const point = { x: from.x + dx * step, y: from.y + dy * step };
-    if (!rooms.some((room) => containsPoint(room, point))) break;
+    const ici = roomAt(rooms, point);
+    if (!ici) break;
+    if (courante && ici !== courante && !passeParUneOuverture(doors, courante.id, ici.id, point)) {
+      break;
+    }
+    courante = ici;
     reach = step;
   }
   return reach;
@@ -630,6 +693,7 @@ function freeRun(rooms: PlanRoom[], from: PlanPoint, yaw: number): number {
  */
 function throughOpen(
   rooms: PlanRoom[],
+  doors: PlanDoor[],
   from: PlanPoint,
   a: number,
   b: number,
@@ -641,7 +705,7 @@ function throughOpen(
   const steps = 8;
   for (let index = 1; index < steps; index += 1) {
     const yaw = a + (arc * index) / steps;
-    const run = freeRun(rooms, from, yaw);
+    const run = freeRun(rooms, doors, from, yaw);
     if (run > bestRun) {
       bestRun = run;
       best = yaw;
@@ -660,6 +724,7 @@ function throughOpen(
  */
 export function openDirection(
   rooms: PlanRoom[],
+  doors: PlanDoor[],
   from: PlanPoint,
   prefer?: number,
 ): PlanPoint {
@@ -668,9 +733,9 @@ export function openDirection(
   for (let index = 0; index < OPEN_SAMPLES; index += 1) {
     const yaw = (index * 360) / OPEN_SAMPLES;
     const run = Math.min(
-      freeRun(rooms, from, yaw),
-      freeRun(rooms, from, yaw - OPEN_SPREAD),
-      freeRun(rooms, from, yaw + OPEN_SPREAD),
+      freeRun(rooms, doors, from, yaw),
+      freeRun(rooms, doors, from, yaw - OPEN_SPREAD),
+      freeRun(rooms, doors, from, yaw + OPEN_SPREAD),
     );
     const aligned =
       prefer === undefined
@@ -682,9 +747,9 @@ export function openDirection(
     }
   }
   best = Math.min(
-    freeRun(rooms, from, bestYaw),
-    freeRun(rooms, from, bestYaw - OPEN_SPREAD),
-    freeRun(rooms, from, bestYaw + OPEN_SPREAD),
+    freeRun(rooms, doors, from, bestYaw),
+    freeRun(rooms, doors, from, bestYaw - OPEN_SPREAD),
+    freeRun(rooms, doors, from, bestYaw + OPEN_SPREAD),
   );
   const dx = Math.sin((bestYaw * Math.PI) / 180);
   const dy = -Math.cos((bestYaw * Math.PI) / 180);
@@ -729,7 +794,7 @@ export function lookTarget(
   depuis?: PlanPoint | null,
 ): PlanPoint {
   if (isCirculation(room, doors) >= 2) {
-    return openDirection(rooms, from, depuis ? heading(depuis, from) : undefined);
+    return openDirection(rooms, doors, from, depuis ? heading(depuis, from) : undefined);
   }
   return focusOf(room, doors, photos, from);
 }
@@ -850,7 +915,29 @@ function layout(
       const previous = byId.get(legs[index - 1].roomId);
       const door = midpoint(leg.via.a, leg.via.b);
       if (previous) {
-        stops.push(passage(along(door, unit(door, roomCenter(previous)), DOOR_MARGIN), legs[index - 1].roomId));
+        /*
+         * On ne recule pas dans une pièce où l'on n'est pas entré.
+         *
+         * Ce point d'approche se pose à cinquante-cinq centimètres en avant de
+         * la porte, du côté de la pièce qu'on quitte : c'est par lui qu'on se
+         * présente devant l'ouverture au lieu de l'aborder de biais. Il n'a de
+         * sens que si l'on vient de plus loin.
+         *
+         * Une petite pièce se regarde depuis son embrasure, à douze
+         * centimètres du tableau. Le point d'approche était donc *derrière* la
+         * caméra : la salle d'eau se visitait en entrant de quarante
+         * centimètres pour aussitôt ressortir, et ce cul-de-sac imposait un
+         * demi-tour de cent cinquante-cinq degrés dans une pièce d'un mètre
+         * quatre-vingts de large. Quel que soit le chemin choisi par le regard,
+         * il passait par un mur à soixante centimètres — mesuré, plein cadre.
+         *
+         * En supprimant l'aller-retour, le virage se fait en sortant, dans le
+         * dégagement, où il y a la place de le faire.
+         */
+        const depuis = stops[stops.length - 1];
+        if (!depuis || distance(depuis.point, door) > DOOR_MARGIN) {
+          stops.push(passage(along(door, unit(door, roomCenter(previous)), DOOR_MARGIN), legs[index - 1].roomId));
+        }
       }
       stops.push(passage(door, leg.roomId));
       const margin = roomArea(room) < SMALL_ROOM ? THRESHOLD_MARGIN : DOOR_MARGIN;
@@ -905,7 +992,7 @@ function layout(
 
          Et cette cible n'est pas le mur de la pièce où l'on se trouve : c'est
          l'axe qui traverse le logement. Voir `openDirection`. */
-      lookAt: openDirection(rooms, last.point),
+      lookAt: openDirection(rooms, doors, last.point),
       caption: options.closing,
       threshold: false,
       pitch: ROOM_PITCH,
@@ -1141,7 +1228,7 @@ export function buildJourney(
     if (target !== null) {
       /* Le virage passe par le cap le plus dégagé, pas par le plus court chemin
          géométrique : voir `throughOpen`. */
-      const relay = throughOpen(rooms, vertex.point, arrival, target);
+      const relay = throughOpen(rooms, doors, vertex.point, arrival, target);
       if (relay !== null) {
         view.push({ t: tIn + span * 0.19, yaw: relay, pitch, fov, ease: 'smooth' });
       }
@@ -1170,6 +1257,36 @@ export function buildJourney(
       fov: TRAVEL_FOV,
       ease: 'smooth',
     });
+
+    /*
+     * La sortie d'arrêt balaie, elle aussi.
+     *
+     * L'entrée dans une pièce passait déjà par le cap le plus dégagé de son
+     * arc ; la sortie, non — elle allait tout droit de ce qu'on regardait vers
+     * l'ouverture par laquelle on repart. Dans une salle d'eau de trois mètres
+     * et demi, ces deux caps sont à cent cinquante degrés l'un de l'autre et le
+     * chemin le plus court passe par le mur mitoyen de la chambre, à soixante
+     * centimètres : un contrôle mesure l'aplat de peinture pendant huit
+     * millièmes du parcours, et l'œil, lui, le voit.
+     *
+     * Le relais est posé dans la marche, pas dans l'arrêt : c'est ce qui fait
+     * la différence entre un regard qui tourne en avançant et un demi-tour sur
+     * place. On le calcule depuis le point de l'arrêt, dont la caméra ne s'est
+     * pas encore beaucoup éloignée à cet instant.
+     */
+    const tSuivant = index + 1 < vertices.length ? arrive[index + 1] / total : null;
+    if (tSuivant !== null && tSuivant > tOut) {
+      const sortie = throughOpen(rooms, doors, vertex.point, target ?? outgoing, outgoing);
+      if (sortie !== null) {
+        view.push({
+          t: tOut + (tSuivant - tOut) * 0.4,
+          yaw: sortie,
+          pitch: TRAVEL_PITCH,
+          fov: TRAVEL_FOV,
+          ease: 'smooth',
+        });
+      }
+    }
 
     if (stop?.caption) {
       captions.push({

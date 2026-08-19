@@ -137,7 +137,7 @@ export interface Massing {
    * pieds de six centimètres suffisent à ce que l'œil lise « table » et passe à
    * autre chose.
    */
-  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace' | 'suspension' | 'rideau' | 'plante';
+  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace' | 'suspension' | 'rideau' | 'plante' | 'vitrage';
   /**
    * Rembourré : l'arête s'arrondit franchement au lieu de recevoir le chanfrein
    * de deux millimètres du mobilier menuisé.
@@ -321,9 +321,13 @@ export const SHOWCASE_MASSING: Massing[] = [
    * la fenêtre. On entre le long du meuble, la douche est à droite, la fenêtre
    * en face : les trois sont dans le champ et aucun n'est dans le passage.
    */
+  /* La douche reste plaquée contre la façade sud : son bac affleure exactement
+     le nu intérieur du mur de trente. L'avoir descendue de quinze centimètres
+     pour dégager la fenêtre l'enfonçait d'autant dans la maçonnerie — un
+     contrôle l'a rattrapé. C'est le montant qui a changé, pas la douche. */
   { roomId: 'salle-eau', x: 7.9, y: 4.3, w: 0.8, d: 0.8, h: 0.07, tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 7.5175, y: 4.3, w: 0.035, d: 0.8, h: 1.9, base: 0.07, tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 7.9, y: 3.9175, w: 0.8, d: 0.035, h: 1.9, base: 0.07, tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 7.5175, y: 4.3, w: 0.035, d: 0.8, h: 1.9, base: 0.07, shape: 'vitrage', tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 7.9, y: 3.9175, w: 0.8, d: 0.035, h: 1.9, base: 0.07, shape: 'vitrage', tone: 'cabinet' },
   // Meuble vasque sous la fenêtre, contre la façade.
   { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.45, d: 0.7, h: 0.86, shape: 'placard', tone: 'bois' },
   { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.34, d: 0.44, h: 0.055, base: 0.86, tone: 'cabinet' },
