@@ -11,7 +11,72 @@
  * déplacement court, sans contrainte pour le propriétaire.
  */
 
-export const PRICE_PER_LISTING = process.env.NEXT_PUBLIC_PRICE ?? '89€';
+/*
+ * Le prix, en un seul endroit.
+ *
+ * L'espace insécable avant l'euro n'est pas une coquetterie : en français,
+ * l'unité se sépare du nombre, et « 89€ » collé se lit comme une faute — sur
+ * une page de tarifs, c'est-à-dire à l'endroit exact où le lecteur décide s'il
+ * a affaire à quelqu'un de sérieux. Insécable pour que le montant ne se coupe
+ * jamais en fin de ligne.
+ *
+ * L'espace est posé ici et non dans la variable d'environnement, et c'est le
+ * point important : le montant vient de `NEXT_PUBLIC_PRICE`, donc d'un fichier
+ * `.env` recopié à chaque déploiement. Une règle typographique qui dépend de
+ * la façon dont quelqu'un a tapé une ligne de configuration n'est pas une
+ * règle. Le premier essai corrigeait la valeur par défaut du code : elle
+ * n'était jamais lue, `.env.local` définissant déjà le prix, et l'espace
+ * n'apparaissait nulle part.
+ */
+const PRIX_BRUT = process.env.NEXT_PUBLIC_PRICE ?? '89€';
+export const PRICE_PER_LISTING = PRIX_BRUT.replace(/\s*€/u, '\u00a0€');
+
+/**
+ * Ce que dit chaque formule, à l'inscription comme dans le compte.
+ *
+ * Deux problèmes réglés ici, et le premier était grave.
+ *
+ * **Les formules se vendaient à l'abonnement.** « 29 € /mois », « 79 € /mois »
+ * — alors que la page d'accueil promet en trois endroits le contraire : « Payé
+ * une fois. Le lien reste en ligne », « Pas d'abonnement, pas de frais
+ * d'hébergement, pas d'engagement », et dans les questions fréquentes « le prix
+ * est payé une fois, le lien reste actif ». Un propriétaire qui lit la page
+ * d'accueil puis crée son compte tombait sur un loyer mensuel. Ce n'est pas une
+ * incohérence de rédaction : c'est la promesse commerciale du produit qui était
+ * démentie à l'endroit exact où le client s'engage.
+ *
+ * Les formules restent — elles plafonnent le nombre de biens d'un compte, ce
+ * qui est une vraie distinction — mais elles se disent au tarif du site : payé
+ * une fois, par logement.
+ *
+ * `price` ne porte que le montant, et l'unité descend dans `note` : la carte
+ * d'une formule est étroite, et « 89 € par logement » rendu dans le corps du
+ * montant s'y coupait sur trois lignes.
+ *
+ * **La liste vivait en double**, recopiée dans le formulaire d'inscription et
+ * dans la page de compte. Deux copies d'un tarif finissent toujours par
+ * diverger, et c'est d'ailleurs par là que la contradiction était entrée.
+ */
+export const PLAN_OFFERS: Array<{ id: string; name: string; price: string; note: string }> = [
+  {
+    id: 'essentiel',
+    name: 'Essentiel',
+    price: PRICE_PER_LISTING,
+    note: 'Par logement, payé une fois. Un logement. Visite 360°, vidéo et plan 3D, assistant inclus.',
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: PRICE_PER_LISTING,
+    note: 'Par logement, dégressif dès le troisième. Jusqu’à cinq logements, statistiques détaillées.',
+  },
+  {
+    id: 'conciergerie',
+    name: 'Conciergerie',
+    price: 'Sur devis',
+    note: 'Logements illimités, scans groupés sur une même tournée, interlocuteur dédié.',
+  },
+];
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'scan@volume3d.fr';
 
 export const HERO = {

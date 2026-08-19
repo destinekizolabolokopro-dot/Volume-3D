@@ -2,12 +2,8 @@
 
 import { useActionState, useState } from 'react';
 import { signin, signup, type OwnerResult } from '../actions';
+import { PLAN_OFFERS as PLANS } from '@/lib/content';
 
-const PLANS = [
-  { id: 'essentiel', name: 'Essentiel', price: '29€ /mois', note: '1 logement, visite 360° + vidéo, assistant inclus.' },
-  { id: 'pro', name: 'Pro', price: '79€ /mois', note: 'Jusqu’à 5 logements, statistiques détaillées.' },
-  { id: 'conciergerie', name: 'Conciergerie', price: 'Sur devis', note: 'Logements illimités, interlocuteur dédié.' },
-];
 
 export function AuthForms() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
@@ -94,7 +90,10 @@ export function AuthForms() {
               ))}
             </div>
             <p className="hint">
-              Aucun paiement n’est demandé ici : nous vous recontactons pour mettre en place l’abonnement.
+              {/* Pas « l’abonnement » : le site promet en trois endroits qu’il
+                  n’y en a pas, et c’est ici que le client s’engage. */}
+              Aucun paiement n’est demandé ici : nous vous recontactons pour convenir du scan et du
+              règlement, une seule fois.
             </p>
           </div>
 

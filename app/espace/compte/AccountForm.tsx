@@ -3,12 +3,8 @@
 import { useActionState } from 'react';
 import { updateAccount, type OwnerResult } from '../actions';
 import type { Account } from '@/lib/types';
+import { PLAN_OFFERS as PLANS } from '@/lib/content';
 
-const PLANS = [
-  { id: 'essentiel', name: 'Essentiel', price: '29€ /mois', note: '1 logement, visite 360° + vidéo, assistant inclus.' },
-  { id: 'pro', name: 'Pro', price: '79€ /mois', note: 'Jusqu’à 5 logements, statistiques détaillées.' },
-  { id: 'conciergerie', name: 'Conciergerie', price: 'Sur devis', note: 'Logements illimités, interlocuteur dédié.' },
-];
 
 export function AccountForm({ account, used, limit }: { account: Account; used: number; limit: number }) {
   const [state, action, pending] = useActionState<OwnerResult | null, FormData>(updateAccount, null);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { PRICE_PER_LISTING } from '@/lib/content';
 import { qrDataUri } from '@/lib/qrcode';
 
 /**
@@ -19,7 +20,13 @@ export function PitchSheet({ defaultLink, contactEmail }: { defaultLink: string;
   const [ownerName, setOwnerName] = useState('');
   const [propertyName, setPropertyName] = useState('');
   const [link, setLink] = useState(defaultLink);
-  const [price, setPrice] = useState('190 €');
+  /* Le prix par défaut est celui du site, pas un nombre écrit ici.
+     Il valait cent quatre-vingt-dix quand la page d'accueil en annonçait
+     quatre-vingt-neuf : le propriétaire à qui l'on tend la feuille est
+     précisément celui qui ira voir le site le soir même. Il reste modifiable —
+     une tournée de conciergerie ne se démarche pas au tarif d'un particulier —
+     mais on ne part plus d'un chiffre que rien ne relie au reste. */
+  const [price, setPrice] = useState(PRICE_PER_LISTING);
   const [note, setNote] = useState('');
 
   const trimmed = link.trim();

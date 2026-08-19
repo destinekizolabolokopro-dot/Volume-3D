@@ -18,7 +18,7 @@ export default async function ComptePage() {
       <EspaceNav account={account} current="/espace/compte" />
 
       <main className="pro-page">
-        <ProHead title="Mon compte" sub="Vos coordonnées et votre formule d’abonnement." />
+        <ProHead title="Mon compte" sub="Vos coordonnées et votre formule." />
 
         <AccountForm account={account} used={properties.length} limit={limit} />
       </main>
