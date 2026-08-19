@@ -213,6 +213,31 @@ export function wallNormal(a: PlanPoint, b: PlanPoint, room: PlanRoom): PlanPoin
   return containsPoint(room, probe) ? { x: -candidate.x, y: -candidate.y } : candidate;
 }
 
+/**
+ * Le champ vertical à donner à la caméra, pour un format d'écran donné.
+ *
+ * Une caméra de rendu se règle en champ **vertical**, mais ce qu'on veut tenir
+ * dans l'image, c'est une pièce — donc de la largeur. Sur un écran d'ordinateur
+ * en 16/9, 74° de vertical donnent une centaine de degrés d'horizontale et la
+ * pièce entre. Sur un téléphone tenu debout, les mêmes 74° n'en donnent plus que
+ * quarante : on se retrouve le nez sur une fenêtre, et le volume disparaît
+ * exactement là où il compte le plus, puisque c'est là que la moitié des
+ * visiteurs regarderont.
+ *
+ * On raisonne donc à largeur constante, et on plafonne : au-delà d'une centaine
+ * de degrés de vertical, la déformation aux bords devient plus gênante que le
+ * cadrage n'est utile.
+ */
+const REFERENCE_ASPECT = 16 / 9;
+const MAX_VERTICAL_FOV = 96;
+
+export function verticalFov(base: number, aspect: number): number {
+  if (!Number.isFinite(aspect) || aspect <= 0 || aspect >= REFERENCE_ASPECT) return base;
+  const halfWidth = Math.tan((base * Math.PI) / 360) * REFERENCE_ASPECT;
+  const widened = (2 * Math.atan(halfWidth / aspect) * 180) / Math.PI;
+  return Math.min(MAX_VERTICAL_FOV, Math.max(base, widened));
+}
+
 /* ============================================================ lecture t → */
 
 /** Position au sol à l'instant `t`. Vitesse constante entre deux points. */

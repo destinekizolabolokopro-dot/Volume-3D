@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { buildInterior, configure } from '@/components/three/interior';
-import { EYE } from '@/lib/journey-path';
-import { roomAt, roomCenter, slideAnywhere, standableAnywhere } from '@/lib/plan';
+import { EYE, verticalFov } from '@/lib/journey-path';
+import { reachableAnywhere, roomAt, roomCenter, slideAnywhere, standableAnywhere } from '@/lib/plan';
 import type { Massing } from '@/lib/showcase';
 import type { PlanDoor, PlanPoint, PlanRoom } from '@/lib/types';
 import styles from './FreeTour.module.css';
@@ -29,6 +29,15 @@ const WALK = 1.55;
 /** Degrés parcourus par pixel de glissement, ramenés au champ courant. */
 const DRAG = 0.13;
 const FOV = 74;
+/**
+ * Recul gardé par rapport au point le plus avancé atteignable, en mètres.
+ *
+ * On peut **passer** à quarante-cinq centimètres d'une cloison — sinon aucune
+ * porte ne se franchit — mais on ne doit pas **s'y arrêter** : à cette distance,
+ * l'image n'est plus qu'un aplat. Et c'est le cas le plus courant, parce qu'une
+ * tape au milieu bas de l'écran vise le sol bien au-delà du mur d'en face.
+ */
+const BACK_OFF = 0.55;
 const MIN_PITCH = -62;
 const MAX_PITCH = 58;
 
@@ -72,7 +81,28 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
 
     const start = rooms.find((candidate) => candidate.id === startRoomId) ?? rooms[0];
     const home = start ? roomCenter(start) : { x: 0, y: 0 };
-    const view = { yaw: 0, pitch: -8 };
+
+    /*
+     * On démarre face à l'angle le plus éloigné.
+     *
+     * Une première version partait cap au nord, ce qui plaçait la caméra en face
+     * du mur de façade à deux mètres : sur un téléphone, la fenêtre remplissait
+     * tout le cadre et on ne voyait pas la pièce. Regarder vers un angle donne
+     * deux murs, la plus grande profondeur disponible, et un volume qui se lit
+     * immédiatement — c'est le cadrage que prend n'importe quel photographe
+     * d'intérieur, et pour la même raison.
+     */
+    const corner = (start?.points ?? []).reduce<{ point: PlanPoint; span: number }>(
+      (best, point) => {
+        const span = Math.hypot(point.x - home.x, point.y - home.y);
+        return span > best.span ? { point, span } : best;
+      },
+      { point: home, span: -1 },
+    ).point;
+    const opening =
+      corner === home ? 0 : (Math.atan2(corner.x - home.x, -(corner.y - home.y)) * 180) / Math.PI;
+
+    const view = { yaw: opening, pitch: -8 };
     const here: PlanPoint = { ...home };
     const held = new Set<string>();
     /** Destination posée par une tape au sol, sur téléphone. */
@@ -84,7 +114,7 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
       here.y = home.y;
       goal = null;
       held.clear();
-      view.yaw = 0;
+      view.yaw = opening;
       view.pitch = -8;
     };
     place();
@@ -95,6 +125,7 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
       if (!clientWidth || !clientHeight) return;
       renderer.setSize(clientWidth, clientHeight, false);
       camera.aspect = clientWidth / clientHeight;
+      camera.fov = verticalFov(FOV, camera.aspect);
       camera.updateProjectionMatrix();
     };
     resize();
@@ -119,7 +150,7 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
       pointer.x = event.clientX;
       pointer.y = event.clientY;
       pointer.moved += Math.abs(dx) + Math.abs(dy);
-      const scale = DRAG * (camera.fov / 72);
+      const scale = DRAG * (camera.fov / 74);
       view.yaw += dx * scale;
       view.pitch = Math.max(MIN_PITCH, Math.min(MAX_PITCH, view.pitch + dy * scale));
     };
@@ -155,8 +186,17 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
         camera,
       );
       if (!ray.ray.intersectPlane(floor, hit)) return;
-      const target = { x: hit.x + origin.x, y: hit.z + origin.y };
-      goal = target;
+      const aim = { x: hit.x + origin.x, y: hit.z + origin.y };
+      const furthest = reachableAnywhere(rooms, doors, here, aim);
+      if (!furthest) return;
+
+      // On s'arrête un demi-pas avant le point extrême, sans jamais reculer.
+      const dx = furthest.x - here.x;
+      const dy = furthest.y - here.y;
+      const reach = Math.hypot(dx, dy);
+      const kept = Math.max(0, reach - BACK_OFF);
+      if (kept < 0.12) return;
+      goal = { x: here.x + (dx / reach) * kept, y: here.y + (dy / reach) * kept };
       held.clear();
     };
 

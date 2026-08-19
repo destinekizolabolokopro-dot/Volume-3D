@@ -13,7 +13,19 @@
 .sticky {
   position: sticky;
   top: 0;
-  height: 100dvh;
+  /*
+   * `svh` et non `dvh`, et c'est important sur téléphone.
+   *
+   * `dvh` suit la hauteur *réelle* du navigateur, qui change quand la barre
+   * d'URL se replie — c'est-à-dire pendant le défilement, c'est-à-dire pendant
+   * toute la visite. Chaque changement redimensionne le canvas et recrée les
+   * tampons de rendu : l'animation hoquette exactement au moment où elle doit
+   * être fluide. `svh` est la hauteur la plus petite, donc elle ne bouge jamais.
+   * Il reste au pire une bande sous l'image quand la barre disparaît, et comme
+   * la section est du même noir que la scène, elle ne se voit pas.
+   */
+  height: 100vh;
+  height: 100svh;
   overflow: hidden;
   /* Un conteneur d'empilement propre : sans lui, les légendes passeraient
      derrière la barre de navigation sur certains navigateurs. */

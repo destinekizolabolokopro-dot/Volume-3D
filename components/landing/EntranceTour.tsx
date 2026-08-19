@@ -8,6 +8,7 @@ import {
   captionOpacity,
   doorOpening,
   sample,
+  verticalFov,
   type CaptionText,
   type Journey,
 } from '@/lib/journey-path';
@@ -264,7 +265,7 @@ function MovingTour({
         camera.position.y + Math.sin(pitch),
         camera.position.z - Math.cos(pitch) * Math.cos(yaw),
       );
-      camera.fov = pose.fov;
+      camera.fov = verticalFov(pose.fov, camera.aspect);
       camera.updateProjectionMatrix();
 
       if (leaf) leaf.group.rotation.y = leaf.closed + leaf.sweep * doorOpening(journey, cursor);

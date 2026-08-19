@@ -14,6 +14,7 @@ import {
   shortestArc,
   smoothstep,
   tourOrder,
+  verticalFov,
   viewAt,
   type Caption,
   type PathPoint,
@@ -423,4 +424,25 @@ test('une photo au mur attire le regard plus qu’une fenêtre', () => {
   };
   assert.ok(walls.length === 4);
   assert.notEqual(Math.round(at(avec)), Math.round(at(sans)));
+});
+
+test('le champ de vision s’élargit sur un écran étroit, et pas au-delà du raisonnable', () => {
+  // Écran large : on garde le réglage tel quel.
+  assert.equal(verticalFov(74, 16 / 9), 74);
+  assert.equal(verticalFov(74, 2.2), 74);
+
+  // Téléphone tenu debout : le champ vertical s'ouvre pour que la largeur tienne.
+  const phone = verticalFov(74, 390 / 720);
+  assert.ok(phone > 74, `le champ devrait s’élargir, il vaut ${phone}`);
+  assert.ok(phone <= 96, 'le champ ne doit pas dépasser le plafond');
+
+  // À largeur constante : la demi-largeur vue reste la même tant qu'on n'a pas
+  // touché le plafond.
+  const halfWidth = (fov: number, aspect: number) => Math.tan((fov * Math.PI) / 360) * aspect;
+  const gentle = verticalFov(50, 1.2);
+  assert.ok(Math.abs(halfWidth(gentle, 1.2) - halfWidth(50, 16 / 9)) < 1e-9);
+
+  // Une valeur absurde ne fait pas tomber le rendu.
+  assert.equal(verticalFov(74, 0), 74);
+  assert.equal(verticalFov(74, Number.NaN), 74);
 });

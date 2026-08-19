@@ -308,6 +308,54 @@ export function slideAnywhere(
   return from;
 }
 
+/**
+ * Le point le plus avancé qu'on puisse atteindre en ligne droite, dans tout le
+ * logement.
+ *
+ * Une tape au sol tombe très souvent au-delà d'un mur — dans un séjour de cinq
+ * mètres c'est même le cas le plus fréquent, et sur un téléphone tenu debout
+ * c'est presque systématique parce que le bas de l'écran vise loin. Ne rien
+ * faire donnerait l'impression que la commande est cassée ; on avance donc aussi
+ * loin que le trajet le permet.
+ *
+ * **On avance pas à pas, et surtout pas par dichotomie.** La dichotomie suppose
+ * que « atteignable » est vrai jusqu'à un point puis faux — c'est le cas dans
+ * une pièce convexe (`reachableToward`), ça ne l'est pas dans un logement : le
+ * rayon traverse une cloison, puis retombe dans la pièce d'à côté, qui est
+ * atteignable elle aussi. La recherche par dichotomie trouvait alors ce point-là
+ * et faisait passer la caméra à travers le mur. La marche, elle, s'arrête au
+ * premier obstacle rencontré, ce qui est la seule lecture correcte.
+ */
+export function reachableAnywhere(
+  rooms: PlanRoom[],
+  doors: PlanDoor[],
+  from: PlanPoint,
+  to: PlanPoint,
+  margin = 0.45,
+  step = 0.04,
+): PlanPoint | null {
+  const span = distance(from, to);
+  if (span < step) return null;
+
+  const direction = { x: (to.x - from.x) / span, y: (to.y - from.y) / span };
+  let travelled = 0;
+  let last: PlanPoint | null = null;
+  let blocked = false;
+  while (travelled + step <= span) {
+    travelled += step;
+    const probe = { x: from.x + direction.x * travelled, y: from.y + direction.y * travelled };
+    if (!standableAnywhere(rooms, doors, probe, margin)) {
+      blocked = true;
+      break;
+    }
+    last = probe;
+  }
+  // Rien n'a bloqué et la cible elle-même tient : on la rend telle quelle,
+  // plutôt qu'au dernier multiple du pas.
+  if (!blocked && standableAnywhere(rooms, doors, to, margin)) return to;
+  return last;
+}
+
 /** La pièce qui contient un point, s'il y en a une. */
 export const roomAt = (rooms: PlanRoom[], point: PlanPoint): PlanRoom | null =>
   rooms.find((room) => containsPoint(room, point)) ?? null;

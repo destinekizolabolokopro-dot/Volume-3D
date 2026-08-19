@@ -273,6 +273,7 @@ test('reachableToward ne rend rien quand il n’y a pas un centimètre à gagner
 /* ================================================ déplacement libre === */
 
 import {
+  reachableAnywhere as reachAcross,
   roomAt as roomAtPoint,
   slideAnywhere as slideAcross,
   standableAnywhere as standAcross,
@@ -324,4 +325,28 @@ test('on sait dans quelle pièce on se trouve', () => {
   assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 2.6, y: 2 })?.id, 'sejour');
   assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 8.3, y: 1.6 })?.id, 'chambre');
   assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 40, y: 40 }), null);
+});
+
+test('une tape au-delà d’un mur avance aussi loin que possible, pas plus', () => {
+  const from = { x: 2.6, y: 2 };
+  // Une cible franchement dehors, au-delà du mur de façade du séjour.
+  const clamped = reachAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, from, { x: 2.6, y: -4 });
+  assert.ok(clamped, 'on doit pouvoir avancer dans cette direction');
+  assert.ok(clamped!.y > 0.4, `arrêt trop près du mur : y = ${clamped!.y}`);
+  assert.ok(clamped!.y < 2, 'on doit avoir avancé');
+  assert.ok(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, clamped!));
+});
+
+test('une tape atteignable est rendue telle quelle', () => {
+  const target = { x: 1.6, y: 2.6 };
+  assert.deepEqual(
+    reachAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 2.6, y: 2 }, target),
+    target,
+  );
+});
+
+test('une tape derrière une cloison pleine ne fait pas traverser', () => {
+  // Depuis le séjour vers la chambre, en visant à travers le mur du dégagement.
+  const clamped = reachAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 2.6, y: 3.6 }, { x: 9, y: 3.6 });
+  if (clamped) assert.ok(clamped.x < 5.3, `la tape a traversé : x = ${clamped.x}`);
 });
