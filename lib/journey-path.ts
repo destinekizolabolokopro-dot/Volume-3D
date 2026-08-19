@@ -268,18 +268,28 @@ export function wallNormal(a: PlanPoint, b: PlanPoint, room: PlanRoom): PlanPoin
  * exactement là où il compte le plus, puisque c'est là que la moitié des
  * visiteurs regarderont.
  *
- * On raisonne donc à largeur constante, et on plafonne : au-delà d'une centaine
- * de degrés de vertical, la déformation aux bords devient plus gênante que le
+ * On raisonne donc à largeur constante : quel que soit le format, l'image
+ * couvre la même largeur d'angle qu'un 16/9. Et on plafonne le vertical : au-delà
+ * d'une centaine de degrés, la déformation aux bords devient plus gênante que le
  * cadrage n'est utile.
+ *
+ * La règle vaut dans les deux sens, et elle ne le faisait pas. Le calcul
+ * s'arrêtait aux formats plus étroits que le 16/9, en se disant qu'un écran
+ * large n'a pas de problème de largeur. C'est vrai de la largeur et faux de tout
+ * le reste : la scène de la visite livrée fait deux fois et demie sa hauteur, et
+ * 72° de vertical y donnaient cent vingt-deux degrés d'horizontale. Une pièce
+ * vue à travers un objectif de cent vingt-deux degrés n'est plus une pièce,
+ * c'est un couloir courbe — les murs latéraux filent, et un cadre accroché de
+ * côté occupe la moitié de l'image.
  */
 const REFERENCE_ASPECT = 16 / 9;
 const MAX_VERTICAL_FOV = 96;
 
 export function verticalFov(base: number, aspect: number): number {
-  if (!Number.isFinite(aspect) || aspect <= 0 || aspect >= REFERENCE_ASPECT) return base;
+  if (!Number.isFinite(aspect) || aspect <= 0) return base;
   const halfWidth = Math.tan((base * Math.PI) / 360) * REFERENCE_ASPECT;
-  const widened = (2 * Math.atan(halfWidth / aspect) * 180) / Math.PI;
-  return Math.min(MAX_VERTICAL_FOV, Math.max(base, widened));
+  const held = (2 * Math.atan(halfWidth / aspect) * 180) / Math.PI;
+  return Math.min(MAX_VERTICAL_FOV, held);
 }
 
 /* ============================================================ lecture t → */
@@ -684,6 +694,33 @@ function backOff(room: PlanRoom, arrival: PlanPoint, centre: PlanPoint): PlanPoi
 }
 
 /**
+ * Ce qu'on regarde depuis un point donné d'une pièce.
+ *
+ * C'est la décision de cadrage complète, sortie de la construction du parcours
+ * pour une raison précise : la visite livrée au voyageur — celle qui se
+ * parcourt librement — avait sa propre version, et c'était l'ancienne, celle
+ * qui élisait le mur le plus long. Dans un couloir, le mur le plus long est
+ * celui qu'on longe. Les deux surfaces cadrent maintenant pareil, parce
+ * qu'elles appellent le même code.
+ *
+ * @param depuis D'où l'on vient, si on vient de quelque part. Sert à préférer
+ *   l'axe qui continue la marche plutôt que celui qui revient en arrière.
+ */
+export function lookTarget(
+  rooms: PlanRoom[],
+  doors: PlanDoor[],
+  photos: { roomId: string; wallIndex: number }[],
+  room: PlanRoom,
+  from: PlanPoint,
+  depuis?: PlanPoint | null,
+): PlanPoint {
+  if (isCirculation(room, doors) >= 2) {
+    return openDirection(rooms, from, depuis ? heading(depuis, from) : undefined);
+  }
+  return focusOf(room, doors, photos, from);
+}
+
+/**
  * Une pièce de circulation : elle en dessert au moins deux autres.
  *
  * La distinction commande le cadrage, et elle est plus sûre qu'un seuil de
@@ -832,11 +869,7 @@ function layout(
       point: stand,
       roomId: leg.roomId,
       dwell: first ? DWELL_ROOM : 0,
-      lookAt: first
-        ? isCirculation(room, doors) >= 2
-          ? openDirection(rooms, stand, cameFrom ? heading(cameFrom, stand) : undefined)
-          : focusOf(room, doors, photos, stand)
-        : null,
+      lookAt: first ? lookTarget(rooms, doors, photos, room, stand, cameFrom) : null,
       caption: first ? (options.captions?.[leg.roomId] ?? describeRoom(room, doors)) : null,
       threshold: cramped,
       pitch: first ? ROOM_PITCH : TRAVEL_PITCH,

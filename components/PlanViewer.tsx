@@ -6,21 +6,24 @@ import {
   exitsFrom,
   pointAt,
   planBounds,
-  projectOnWall,
   reachableToward,
   roomCenter,
   roomWalls,
   slideMove,
-  solidSpans,
-  type Interval,
+  wallThickness,
+  WALL_FACADE,
+  WALL_SKIN,
 } from '@/lib/plan';
 import type { FloorPlan, PlanDoor, PlanPoint, PlanRoom, Photo } from '@/lib/types';
+import { lookTarget, verticalFov } from '@/lib/journey-path';
+import { buildInterior, configure } from '@/components/three/interior';
+import { adaptQuality } from '@/components/three/quality';
 import styles from './PlanViewer.module.css';
 
 /** Hauteur de l'œil au-dessus du sol, en mètres. */
 const EYE = 1.6;
-/** Épaisseur des cloisons, en mètres. */
-const WALL_THICKNESS = 0.09;
+/* L'épaisseur des murs vient de `lib/plan.ts` : elle n'est pas la même pour une
+   cloison et pour une façade, et c'est le moteur commun qui la pose. */
 const MIN_FOV = 45;
 const MAX_FOV = 95;
 const DEFAULT_FOV = 72;
@@ -56,6 +59,15 @@ interface ScreenExit {
  *
  * C'est la seule façon de produire une visite parcourable sans capture 360°
  * sur place. Ce n'est pas une photo à 360°, et la page de visite le dit.
+ *
+ * Le volume lui-même est construit par `components/three/interior.ts`, celui de
+ * la démonstration. Il ne l'était pas : cette page avait son propre moteur, en
+ * Lambert, sans plinthe ni corniche, sans soleil, avec deux couleurs écrites en
+ * dur qui ne venaient même pas du nuancier étudié. La démonstration promettait
+ * donc ce que le produit livré ne tenait pas — ce qui est le pire endroit où
+ * mettre un écart. Ce module garde ce qui lui appartient vraiment : les photos
+ * du propriétaire accrochées aux murs, la marche, les repères de passage, la
+ * mesure de l'attention.
  */
 export function PlanViewer({
   plan,
@@ -112,11 +124,14 @@ export function PlanViewer({
     } catch {
       return;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    configure(renderer);
     holder.appendChild(renderer.domElement);
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0f1418);
+    /* La scène vient du moteur commun : mêmes murs, mêmes moulures, même
+       soleil que la démonstration. Ce qui suit — la marche, les photos, les
+       repères — est ce qui appartient à cette page. */
+    const interior = buildInterior({ rooms, doors, renderer });
+    const { scene } = interior;
     const camera = new THREE.PerspectiveCamera(DEFAULT_FOV, 1, 0.05, 200);
     /* `walk` porte la marche : `to` est la destination visée par une tape au
        sol, `keys` les touches maintenues. La position réelle reste celle de la
@@ -124,55 +139,16 @@ export function PlanViewer({
     const view = { yaw: 0, pitch: -11, fov: DEFAULT_FOV };
     const walk = { to: null as { x: number; y: number } | null, keys: new Set<string>() };
     three.current = { renderer, scene, camera, view, walk, room: null };
+    /* La pose initiale se fait ici, avec le contexte qui vient de naître.
+       Laissée au seul effet de changement de pièce, elle manquait tout contexte
+       recréé — et un contexte est recréé au moindre remontage, ne serait-ce
+       qu'en passant de l'onglet « Vidéo » à l'onglet « Plan 3D ». */
+    if (room) {
+      placedIn.current = room.id;
+      placeRef.current(room);
+    }
 
-    // Lumière douce et sans direction marquée : on éclaire pour lire le volume,
-    // pas pour simuler un ensoleillement qu'on ne connaît pas.
-    // Le ciel éclaire par le haut, le sol renvoie par le bas ; l'ambiante
-    // relève les murs, dont la normale est horizontale et qui, sans elle,
-    // restent à mi-chemin entre les deux et paraissent gris.
-    scene.add(new THREE.HemisphereLight(0xfff6e8, 0xcfc8bd, 2.2));
-    scene.add(new THREE.AmbientLight(0xffffff, 1.1));
-    const key = new THREE.DirectionalLight(0xfff4e2, 0.75);
-    key.position.set(6, 9, 3);
-    scene.add(key);
-    const fill = new THREE.DirectionalLight(0xdfe8f5, 0.35);
-    fill.position.set(-5, 4, -4);
-    scene.add(fill);
 
-    /* Dôme de ciel, très au large du bâti. Sans lui, une fenêtre s'ouvre sur le
-       fond de la scène — un trou noir, exactement l'inverse de l'effet voulu :
-       ce qu'on veut montrer d'un logement, c'est qu'il est clair. */
-    const skyGeometry = new THREE.SphereGeometry(120, 32, 16);
-    skyGeometry.scale(-1, 1, 1);
-    const sky = new THREE.Mesh(
-      skyGeometry,
-      new THREE.ShaderMaterial({
-        uniforms: {
-          haut: { value: new THREE.Color(0x8fb6e8) },
-          bas: { value: new THREE.Color(0xeef2f6) },
-        },
-        vertexShader: `
-          varying float h;
-          void main() {
-            vec4 world = modelMatrix * vec4(position, 1.0);
-            h = normalize(world.xyz).y;
-            gl_Position = projectionMatrix * viewMatrix * world;
-          }
-        `,
-        fragmentShader: `
-          uniform vec3 haut;
-          uniform vec3 bas;
-          varying float h;
-          void main() {
-            gl_FragColor = vec4(mix(bas, haut, smoothstep(-0.1, 0.55, h)), 1.0);
-          }
-        `,
-        depthWrite: false,
-        side: THREE.FrontSide,
-      }),
-    );
-    sky.renderOrder = -1;
-    scene.add(sky);
 
     const resize = () => {
       const { clientWidth, clientHeight } = holder;
@@ -234,8 +210,10 @@ export function PlanViewer({
 
     let frame = 0;
     let previous = performance.now();
+    const quality = adaptQuality(renderer, Math.min(window.devicePixelRatio, 2));
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick);
+      quality.tick(now);
       if (document.hidden) {
         previous = now;
         return;
@@ -254,117 +232,43 @@ export function PlanViewer({
         camera.position.y + Math.sin(pitch),
         camera.position.z - Math.cos(pitch) * Math.cos(yaw),
       );
-      camera.fov = view.fov;
+      /* Le champ demandé est un champ vertical, mais ce qu'on veut tenir dans
+         l'image c'est une pièce — donc de la largeur. `verticalFov` maintient
+         la largeur vue constante quel que soit le format de la scène : elle
+         resserre sur un cadre très large, elle ouvre sur un téléphone debout. */
+      camera.fov = verticalFov(view.fov, camera.aspect);
       camera.updateProjectionMatrix();
       renderer.render(scene, camera);
     };
     frame = requestAnimationFrame(tick);
-
     return () => {
       cancelAnimationFrame(frame);
+      quality.dispose();
       observer.disconnect();
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.geometry.dispose();
-          const material = object.material as THREE.Material & { map?: THREE.Texture };
-          material.map?.dispose();
-          material.dispose();
-        }
-      });
+      /* Le bâti appartient au moteur commun, qui sait ce qu'il a alloué. Les
+         photos et les repères, eux, sont posés par cette page et défaits par
+         leurs propres effets. */
+      interior.dispose();
       renderer.dispose();
       renderer.domElement.remove();
       three.current = null;
     };
+    /*
+     * Construit une fois, et une seule.
+     *
+     * Ce tableau de dépendances a été vide dès l'origine, et le remplir a
+     * suffi à casser la visite : l'effet se rejouait, un second contexte
+     * naissait, et la caméra du second n'était jamais posée — l'effet de
+     * placement, lui, ne se rejouait pas puisque la pièce n'avait pas changé.
+     * On se retrouvait au centre du plan, au ras du sol, à regarder le
+     * logement par en dessous.
+     *
+     * Le plan d'une visite publiée ne change pas pendant qu'on la parcourt.
+     * S'il devait changer, c'est un remontage du composant qu'il faudrait, pas
+     * une reconstruction en place.
+     */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  /* ------------------------------------------------- construction du bâti --- */
-
-  useEffect(() => {
-    const context = three.current;
-    if (!context) return;
-    const { scene } = context;
-
-    const built = new THREE.Group();
-    built.name = 'bati';
-
-    const wallMaterial = new THREE.MeshLambertMaterial({ color: 0xf2efe9 });
-    const floorMaterial = new THREE.MeshLambertMaterial({ color: 0xc0a37f });
-    // Vu de dessous depuis l'intérieur, vu de dessus depuis les pièces voisines
-    // quand le regard passe par une porte : les deux faces doivent exister.
-    const ceilingMaterial = new THREE.MeshLambertMaterial({ color: 0xfbfbfa, side: THREE.DoubleSide });
-
-    for (const current of rooms) {
-      /* --------------------------------------------------- sol et plafond --- */
-      /* Le y est inversé avant la bascule de −90°, et il le faut. Tournée de
-         +90°, la dalle tombe au bon endroit mais sa normale pointe vers le bas :
-         elle est éliminée par le culling et le soleil ne l'atteint jamais.
-         Tournée de −90° sans inverser le y, la normale est bonne mais
-         l'empreinte est retournée. Les deux ensemble donnent le bon sol. */
-      const shape = new THREE.Shape(
-        current.points.map((p) => new THREE.Vector2(p.x - origin.x, -(p.y - origin.y))),
-      );
-      const slab = new THREE.ShapeGeometry(shape);
-      slab.rotateX(-Math.PI / 2);
-
-      const floor = new THREE.Mesh(slab, floorMaterial);
-      built.add(floor);
-
-      const ceiling = new THREE.Mesh(slab.clone(), ceilingMaterial);
-      ceiling.position.y = current.height;
-      built.add(ceiling);
-
-      /* ------------------------------------------------------------ murs --- */
-      for (const wall of roomWalls(current)) {
-        // Toutes les ouvertures qui tombent sur ce mur, quelle que soit la
-        // pièce qui les déclare : une porte est partagée par deux pièces.
-        const openings: { span: Interval; door: PlanDoor }[] = [];
-        for (const door of doors) {
-          const span = projectOnWall(wall, { a: door.a, b: door.b });
-          if (span) openings.push({ span, door });
-        }
-
-        const length = Math.hypot(wall.b.x - wall.a.x, wall.b.y - wall.a.y);
-        const angle = Math.atan2(wall.b.y - wall.a.y, wall.b.x - wall.a.x);
-
-        /** Pose un pan de mur entre deux fractions du mur, à une hauteur donnée. */
-        const addPanel = (from: number, to: number, bottom: number, top: number) => {
-          const width = (to - from) * length;
-          const height = top - bottom;
-          if (width < 0.01 || height < 0.01) return;
-          const centre = pointAt(wall, (from + to) / 2);
-          const box = new THREE.BoxGeometry(width, height, WALL_THICKNESS);
-          const panel = new THREE.Mesh(box, wallMaterial);
-          panel.position.set(centre.x - origin.x, bottom + height / 2, centre.y - origin.y);
-          panel.rotation.y = -angle;
-          built.add(panel);
-        };
-
-        /* Les pleins entre les ouvertures. Ils dépassent de vingt centimètres
-           au-dessus du plafond : sinon les deux s'arrêtent à la même hauteur, et
-           au ras du plafond le regard passe par-dessus l'arête du mur pour
-           tomber sur ce qu'il y a derrière. Le surplus est caché. */
-        for (const span of solidSpans(openings.map((entry) => entry.span))) {
-          addPanel(span.from, span.to, 0, current.height + 0.2);
-        }
-        // Puis, au-dessus et au-dessous de chaque ouverture, l'allège et le linteau.
-        for (const { span, door } of openings) {
-          if (door.sill > 0.01) addPanel(span.from, span.to, 0, door.sill);
-          if (door.height < current.height) addPanel(span.from, span.to, door.height, current.height + 0.2);
-        }
-      }
-    }
-
-    scene.add(built);
-    return () => {
-      scene.remove(built);
-      built.traverse((object) => {
-        if (object instanceof THREE.Mesh) object.geometry.dispose();
-      });
-      wallMaterial.dispose();
-      floorMaterial.dispose();
-      ceilingMaterial.dispose();
-    };
-  }, [rooms, doors, origin]);
 
   /* ------------------------------------------------ photos sur les murs --- */
 
@@ -395,28 +299,69 @@ export function PlanViewer({
         const ratio = texture.image.height / texture.image.width || 0.66;
 
         const wallLength = Math.hypot(wall.b.x - wall.a.x, wall.b.y - wall.a.y);
-        // Le cadre occupe au plus les deux tiers du mur, et jamais plus de 1,7 m :
-        // au-delà, une photo posée sur un mur cesse d'être lisible comme telle.
-        const width = Math.min(1.7, wallLength * 0.66);
+        /*
+         * Un mètre vingt de large, pas un mètre soixante-dix.
+         *
+         * La photo du propriétaire est là pour montrer la pièce telle qu'elle
+         * est : elle doit être lisible, donc grande. Mais à un mètre soixante-dix
+         * elle cesse d'être un cadre accroché et devient une fresque — et, vue
+         * depuis le milieu de la pièce, elle occupe la moitié de l'image. Un
+         * mètre vingt reste un très grand tirage encadré, et le mur existe
+         * encore autour.
+         */
+        const width = Math.min(1.2, wallLength * 0.5);
         const height = width * ratio;
 
         const plane = new THREE.PlaneGeometry(width, height);
+        /* Non éclairée, et c'est voulu : c'est une photographie, pas une
+           surface de la pièce. Éclairée, elle s'assombrirait dans un angle et
+           deviendrait illisible — l'inverse de ce qu'elle vient faire. */
         const mesh = new THREE.Mesh(plane, new THREE.MeshBasicMaterial({ map: texture }));
 
         const centre = pointAt(wall, 0.5);
         const angle = Math.atan2(wall.b.y - wall.a.y, wall.b.x - wall.a.x);
-        // Décollé du mur de deux centimètres, sinon les deux surfaces
-        // scintillent l'une sur l'autre.
+        /*
+         * Le cadre est décollé de la *face* du mur, pas de la ligne du plan.
+         *
+         * L'ancien moteur centrait les murs sur la ligne du plan et cette page
+         * décollait donc d'une demi-épaisseur de cloison. Le moteur commun, lui,
+         * fait partir le mur de la ligne vers l'intérieur — et une façade fait
+         * trente centimètres, pas neuf. Une photo posée sur un mur de façade se
+         * serait retrouvée quinze centimètres dans la maçonnerie.
+         *
+         * Deux centimètres de dégagement au-delà de la face, sinon les deux
+         * surfaces scintillent l'une sur l'autre.
+         */
         const inward = angle + Math.PI / 2;
-        const offset = WALL_THICKNESS / 2 + 0.02;
+        const offset = wallThickness(host, wall, rooms, WALL_SKIN, WALL_FACADE) + 0.02;
+        /* Accrochée à hauteur de regard, comme on accroche : le milieu du cadre
+           à un mètre cinquante-cinq du sol, sauf si le tirage est si haut qu'il
+           toucherait la plinthe. */
+        const height3d = Math.max(height / 2 + 0.2, 1.55);
         mesh.position.set(
           centre.x - origin.x + Math.cos(inward) * offset,
-          Math.max(height / 2 + 0.2, 1.55),
+          height3d,
           centre.y - origin.y + Math.sin(inward) * offset,
         );
-        /* Une rotation de θ autour de Y envoie la normale du plan (+Z local)
-           sur (sin θ, 0, cos θ). On la veut sur la normale intérieure du mur,
-           soit (−sin a, 0, cos a) : d'où θ = −a. */
+
+        /* La baguette du cadre, elle, reçoit la lumière de la pièce : c'est ce
+           qui pose la photographie sur le mur au lieu de la laisser flotter
+           dessus comme une découpe. */
+        const baguette = 0.035;
+        const frame = new THREE.Mesh(
+          new THREE.BoxGeometry(width + baguette * 2, height + baguette * 2, 0.022),
+          new THREE.MeshStandardMaterial({ color: 0x2f2a24, roughness: 0.5 }),
+        );
+        frame.position.set(
+          centre.x - origin.x + Math.cos(inward) * (offset - 0.012),
+          height3d,
+          centre.y - origin.y + Math.sin(inward) * (offset - 0.012),
+        );
+        frame.rotation.y = -angle;
+        frame.castShadow = true;
+        frame.receiveShadow = true;
+        group.add(frame);
+
         mesh.rotation.y = -angle;
         group.add(mesh);
       });
@@ -428,7 +373,7 @@ export function PlanViewer({
       group.traverse((object) => {
         if (object instanceof THREE.Mesh) {
           object.geometry.dispose();
-          const material = object.material as THREE.MeshBasicMaterial;
+          const material = object.material as THREE.Material & { map?: THREE.Texture };
           material.map?.dispose();
           material.dispose();
         }
@@ -438,43 +383,63 @@ export function PlanViewer({
 
   /* ------------------------------------------------------- point de vue --- */
 
+  /**
+   * Pose la caméra dans une pièce.
+   *
+   * Sortie des effets parce que deux endroits en ont besoin : le changement de
+   * pièce, et la création du contexte de rendu. Laissée au seul changement de
+   * pièce, elle manquait tout contexte recréé — et il l'était au moindre
+   * remontage, ne serait-ce qu'en revenant de l'onglet « Vidéo ». Le second
+   * contexte gardait alors la caméra à son origine : au centre du plan, au ras
+   * du sol, à regarder le logement par en dessous.
+   */
+  const place = useCallback(
+    (target: PlanRoom) => {
+      const context = three.current;
+      if (!context) return;
+      context.room = target;
+      context.walk.to = null;
+      context.walk.keys.clear();
+
+      const centre = roomCenter(target);
+      context.camera.position.set(centre.x - origin.x, EYE, centre.y - origin.y);
+
+      /*
+       * On s'oriente vers ce que la pièce a de plus parlant.
+       *
+       * La décision est celle de la visite guidée, appelée depuis
+       * `lib/journey-path.ts` : une photo du propriétaire d'abord — c'est la
+       * seule chose qui montre le logement tel qu'il est —, une fenêtre
+       * ensuite, et le mur qui *tient dans le cadre* à défaut. Cette page avait
+       * sa propre version, restée sur l'ancienne règle du mur le plus long :
+       * dans un couloir, le mur le plus long est celui qu'on longe, et l'image
+       * devenait un pan de peinture.
+       */
+      const aim = lookTarget(rooms, doors, photos, target, centre);
+      context.view.yaw = (Math.atan2(aim.x - centre.x, -(aim.y - centre.y)) * 180) / Math.PI;
+      /* Légère plongée, mais légère : à onze degrés le sol prenait la moitié du
+         cadre et la pièce se lisait comme un plancher. Quatre suffisent à ce
+         qu'elle se lise comme un volume. */
+      context.view.pitch = -4;
+    },
+    [rooms, doors, photos, origin],
+  );
+
+  /** La dernière version de `place`, lisible depuis l'effet de construction,
+   *  qui ne se rejoue pas. */
+  const placeRef = useRef(place);
+  placeRef.current = place;
+
   useEffect(() => {
-    const context = three.current;
-    if (!context || !room) return;
-    context.room = room;
-    /* La caméra n'est replacée qu'au changement de pièce. Cet effet dépend
-       aussi des ouvertures et des photos — deux tableaux dont l'identité change
-       à chaque rendu du parent — et sans ce garde-fou, le visiteur serait
-       ramené au centre de la pièce dès qu'il commence à marcher. */
+    if (!room) return;
+    /* La caméra n'est replacée qu'au changement de pièce : sans ce garde-fou,
+       le visiteur serait ramené au centre dès qu'il commence à marcher, parce
+       que cet effet dépend de tableaux dont l'identité change à chaque rendu du
+       parent. */
     if (placedIn.current === room.id) return;
     placedIn.current = room.id;
-
-    context.walk.to = null;
-    context.walk.keys.clear();
-    const centre = roomCenter(room);
-    context.camera.position.set(centre.x - origin.x, EYE, centre.y - origin.y);
-
-    /* On s'oriente vers ce que la pièce a de plus parlant : une photo du
-       propriétaire d'abord — c'est la seule chose qui montre le logement tel
-       qu'il est —, une fenêtre ensuite, le mur le plus long à défaut. */
-    const walls = roomWalls(room);
-    const score = (index: number) => {
-      const wall = walls[index];
-      const length = Math.hypot(wall.b.x - wall.a.x, wall.b.y - wall.a.y);
-      const hasWindow = doors.some(
-        (door) => door.kind === 'window' && projectOnWall(wall, { a: door.a, b: door.b }),
-      );
-      const hasPhoto = photos.some((photo) => photo.roomId === room.id && photo.wallIndex % walls.length === index);
-      return length + (hasPhoto ? 120 : 0) + (hasWindow ? 60 : 0);
-    };
-    let best = 0;
-    for (let i = 1; i < walls.length; i += 1) if (score(i) > score(best)) best = i;
-    const target = pointAt(walls[best], 0.5);
-    context.view.yaw = (Math.atan2(target.x - centre.x, -(target.y - centre.y)) * 180) / Math.PI;
-    // Légère plongée : le sol entre dans le cadre, et la pièce se lit comme
-    // un volume au lieu d'un pan de mur.
-    context.view.pitch = -11;
-  }, [room, origin, doors, photos]);
+    place(room);
+  }, [room, place]);
 
   /* ------------------------------------ projection des passages à l'écran --- */
 

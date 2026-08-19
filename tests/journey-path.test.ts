@@ -427,9 +427,17 @@ test('une photo au mur attire le regard plus qu’une fenêtre', () => {
 });
 
 test('le champ de vision s’élargit sur un écran étroit, et pas au-delà du raisonnable', () => {
-  // Écran large : on garde le réglage tel quel.
+  // Le format de référence ne change rien.
   assert.equal(verticalFov(74, 16 / 9), 74);
-  assert.equal(verticalFov(74, 2.2), 74);
+
+  /* Écran plus large que le 16/9 : le champ vertical se **resserre**, pour que
+     la largeur vue reste la même. Sans cela, la scène de la visite livrée — deux
+     fois et demie sa hauteur — atteignait cent vingt-deux degrés d'horizontale,
+     et la pièce se lisait comme un couloir courbe. */
+  const large = verticalFov(72, 2.5);
+  assert.ok(large < 72, `le champ devrait se resserrer, il vaut ${large}`);
+  const demiLargeur = (fov: number, aspect: number) => Math.tan((fov * Math.PI) / 360) * aspect;
+  assert.ok(Math.abs(demiLargeur(large, 2.5) - demiLargeur(72, 16 / 9)) < 1e-9);
 
   // Téléphone tenu debout : le champ vertical s'ouvre pour que la largeur tienne.
   const phone = verticalFov(74, 390 / 720);
