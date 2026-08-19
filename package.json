@@ -11,7 +11,8 @@
     "test": "node --test tests/*.test.ts",
     "demo:images": "node scripts/generate-demo.mjs",
     "demo:video": "node scripts/record-demo.mjs",
-    "standalone": "node scripts/standalone/extract.mjs && node scripts/standalone/assemble.mjs"
+    "standalone": "node scripts/standalone/extract.mjs && node scripts/standalone/assemble.mjs",
+    "palette": "node --experimental-strip-types scripts/palette.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

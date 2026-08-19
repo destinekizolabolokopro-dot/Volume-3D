@@ -18,6 +18,7 @@
  * aux annonces retouchées.
  */
 
+import type { FurnitureTone } from './palette.ts';
 import type { PlanDoor, PlanRoom } from './types.ts';
 import type { CaptionText } from './journey-path.ts';
 
@@ -129,42 +130,99 @@ export interface Massing {
    * autre chose.
    */
   shape?: 'bloc' | 'table';
-  tone: 'bois' | 'tissu' | 'clair' | 'sombre' | 'accent' | 'tapis';
+  /** Une teinte du nuancier étudié (`lib/palette.ts`), jamais une valeur libre. */
+  tone: FurnitureTone;
 }
 
+/*
+ * L'implantation.
+ *
+ * Deux règles ont guidé chaque position, et toutes deux viennent d'une erreur
+ * qu'un contrôle a rattrapée.
+ *
+ *  · **On se cale sur la face du mur, pas sur la ligne du plan.** Chaque pièce
+ *    porte une peau intérieure — neuf centimètres pour une cloison, trente pour
+ *    une façade. La cuisine était enfoncée d'un tiers dans la façade, le placard
+ *    d'entrée à moitié dedans. À l'écran ça ne se lit pas comme une erreur, mais
+ *    comme un meuble anormalement mince.
+ *  · **Rien dans l'axe d'une porte.** Le placard du dégagement était posé pile
+ *    devant l'ouverture du séjour, la douche devant la sienne : la caméra les
+ *    traversait à chaque passage.
+ */
 export const SHOWCASE_MASSING: Massing[] = [
   /* ------------------------------------------------------------- séjour --- */
   { roomId: 'sejour', x: 1.7, y: 2.15, w: 2.6, d: 1.8, h: 0.012, tone: 'tapis' },
-  { roomId: 'sejour', x: 1.7, y: 2.95, w: 2.1, d: 0.85, h: 0.42, tone: 'tissu' },
-  { roomId: 'sejour', x: 1.7, y: 3.24, w: 2.1, d: 0.28, h: 0.78, tone: 'tissu' },
-  { roomId: 'sejour', x: 0.78, y: 2.95, w: 0.26, d: 0.85, h: 0.6, tone: 'tissu' },
-  { roomId: 'sejour', x: 2.62, y: 2.95, w: 0.26, d: 0.85, h: 0.6, tone: 'tissu' },
-  { roomId: 'sejour', x: 1.7, y: 1.85, w: 1.0, d: 0.52, h: 0.4, shape: 'table', tone: 'bois' },
+  // Le canapé porte la seule couleur franche de la scène ; les coussins lui
+  // répondent en terre cuite, presque à l'opposé sur le cercle des teintes.
+  { roomId: 'sejour', x: 1.7, y: 2.9, w: 2.1, d: 0.85, h: 0.42, tone: 'petrole' },
+  { roomId: 'sejour', x: 1.7, y: 3.19, w: 2.1, d: 0.28, h: 0.78, tone: 'petrole' },
+  { roomId: 'sejour', x: 0.78, y: 2.9, w: 0.26, d: 0.85, h: 0.6, tone: 'petrole' },
+  { roomId: 'sejour', x: 2.62, y: 2.9, w: 0.26, d: 0.85, h: 0.6, tone: 'petrole' },
+  { roomId: 'sejour', x: 1.18, y: 2.99, w: 0.4, d: 0.18, h: 0.34, base: 0.42, tone: 'terre' },
+  { roomId: 'sejour', x: 2.22, y: 2.99, w: 0.4, d: 0.18, h: 0.34, base: 0.42, tone: 'terre' },
+  { roomId: 'sejour', x: 1.7, y: 1.8, w: 1.0, d: 0.52, h: 0.4, shape: 'table', tone: 'bois' },
+  // Un cadre au-dessus du canapé. Un mur nu de deux mètres soixante se remarque.
+  { roomId: 'sejour', x: 1.7, y: 3.68, w: 0.9, d: 0.04, h: 0.6, base: 1.15, tone: 'bois' },
+  { roomId: 'sejour', x: 1.7, y: 3.655, w: 0.78, d: 0.02, h: 0.48, base: 1.21, tone: 'terre' },
+
   // Coin repas, sous la fenêtre.
-  { roomId: 'sejour', x: 4.1, y: 1.15, w: 1.35, d: 0.8, h: 0.74, shape: 'table', tone: 'bois' },
-  { roomId: 'sejour', x: 4.1, y: 0.55, w: 0.42, d: 0.42, h: 0.46, shape: 'table', tone: 'sombre' },
-  { roomId: 'sejour', x: 4.1, y: 0.36, w: 0.42, d: 0.05, h: 0.44, base: 0.46, tone: 'sombre' },
-  { roomId: 'sejour', x: 4.1, y: 1.75, w: 0.42, d: 0.42, h: 0.46, shape: 'table', tone: 'sombre' },
-  { roomId: 'sejour', x: 4.1, y: 1.94, w: 0.42, d: 0.05, h: 0.44, base: 0.46, tone: 'sombre' },
-  // Cuisine en linéaire, contre le mur du fond, à droite de la fenêtre.
-  { roomId: 'sejour', x: 4.35, y: 0.3, w: 1.6, d: 0.6, h: 0.9, tone: 'clair' },
-  { roomId: 'sejour', x: 0.35, y: 0.9, w: 0.6, d: 1.6, h: 2.05, tone: 'clair' },
+  { roomId: 'sejour', x: 4.05, y: 1.15, w: 1.35, d: 0.8, h: 0.74, shape: 'table', tone: 'bois' },
+  { roomId: 'sejour', x: 4.05, y: 0.68, w: 0.42, d: 0.42, h: 0.46, shape: 'table', tone: 'sombre' },
+  { roomId: 'sejour', x: 4.05, y: 0.49, w: 0.42, d: 0.05, h: 0.44, base: 0.46, tone: 'sombre' },
+  { roomId: 'sejour', x: 4.05, y: 1.62, w: 0.42, d: 0.42, h: 0.46, shape: 'table', tone: 'sombre' },
+  { roomId: 'sejour', x: 4.05, y: 1.81, w: 0.42, d: 0.05, h: 0.44, base: 0.46, tone: 'sombre' },
+  // La suspension : une tige et un abat-jour. Deux boîtes, et la pièce cesse
+  // d'être un volume vide au-dessus d'un mètre quatre-vingts.
+  { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.025, d: 0.025, h: 0.5, base: 2.1, tone: 'laiton' },
+  { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.24, d: 0.24, h: 0.13, base: 1.97, tone: 'laiton' },
+
+  /* La cuisine en linéaire. Le plan de travail est d'une autre teinte que les
+     caissons — c'est ce qui la fait lire comme une cuisine plutôt que comme un
+     bloc, et c'est vrai de presque toutes les cuisines. */
+  { roomId: 'sejour', x: 4.31, y: 0.6, w: 1.6, d: 0.6, h: 0.9, tone: 'cabinet' },
+  { roomId: 'sejour', x: 4.31, y: 0.62, w: 1.6, d: 0.64, h: 0.045, base: 0.9, tone: 'sombre' },
+  { roomId: 'sejour', x: 4.0, y: 0.62, w: 0.46, d: 0.38, h: 0.02, base: 0.925, tone: 'lin' },
+  { roomId: 'sejour', x: 4.31, y: 0.32, w: 1.6, d: 0.04, h: 0.48, base: 0.945, tone: 'cabinet' },
+  { roomId: 'sejour', x: 4.31, y: 0.47, w: 1.6, d: 0.34, h: 0.62, base: 1.45, tone: 'cabinet' },
+  // Le placard d'entrée, contre la façade.
+  { roomId: 'sejour', x: 0.6, y: 1.1, w: 0.6, d: 1.6, h: 2.05, tone: 'cabinet' },
 
   /* ------------------------------------------------------------ chambre --- */
-  { roomId: 'chambre', x: 8.4, y: 2.05, w: 1.6, d: 2.0, h: 0.5, tone: 'tissu' },
-  { roomId: 'chambre', x: 8.4, y: 3.05, w: 1.7, d: 0.1, h: 1.0, tone: 'bois' },
-  { roomId: 'chambre', x: 7.4, y: 2.85, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
-  { roomId: 'chambre', x: 9.4, y: 2.85, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
-  { roomId: 'chambre', x: 6.95, y: 0.65, w: 0.62, d: 1.2, h: 2.1, tone: 'clair' },
-  { roomId: 'chambre', x: 8.4, y: 0.35, w: 1.1, d: 0.45, h: 0.78, shape: 'table', tone: 'bois' },
+  { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.6, d: 2.0, h: 0.4, tone: 'bois' },
+  { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.55, d: 1.95, h: 0.18, base: 0.4, tone: 'lin' },
+  // La couette reprend la couleur du canapé : c'est ce qui relie les deux pièces,
+  // et ce qui empêche la chambre de paraître décorée par quelqu'un d'autre.
+  { roomId: 'chambre', x: 8.4, y: 1.62, w: 1.55, d: 1.3, h: 0.1, base: 0.58, tone: 'petrole' },
+  { roomId: 'chambre', x: 8.4, y: 1.06, w: 1.55, d: 0.34, h: 0.05, base: 0.58, tone: 'terre' },
+  { roomId: 'chambre', x: 8.05, y: 2.68, w: 0.58, d: 0.34, h: 0.13, base: 0.58, tone: 'lin' },
+  { roomId: 'chambre', x: 8.75, y: 2.68, w: 0.58, d: 0.34, h: 0.13, base: 0.58, tone: 'lin' },
+  { roomId: 'chambre', x: 8.4, y: 2.99, w: 1.7, d: 0.1, h: 1.0, tone: 'bois' },
+  { roomId: 'chambre', x: 7.4, y: 2.75, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
+  { roomId: 'chambre', x: 9.4, y: 2.75, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
+  { roomId: 'chambre', x: 7.4, y: 2.75, w: 0.18, d: 0.18, h: 0.26, base: 0.52, tone: 'laiton' },
+  { roomId: 'chambre', x: 9.4, y: 2.75, w: 0.18, d: 0.18, h: 0.26, base: 0.52, tone: 'laiton' },
+  { roomId: 'chambre', x: 7.0, y: 0.9, w: 0.62, d: 1.2, h: 2.1, tone: 'cabinet' },
+  { roomId: 'chambre', x: 8.4, y: 0.525, w: 1.1, d: 0.45, h: 0.78, shape: 'table', tone: 'bois' },
+  { roomId: 'chambre', x: 8.4, y: 0.34, w: 0.7, d: 0.04, h: 0.45, base: 1.25, tone: 'bois' },
+  { roomId: 'chambre', x: 8.4, y: 0.365, w: 0.6, d: 0.02, h: 0.35, base: 1.3, tone: 'petrole' },
 
   /* --------------------------------------------------------- salle d’eau --- */
-  { roomId: 'salle-eau', x: 7.05, y: 4.5, w: 0.9, d: 0.9, h: 2.0, tone: 'clair' },
-  { roomId: 'salle-eau', x: 8.05, y: 3.52, w: 0.95, d: 0.5, h: 0.86, tone: 'bois' },
-  { roomId: 'salle-eau', x: 8.05, y: 3.28, w: 0.8, d: 0.06, h: 0.9, base: 1.05, tone: 'clair' },
+  /* La douche occupe l'angle le plus éloigné de la porte. Elle était d'abord
+     posée dans l'angle d'à côté, c'est-à-dire exactement dans l'axe de son
+     ouverture : on entrait dedans. */
+  { roomId: 'salle-eau', x: 7.85, y: 4.25, w: 0.9, d: 0.9, h: 0.07, tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 7.395, y: 4.25, w: 0.035, d: 0.9, h: 1.9, base: 0.07, tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 7.85, y: 3.7825, w: 0.9, d: 0.035, h: 1.9, base: 0.07, tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 7.25, y: 3.54, w: 0.7, d: 0.5, h: 0.86, tone: 'bois' },
+  { roomId: 'salle-eau', x: 7.25, y: 3.54, w: 0.44, d: 0.34, h: 0.055, base: 0.86, tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 7.25, y: 3.32, w: 0.6, d: 0.06, h: 0.9, base: 1.05, tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 6.72, y: 4.5, w: 0.06, d: 0.4, h: 0.9, base: 0.55, tone: 'laiton' },
+  { roomId: 'salle-eau', x: 6.78, y: 4.5, w: 0.045, d: 0.3, h: 0.52, base: 0.72, tone: 'lin' },
 
   /* --------------------------------------------------------- dégagement --- */
-  { roomId: 'degagement', x: 5.45, y: 2.1, w: 0.34, d: 1.2, h: 2.2, tone: 'clair' },
+  /* Le placard tient le fond du couloir, et rien d'autre n'y tient : un mètre
+     quarante de large ne se meuble pas des deux côtés. */
+  { roomId: 'degagement', x: 5.46, y: 3.5, w: 0.34, d: 1.2, h: 2.2, tone: 'cabinet' },
 ];
 
 /* ============================================================== légendes === */

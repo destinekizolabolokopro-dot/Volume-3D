@@ -13,7 +13,21 @@
  */
 
 import * as THREE from 'three';
-import { containsPoint, distance, planBounds, pointAt, projectOnWall, roomCenter, roomWalls, solidSpans, type Interval } from '@/lib/plan';
+import {
+  WALL_FACADE,
+  WALL_SKIN,
+  containsPoint,
+  distance,
+  planBounds,
+  pointAt,
+  projectOnWall,
+  roomCenter,
+  roomWalls,
+  solidSpans,
+  wallThickness,
+  type Interval,
+} from '@/lib/plan';
+import { FURNITURE, OUTSIDE, SHELL } from '@/lib/palette';
 import type { Massing } from '@/lib/showcase';
 import type { PlanDoor, PlanPoint, PlanRoom } from '@/lib/types';
 
@@ -29,30 +43,22 @@ export interface Entrance {
   outside: PlanPoint;
 }
 
-/** Épaisseur d'une paroi intérieure, en mètres. Deux pièces mitoyennes en ont chacune une. */
-const SKIN = 0.09;
-/** Un mur de façade parisien est épais, et son embrasure se voit. */
-const FACADE = 0.3;
+/* Les épaisseurs viennent de `lib/plan.ts` : le contrôle du mobilier s'en sert
+   aussi, et les deux ne doivent pas en avoir deux versions. */
+const SKIN = WALL_SKIN;
+const FACADE = WALL_FACADE;
 /** Hauteur des plinthes. Un détail minuscule qui fait « pièce » plutôt que « boîte ». */
 const SKIRTING = 0.09;
+/** Hauteur de la corniche, au raccord du mur et du plafond. */
+const CORNICE = 0.12;
 
-/*
- * Les teintes du mobilier.
- *
- * Volontairement sourdes et proches les unes des autres. Première version :
- * un bois franchement orangé à côté d'un gris presque noir — chaque meuble
- * criait pour son compte et l'ensemble ressemblait à un jeu de cubes. Un
- * intérieur réel tient dans une plage étroite, et c'est la lumière qui fait
- * les écarts, pas la peinture.
+/**
+ * Les teintes du mobilier viennent de `lib/palette.ts`, où elles sont
+ * justifiées et vérifiées. Ce fichier ne décide d'aucune couleur : il les
+ * applique. C'est ce qui garantit que ce qui est rendu est bien ce qui a été
+ * étudié.
  */
-const TONES: Record<Massing['tone'], number> = {
-  bois: 0x8e7860,
-  tissu: 0xaba393,
-  clair: 0xdcd7cd,
-  sombre: 0x635a4e,
-  accent: 0x2f6f66,
-  tapis: 0x8b8271,
-};
+const TONES: Record<Massing['tone'], number> = FURNITURE;
 
 export interface InteriorOptions {
   rooms: PlanRoom[];
@@ -159,10 +165,17 @@ function sky(disposables: { dispose(): void }[]): THREE.Mesh {
  * c'est justement ce qui rend la scène crédible.
  */
 function lights(scene: THREE.Scene, extent: number): void {
-  scene.add(new THREE.HemisphereLight(0xfff4e4, 0xbfb7aa, 1.15));
-  scene.add(new THREE.AmbientLight(0xfff8ef, 0.35));
+  /* La composante basse est claire, et ce n'est pas un caprice : c'est elle qui
+     éclaire tout ce qui regarde vers le bas, donc les plafonds. Réglée sombre,
+     un plafond peint en blanc rend gris sale — physiquement défendable, mais
+     c'est exactement l'inverse de ce qu'on vient montrer. */
+  scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 1.2));
+  /* L'ambiante remonte l'ombre. Le soleil est fort, sa portée dans un logement
+     est courte, et la moitié du sol reste hors de sa tache : réglée trop bas,
+     cette moitié tombe dans un gris sourd où le parquet n'a plus de couleur. */
+  scene.add(new THREE.AmbientLight(0xfff8ef, 0.52));
 
-  const sun = new THREE.DirectionalLight(0xfff0d6, 2.3);
+  const sun = new THREE.DirectionalLight(0xfff0d6, 1.95);
   sun.position.set(-4, 7, -11);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
@@ -198,7 +211,7 @@ function lights(scene: THREE.Scene, extent: number): void {
  */
 function ground(disposables: { dispose(): void }[]): THREE.Mesh {
   const geometry = new THREE.PlaneGeometry(220, 220);
-  const material = new THREE.MeshLambertMaterial({ color: 0x6b675e });
+  const material = new THREE.MeshLambertMaterial({ color: OUTSIDE.rue });
   disposables.push(geometry, material);
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
@@ -227,10 +240,10 @@ function surroundings(
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'vis-a-vis';
-  const stone = new THREE.MeshLambertMaterial({ color: 0xb2a898 });
+  const stone = new THREE.MeshLambertMaterial({ color: OUTSIDE.vis_a_vis });
   // Plus loin, plus clair : c'est ce que fait l'atmosphère, et c'est ce qui
   // donne la profondeur sans coûter un seul calcul de plus.
-  const far = new THREE.MeshLambertMaterial({ color: 0xc6bfb2 });
+  const far = new THREE.MeshLambertMaterial({ color: OUTSIDE.vis_a_vis_loin });
   disposables.push(stone, far);
 
   const placed: number[] = [];
@@ -257,9 +270,13 @@ function surroundings(
        quinze de distance, la façade d'en face bouchait entièrement chaque
        fenêtre et le logement paraissait aveugle — et assez décalés pour qu'on
        lise une rue, et non un panneau. */
+    /* Les toitures tombent volontairement bas : à un étage, on voit le ciel
+       au-dessus de l'immeuble d'en face, et c'est ce qui fait qu'un logement
+       paraît clair. Réglées trop haut, les façades bouchaient chaque fenêtre et
+       l'appartement semblait aveugle. */
     for (const [reach, tall, lift, tone] of [
-      [19, 11, -1.5, stone],
-      [29, 16, -0.5, far],
+      [19, 12, -3.5, stone],
+      [29, 18, -2, far],
     ] as const) {
       const geometry = new THREE.BoxGeometry(38, tall, 2);
       disposables.push(geometry);
@@ -274,6 +291,67 @@ function surroundings(
     }
   }
   return group;
+}
+
+/**
+ * Le parquet, en lames.
+ *
+ * Un aplat brun se lit comme un aplat brun, quelle que soit sa couleur. Ce qui
+ * fait un sol, ce sont les joints : ils donnent une direction à la pièce, une
+ * échelle — on compte les lames et on sait que la pièce fait quatre mètres — et
+ * un peu de grain sous la lumière rasante.
+ *
+ * Deux mètres de motif pour dix lames de vingt centimètres, avec des joints en
+ * bout décalés d'une rangée à l'autre. Les coordonnées d'un sol sont exprimées
+ * en mètres — `ShapeGeometry` les reprend telles quelles — donc une répétition
+ * de 0,5 fait tomber le motif exactement sur ses deux mètres.
+ */
+function plankTexture(disposables: Bin[]): THREE.Texture {
+  const SIZE = 512;
+  const PLANKS = 10;
+  const canvas = document.createElement('canvas');
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+  const context = canvas.getContext('2d')!;
+
+  const hex = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
+  context.fillStyle = hex(SHELL.chene);
+  context.fillRect(0, 0, SIZE, SIZE);
+
+  const band = SIZE / PLANKS;
+  for (let row = 0; row < PLANKS; row += 1) {
+    /* Chaque lame prend son propre écart de teinte, très faible et déterministe :
+       un vrai parquet n'a pas deux lames identiques, mais l'écart entre elles se
+       compte en unités, pas en dizaines. */
+    const shade = 1 + (((row * 7) % 5) - 2) * 0.05;
+    const base = SHELL.chene;
+    const tint =
+      (Math.min(255, Math.round(((base >> 16) & 255) * shade)) << 16) |
+      (Math.min(255, Math.round(((base >> 8) & 255) * shade)) << 8) |
+      Math.min(255, Math.round((base & 255) * shade));
+    context.fillStyle = hex(tint);
+    context.fillRect(0, row * band, SIZE, band);
+
+    /* Le joint fait trois pixels, soit un peu plus d'un centimètre à l'échelle.
+       Une première version en dessinait un et demi : six millimètres, c'est-à-dire
+       moins d'un pixel à l'écran dès qu'on s'éloigne d'un mètre. Le parquet
+       existait dans la texture et n'existait nulle part ailleurs. */
+    context.fillStyle = hex(SHELL.chene_joint);
+    context.fillRect(0, row * band, SIZE, 3);
+
+    // Un joint en bout, décalé d'une rangée à l'autre.
+    const cut = ((row * 173) % SIZE) | 0;
+    context.fillRect(cut, row * band, 3, band);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(0.5, 0.5);
+  texture.anisotropy = 4;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  disposables.push(texture);
+  return texture;
 }
 
 /** Angle d'un segment dans le repère du plan. */
@@ -307,29 +385,71 @@ function shell(
   const group = new THREE.Group();
   group.name = 'bati';
 
-  const wall = new THREE.MeshLambertMaterial({ color: 0xe6e1d6 });
-  const skirting = new THREE.MeshLambertMaterial({ color: 0xf2eee6 });
-  const parquet = new THREE.MeshLambertMaterial({ color: 0xbd9569 });
-  const carrelage = new THREE.MeshLambertMaterial({ color: 0xc6c2b9 });
-  const ceiling = new THREE.MeshLambertMaterial({ color: 0xf4f1ea, side: THREE.DoubleSide });
-  disposables.push(wall, skirting, parquet, carrelage, ceiling);
+  const wall = new THREE.MeshLambertMaterial({ color: SHELL.mur });
+  /* Une seule peinture pour tout ce qui est menuiserie : plinthes, corniches,
+     chambranles, dormants, battants. C'est ainsi qu'on peint un appartement, et
+     c'est aussi ce qui donne à la scène son unité. */
+  const joinery = new THREE.MeshLambertMaterial({ color: SHELL.menuiserie });
+  const parquet = new THREE.MeshLambertMaterial({ map: plankTexture(disposables) });
+  const carrelage = new THREE.MeshLambertMaterial({ color: SHELL.carrelage });
+  const ceiling = new THREE.MeshLambertMaterial({ color: SHELL.plafond, side: THREE.DoubleSide });
+  /* Un rien de verre : de quoi dire qu'il y en a, sans éteindre la vue. Sous un
+     éclairage sans reflets, une vitre trop marquée devient un voile gris et le
+     logement paraît sale. */
+  const glass = new THREE.MeshLambertMaterial({
+    color: 0xdce9f2,
+    transparent: true,
+    opacity: 0.1,
+    depthWrite: false,
+  });
+  disposables.push(wall, joinery, parquet, carrelage, ceiling, glass);
 
-  const toLocal = (p: PlanPoint) => new THREE.Vector2(p.x - origin.x, p.y - origin.y);
+  /**
+   * Le contour d'une dalle, prêt à être basculé à l'horizontale.
+   *
+   * Le `y` est inversé, et il le faut. Le repère du plan a son y vers le bas ;
+   * la scène a son z vers l'avant. Une `ShapeGeometry` naît à plat dans le plan
+   * XY, normale vers +Z, et on la couche en la faisant tourner autour de X :
+   *
+   *  · de +90°, l'empreinte tombe juste mais la normale pointe vers le **bas** —
+   *    le sol est éliminé par le culling, le soleil ne l'atteint jamais, et à sa
+   *    place on voit ce qu'il y a derrière ;
+   *  · de −90°, la normale est bonne mais l'empreinte est **retournée** — le sol
+   *    d'une pièce se retrouve ailleurs que la pièce.
+   *
+   * En inversant le y d'abord, la rotation de −90° donne les deux à la fois. Les
+   * coordonnées de texture s'en trouvent miroitées sur un axe, ce qui n'a aucune
+   * conséquence sur un motif de lames.
+   */
+  const toSlab = (p: PlanPoint) => new THREE.Vector2(p.x - origin.x, -(p.y - origin.y));
 
   for (const room of rooms) {
-    const shape = new THREE.Shape(room.points.map(toLocal));
+    const shape = new THREE.Shape(room.points.map(toSlab));
     const slab = new THREE.ShapeGeometry(shape);
-    slab.rotateX(Math.PI / 2);
+    slab.rotateX(-Math.PI / 2);
     disposables.push(slab);
     const floor = new THREE.Mesh(slab, /eau|bain|wc/i.test(room.id + room.name) ? carrelage : parquet);
     floor.receiveShadow = true;
     group.add(floor);
 
+    // Le plafond regarde vers le bas. Il reste en double face : depuis la pièce
+    // voisine, le regard passe par une porte et le prend par-dessus.
     const top = slab.clone();
     disposables.push(top);
     const lid = new THREE.Mesh(top, ceiling);
     lid.position.y = room.height;
     group.add(lid);
+
+    /*
+     * Les murs montent vingt centimètres au-dessus du plafond.
+     *
+     * Sinon les deux s'arrêtent exactement à la même hauteur, et au ras du
+     * plafond le regard passe par-dessus l'arête du mur : on aperçoit alors le
+     * vide entre deux pièces — un logement n'est pas un rectangle plein, il a
+     * des creux — et donc le ciel, en plein milieu de l'appartement. Le
+     * surplus est caché par le plafond, il ne coûte rien.
+     */
+    const shellTop = room.height + 0.2;
 
     for (const segment of roomWalls(room)) {
       const openings: Interval[] = [];
@@ -346,12 +466,44 @@ function shell(
       const angle = Math.atan2(segment.b.y - segment.a.y, segment.b.x - segment.a.x);
       const normal = inwardNormal(room, segment.a, segment.b);
 
-      /* Un mur qui n'a aucune pièce de l'autre côté est une façade : on lui
-         donne son épaisseur réelle, et les embrasures deviennent profondes. */
-      const middle = { x: (segment.a.x + segment.b.x) / 2, y: (segment.a.y + segment.b.y) / 2 };
-      const outside = { x: middle.x - normal.x * 0.2, y: middle.y - normal.y * 0.2 };
-      const facade = !rooms.some((other) => other.id !== room.id && containsPoint(other, outside));
-      const thickness = facade ? FACADE : SKIN;
+      const thickness = wallThickness(room, segment, rooms, SKIN, FACADE);
+
+      /**
+       * Habille une ouverture : chambranle pour une porte, dormant, meneau,
+       * tablette et vitre pour une fenêtre.
+       *
+       * C'est ce qui distingue une ouverture d'un trou. Un trou rectangulaire
+       * dans un mur ne se lit pas comme une porte, quelle que soit sa taille —
+       * il manque l'encadrement, et l'œil le réclame avant tout le reste.
+       */
+      const dress = (span: Interval, door: PlanDoor) => {
+        const width = (span.to - span.from) * length;
+        if (width < 0.2) return;
+        const jamb = 0.055;
+        const inset = span.to - span.from;
+        const side = (inset * 0.5 * jamb) / Math.max(width, 0.001);
+
+        if (door.kind === 'window') {
+          // Dormant : deux montants, une traverse haute, une allège.
+          panel(span.from, span.from + side, door.sill, door.height - door.sill, joinery, thickness + 0.02);
+          panel(span.to - side, span.to, door.sill, door.height - door.sill, joinery, thickness + 0.02);
+          panel(span.from, span.to, door.height - jamb, jamb, joinery, thickness + 0.02);
+          panel(span.from, span.to, door.sill, jamb, joinery, thickness + 0.02);
+          // Meneau central : le trait qui fait qu'on lit « fenêtre » et non « ouverture ».
+          const middleSpan = (span.from + span.to) / 2;
+          panel(middleSpan - side / 2, middleSpan + side / 2, door.sill, door.height - door.sill, joinery, thickness + 0.02);
+          // Tablette d'appui, qui déborde franchement dans la pièce.
+          panel(span.from - side, span.to + side, door.sill - 0.04, 0.04, joinery, thickness + 0.14);
+          // La vitre, au nu extérieur de l'embrasure.
+          panel(span.from, span.to, door.sill, door.height - door.sill, glass, 0.012);
+          return;
+        }
+
+        // Porte ou passage : un chambranle sur trois côtés.
+        panel(span.from - side, span.from, 0, door.height + jamb, joinery, thickness + 0.03);
+        panel(span.to, span.to + side, 0, door.height + jamb, joinery, thickness + 0.03);
+        panel(span.from - side, span.to + side, door.height, jamb, joinery, thickness + 0.03);
+      };
 
       const panel = (from: number, to: number, bottom: number, height: number, material: THREE.Material, depth = thickness) => {
         const width = (to - from) * length;
@@ -372,16 +524,27 @@ function shell(
       };
 
       for (const span of solidSpans(openings)) {
-        panel(span.from, span.to, 0, room.height, wall);
+        panel(span.from, span.to, 0, shellTop, wall);
         // La plinthe déborde légèrement de la peau du mur, sinon elle ne se
         // détache pas et ne sert à rien.
-        panel(span.from, span.to, 0, SKIRTING, skirting, thickness + 0.018);
+        panel(span.from, span.to, 0, SKIRTING, joinery, thickness + 0.018);
       }
       for (const { span, door } of framed) {
         if (door.sill > 0.01) panel(span.from, span.to, 0, door.sill, wall);
         if (door.height < room.height) {
-          panel(span.from, span.to, door.height, room.height - door.height, wall);
+          panel(span.from, span.to, door.height, shellTop - door.height, wall);
         }
+        dress(span, door);
+      }
+
+      /* La corniche.
+         Douze centimètres de bois peint au raccord du mur et du plafond. C'est
+         le détail qui coûte le moins cher de toute la scène et qui se voit le
+         plus : sans lui, un mur rejoint un plafond sur une arête nette, ce qui
+         n'arrive dans aucun immeuble ancien et se lit immédiatement comme une
+         maquette. */
+      for (const span of solidSpans(openings)) {
+        panel(span.from, span.to, room.height - CORNICE, CORNICE, joinery, thickness + 0.05);
       }
     }
   }
@@ -524,8 +687,8 @@ function landing(
   const WIDTH = 4.6;
   const DEPTH = 3.4;
   const HEIGHT = 2.7;
-  const stone = new THREE.MeshLambertMaterial({ color: 0x8f8577 });
-  const tiling = new THREE.MeshLambertMaterial({ color: 0x655d53 });
+  const stone = new THREE.MeshLambertMaterial({ color: OUTSIDE.palier });
+  const tiling = new THREE.MeshLambertMaterial({ color: OUTSIDE.palier_sol });
   disposables.push(stone, tiling);
 
   /** Pose une paroi, repérée par son centre exprimé en (le long du mur, vers l'extérieur). */
@@ -652,9 +815,9 @@ function doorLeaf(
    * travers du séjour, et on aurait juré un trou dans la géométrie.
    */
   const leaf = new THREE.BoxGeometry(width, height, 0.055);
-  const outside = new THREE.MeshLambertMaterial({ color: 0x33413b });
-  const inside = new THREE.MeshLambertMaterial({ color: 0xded8ca });
-  const edge = new THREE.MeshLambertMaterial({ color: 0xc7c0b2 });
+  const outside = new THREE.MeshLambertMaterial({ color: OUTSIDE.porte });
+  const inside = new THREE.MeshLambertMaterial({ color: SHELL.menuiserie });
+  const edge = new THREE.MeshLambertMaterial({ color: FURNITURE.cabinet });
   disposables.push(leaf, outside, inside, edge);
   /* Faces d'une BoxGeometry : +x, −x, +y, −y, +z, −z. L'épaisseur est portée
      par Z, donc ce sont les deux dernières qui comptent. Le +Z local pointe
@@ -681,7 +844,7 @@ function doorLeaf(
   // La poignée : deux centimètres de laiton qui font toute la différence entre
   // « un panneau qui tourne » et « une porte ».
   const knob = new THREE.BoxGeometry(0.11, 0.03, 0.03);
-  const brass = new THREE.MeshLambertMaterial({ color: 0xb08d4a });
+  const brass = new THREE.MeshLambertMaterial({ color: FURNITURE.laiton });
   disposables.push(knob, brass);
   const handle = new THREE.Mesh(knob, brass);
   handle.position.set(width - 0.14, 1.05, plusZIsInside ? -0.045 : 0.045);

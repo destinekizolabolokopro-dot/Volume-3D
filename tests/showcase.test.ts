@@ -1,7 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { buildJourney, captionOpacity, sample } from '../lib/journey-path.ts';
-import { containsPoint, distanceToSegment, projectOnWall, roomArea, roomWalls, totalArea } from '../lib/plan.ts';
+import {
+  WALL_FACADE,
+  WALL_SKIN,
+  containsPoint,
+  distanceToSegment,
+  projectOnWall,
+  roomArea,
+  roomWalls,
+  totalArea,
+  wallThickness,
+} from '../lib/plan.ts';
 import {
   SHOWCASE_CAPTIONS,
   SHOWCASE_CLOSING,
@@ -77,24 +87,50 @@ test('une ouverture ne dépasse jamais la hauteur sous plafond', () => {
   }
 });
 
-test('le mobilier tient dans la pièce qu’il occupe', () => {
+/**
+ * Le contrôle qui a rattrapé le défaut le plus discret de tout le décor.
+ *
+ * Le mobilier était posé sur les **lignes du plan**, alors que chaque pièce
+ * porte une peau de mur à l'intérieur de ce polygone : neuf centimètres pour une
+ * cloison, trente pour une façade. Résultat, la cuisine était enfoncée d'un
+ * tiers dans le mur de façade et le placard d'entrée à moitié dedans. À l'écran
+ * ça ne se voit pas comme une erreur — ça se voit comme un meuble trop mince,
+ * ce qui est bien pire : on cherche ce qui cloche sans le trouver.
+ */
+test('aucun meuble n’est enfoncé dans la maçonnerie', () => {
   const byId = new Map(SHOWCASE_ROOMS.map((room) => [room.id, room]));
+  const faults: string[] = [];
+
   for (const item of SHOWCASE_MASSING) {
     const room = byId.get(item.roomId);
     assert.ok(room, `mobilier orphelin dans ${item.roomId}`);
-    // Les quatre coins de l'empreinte au sol, sans rotation — aucun meuble de
-    // cette liste n'est pivoté, et un meuble à moitié dans le mur se voit.
-    for (const sx of [-1, 1]) {
-      for (const sy of [-1, 1]) {
-        const corner = { x: item.x + (sx * item.w) / 2, y: item.y + (sy * item.d) / 2 };
-        assert.ok(
-          containsPoint(room!, corner),
-          `un meuble dépasse de ${item.roomId} en (${corner.x}, ${corner.y})`,
-        );
+
+    // Les quatre coins de l'empreinte au sol : aucun meuble de cette liste
+    // n'est pivoté.
+    const corners = [-1, 1].flatMap((sx) =>
+      [-1, 1].map((sy) => ({ x: item.x + (sx * item.w) / 2, y: item.y + (sy * item.d) / 2 })),
+    );
+
+    for (const corner of corners) {
+      if (!containsPoint(room!, corner)) {
+        faults.push(`${item.roomId} : coin hors de la pièce en (${corner.x.toFixed(2)}, ${corner.y.toFixed(2)})`);
+        continue;
+      }
+      for (const wall of roomWalls(room!)) {
+        const thickness = wallThickness(room!, wall, SHOWCASE_ROOMS, WALL_SKIN, WALL_FACADE);
+        const gap = distanceToSegment(corner, wall);
+        // Un millimètre de tolérance : on compare des flottants.
+        if (gap < thickness - 0.001) {
+          faults.push(
+            `${item.roomId} : un meuble entre de ${(thickness - gap).toFixed(2)} m dans un mur de ${thickness} m`,
+          );
+        }
       }
     }
     assert.ok((item.base ?? 0) + item.h <= room!.height + 1e-9, `un meuble traverse le plafond de ${item.roomId}`);
   }
+
+  assert.deepEqual([...new Set(faults)], [], `\n  ${[...new Set(faults)].join('\n  ')}`);
 });
 
 test('la surface annoncée correspond à la somme des pièces', () => {

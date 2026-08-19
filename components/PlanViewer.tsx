@@ -286,7 +286,6 @@ export function PlanViewer({
 
     const built = new THREE.Group();
     built.name = 'bati';
-    const toWorld = (p: PlanPoint) => new THREE.Vector2(p.x - origin.x, p.y - origin.y);
 
     const wallMaterial = new THREE.MeshLambertMaterial({ color: 0xf2efe9 });
     const floorMaterial = new THREE.MeshLambertMaterial({ color: 0xc0a37f });
@@ -296,9 +295,16 @@ export function PlanViewer({
 
     for (const current of rooms) {
       /* --------------------------------------------------- sol et plafond --- */
-      const shape = new THREE.Shape(current.points.map(toWorld));
+      /* Le y est inversé avant la bascule de −90°, et il le faut. Tournée de
+         +90°, la dalle tombe au bon endroit mais sa normale pointe vers le bas :
+         elle est éliminée par le culling et le soleil ne l'atteint jamais.
+         Tournée de −90° sans inverser le y, la normale est bonne mais
+         l'empreinte est retournée. Les deux ensemble donnent le bon sol. */
+      const shape = new THREE.Shape(
+        current.points.map((p) => new THREE.Vector2(p.x - origin.x, -(p.y - origin.y))),
+      );
       const slab = new THREE.ShapeGeometry(shape);
-      slab.rotateX(Math.PI / 2);
+      slab.rotateX(-Math.PI / 2);
 
       const floor = new THREE.Mesh(slab, floorMaterial);
       built.add(floor);
@@ -333,14 +339,17 @@ export function PlanViewer({
           built.add(panel);
         };
 
-        // Les pleins entre les ouvertures, sur toute la hauteur.
+        /* Les pleins entre les ouvertures. Ils dépassent de vingt centimètres
+           au-dessus du plafond : sinon les deux s'arrêtent à la même hauteur, et
+           au ras du plafond le regard passe par-dessus l'arête du mur pour
+           tomber sur ce qu'il y a derrière. Le surplus est caché. */
         for (const span of solidSpans(openings.map((entry) => entry.span))) {
-          addPanel(span.from, span.to, 0, current.height);
+          addPanel(span.from, span.to, 0, current.height + 0.2);
         }
         // Puis, au-dessus et au-dessous de chaque ouverture, l'allège et le linteau.
         for (const { span, door } of openings) {
           if (door.sill > 0.01) addPanel(span.from, span.to, 0, door.sill);
-          if (door.height < current.height) addPanel(span.from, span.to, door.height, current.height);
+          if (door.height < current.height) addPanel(span.from, span.to, door.height, current.height + 0.2);
         }
       }
     }

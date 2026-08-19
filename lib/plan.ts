@@ -360,6 +360,42 @@ export function reachableAnywhere(
 export const roomAt = (rooms: PlanRoom[], point: PlanPoint): PlanRoom | null =>
   rooms.find((room) => containsPoint(room, point)) ?? null;
 
+/**
+ * L'épaisseur de la peau d'un mur, vue depuis une pièce.
+ *
+ * Chaque pièce porte sa propre peau, décalée vers l'intérieur : c'est ce qui
+ * évite que deux pièces mitoyennes posent deux surfaces au même endroit. Un mur
+ * qui n'a aucune pièce de l'autre côté est une façade, et une façade est bien
+ * plus épaisse qu'une cloison — d'où des embrasures profondes, et d'où le fait
+ * que le volume utile d'une pièce est plus petit que son polygone.
+ *
+ * Cette fonction vit ici, avec la géométrie, parce que deux appelants en ont
+ * besoin et qu'ils ne doivent pas en avoir deux versions : le rendu, pour poser
+ * les murs, et le contrôle du mobilier, pour vérifier qu'aucun meuble n'est à
+ * moitié dans la maçonnerie.
+ */
+export function wallThickness(
+  room: PlanRoom,
+  wall: Segment,
+  rooms: PlanRoom[],
+  skin: number,
+  facade: number,
+): number {
+  const middle = midpoint(wall.a, wall.b);
+  const angle = Math.atan2(wall.b.y - wall.a.y, wall.b.x - wall.a.x) + Math.PI / 2;
+  let normal = { x: Math.cos(angle), y: Math.sin(angle) };
+  if (!containsPoint(room, { x: middle.x + normal.x * 0.02, y: middle.y + normal.y * 0.02 })) {
+    normal = { x: -normal.x, y: -normal.y };
+  }
+  const beyond = { x: middle.x - normal.x * 0.2, y: middle.y - normal.y * 0.2 };
+  const shared = rooms.some((other) => other.id !== room.id && containsPoint(other, beyond));
+  return shared ? skin : facade;
+}
+
+/** Épaisseurs employées par le rendu. Le mobilier doit s'en tenir à l'écart. */
+export const WALL_SKIN = 0.09;
+export const WALL_FACADE = 0.3;
+
 /* ------------------------------------------------------------- navigation */
 
 /** Les pièces accessibles depuis une pièce donnée, via une ouverture franchissable. */

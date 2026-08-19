@@ -26,7 +26,17 @@
  * sous un regard qui, lui, prend son temps.
  */
 
-import { containsPoint, distance, exitsFrom, midpoint, roomArea, roomCenter, roomWalls } from './plan.ts';
+import {
+  canStandAt,
+  containsPoint,
+  distance,
+  exitsFrom,
+  midpoint,
+  pointAt,
+  roomArea,
+  roomCenter,
+  roomWalls,
+} from './plan.ts';
 import type { PlanDoor, PlanPoint, PlanRoom } from './types.ts';
 
 /* ============================================================== réglages === */
@@ -438,11 +448,27 @@ interface Stop {
   fov: number;
 }
 
-/** Le mur de la pièce qui mérite le coup d'œil : une photo, une fenêtre, sinon le plus long. */
+/**
+ * Ce qu'on regarde en entrant dans une pièce.
+ *
+ * Deux décisions, et la seconde compte plus que la première.
+ *
+ * **Quel mur** : celui qui porte une photo du propriétaire, sinon une fenêtre,
+ * sinon le plus long.
+ *
+ * **Quel point de ce mur** : pas son milieu — son extrémité la plus éloignée de
+ * l'endroit d'où l'on arrive. Viser le milieu d'un mur donne une vue frontale,
+ * c'est-à-dire un aplat : la pièce se réduit à la surface qu'on a en face, et
+ * tout ce qui est sur les côtés sort du cadre. Viser vers le fond donne une
+ * diagonale — deux murs, la plus grande profondeur disponible, et le volume qui
+ * se lit d'un coup. C'est ce que fait n'importe quel photographe d'intérieur, et
+ * pour cette raison exactement.
+ */
 function focusOf(
   room: PlanRoom,
   doors: PlanDoor[],
   photos: { roomId: string; wallIndex: number }[],
+  from: PlanPoint,
 ): PlanPoint {
   const walls = roomWalls(room);
   if (walls.length === 0) return roomCenter(room);
@@ -466,7 +492,27 @@ function focusOf(
       best = index;
     }
   }
-  return midpoint(walls[best].a, walls[best].b);
+
+  /* Quatre-vingts pour cent du mur plutôt que son extrémité franche : on veut
+     une diagonale, pas un coin de pièce plein cadre. */
+  const wall = walls[best];
+  const towardB = distance(from, wall.b) > distance(from, wall.a);
+  return pointAt(wall, towardB ? 0.82 : 0.18);
+}
+
+/**
+ * Le point d'où l'on regarde une pièce dans laquelle on vient d'entrer.
+ *
+ * Aux deux tiers du chemin entre l'arrivée et le centre, et jamais plus près
+ * d'un mur que la marge de marche : sur un plan biscornu, ce recul pourrait
+ * tomber dans une cloison.
+ */
+function backOff(room: PlanRoom, arrival: PlanPoint, centre: PlanPoint): PlanPoint {
+  const candidate = {
+    x: arrival.x + (centre.x - arrival.x) * 0.62,
+    y: arrival.y + (centre.y - arrival.y) * 0.62,
+  };
+  return canStandAt(room, candidate) ? candidate : centre;
 }
 
 /** Le milieu du mur le plus éloigné : ce qu'on regarde depuis une embrasure. */
@@ -555,6 +601,13 @@ function layout(
   }
 
   const legs = tourOrder(startId, rooms, doors, Boolean(options.closing));
+
+  /* D'où l'on arrive dans la pièce courante. Pour la première, c'est le seuil de
+     la porte palière — sans cette référence, le cadrage de la pièce d'entrée
+     était calculé depuis son propre centre, donc depuis nulle part, et la
+     caméra s'y plantait au milieu face à un mur. */
+  let cameFrom: PlanPoint | null = front ? midpoint(front.a, front.b) : null;
+
   legs.forEach((leg, index) => {
     const room = byId.get(leg.roomId);
     if (!room) return;
@@ -571,11 +624,26 @@ function layout(
       arrival = along(door, unit(door, centre), DOOR_MARGIN);
     }
 
-    /* Petite pièce : on s'arrête au seuil et on la regarde en entier. Grande
-       pièce : on entre, et on se place au milieu. */
+    /*
+     * Où l'on se place pour regarder une pièce.
+     *
+     * Petite pièce : au seuil, et on la cadre en entier — au centre d'une salle
+     * d'eau de trois mètres carrés, on est à quatre-vingt-dix centimètres de
+     * chaque mur.
+     *
+     * Grande pièce : on entre, mais **pas jusqu'au milieu**. Se planter au
+     * centre d'un séjour et regarder un mur, c'est l'avoir à deux mètres et
+     * plein cadre. On s'arrête aux deux tiers du chemin entre la porte et le
+     * centre, ce qui recule d'un mètre et laisse entrer les côtés de la pièce.
+     * C'est là que se met un photographe d'intérieur, et c'est pour la même
+     * raison.
+     */
+    const from = arrival ?? cameFrom;
     const cramped = roomArea(room) < SMALL_ROOM && arrival !== null;
-    const stand = cramped ? arrival! : centre;
-    if (arrival && !cramped) stops.push(passage(arrival, leg.roomId));
+    const stand = cramped ? arrival! : from ? backOff(room, from, centre) : centre;
+    if (arrival && !cramped && distance(stand, arrival) > 0.3) {
+      stops.push(passage(arrival, leg.roomId));
+    }
 
     const first = !leg.revisit;
     stops.push({
@@ -585,13 +653,14 @@ function layout(
       lookAt: first
         ? cramped
           ? farthestWall(room, stand)
-          : focusOf(room, doors, photos)
+          : focusOf(room, doors, photos, from ?? stand)
         : null,
       caption: first ? (options.captions?.[leg.roomId] ?? describeRoom(room, doors)) : null,
       threshold: cramped,
       pitch: first ? ROOM_PITCH : TRAVEL_PITCH,
       fov: first ? ROOM_FOV : TRAVEL_FOV,
     });
+    cameFrom = stand;
   });
 
   if (options.closing && stops.length > 0) {
@@ -605,7 +674,7 @@ function layout(
          calculait entre le dernier sommet et… lui-même — deux points confondus,
          donc un angle indéfini, et la dernière image du site tombait où le
          hasard des flottants la mettait. */
-      lookAt: room ? focusOf(room, doors, photos) : null,
+      lookAt: room ? focusOf(room, doors, photos, last.point) : null,
       caption: options.closing,
       threshold: false,
       pitch: ROOM_PITCH,
