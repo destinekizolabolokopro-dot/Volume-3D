@@ -3,6 +3,7 @@ import { AttentionPanel } from '@/components/AttentionPanel';
 import { Empty, Meter, ProHead, Section, Stat, StatBand } from '@/components/pro/Pro';
 import { PLAN_LABELS, PLAN_LIMITS } from '@/lib/accounts';
 import { isAssistantConfigured } from '@/lib/assistant';
+import { formatDuration, summarize } from '@/lib/attention';
 import { requireAccount } from '@/lib/require-account';
 import { getStore } from '@/lib/store';
 import type { ChatMessage, Plan } from '@/lib/types';
@@ -49,6 +50,11 @@ export default async function EspaceDashboard() {
       .flatMap((plan) => plan.rooms.map((room) => ({ id: room.id, name: room.name }))),
   ];
 
+  /* Le même résumé que le panneau d'attention, pour la bande de chiffres. Il
+     est recalculé plutôt que passé de l'un à l'autre : la fonction est pure et
+     coûte moins qu'un aller-retour de props à travers deux composants. */
+  const seen = summarize(attention, attentionRooms);
+
   const week = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const questionsThisWeek = messages.filter((message) => Date.parse(message.createdAt) > week).length;
 
@@ -78,10 +84,24 @@ export default async function EspaceDashboard() {
           <Stat label="Vues des visites" value={views} hint="Depuis la mise en ligne" />
           <Stat label="Visites en ligne" value={published.length} hint={`${properties.length} bien${properties.length > 1 ? 's' : ''} au total`} />
           <Stat label="Questions posées" value={messages.length} hint={`${questionsThisWeek} cette semaine`} />
+          {/*
+            * Quatrième chiffre : la durée d'une visite, pas une moyenne de vues.
+            *
+            * On affichait ici `vues / visites en ligne`, sous l'intitulé « vues
+            * par visite ». Deux défauts, et le second est le vrai : l'intitulé
+            * ne décrivait pas le calcul — une visite *est* une vue, donc le
+            * rapport n'avait pas de sens — et surtout, avec un seul bien en
+            * ligne le quotient vaut le total. La bande affichait donc deux
+            * fois 89 sur quatre cases, ce qui se lit comme une panne. Le
+            * détail par bien existe déjà plus bas, dans « Vues par bien ».
+            *
+            * La durée moyenne, elle, dit quelque chose qu'aucun autre chiffre
+            * de la page ne dit : si les voyageurs restent ou s'ils partent.
+            */}
           <Stat
-            label="Vues par visite"
-            value={published.length > 0 ? Math.round(views / published.length) : 0}
-            hint="Moyenne"
+            label="Temps moyen par visite"
+            value={seen.visits > 0 ? formatDuration(Math.round(seen.totalSeconds / seen.visits)) : '—'}
+            hint={seen.visits > 0 ? `${seen.visits} visite${seen.visits > 1 ? 's' : ''} mesurée${seen.visits > 1 ? 's' : ''}` : 'Aucune mesure'}
           />
         </StatBand>
 

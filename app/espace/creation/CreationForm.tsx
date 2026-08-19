@@ -60,7 +60,12 @@ export function CreationForm() {
 
       <div className="field">
         <label htmlFor="c-photos">Photos du bien</label>
-        <div className="drop">
+        {/* `file-drop`, comme partout ailleurs dans l'espace pro. La classe
+            posée ici s'appelait `drop`, et aucune feuille de style ne la
+            définissait : le seul champ de fichier que voit un nouveau client —
+            celui de la création de son premier bien — était donc le seul à
+            rester dans l'habillage brut du navigateur. */}
+        <div className="file-drop">
           <input id="c-photos" name="photos" type="file" accept="image/*" multiple />
           <p className="hint">
             Vos photos habituelles d’annonce. Elles sont recompressées automatiquement et illustrent la page de

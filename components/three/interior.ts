@@ -2218,6 +2218,14 @@ function landing(
   const tiling = new THREE.MeshStandardMaterial({ color: OUTSIDE.palier_sol, roughness: 0.6 });
   disposables.push(stone, tiling);
 
+  /** Un point du palier, repéré en (le long du mur, vers l'extérieur, hauteur). */
+  const at = (alongWall: number, outward: number, lift: number) =>
+    new THREE.Vector3(
+      door.x - origin.x + Math.cos(angle) * alongWall + out.x * outward,
+      lift,
+      door.y - origin.y + Math.sin(angle) * alongWall + out.y * outward,
+    );
+
   /** Pose une paroi, repérée par son centre exprimé en (le long du mur, vers l'extérieur). */
   const slab = (
     alongWall: number,
@@ -2229,11 +2237,7 @@ function landing(
     const geometry = new THREE.BoxGeometry(size[0], size[1], size[2]);
     disposables.push(geometry);
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(
-      door.x - origin.x + Math.cos(angle) * alongWall + out.x * outward,
-      lift,
-      door.y - origin.y + Math.sin(angle) * alongWall + out.y * outward,
-    );
+    mesh.position.copy(at(alongWall, outward, lift));
     mesh.rotation.y = -angle;
     mesh.receiveShadow = true;
     group.add(mesh);
@@ -2274,9 +2278,44 @@ function landing(
   const strip = new THREE.BoxGeometry(opening * 1.9, 0.022, 0.02);
   disposables.push(strip);
   const light = new THREE.Mesh(strip, glow);
-  light.position.set(door.x - origin.x + out.x * 0.02, 0.012, door.y - origin.y + out.y * 0.02);
+  light.position.copy(at(0, 0.02, 0.012));
   light.rotation.y = -angle;
   group.add(light);
+
+  /*
+   * Le hublot du palier.
+   *
+   * Le parti était bon et allait trop loin : on part d'un endroit sombre et
+   * fermé pour entrer dans un logement clair, et le contraste fait la moitié de
+   * l'effet. Mais le palier n'avait aucune source à lui — seulement l'ambiante
+   * et le soleil qui entrait de biais par le côté ouvert. Résultat en image :
+   * la toute première vue du site, celle qui décide si l'on fait défiler ou
+   * non, était une porte presque noire dans un brun boueux, avec une tache de
+   * soleil brûlée sur un mur. Ce n'est pas une pénombre, c'est une image ratée
+   * — et la différence entre les deux tient à ce qu'on distingue quelque chose
+   * dans les ombres.
+   *
+   * Un hublot au plafond suffit, et il n'est pas là pour le décor : c'est ce
+   * qu'on trouve dans toutes les cages d'escalier parisiennes, allumé par une
+   * minuterie. Il donne à la porte ses panneaux, à la pierre son grain, et il
+   * chauffe l'image juste assez pour que le blanc du logement, ensuite, paraisse
+   * franchement plus clair qu'elle.
+   *
+   * Sans ombre portée : une seconde carte d'ombres pour éclairer trois murs
+   * coûterait autant que celle du soleil, et un hublot diffusant n'en fait de
+   * toute façon pas de nettes.
+   */
+  const hublot = new THREE.PointLight(0xffdcae, 11, 9, 2);
+  hublot.position.copy(at(-WIDTH * 0.22, DEPTH * 0.5, HEIGHT - 0.22));
+  group.add(hublot);
+
+  const verre = new THREE.MeshBasicMaterial({ color: 0xfff0d6 });
+  const globe = new THREE.SphereGeometry(0.085, 14, 9);
+  disposables.push(verre, globe);
+  const source = new THREE.Mesh(globe, verre);
+  source.position.copy(hublot.position);
+  group.add(source);
+
   return group;
 }
 

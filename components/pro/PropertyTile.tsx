@@ -66,11 +66,24 @@ export function PropertyTile({
             aria-label={`Dossier : ${journey.steps.filter((step) => step.state === 'done').length} étapes sur ${journey.steps.length}`}
           >
             {journey.steps.map((step) => (
-              <span key={step.key} className="pro-step" data-state={step.state} />
+              <span key={step.key} className="pro-step" data-state={step.state} title={step.label} />
             ))}
           </div>
+          {/*
+            * Le compte, à côté du reste à faire.
+            *
+            * Les étapes sont indépendantes : une case franchie le reste même si
+            * une case antérieure retombe, ce qui est le bon modèle — un dossier
+            * n'est pas une machine à états. Mais à l'écran, six tirets dont le
+            * deuxième et le sixième sont pleins ressemblent à une barre de
+            * progression cassée, et rien ne disait combien il y en avait ni
+            * combien étaient faites. Le lecteur voyant n'avait pas le résumé que
+            * le lecteur d'écran recevait déjà.
+            */}
           <p className="pro-steps-note">
-            {journey.current ? `Reste à faire : ${journey.current.label.toLowerCase()}` : 'Dossier complet'}
+            {journey.current
+              ? `${journey.steps.filter((step) => step.state === 'done').length} sur ${journey.steps.length} · reste à faire : ${journey.current.label.toLowerCase()}`
+              : `Dossier complet · ${journey.steps.length} étapes`}
           </p>
         </>
       )}

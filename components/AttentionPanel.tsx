@@ -36,7 +36,17 @@ export function AttentionPanel({
             <Meter
               key={room.roomId}
               label={room.name}
-              note={`${formatDuration(room.average)} en moyenne · ${Math.round(room.reach * 100)} % des visites`}
+              /*
+               * La barre porte la part du temps total ; l'intitulé doit donc
+               * commencer par elle. Il commençait par la moyenne par ouverture,
+               * et l'œil rapportait la barre à ce chiffre-là : un salon vu cinq
+               * secondes par tout le monde tirait une barre presque aussi
+               * longue qu'un séjour vu dix-neuf secondes par un quart des
+               * visiteurs, ce qui donnait l'impression d'un graphique faux. Il
+               * ne l'était pas — il mesurait autre chose que ce qu'on lisait à
+               * côté.
+               */
+              note={`${Math.round(room.share * 100)} % du temps · ${formatDuration(room.average)} par ouverture · ${Math.round(room.reach * 100)} % des visites`}
               share={room.share}
               tone={summary.thin ? 'soft' : undefined}
             />
