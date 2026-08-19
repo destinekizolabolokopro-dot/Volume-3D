@@ -284,8 +284,15 @@ function MovingTour({
       /* Le voile ne sert que la lisibilité du texte : il suit donc la légende
          la plus visible. Fixe, il assombrissait le bas de l'image même quand
          il n'y avait rien à y lire — et c'est précisément là que se trouvent le
-         sol et le mobilier, c'est-à-dire ce qu'on est venu montrer. */
-      if (veilRef.current) veilRef.current.style.opacity = String(0.24 + 0.76 * loudest);
+         sol et le mobilier, c'est-à-dire ce qu'on est venu montrer.
+
+         Mais il la précède : monté à la même vitesse que le texte, il n'était
+         qu'aux deux tiers quand la lettre était déjà lisible, et sur un mur en
+         plein soleil le contraste mesuré tombait à trois pour un au milieu du
+         fondu. Le fond arrive avant le texte, comme au générique d'un film. */
+      if (veilRef.current) {
+        veilRef.current.style.opacity = String(0.24 + 0.76 * Math.min(1, loudest * 1.9));
+      }
       if (barRef.current) barRef.current.style.transform = `scaleX(${cursor})`;
       if (cueRef.current) cueRef.current.style.opacity = String(Math.max(0, 1 - cursor * 14));
 

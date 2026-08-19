@@ -50,14 +50,42 @@
  * derrière — et ici, ce qui passe derrière change à chaque image. Le dégradé
  * garantit le contraste quoi qu'il arrive : c'est la seule façon d'écrire sur
  * une vidéo sans jouer aux dés.
+ *
+ * Il a été renforcé après mesure. Dans sa version précédente, le fond sous les
+ * légendes tenait entre sept et onze pour un contre le blanc *en moyenne*, mais
+ * la moyenne n'est pas le critère : derrière chacune des quinze légendes il y
+ * avait des pixels de blanc pur — un mur en plein soleil, le ciel dans une
+ * fenêtre — où la lettre disparaissait.
+ *
+ * On a d'abord essayé un écran elliptique accroché à la légende. Il tenait le
+ * contraste, mais il se voyait : une tache sombre posée sur un mur clair, avec
+ * un bord. Un dégradé qui couvre le cadre entier ne dessine aucune forme, parce
+ * qu'il n'a pas de bord à l'intérieur de l'image. C'est la même raison qui fait
+ * qu'on éclaire un plateau par le haut plutôt qu'avec une lampe de poche.
+ *
+ * `npm run contraste` remesure et refuse en dessous de 4,5:1 sur le cinquième
+ * centile du fond. Le réglage a déjà servi une fois : un changement de parcours
+ * a mis l'image de fin devant un séjour en plein soleil, et la mesure est
+ * tombée à 4,3.
  */
 .veil {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(to top, rgba(8, 12, 11, 0.9) 0%, rgba(8, 12, 11, 0.3) 30%, rgba(8, 12, 11, 0) 58%),
-    linear-gradient(to right, rgba(8, 12, 11, 0.55) 0%, rgba(8, 12, 11, 0) 48%);
+    linear-gradient(
+      to top,
+      rgba(8, 12, 11, 0.95) 0%,
+      rgba(8, 12, 11, 0.72) 26%,
+      rgba(8, 12, 11, 0.38) 46%,
+      rgba(8, 12, 11, 0) 66%
+    ),
+    linear-gradient(
+      to right,
+      rgba(8, 12, 11, 0.78) 0%,
+      rgba(8, 12, 11, 0.34) 30%,
+      rgba(8, 12, 11, 0) 58%
+    );
 }
 
 /* ------------------------------------------------------------- légendes --- */
@@ -88,6 +116,9 @@
 
 .title {
   margin: 0 0 12px;
+  /* Seconde ligne de défense, sous l'écran : elle ne se voit pas sur un fond
+     sombre et sauve la lettre isolée qui tomberait sur un éclat clair. */
+  text-shadow: 0 1px 16px rgba(6, 10, 9, 0.5);
   font-family: var(--serif);
   font-weight: 600;
   font-size: clamp(30px, 5.4vw, 54px);

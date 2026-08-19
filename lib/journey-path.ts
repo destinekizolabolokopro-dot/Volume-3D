@@ -59,6 +59,18 @@ const DWELL_CLOSING = 2.8;
 /** Distance à laquelle on se place de part et d'autre d'une ouverture. */
 const DOOR_MARGIN = 0.55;
 
+/**
+ * Recul depuis lequel on cadre une pièce trop petite pour qu'on y entre.
+ *
+ * Cinquante-cinq centimètres à l'intérieur, c'était déjà trop. Dans une salle
+ * d'eau de trois mètres carrés, ces cinquante-cinq centimètres mettent la
+ * caméra à vingt-cinq d'une paroi de douche : l'image est la paroi, et la
+ * légende qui parle de douche, de vasque et de fenêtre ne montre aucune des
+ * trois. Un photographe d'intérieur, lui, se met *dans l'embrasure* — la porte
+ * lui donne le recul que la pièce n'a pas.
+ */
+const THRESHOLD_MARGIN = 0.12;
+
 /** Recul devant la porte d'entrée, avant qu'elle ne s'ouvre. */
 const APPROACH = 2.9;
 
@@ -71,6 +83,28 @@ const APPROACH = 2.9;
  * se met dans l'embrasure et cadre la pièce entière ; on fait pareil.
  */
 const SMALL_ROOM = 7;
+
+/**
+ * Angle horizontal, en degrés, sous lequel on veut voir le mur qu'on regarde.
+ *
+ * Le champ horizontal du parcours tourne autour de cent degrés. Un mur qui en
+ * occupe soixante remplit le cadre sans le déborder : il reste de la place de
+ * part et d'autre pour les murs de côté, et c'est cette place qui fait qu'on lit
+ * une pièce et non une surface.
+ */
+const TARGET_SUBTENSE = 60;
+
+/**
+ * Ce que vaut un mur désigné, en degrés d'écart au cadrage idéal.
+ *
+ * Une photo accrochée à un mur dit que le propriétaire tient à ce mur : elle
+ * doit l'emporter sur la géométrie. Mais pas absolument — un mur qu'on ne peut
+ * pas cadrer reste un mur qu'on ne peut pas cadrer. Soixante-dix degrés de
+ * bonus, c'est assez pour battre un mur bien placé, pas assez pour cadrer une
+ * cloison à cinquante centimètres.
+ */
+const PHOTO_BONUS = 70;
+const WINDOW_BONUS = 25;
 
 /** Rayon maximal d'un angle arrondi, et fraction maximale des côtés adjacents. */
 const CORNER_RADIUS = 0.6;
@@ -468,36 +502,170 @@ function focusOf(
   room: PlanRoom,
   doors: PlanDoor[],
   photos: { roomId: string; wallIndex: number }[],
+  /** Là où la caméra se tiendra — pas par où elle est entrée. C'est de ce point
+   *  que le mur sera vu, donc c'est de ce point qu'il faut le juger. */
   from: PlanPoint,
 ): PlanPoint {
   const walls = roomWalls(room);
   if (walls.length === 0) return roomCenter(room);
   let best = 0;
   let bestScore = -Infinity;
+  let bestWindow: PlanDoor | null = null;
   for (let index = 0; index < walls.length; index += 1) {
     const wall = walls[index];
     const length = distance(wall.a, wall.b);
     const hasPhoto = photos.some(
       (photo) => photo.roomId === room.id && photo.wallIndex % walls.length === index,
     );
-    const hasWindow = doors.some(
-      (door) =>
-        door.kind === 'window' &&
-        (door.from === room.id || door.to === room.id) &&
-        nearSegment(midpoint(door.a, door.b), wall.a, wall.b),
-    );
-    const score = length + (hasPhoto ? 120 : 0) + (hasWindow ? 60 : 0);
+    const window =
+      doors.find(
+        (door) =>
+          door.kind === 'window' &&
+          (door.from === room.id || door.to === room.id) &&
+          nearSegment(midpoint(door.a, door.b), wall.a, wall.b),
+      ) ?? null;
+    /* L'angle sous lequel le mur se présente, et non sa longueur.
+       Le plus long mur d'un couloir est celui qu'on longe : à soixante-dix
+       centimètres, il occupe cent trente degrés et l'image devient un pan de
+       peinture. Ce qu'on cherche est le mur qui *tient dans le cadre* — celui
+       du fond. */
+    const away = Math.max(0.4, distance(from, midpoint(wall.a, wall.b)));
+    const subtense = (2 * Math.atan(length / 2 / away) * 180) / Math.PI;
+    const score =
+      -Math.abs(subtense - TARGET_SUBTENSE) +
+      (hasPhoto ? PHOTO_BONUS : 0) +
+      (window ? WINDOW_BONUS : 0);
     if (score > bestScore) {
       bestScore = score;
       best = index;
+      bestWindow = window;
     }
   }
 
-  /* Quatre-vingts pour cent du mur plutôt que son extrémité franche : on veut
-     une diagonale, pas un coin de pièce plein cadre. */
+  /* Une fenêtre est le point du mur qu'on est venu voir : on la vise elle, et
+     non les quatre-vingt-deux pour cent du mur. Dans une salle d'eau de trois
+     mètres carrés, la différence est celle entre la fenêtre et la paroi de
+     douche qui se trouve à l'autre bout du même mur. */
+  if (bestWindow) return midpoint(bestWindow.a, bestWindow.b);
+
   const wall = walls[best];
   const towardB = distance(from, wall.b) > distance(from, wall.a);
   return pointAt(wall, towardB ? 0.82 : 0.18);
+}
+
+
+/* --------------------------------------------------- la dernière image --- */
+
+/**
+ * La direction dans laquelle le regard porte le plus loin, depuis un point.
+ *
+ * La visite se terminait là où elle s'arrêtait : dans la plus petite pièce du
+ * logement — c'est toujours la dernière desservie — face au mur le mieux cadré
+ * de cette pièce, à un mètre quarante. Tenue sur un dixième du défilement, cette
+ * image est la dernière que le visiteur emporte du bien.
+ *
+ * On la remplace par le regard en arrière : depuis le seuil, on cherche l'axe
+ * qui traverse le plus de logement — le couloir, les portes alignées, le séjour
+ * au fond. C'est le plan de fin de toutes les vidéos d'agence, et pour une bonne
+ * raison : c'est le seul qui montre que les pièces communiquent.
+ *
+ * Trois rayons plutôt qu'un — l'axe et ses deux flancs — pour ne pas élire un
+ * enfilement qui passerait par le trou d'une serrure : ce qui compte est ce qui
+ * reste ouvert sur toute la largeur du cadre, pas la plus longue aiguille.
+ */
+const OPEN_SAMPLES = 72;
+const OPEN_SPREAD = 12;
+const OPEN_STEP = 0.1;
+const OPEN_MAX = 14;
+
+function freeRun(rooms: PlanRoom[], from: PlanPoint, yaw: number): number {
+  const dx = Math.sin((yaw * Math.PI) / 180);
+  const dy = -Math.cos((yaw * Math.PI) / 180);
+  let reach = 0;
+  for (let step = OPEN_STEP; step <= OPEN_MAX; step += OPEN_STEP) {
+    const point = { x: from.x + dx * step, y: from.y + dy * step };
+    if (!rooms.some((room) => containsPoint(room, point))) break;
+    reach = step;
+  }
+  return reach;
+}
+
+/**
+ * Le cap, entre deux autres, qui laisse le plus de champ.
+ *
+ * Un arrêt dans une pièce est fait de deux mouvements : on arrive en regardant
+ * devant soi, on tourne la tête vers ce qu'on est venu voir. Entre les deux, le
+ * regard balaie — et dans une chambre de onze mètres carrés, le balayage passe
+ * par un mur à un mètre quatre-vingts, qui remplit alors tout le cadre. Le
+ * visiteur qui s'arrête de faire défiler à cet instant a devant lui un aplat de
+ * peinture, sans plinthe ni corniche pour lui dire ce qu'il regarde.
+ *
+ * On pose donc une clé au milieu du virage, sur le cap le plus dégagé de l'arc
+ * effectivement parcouru. Le mouvement de tête reste le même ; ce qu'il traverse
+ * change.
+ */
+function throughOpen(
+  rooms: PlanRoom[],
+  from: PlanPoint,
+  a: number,
+  b: number,
+): number | null {
+  const arc = shortestArc(a, b);
+  if (Math.abs(arc) < 25) return null;
+  let best = a + arc / 2;
+  let bestRun = -1;
+  const steps = 8;
+  for (let index = 1; index < steps; index += 1) {
+    const yaw = a + (arc * index) / steps;
+    const run = freeRun(rooms, from, yaw);
+    if (run > bestRun) {
+      bestRun = run;
+      best = yaw;
+    }
+  }
+  return best;
+}
+
+/**
+ * @param prefer Cap de la marche en cours, s'il y en a une. L'axe le plus long
+ *   part souvent en arrière — dans un couloir, c'est la pièce qu'on vient de
+ *   quitter. Regarder derrière soi se paie deux fois : le plan raconte le
+ *   contraire du parcours, et il faut ensuite pivoter de cent quatre-vingts
+ *   degrés pour repartir, ce qui fait un à-coup. Un axe en arrière ne vaut donc
+ *   que la moitié de sa longueur.
+ */
+export function openDirection(
+  rooms: PlanRoom[],
+  from: PlanPoint,
+  prefer?: number,
+): PlanPoint {
+  let bestYaw = 0;
+  let best = -1;
+  for (let index = 0; index < OPEN_SAMPLES; index += 1) {
+    const yaw = (index * 360) / OPEN_SAMPLES;
+    const run = Math.min(
+      freeRun(rooms, from, yaw),
+      freeRun(rooms, from, yaw - OPEN_SPREAD),
+      freeRun(rooms, from, yaw + OPEN_SPREAD),
+    );
+    const aligned =
+      prefer === undefined
+        ? 1
+        : 0.55 + 0.45 * Math.cos((shortestArc(prefer, yaw) * Math.PI) / 180);
+    if (run * aligned > best) {
+      best = run * aligned;
+      bestYaw = yaw;
+    }
+  }
+  best = Math.min(
+    freeRun(rooms, from, bestYaw),
+    freeRun(rooms, from, bestYaw - OPEN_SPREAD),
+    freeRun(rooms, from, bestYaw + OPEN_SPREAD),
+  );
+  const dx = Math.sin((bestYaw * Math.PI) / 180);
+  const dy = -Math.cos((bestYaw * Math.PI) / 180);
+  const span = Math.max(best, 0.6);
+  return { x: from.x + dx * span, y: from.y + dy * span };
 }
 
 /**
@@ -515,17 +683,30 @@ function backOff(room: PlanRoom, arrival: PlanPoint, centre: PlanPoint): PlanPoi
   return canStandAt(room, candidate) ? candidate : centre;
 }
 
-/** Le milieu du mur le plus éloigné : ce qu'on regarde depuis une embrasure. */
-function farthestWall(room: PlanRoom, from: PlanPoint): PlanPoint {
-  const walls = roomWalls(room);
-  if (walls.length === 0) return roomCenter(room);
-  let best = midpoint(walls[0].a, walls[0].b);
-  for (const wall of walls) {
-    const centre = midpoint(wall.a, wall.b);
-    if (distance(from, centre) > distance(from, best)) best = centre;
+/**
+ * Une pièce de circulation : elle en dessert au moins deux autres.
+ *
+ * La distinction commande le cadrage, et elle est plus sûre qu'un seuil de
+ * surface. Un dégagement d'un mètre quarante et une salle d'eau de trois mètres
+ * carrés sont tous deux trop petits pour qu'on y cadre un mur — mais ce qu'on
+ * vient y voir n'est pas la même chose. La salle d'eau, on la montre : sa
+ * douche, son meuble, sa fenêtre. Le couloir, on ne le montre pas, on le
+ * *traverse* — ce qui s'en dit est qu'il mène quelque part, et cela se voit en
+ * regardant dans sa longueur, à travers ses portes.
+ *
+ * Cadré comme une pièce, le dégagement du logement d'essai donnait un mur à
+ * quatre-vingt-dix centimètres tenu pendant tout l'arrêt.
+ */
+function isCirculation(room: PlanRoom, doors: PlanDoor[]): number {
+  let served = 0;
+  for (const door of doors) {
+    if (door.kind === 'window') continue;
+    if (!door.from || !door.to) continue;
+    if (door.from === room.id || door.to === room.id) served += 1;
   }
-  return best;
+  return served;
 }
+
 
 /** Vrai si un point est posé sur un segment, à deux centimètres près. */
 function nearSegment(point: PlanPoint, a: PlanPoint, b: PlanPoint): boolean {
@@ -621,7 +802,8 @@ function layout(
         stops.push(passage(along(door, unit(door, roomCenter(previous)), DOOR_MARGIN), legs[index - 1].roomId));
       }
       stops.push(passage(door, leg.roomId));
-      arrival = along(door, unit(door, centre), DOOR_MARGIN);
+      const margin = roomArea(room) < SMALL_ROOM ? THRESHOLD_MARGIN : DOOR_MARGIN;
+      arrival = along(door, unit(door, centre), margin);
     }
 
     /*
@@ -651,9 +833,9 @@ function layout(
       roomId: leg.roomId,
       dwell: first ? DWELL_ROOM : 0,
       lookAt: first
-        ? cramped
-          ? farthestWall(room, stand)
-          : focusOf(room, doors, photos, from ?? stand)
+        ? isCirculation(room, doors) >= 2
+          ? openDirection(rooms, stand, cameFrom ? heading(cameFrom, stand) : undefined)
+          : focusOf(room, doors, photos, stand)
         : null,
       caption: first ? (options.captions?.[leg.roomId] ?? describeRoom(room, doors)) : null,
       threshold: cramped,
@@ -665,7 +847,6 @@ function layout(
 
   if (options.closing && stops.length > 0) {
     const last = stops[stops.length - 1];
-    const room = byId.get(last.roomId);
     stops.push({
       point: last.point,
       roomId: last.roomId,
@@ -673,8 +854,11 @@ function layout(
       /* Le mot de la fin a besoin d'une cible explicite. Sans elle, le cap se
          calculait entre le dernier sommet et… lui-même — deux points confondus,
          donc un angle indéfini, et la dernière image du site tombait où le
-         hasard des flottants la mettait. */
-      lookAt: room ? focusOf(room, doors, photos, last.point) : null,
+         hasard des flottants la mettait.
+
+         Et cette cible n'est pas le mur de la pièce où l'on se trouve : c'est
+         l'axe qui traverse le logement. Voir `openDirection`. */
+      lookAt: openDirection(rooms, last.point),
       caption: options.closing,
       threshold: false,
       pitch: ROOM_PITCH,
@@ -762,18 +946,30 @@ function roundCorners(stops: Stop[], rooms: PlanRoom[]): Vertex[] {
 }
 
 /**
- * Le sommet situé au moins `reach` mètres plus loin sur le trajet.
+ * Le sommet situé au moins `reach` mètres plus loin sur le trajet, sans franchir
+ * le prochain arrêt.
  *
- * Renvoie le dernier sommet quand il n'y a plus assez de chemin devant, et rien
- * du tout si l'on est déjà au bout.
+ * Renvoie le dernier sommet atteignable quand il n'y a plus assez de chemin
+ * devant, et rien du tout si l'on est déjà au bout.
+ *
+ * La borne sur l'arrêt n'est pas un détail. Le parcours d'un logement revient
+ * sur ses pas — on ressort d'une chambre par où l'on y est entré — et une salle
+ * d'eau de trois mètres carrés est plus courte que la portée du regard. Sans
+ * cette borne, à l'entrée de la salle d'eau, « devant soi » désignait un sommet
+ * du chemin de retour : la caméra regardait derrière elle, à quarante
+ * centimètres du chambranle, pendant qu'elle avançait. Un arrêt est la fin d'un
+ * mouvement ; on ne regarde pas au-delà.
  */
 function aheadOf(vertices: Vertex[], from: number, reach: number): Vertex | null {
   let walked = 0;
+  let last: Vertex | null = null;
   for (let index = from + 1; index < vertices.length; index += 1) {
     walked += distance(vertices[index - 1].point, vertices[index].point);
-    if (walked >= reach) return vertices[index];
+    last = vertices[index];
+    if (walked >= reach) return last;
+    if (vertices[index].stop !== null) break;
   }
-  return vertices.length - 1 > from ? vertices[vertices.length - 1] : null;
+  return last;
 }
 
 /** Bézier quadratique échantillonnée, extrémités comprises. */
@@ -896,12 +1092,37 @@ export function buildJourney(
       ease: 'linear',
     });
     if (target !== null) {
+      /* Le virage passe par le cap le plus dégagé, pas par le plus court chemin
+         géométrique : voir `throughOpen`. */
+      const relay = throughOpen(rooms, vertex.point, arrival, target);
+      if (relay !== null) {
+        view.push({ t: tIn + span * 0.19, yaw: relay, pitch, fov, ease: 'smooth' });
+      }
       view.push({ t: tIn + span * 0.38, yaw: target, pitch, fov, ease: 'smooth' });
       view.push({ t: tIn + span * 0.72, yaw: target, pitch, fov, ease: 'linear' });
     } else {
       view.push({ t: tIn + span * 0.5, yaw: arrival, pitch, fov, ease: 'smooth' });
     }
-    view.push({ t: tOut, yaw: outgoing, pitch: TRAVEL_PITCH, fov: TRAVEL_FOV, ease: 'smooth' });
+    /*
+     * On repart en tournant, et non l'inverse.
+     *
+     * La clé de fin d'arrêt portait déjà le cap de la marche suivante : le
+     * demi-tour se faisait donc sur place. Dans une chambre de onze mètres
+     * carrés, un virage de cent soixante-dix degrés à l'arrêt balaie forcément
+     * un mur à un mètre quatre-vingts, et le cadre se remplit de peinture.
+     *
+     * En gardant ici le cap de l'arrêt, le virage s'étale sur le premier mètre
+     * et demi de marche — c'est le sommet suivant qui pose le cap de sortie. Le
+     * mur balayé s'éloigne pendant qu'on le balaie, et l'ouverture par laquelle
+     * on sort entre dans le cadre avant la fin du virage.
+     */
+    view.push({
+      t: tOut,
+      yaw: target ?? outgoing,
+      pitch: TRAVEL_PITCH,
+      fov: TRAVEL_FOV,
+      ease: 'smooth',
+    });
 
     if (stop?.caption) {
       captions.push({

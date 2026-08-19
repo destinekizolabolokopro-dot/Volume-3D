@@ -446,3 +446,98 @@ test('le champ de vision s’élargit sur un écran étroit, et pas au-delà du 
   assert.equal(verticalFov(74, 0), 74);
   assert.equal(verticalFov(74, Number.NaN), 74);
 });
+
+test('dans un couloir, on regarde le fond et non le mur qu’on longe', () => {
+  /*
+   * Le dégagement fait 1,40 m de large sur 1,80 m de long. Le mur le plus long
+   * est celui qu'on longe : à soixante-dix centimètres, il occupe cent trente
+   * degrés et l'image devient un pan de peinture — c'est exactement ce que
+   * faisait le parcours avant que le cadrage ne tienne compte de la distance.
+   *
+   * On vérifie ce qui se voit vraiment : au milieu de l'arrêt, le rayon parti de
+   * l'œil doit franchir plus d'un mètre avant de rencontrer un mur.
+   */
+  const journey = buildJourney(rooms, doors);
+  const arret = journey.rooms.find((entry) => entry.roomId === 'degagement');
+  assert.ok(arret, 'le dégagement doit être visité');
+
+  const pose = sample(journey, arret.t + 0.015);
+  const salle = rooms.find((room) => room.id === 'degagement')!;
+
+  // Marche avant le long du regard jusqu'à sortir de la pièce.
+  const step = 0.02;
+  const dx = Math.sin((pose.yaw * Math.PI) / 180);
+  const dy = -Math.cos((pose.yaw * Math.PI) / 180);
+  let portee = 0;
+  for (let d = step; d <= 6; d += step) {
+    const point = { x: pose.x + dx * d, y: pose.y + dy * d };
+    if (!containsPoint(salle, point) && !rooms.some((room) => containsPoint(room, point))) break;
+    portee = d;
+  }
+  assert.ok(portee > 1, `le regard bute à ${portee.toFixed(2)} m : c'est un mur en gros plan`);
+});
+test('le regard ne bute jamais sur un mur pendant qu’on marche', () => {
+  /*
+   * Un demi-tour de cent soixante-dix degrés fait à l'arrêt, dans une chambre de
+   * onze mètres carrés, balaie forcément un mur à moins de deux mètres : le
+   * visiteur qui s'arrête de faire défiler à cet instant a devant lui un aplat
+   * de peinture. Le virage se fait donc en marchant, et c'est ce qu'on vérifie
+   * ici — hors des arrêts, où une petite pièce est légitimement proche.
+   */
+  const journey = buildJourney(rooms, doors, { closing: { kicker: 'k', title: 't', text: 'x' } });
+
+  /** Distance parcourue par le regard avant de sortir du logement. */
+  const reach = (t: number) => {
+    const pose = sample(journey, t);
+    const dx = Math.sin((pose.yaw * Math.PI) / 180);
+    const dy = -Math.cos((pose.yaw * Math.PI) / 180);
+    let seen = 0;
+    for (let step = 0.05; step <= 12; step += 0.05) {
+      const point = { x: pose.x + dx * step, y: pose.y + dy * step };
+      if (!rooms.some((room) => containsPoint(room, point))) break;
+      seen = step;
+    }
+    return seen;
+  };
+
+  /* On ne juge que la marche. À l'arrêt, une salle d'eau de trois mètres carrés
+     est proche par nature et on ne lui demande pas de profondeur ; c'est le
+     balayage en mouvement qui doit garder quelque chose à regarder. L'arrêt se
+     reconnaît à ce qu'il est : la position n'y bouge pas. */
+  const parked = (t: number) => {
+    const here = positionAt(journey.path, t);
+    const soon = positionAt(journey.path, Math.min(1, t + 0.004));
+    return Math.hypot(soon.x - here.x, soon.y - here.y) < 1e-6;
+  };
+
+  const dehors = journey.doorOpens.to;
+  let pire = { t: 0, d: 99 };
+  let serres = 0;
+  let mesures = 0;
+  for (let index = 0; index <= 400; index += 1) {
+    const t = index / 400;
+    if (t < dehors || parked(t)) continue;
+    const d = reach(t);
+    mesures += 1;
+    if (d < 1.5) serres += 1;
+    if (d < pire.d) pire = { t, d };
+  }
+
+  /* Deux seuils, parce qu'il y a deux défauts distincts.
+     Le nez au mur : à moins de quatre-vingt-dix centimètres, il n'y a plus
+     d'image du tout. Un virage à angle droit dans un couloir d'un mètre
+     quarante passe légitimement près — un humain qui tourne là voit le mur,
+     lui aussi — mais il ne s'y arrête pas. */
+  assert.ok(
+    pire.d > 0.9,
+    `à t=${pire.t.toFixed(3)} le regard bute à ${pire.d.toFixed(2)} m : c’est le nez au mur`,
+  );
+
+  /* Le mur tenu : c'est celui-là qui abîmait la visite. Un virage sur place au
+     milieu d'une chambre y passait un dixième du parcours. */
+  const part = serres / mesures;
+  assert.ok(
+    part < 0.12,
+    `${Math.round(part * 100)} % de la marche se fait à moins d’un mètre cinquante d’un mur`,
+  );
+});

@@ -52,6 +52,67 @@ const SKIRTING = 0.09;
 /** Hauteur de la corniche, au raccord du mur et du plafond. */
 const CORNICE = 0.12;
 
+/* ------------------------------------------------- ombrage des raccords --- */
+
+/*
+ * L'occlusion des angles, cuite dans les sommets.
+ *
+ * Le rendu était juste et pourtant plat : l'histogramme d'une image du parcours
+ * tenait à 58 % dans une seule tranche de luminance, sans noirs et sans hautes
+ * lumières. Ce n'était ni une sur-exposition — rien ne brûlait — ni une erreur
+ * de couleur : il manquait les ombres douces que le coin d'une pièce prend
+ * toujours, parce qu'un mur y voit moins de ciel qu'en son milieu.
+ *
+ * Un moteur sans éclairage global ne les calcule pas. On les peint donc dans
+ * les sommets : la base des murs s'assombrit sur trente centimètres, le raccord
+ * du plafond sur dix-huit. C'est gratuit — pas une passe de rendu, pas une
+ * texture — et c'est ce qui rend la profondeur.
+ *
+ * Monter l'ambiante aurait fait l'inverse : plus de lumière partout, donc
+ * encore moins d'écart.
+ */
+const AO_FLOOR = 0.3;
+const AO_FLOOR_STRENGTH = 0.74;
+const AO_CEILING = 0.18;
+const AO_CEILING_STRENGTH = 0.9;
+
+/** Facteur d'occlusion à une hauteur donnée, sous un plafond donné. */
+function occlusionAt(y: number, ceiling: number): number {
+  const fromFloor = Math.min(1, Math.max(0, y / AO_FLOOR));
+  const low = AO_FLOOR_STRENGTH + (1 - AO_FLOOR_STRENGTH) * smoothstep(fromFloor);
+  const fromCeiling = Math.min(1, Math.max(0, (ceiling - y) / AO_CEILING));
+  const high = AO_CEILING_STRENGTH + (1 - AO_CEILING_STRENGTH) * smoothstep(fromCeiling);
+  return low * high;
+}
+
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * Écrit l'occlusion dans l'attribut `color` d'une boîte.
+ *
+ * `bottom` est l'altitude du bas de la boîte dans la scène et `height` sa
+ * hauteur : la géométrie est centrée sur son origine, donc son y local va de
+ * `-height / 2` à `+height / 2`.
+ */
+function bakeContact(
+  geometry: THREE.BufferGeometry,
+  bottom: number,
+  height: number,
+  ceiling: number,
+): void {
+  const position = geometry.getAttribute('position');
+  const colors = new Float32Array(position.count * 3);
+  for (let i = 0; i < position.count; i++) {
+    const k = occlusionAt(bottom + height / 2 + position.getY(i), ceiling);
+    colors[i * 3] = k;
+    colors[i * 3 + 1] = k;
+    colors[i * 3 + 2] = k;
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+}
+
 /**
  * Les teintes du mobilier viennent de `lib/palette.ts`, où elles sont
  * justifiées et vérifiées. Ce fichier ne décide d'aucune couleur : il les
@@ -385,11 +446,11 @@ function shell(
   const group = new THREE.Group();
   group.name = 'bati';
 
-  const wall = new THREE.MeshLambertMaterial({ color: SHELL.mur });
+  const wall = new THREE.MeshLambertMaterial({ color: SHELL.mur, vertexColors: true });
   /* Une seule peinture pour tout ce qui est menuiserie : plinthes, corniches,
      chambranles, dormants, battants. C'est ainsi qu'on peint un appartement, et
      c'est aussi ce qui donne à la scène son unité. */
-  const joinery = new THREE.MeshLambertMaterial({ color: SHELL.menuiserie });
+  const joinery = new THREE.MeshLambertMaterial({ color: SHELL.menuiserie, vertexColors: true });
   const parquet = new THREE.MeshLambertMaterial({ map: plankTexture(disposables) });
   const carrelage = new THREE.MeshLambertMaterial({ color: SHELL.carrelage });
   const ceiling = new THREE.MeshLambertMaterial({ color: SHELL.plafond, side: THREE.DoubleSide });
@@ -397,6 +458,7 @@ function shell(
      éclairage sans reflets, une vitre trop marquée devient un voile gris et le
      logement paraît sale. */
   const glass = new THREE.MeshLambertMaterial({
+    vertexColors: true,
     color: 0xdce9f2,
     transparent: true,
     opacity: 0.1,
@@ -510,6 +572,7 @@ function shell(
         if (width < 0.008 || height < 0.008) return;
         const centre = pointAt(segment, (from + to) / 2);
         const geometry = new THREE.BoxGeometry(width, height, depth);
+        bakeContact(geometry, bottom, height, room.height);
         disposables.push(geometry);
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(
@@ -607,6 +670,38 @@ function furniture(
             (sz * (item.d / 2 - inset - leg / 2)),
           );
         }
+      }
+    } else if (item.shape === 'placard') {
+      /*
+       * Une armoire n'est pas une caisse.
+       *
+       * Rendue en bloc plein, elle occupe deux mètres de haut sur un mur clair
+       * et s'y lit comme un panneau blanc collé là — c'est la forme la plus
+       * grande de la scène et la seule sans aucune articulation. Une plinthe en
+       * retrait et un joint vertical entre deux portes suffisent : ce sont les
+       * deux lignes que l'œil cherche pour dire « meuble » plutôt que « mur ».
+       *
+       * Le joint suit la façade, et la façade est le grand côté de l'empreinte :
+       * une armoire est adossée par son long côté. Fendre systématiquement selon
+       * `w` aurait coupé en deux la joue de celles qui présentent leur `d`.
+       */
+      const plinth = Math.min(0.09, item.h * 0.06);
+      const reveal = 0.014;
+      const alongW = item.w >= item.d;
+      const front = alongW ? item.w : item.d;
+      const leaf = (front - reveal) / 2;
+      // La plinthe est en retrait : c'est le retrait qui se voit, pas la plinthe.
+      part(item.w - 0.04, plinth, item.d - 0.04, 0, base + plinth / 2, 0);
+      for (const side of [-1, 1]) {
+        const shift = (side * (leaf + reveal)) / 2;
+        part(
+          alongW ? leaf : item.w,
+          item.h - plinth,
+          alongW ? item.d : leaf,
+          alongW ? shift : 0,
+          base + plinth + (item.h - plinth) / 2,
+          alongW ? 0 : shift,
+        );
       }
     } else {
       part(item.w, item.h, item.d, 0, base + item.h / 2, 0);

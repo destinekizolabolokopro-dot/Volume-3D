@@ -93,10 +93,10 @@ export const SHOWCASE_DOORS: PlanDoor[] = [
   opening('entree', 'sejour', '', { x: 0, y: 2.35 }, { x: 0, y: 3.25 }, 'door', 2.1, 0),
   opening('deg-sejour', 'sejour', 'degagement', { x: 5.2, y: 1.6 }, { x: 5.2, y: 2.5 }, 'opening', 2.15, 0),
   opening('deg-chambre', 'degagement', 'chambre', { x: 6.6, y: 1.5 }, { x: 6.6, y: 2.4 }, 'door', 2.05, 0),
-  opening('deg-bain', 'degagement', 'salle-eau', { x: 6.6, y: 3.5 }, { x: 6.6, y: 4.3 }, 'door', 2.05, 0),
+  opening('deg-bain', 'degagement', 'salle-eau', { x: 6.6, y: 3.3 }, { x: 6.6, y: 4.0 }, 'door', 2.05, 0),
   opening('f-sejour', 'sejour', '', { x: 1, y: 0 }, { x: 3.2, y: 0 }, 'window', 2.25, 0.85),
   opening('f-chambre', 'chambre', '', { x: 10, y: 0.6 }, { x: 10, y: 2 }, 'window', 2.2, 0.9),
-  opening('f-bain', 'salle-eau', '', { x: 8.6, y: 3.7 }, { x: 8.6, y: 4.4 }, 'window', 2.1, 1.2),
+  opening('f-bain', 'salle-eau', '', { x: 8.6, y: 3.35 }, { x: 8.6, y: 4.0 }, 'window', 2.1, 1.2),
 ];
 
 /* ============================================================== mobilier === */
@@ -120,8 +120,9 @@ export interface Massing {
   /** Repose sur le sol par défaut ; utilisé pour un plateau ou un tapis. */
   base?: number;
   /**
-   * `bloc` : une masse pleine, pour ce qui touche le sol — armoire, canapé,
-   * plan de travail. `table` : un plateau sur quatre pieds.
+   * `bloc` : une masse pleine, pour ce qui touche le sol — canapé, plan de
+   * travail. `table` : un plateau sur quatre pieds. `placard` : une armoire,
+   * avec sa plinthe en retrait et le joint entre ses deux portes.
    *
    * La distinction n'est pas cosmétique. Une table rendue en bloc plein
    * ressemble à une caisse posée au milieu de la pièce, et comme elle occupe le
@@ -129,7 +130,7 @@ export interface Massing {
    * pieds de six centimètres suffisent à ce que l'œil lise « table » et passe à
    * autre chose.
    */
-  shape?: 'bloc' | 'table';
+  shape?: 'bloc' | 'table' | 'placard';
   /** Une teinte du nuancier étudié (`lib/palette.ts`), jamais une valeur libre. */
   tone: FurnitureTone;
 }
@@ -185,7 +186,7 @@ export const SHOWCASE_MASSING: Massing[] = [
   { roomId: 'sejour', x: 4.31, y: 0.32, w: 1.6, d: 0.04, h: 0.48, base: 0.945, tone: 'cabinet' },
   { roomId: 'sejour', x: 4.31, y: 0.47, w: 1.6, d: 0.34, h: 0.62, base: 1.45, tone: 'cabinet' },
   // Le placard d'entrée, contre la façade.
-  { roomId: 'sejour', x: 0.6, y: 1.1, w: 0.6, d: 1.6, h: 2.05, tone: 'cabinet' },
+  { roomId: 'sejour', x: 0.6, y: 1.1, w: 0.6, d: 1.6, h: 2.05, shape: 'placard', tone: 'cabinet' },
 
   /* ------------------------------------------------------------ chambre --- */
   { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.6, d: 2.0, h: 0.4, tone: 'bois' },
@@ -201,7 +202,7 @@ export const SHOWCASE_MASSING: Massing[] = [
   { roomId: 'chambre', x: 9.4, y: 2.75, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
   { roomId: 'chambre', x: 7.4, y: 2.75, w: 0.18, d: 0.18, h: 0.26, base: 0.52, tone: 'laiton' },
   { roomId: 'chambre', x: 9.4, y: 2.75, w: 0.18, d: 0.18, h: 0.26, base: 0.52, tone: 'laiton' },
-  { roomId: 'chambre', x: 7.0, y: 0.9, w: 0.62, d: 1.2, h: 2.1, tone: 'cabinet' },
+  { roomId: 'chambre', x: 7.0, y: 0.9, w: 0.62, d: 1.2, h: 2.1, shape: 'placard', tone: 'cabinet' },
   { roomId: 'chambre', x: 8.4, y: 0.525, w: 1.1, d: 0.45, h: 0.78, shape: 'table', tone: 'bois' },
   { roomId: 'chambre', x: 8.4, y: 0.34, w: 0.7, d: 0.04, h: 0.45, base: 1.25, tone: 'bois' },
   { roomId: 'chambre', x: 8.4, y: 0.365, w: 0.6, d: 0.02, h: 0.35, base: 1.3, tone: 'petrole' },
@@ -210,19 +211,37 @@ export const SHOWCASE_MASSING: Massing[] = [
   /* La douche occupe l'angle le plus éloigné de la porte. Elle était d'abord
      posée dans l'angle d'à côté, c'est-à-dire exactement dans l'axe de son
      ouverture : on entrait dedans. */
-  { roomId: 'salle-eau', x: 7.85, y: 4.25, w: 0.9, d: 0.9, h: 0.07, tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 7.395, y: 4.25, w: 0.035, d: 0.9, h: 1.9, base: 0.07, tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 7.85, y: 3.7825, w: 0.9, d: 0.035, h: 1.9, base: 0.07, tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 7.25, y: 3.54, w: 0.7, d: 0.5, h: 0.86, tone: 'bois' },
-  { roomId: 'salle-eau', x: 7.25, y: 3.54, w: 0.44, d: 0.34, h: 0.055, base: 0.86, tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 7.25, y: 3.32, w: 0.6, d: 0.06, h: 0.9, base: 1.05, tone: 'cabinet' },
+  /*
+   * La salle d'eau a été redessinée, et pas pour l'esthétique.
+   *
+   * La douche de 90 était plantée en face de la porte : sa paroi, haute d'un
+   * mètre quatre-vingt-dix, se dressait à soixante-dix centimètres du seuil et
+   * remplissait tout le cadre. La légende annonçait une douche, un meuble vasque
+   * et une fenêtre ; l'image n'en montrait aucun.
+   *
+   * Le calcul est contraint : 2,00 × 1,80 hors œuvre, moins la peau des
+   * cloisons et l'épaisseur de deux façades, laisse 1,61 × 1,41 utiles. Une
+   * douche de 90 y occupe plus de la moitié de la profondeur — quelle que soit
+   * sa place, elle croise l'axe d'une porte de 80. On a donc ramené la porte au
+   * nord du mur, la douche à 80 dans l'angle du fond, et le meuble vasque sous
+   * la fenêtre. On entre le long du meuble, la douche est à droite, la fenêtre
+   * en face : les trois sont dans le champ et aucun n'est dans le passage.
+   */
+  { roomId: 'salle-eau', x: 7.9, y: 4.3, w: 0.8, d: 0.8, h: 0.07, tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 7.5175, y: 4.3, w: 0.035, d: 0.8, h: 1.9, base: 0.07, tone: 'cabinet' },
+  { roomId: 'salle-eau', x: 7.9, y: 3.9175, w: 0.8, d: 0.035, h: 1.9, base: 0.07, tone: 'cabinet' },
+  // Meuble vasque sous la fenêtre, contre la façade.
+  { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.45, d: 0.7, h: 0.86, tone: 'bois' },
+  { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.34, d: 0.44, h: 0.055, base: 0.86, tone: 'cabinet' },
+  // Le miroir passe sur le mur nord : la fenêtre occupe déjà la façade.
+  { roomId: 'salle-eau', x: 7.15, y: 3.32, w: 0.55, d: 0.06, h: 0.8, base: 1.15, tone: 'cabinet' },
   { roomId: 'salle-eau', x: 6.72, y: 4.5, w: 0.06, d: 0.4, h: 0.9, base: 0.55, tone: 'laiton' },
   { roomId: 'salle-eau', x: 6.78, y: 4.5, w: 0.045, d: 0.3, h: 0.52, base: 0.72, tone: 'lin' },
 
   /* --------------------------------------------------------- dégagement --- */
   /* Le placard tient le fond du couloir, et rien d'autre n'y tient : un mètre
      quarante de large ne se meuble pas des deux côtés. */
-  { roomId: 'degagement', x: 5.46, y: 3.5, w: 0.34, d: 1.2, h: 2.2, tone: 'cabinet' },
+  { roomId: 'degagement', x: 5.46, y: 3.5, w: 0.34, d: 1.2, h: 2.2, shape: 'placard', tone: 'cabinet' },
 ];
 
 /* ============================================================== légendes === */
@@ -252,7 +271,7 @@ export const SHOWCASE_CAPTIONS: Record<string, CaptionText> = {
   'salle-eau': {
     kicker: 'Salle d’eau',
     title: '3,6 m²',
-    text: 'Douche 90 × 90, meuble vasque, et une fenêtre — ce que la moitié des salles d’eau parisiennes n’ont pas.',
+    text: 'Douche 80 × 80, meuble vasque, et une fenêtre — ce que la moitié des salles d’eau parisiennes n’ont pas.',
   },
 };
 
