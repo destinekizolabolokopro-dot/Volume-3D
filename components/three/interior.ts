@@ -37,6 +37,7 @@ import {
   ROUGHNESS,
   SHELL,
 } from '@/lib/palette';
+import type { FurnitureTone } from '@/lib/palette';
 import type { Massing } from '@/lib/showcase';
 import type { PlanDoor, PlanPoint, PlanRoom } from '@/lib/types';
 
@@ -187,15 +188,148 @@ function worldUv(
 /**
  * Une boîte aux arêtes adoucies, avec repli sur la boîte franche quand elle est
  * trop mince pour recevoir un chanfrein.
+ *
+ * Le nombre de segments suit le rayon, et ce n'est pas une optimisation : un
+ * chanfrein de deux millimètres n'a besoin que d'une facette, parce qu'on ne
+ * le voit jamais que comme une ligne de lumière sur l'arête. Un coussin de
+ * quatre centimètres rendu avec la même facette unique donne un octogone, et
+ * un octogone se lit comme une caisse biseautée — exactement ce qu'on
+ * cherchait à quitter. Au-delà de deux centimètres il faut de la courbure, pas
+ * du biseau.
  */
-function box(w: number, h: number, d: number, radius: number): THREE.BufferGeometry {
-  const r = Math.min(radius, Math.min(w, h, d) * 0.3);
+function box(
+  w: number,
+  h: number,
+  d: number,
+  radius: number,
+  /**
+   * Strates horizontales, pour un panneau assez grand pour que l'ombrage cuit
+   * dans ses sommets ait besoin de place. Voir `panel`.
+   */
+  strates = 1,
+): THREE.BufferGeometry {
+  const r = Math.min(radius, Math.min(w, h, d) * 0.48);
+  if (strates > 1) return new THREE.BoxGeometry(w, h, d, 1, strates, 1);
   if (r < 0.0006) return new THREE.BoxGeometry(w, h, d);
-  return new RoundedBoxGeometry(w, h, d, 1, r);
+  const segments = r > 0.045 ? 4 : r > 0.02 ? 3 : 1;
+  return new RoundedBoxGeometry(w, h, d, segments, r);
+}
+
+/**
+ * Un pas de subdivision : chaque triangle en donne quatre.
+ *
+ * Les milieux sont mémorisés par arête, donc deux triangles voisins partagent
+ * exactement le même sommet neuf : le maillage reste cousu, sans jonction en T
+ * — et une jonction en T, sur une surface dont la couleur est portée par les
+ * sommets, se voit tout de suite comme une couture claire.
+ */
+function subdiviserUnPas(geometry: THREE.BufferGeometry): THREE.BufferGeometry {
+  const index = geometry.index!;
+  const noms = Object.keys(geometry.attributes);
+  const source = new Map<string, THREE.BufferAttribute>();
+  const sortie = new Map<string, number[]>();
+  for (const nom of noms) {
+    const attribut = geometry.getAttribute(nom) as THREE.BufferAttribute;
+    source.set(nom, attribut);
+    sortie.set(nom, Array.from(attribut.array as ArrayLike<number>));
+  }
+  let compte = source.get('position')!.count;
+  const connus = new Map<number, number>();
+  const milieu = (i: number, j: number): number => {
+    const cle = i < j ? i * 16777216 + j : j * 16777216 + i;
+    const vu = connus.get(cle);
+    if (vu !== undefined) return vu;
+    for (const nom of noms) {
+      const attribut = source.get(nom)!;
+      const taille = attribut.itemSize;
+      const liste = sortie.get(nom)!;
+      for (let k = 0; k < taille; k += 1) {
+        liste.push(
+          ((attribut.array[i * taille + k] as number) +
+            (attribut.array[j * taille + k] as number)) /
+            2,
+        );
+      }
+    }
+    connus.set(cle, compte);
+    compte += 1;
+    return compte - 1;
+  };
+
+  const triangles: number[] = [];
+  for (let t = 0; t < index.count; t += 3) {
+    const a = index.getX(t);
+    const b = index.getX(t + 1);
+    const c = index.getX(t + 2);
+    const ab = milieu(a, b);
+    const bc = milieu(b, c);
+    const ca = milieu(c, a);
+    triangles.push(a, ab, ca, ab, b, bc, ca, bc, c, ab, bc, ca);
+  }
+
+  const suivant = new THREE.BufferGeometry();
+  for (const nom of noms) {
+    suivant.setAttribute(
+      nom,
+      new THREE.BufferAttribute(new Float32Array(sortie.get(nom)!), source.get(nom)!.itemSize),
+    );
+  }
+  suivant.setIndex(triangles);
+  // Un milieu de deux normales unitaires ne l'est plus. Sur du plan c'est sans
+  // effet, mais la fonction ne sait pas qu'elle travaille sur du plan.
+  if (suivant.getAttribute('normal')) suivant.normalizeNormals();
+  return suivant;
+}
+
+/** Subdivise jusqu'à ce qu'aucune arête ne dépasse `maille`, dans la limite de `passes`. */
+function subdiviser(
+  geometry: THREE.BufferGeometry,
+  maille: number,
+  passes = 5,
+): THREE.BufferGeometry {
+  let courant = geometry;
+  for (let pas = 0; pas < passes; pas += 1) {
+    const index = courant.index;
+    const position = courant.getAttribute('position');
+    if (!index || !position) break;
+    let plusLongue = 0;
+    for (let t = 0; t < index.count; t += 3) {
+      for (let e = 0; e < 3; e += 1) {
+        const i = index.getX(t + e);
+        const j = index.getX(t + ((e + 1) % 3));
+        const d = Math.hypot(
+          position.getX(i) - position.getX(j),
+          position.getY(i) - position.getY(j),
+          position.getZ(i) - position.getZ(j),
+        );
+        if (d > plusLongue) plusLongue = d;
+      }
+    }
+    if (plusLongue <= maille) break;
+    const suivant = subdiviserUnPas(courant);
+    if (courant !== geometry) courant.dispose();
+    courant = suivant;
+  }
+  return courant;
 }
 /** Hauteur de la corniche, au raccord du mur et du plafond. Elle doit
  *  correspondre au dernier point de `PROFIL_CORNICHE`. */
 const CORNICE = 0.12;
+
+/**
+ * De combien une moulure s'enfonce dans la surface qu'elle rejoint.
+ *
+ * La corniche montait pile à la hauteur du plafond et la plinthe descendait
+ * pile au niveau du sol : dans les deux cas, deux faces exactement coplanaires,
+ * et le tampon de profondeur n'a alors aucun moyen de choisir. Ce que ça donne
+ * à l'écran n'est pas une erreur franche mais un pointillé le long du raccord,
+ * qui bouge quand la caméra bouge — le défaut le plus visible de l'image et le
+ * plus difficile à nommer quand on ne sait pas d'où il vient.
+ *
+ * Deux millimètres et demi d'enfoncement suffisent à trancher, et personne ne
+ * voit deux millimètres et demi.
+ */
+const NOYADE = 0.0025;
 
 /* --------------------------------------------------------- fusion --- */
 
@@ -226,6 +360,18 @@ class Batch {
     matrix: THREE.Matrix4,
     /** Facteur de luminosité par sommet, dans le repère de la scène. */
     paint?: (x: number, y: number, z: number) => number,
+    /**
+     * Taille de maille visée avant de peindre.
+     *
+     * Une couleur portée par les sommets ne peut décrire que ce que le maillage
+     * a de résolution. Le sol d'un séjour est un rectangle, donc deux triangles,
+     * donc quatre sommets : la décroissance du jour, qui est une courbe sur sept
+     * mètres, y était réduite à un dégradé linéaire entre quatre coins — c'est
+     * à dire à rien. Subdiviser avant de peindre est ce qui rend la lumière
+     * visible ; sans cela, tout le travail sur la décroissance ne sortait que
+     * sur les objets déjà découpés.
+     */
+    maille?: number,
   ): void {
     let geometry = source;
     geometry.applyMatrix4(matrix);
@@ -243,6 +389,13 @@ class Batch {
       const indexed = mergeVertices(geometry);
       if (indexed !== geometry) geometry.dispose();
       geometry = indexed;
+    }
+    if (maille) {
+      const fin = subdiviser(geometry, maille);
+      if (fin !== geometry) {
+        geometry.dispose();
+        geometry = fin;
+      }
     }
     const position = geometry.getAttribute('position');
     if (!geometry.getAttribute('color')) {
@@ -381,6 +534,48 @@ function daylightAt(sources: THREE.Vector3[], x: number, y: number, z: number): 
   const t = Math.min(1, Math.max(0, (nearest - JOUR_PROCHE) / (JOUR_LOIN - JOUR_PROCHE)));
   return 1 - (1 - JOUR_FOND) * smoothstep(t);
 }
+
+/**
+ * Le fond des angles.
+ *
+ * Là où deux surfaces se rejoignent, la lumière ambiante n'arrive plus que par
+ * un demi-espace : le pourtour d'un sol et d'un plafond est toujours plus
+ * sombre que son milieu. C'est ce que fait un moteur hors ligne en quelques
+ * minutes de calcul ; ici la distance au bord suffit, parce que les pièces sont
+ * des polygones convexes ou presque et qu'on ne cherche pas la valeur exacte,
+ * seulement le fait que le bord soit plus sombre que le centre.
+ *
+ * Sans ce terme, le plafond se lit comme un couvercle posé sur la pièce plutôt
+ * que comme sa cinquième face — le raccord est net, et un raccord net entre
+ * deux surfaces également éclairées est ce qui trahit le plus vite une image de
+ * synthèse.
+ */
+const RECOIN_SOL = 0.5;
+const RECOIN_PLAFOND = 0.72;
+const RECOIN_FORCE = 0.2;
+
+function angleMort(
+  bord: readonly (readonly [number, number])[],
+  x: number,
+  z: number,
+  portee: number,
+): number {
+  let proche = Infinity;
+  for (let i = 0; i < bord.length; i += 1) {
+    const [ax, az] = bord[i];
+    const [bx, bz] = bord[(i + 1) % bord.length];
+    const dx = bx - ax;
+    const dz = bz - az;
+    const carre = dx * dx + dz * dz;
+    const t = carre === 0 ? 0 : Math.min(1, Math.max(0, ((x - ax) * dx + (z - az) * dz) / carre));
+    const d = Math.hypot(x - (ax + t * dx), z - (az + t * dz));
+    if (d < proche) proche = d;
+  }
+  return 1 - RECOIN_FORCE * (1 - smoothstep(Math.min(1, proche / portee)));
+}
+
+/** Pas de subdivision des dalles : au-delà, la décroissance redevient un plan. */
+const MAILLE_DALLE = 0.55;
 
 /** Facteur d'occlusion à une hauteur donnée, sous un plafond donné. */
 function occlusionAt(y: number, ceiling: number): number {
@@ -1259,18 +1454,35 @@ function shell(
     const shape = new THREE.Shape(room.points.map(toSlab));
     const slab = new THREE.ShapeGeometry(shape);
     slab.rotateX(-Math.PI / 2);
+    /* Le pourtour, en coordonnées de scène, pour l'assombrissement d'angle. */
+    const bord = room.points.map((p) => [p.x - origin.x, p.y - origin.y] as const);
+    /* Le clone est pris avant la mise en lot : subdiviser rend une géométrie
+       neuve et libère l'ancienne, donc la source n'est plus une source. */
+    const top = slab.clone();
     batch.add(
       slab,
       /eau|bain|wc/i.test(room.id + room.name) ? carrelage : parquet,
       IDENTITE,
-      (x, y, z) => daylightAt(jour, x, y, z),
+      (x, y, z) => daylightAt(jour, x, y, z) * angleMort(bord, x, z, RECOIN_SOL),
+      MAILLE_DALLE,
     );
 
     // Le plafond regarde vers le bas. Il reste en double face : depuis la pièce
     // voisine, le regard passe par une porte et le prend par-dessus.
-    const top = slab.clone();
-    batch.add(top, ceiling, matrix.makeTranslation(0, room.height, 0), (x, y, z) =>
-      daylightAt(jour, x, y, z),
+    batch.add(
+      top,
+      ceiling,
+      matrix.makeTranslation(0, room.height, 0),
+      /*
+       * Le plafond est la plus grande surface du champ quand la caméra est à
+       * hauteur d'œil, et c'était la plus plate : une seule teinte du mur au
+       * mur. Deux choses le sauvent, et aucune n'est un objet posé dessus — la
+       * décroissance du jour, qui creuse le fond de la pièce, et l'ombre du
+       * pourtour, qui rattache le plafond aux murs au lieu de le laisser
+       * flotter au-dessus d'eux comme un couvercle.
+       */
+      (x, y, z) => daylightAt(jour, x, y, z) * angleMort(bord, x, z, RECOIN_PLAFOND),
+      MAILLE_DALLE,
     );
 
     /*
@@ -1342,7 +1554,20 @@ function shell(
         const width = (to - from) * length;
         if (width < 0.008 || height < 0.008) return;
         const centre = pointAt(segment, (from + to) / 2);
-        const geometry = box(width, height, depth, CHANFREIN_BATI);
+        /*
+         * Un panneau haut reçoit des strates.
+         *
+         * L'occlusion est cuite dans les sommets, et un mur de deux mètres
+         * soixante n'en avait que deux dans le sens de la hauteur : la bande
+         * sombre de trente centimètres au pied du mur se retrouvait étirée sur
+         * toute sa hauteur, c'est-à-dire transformée en un voile uniforme. Le
+         * calcul était juste et le maillage n'avait pas la place de le porter.
+         * Seize centimètres de pas suffisent à retrouver la courbe ; le
+         * chanfrein de deux millimètres saute au passage, et il ne manque à
+         * personne sur une surface que la plinthe et la corniche encadrent.
+         */
+        const strates = height > 0.5 ? Math.min(20, Math.round(height / 0.16)) : 1;
+        const geometry = box(width, height, depth, CHANFREIN_BATI, strates);
         worldUv(geometry, width, height, from * length, bottom);
         position.set(
           centre.x - origin.x + normal.x * (depth / 2),
@@ -1393,7 +1618,7 @@ function shell(
 
       for (const span of solidSpans(openings)) {
         panel(span.from, span.to, 0, shellTop, wall);
-        moulding(span.from, span.to, 0, PROFIL_PLINTHE, joinery);
+        moulding(span.from, span.to, -NOYADE, PROFIL_PLINTHE, joinery);
       }
       for (const { span, door } of framed) {
         if (door.sill > 0.01) panel(span.from, span.to, 0, door.sill, wall);
@@ -1410,7 +1635,7 @@ function shell(
          n'arrive dans aucun immeuble ancien et se lit immédiatement comme une
          maquette. */
       for (const span of solidSpans(openings)) {
-        moulding(span.from, span.to, room.height - CORNICE, PROFIL_CORNICHE, joinery);
+        moulding(span.from, span.to, room.height - CORNICE + NOYADE, PROFIL_CORNICHE, joinery);
       }
     }
   }
@@ -1520,33 +1745,54 @@ function furniture(
   const position = new THREE.Vector3();
   const echelle = new THREE.Vector3(1, 1, 1);
 
-  for (const item of items) {
-    const key = item.tone;
-    let material = materials.get(key);
+  /** Le matériau d'une teinte, construit une fois pour toute la scène. */
+  const matiere = (tone: FurnitureTone): THREE.Material => {
+    let material = materials.get(tone);
     if (!material) {
       material = new THREE.MeshStandardMaterial({
-        color: TONES[item.tone],
-        roughness: FURNITURE_ROUGHNESS[item.tone],
-        metalness: FURNITURE_METAL[item.tone] ?? 0,
+        color: TONES[tone],
+        roughness: FURNITURE_ROUGHNESS[tone],
+        metalness: FURNITURE_METAL[tone] ?? 0,
         vertexColors: true,
       });
-      materials.set(key, material);
+      materials.set(tone, material);
       disposables.push(material);
     }
+    return material;
+  };
+
+  for (const item of items) {
+    const material = matiere(item.tone);
     const base = item.base ?? 0;
     const spin = -((item.yaw ?? 0) * Math.PI) / 180;
+    /* Un textile roule sur son bord : le rayon vient de l'épaisseur du volume,
+       pas d'une constante. Une couette de dix-sept centimètres roule plus large
+       qu'un coussin de huit, et c'est ce rapport-là qui donne l'échelle. */
+    const chanfrein = (w: number, h: number, d: number) =>
+      item.moelleux ? Math.min(0.075, Math.min(w, h, d) * 0.46) : CHANFREIN_MEUBLE;
 
     /** Pose une boîte, exprimée dans le repère local du meuble. */
-    const part = (w: number, h: number, d: number, dx: number, y: number, dz: number) => {
-      const geometry = box(w, h, d, CHANFREIN_MEUBLE);
+    const part = (
+      w: number,
+      h: number,
+      d: number,
+      dx: number,
+      y: number,
+      dz: number,
+      tone?: FurnitureTone,
+    ) => {
+      const geometry = box(w, h, d, tone ? CHANFREIN_MEUBLE : chanfrein(w, h, d));
       position.set(
         item.x - origin.x + dx * Math.cos(spin) + dz * Math.sin(spin),
         y,
         item.y - origin.y - dx * Math.sin(spin) + dz * Math.cos(spin),
       );
       quaternion.setFromAxisAngle(AXE_Y, spin);
-      batch.add(geometry, material!, matrix.compose(position, quaternion, echelle), (x, y, z) =>
-        daylightAt(jour, x, y, z),
+      batch.add(
+        geometry,
+        tone ? matiere(tone) : material,
+        matrix.compose(position, quaternion, echelle),
+        (x, y, z) => daylightAt(jour, x, y, z),
       );
     };
 
@@ -1585,20 +1831,126 @@ function furniture(
       const reveal = 0.014;
       const alongW = item.w >= item.d;
       const front = alongW ? item.w : item.d;
-      const leaf = (front - reveal) / 2;
+      const vantaux = Math.max(1, Math.round(item.portes ?? 2));
+      const leaf = (front - reveal * (vantaux - 1)) / vantaux;
+      const corps = item.h - plinth;
       // La plinthe est en retrait : c'est le retrait qui se voit, pas la plinthe.
       part(item.w - 0.04, plinth, item.d - 0.04, 0, base + plinth / 2, 0);
-      for (const side of [-1, 1]) {
-        const shift = (side * (leaf + reveal)) / 2;
+      for (let index = 0; index < vantaux; index += 1) {
+        const shift = (index - (vantaux - 1) / 2) * (leaf + reveal);
         part(
           alongW ? leaf : item.w,
-          item.h - plinth,
+          corps,
           alongW ? item.d : leaf,
           alongW ? shift : 0,
-          base + plinth + (item.h - plinth) / 2,
+          base + plinth + corps / 2,
           alongW ? 0 : shift,
         );
+        /*
+         * La poignée.
+         *
+         * Un vantail sans poignée n'est pas une porte, c'est un panneau — et
+         * une enfilade de panneaux blancs se lit comme un mur doublé. C'est
+         * une barre de laiton de deux centimètres : à l'écran elle ne fait
+         * qu'une ligne, mais c'est la ligne qui dit qu'on peut l'ouvrir, et
+         * elle donne au passage l'échelle du meuble, parce que tout le monde
+         * sait la hauteur d'une poignée.
+         *
+         * Elle se pose du côté du refend, jamais du côté de la charnière : les
+         * vantaux s'ouvrent en se séparant, donc les poignées se rejoignent au
+         * milieu du meuble.
+         */
+        const cote = vantaux === 1 ? 1 : shift <= 0 ? 1 : -1;
+        const marge = leaf / 2 - 0.055;
+        const bras = Math.min(0.2, corps * 0.42);
+        /* Où se pose une poignée dépend de ce qu'on ouvre, et une seule règle
+           ne couvre pas les trois cas. Sur un caisson bas on l'attrape par le
+           haut du vantail ; sur une armoire, à hauteur de main ; sur un meuble
+           suspendu, par le bas, parce que la main vient d'en dessous. */
+        const sommet = base + item.h;
+        const hauteur =
+          sommet < 1.25
+            ? sommet - bras / 2 - 0.04
+            : base < 0.9
+              ? Math.min(1.02, base + plinth + corps - bras / 2 - 0.04)
+              : base + plinth + bras / 2 + 0.06;
+        /* La barre déborde la façade des deux côtés, et c'est la profondeur du
+           meuble qu'elle traverse — pas sa façade. Confondre les deux donne une
+           poignée aussi longue que l'armoire est large, qui sort d'un mètre
+           dans la pièce : c'est ce qu'un contrôle en image a montré, un bloc de
+           laiton flottant devant le placard d'entrée. */
+        const profondeur = alongW ? item.d : item.w;
+        /* Cinq centimètres et demi de plus que le meuble, donc un débord de
+           près de trois centimètres de chaque côté : c'est ce qu'il faut pour
+           qu'une barre se voie de biais. Un débord d'un millimètre existe dans
+           la géométrie et n'existe pas à l'écran. Le débord arrière disparaît
+           dans le mur contre lequel le meuble est adossé — c'est ce qui permet
+           de ne pas avoir à savoir de quel côté est la façade. */
+        part(
+          alongW ? 0.026 : profondeur + 0.055,
+          bras,
+          alongW ? profondeur + 0.055 : 0.026,
+          alongW ? shift + cote * marge : 0,
+          hauteur,
+          alongW ? 0 : shift + cote * marge,
+          'laiton',
+        );
       }
+    } else if (item.shape === 'rideau') {
+      /*
+       * Un rideau, en plis alternés.
+       *
+       * Le tissu est le seul matériau de la scène qui n'ait pas de face plane,
+       * et c'est précisément ce qui le rend impossible à rendre en un volume :
+       * un rideau lisse est une colonne. Ce qu'on voit d'un rideau tiré sur le
+       * côté d'une fenêtre, ce sont des rouleaux verticaux dont l'un avance
+       * quand l'autre recule, et c'est cette alternance qui accroche la lumière
+       * rasante — un pli sur deux est dans son ombre.
+       *
+       * Sept centimètres et demi de pas : c'est la largeur d'un pli sur une
+       * étoffe d'ameublement froncée à deux fois sa largeur. En dessous, les
+       * rouleaux se confondent à deux mètres ; au-dessus, on lit des planches.
+       */
+      const alongW = item.w >= item.d;
+      const portee = alongW ? item.w : item.d;
+      const epaisseur = alongW ? item.d : item.w;
+      const plis = Math.max(3, Math.round(portee / 0.075));
+      const pas = portee / plis;
+      for (let index = 0; index < plis; index += 1) {
+        const shift = (index - (plis - 1) / 2) * pas;
+        // Un pli sur deux avance ; le creux est ce qui fait l'ombre.
+        const saillie = epaisseur * (index % 2 === 0 ? 1 : 0.6);
+        part(
+          alongW ? pas * 0.99 : saillie,
+          item.h,
+          alongW ? saillie : pas * 0.99,
+          alongW ? shift : (epaisseur - saillie) / 2,
+          base + item.h / 2,
+          alongW ? (epaisseur - saillie) / 2 : shift,
+        );
+      }
+    } else if (item.shape === 'suspension') {
+      /*
+       * L'abat-jour du luminaire, en tronc de cône.
+       *
+       * La suspension était une petite boîte au bout d'une tige : à trois
+       * mètres de la caméra elle se lisait comme un colis suspendu. Un tronc
+       * de cône ouvert vers le bas ne coûte qu'une géométrie et fait tout le
+       * travail, parce que la silhouette d'un abat-jour est reconnue avant sa
+       * matière.
+       *
+       * `DoubleSide` n'entre pas en jeu : on ferme le cône par un disque au
+       * sommet, ce qui évite un second matériau et un second appel de rendu
+       * pour une face qu'on ne voit que d'en dessous.
+       */
+      const haut = item.w / 2;
+      const bas = Math.max(haut * 1.55, item.d / 2);
+      const cone = new THREE.CylinderGeometry(haut, bas, item.h, 20, 1, false);
+      position.set(item.x - origin.x, base + item.h / 2, item.y - origin.y);
+      quaternion.setFromAxisAngle(AXE_Y, spin);
+      batch.add(cone, material, matrix.compose(position, quaternion, echelle), (x, y, z) =>
+        daylightAt(jour, x, y, z),
+      );
     } else if (item.shape === 'radiateur') {
       /*
        * Un radiateur en fonte à colonnes.

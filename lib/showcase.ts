@@ -137,7 +137,31 @@ export interface Massing {
    * pieds de six centimètres suffisent à ce que l'œil lise « table » et passe à
    * autre chose.
    */
-  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace';
+  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace' | 'suspension' | 'rideau';
+  /**
+   * Rembourré : l'arête s'arrondit franchement au lieu de recevoir le chanfrein
+   * de deux millimètres du mobilier menuisé.
+   *
+   * C'est le défaut le plus visible qu'un contrôle en image ait révélé, et il
+   * ne tenait pas au nombre de pièces modélisées. Le lit était déjà fait d'un
+   * sommier, d'un matelas, d'une couette, d'un pli et de deux oreillers — six
+   * volumes — et il se lisait quand même comme une dalle turquoise, parce que
+   * les six avaient des arêtes vives. Ce qui distingue un textile d'un panneau
+   * n'est pas sa découpe, c'est son arête : une couette roule sur le bord du
+   * matelas, un oreiller n'a pas de coin. Un rayon franc sur ces volumes-là
+   * coûte quelques triangles et rend le meuble d'un coup.
+   *
+   * Le drapeau est explicite plutôt que déduit de la teinte : `lin` habille
+   * aussi bien un oreiller qu'une planche à découper, et arrondir la seconde
+   * l'aurait transformée en savonnette.
+   */
+  moelleux?: boolean;
+  /**
+   * Nombre de vantaux d'un `placard`. Deux par défaut ; un caisson de cuisine
+   * en demande trois ou quatre, et un vantail de soixante centimètres est ce
+   * qui donne l'échelle d'une cuisine sans qu'on ait à la mesurer.
+   */
+  portes?: number;
   /** Une teinte du nuancier étudié (`lib/palette.ts`), jamais une valeur libre. */
   tone: FurnitureTone;
 }
@@ -164,14 +188,19 @@ export const SHOWCASE_MASSING: Massing[] = [
      dit l'époque du bâtiment plus vite que n'importe quel autre objet. */
   { roomId: 'sejour', x: 2.1, y: 0.365, w: 1.0, d: 0.11, h: 0.62, shape: 'radiateur', tone: 'cabinet' },
   { roomId: 'sejour', x: 1.7, y: 2.15, w: 2.6, d: 1.8, h: 0.012, tone: 'tapis' },
-  // Le canapé porte la seule couleur franche de la scène ; les coussins lui
-  // répondent en terre cuite, presque à l'opposé sur le cercle des teintes.
-  { roomId: 'sejour', x: 1.7, y: 2.9, w: 2.1, d: 0.85, h: 0.42, tone: 'petrole' },
-  { roomId: 'sejour', x: 1.7, y: 3.19, w: 2.1, d: 0.28, h: 0.78, tone: 'petrole' },
-  { roomId: 'sejour', x: 0.78, y: 2.9, w: 0.26, d: 0.85, h: 0.6, tone: 'petrole' },
-  { roomId: 'sejour', x: 2.62, y: 2.9, w: 0.26, d: 0.85, h: 0.6, tone: 'petrole' },
-  { roomId: 'sejour', x: 1.18, y: 2.99, w: 0.4, d: 0.18, h: 0.34, base: 0.42, tone: 'terre' },
-  { roomId: 'sejour', x: 2.22, y: 2.99, w: 0.4, d: 0.18, h: 0.34, base: 0.42, tone: 'terre' },
+  /* Le canapé porte la seule couleur franche de la scène ; les coussins lui
+     répondent en terre cuite, presque à l'opposé sur le cercle des teintes.
+     Il repose sur un piètement sombre en retrait : sans lui, l'assise descend
+     jusqu'au parquet et le canapé se lit comme un bloc de mousse posé là. Le
+     retrait de cinq centimètres suffit — c'est l'ombre sous le meuble qu'on
+     voit, pas le piètement. */
+  { roomId: 'sejour', x: 1.7, y: 2.9, w: 2.0, d: 0.76, h: 0.13, tone: 'sombre' },
+  { roomId: 'sejour', x: 1.7, y: 2.9, w: 2.1, d: 0.85, h: 0.32, base: 0.13, moelleux: true, tone: 'petrole' },
+  { roomId: 'sejour', x: 1.7, y: 3.19, w: 2.1, d: 0.28, h: 0.68, base: 0.13, moelleux: true, tone: 'petrole' },
+  { roomId: 'sejour', x: 0.78, y: 2.9, w: 0.26, d: 0.85, h: 0.5, base: 0.13, moelleux: true, tone: 'petrole' },
+  { roomId: 'sejour', x: 2.62, y: 2.9, w: 0.26, d: 0.85, h: 0.5, base: 0.13, moelleux: true, tone: 'petrole' },
+  { roomId: 'sejour', x: 1.18, y: 2.99, w: 0.4, d: 0.16, h: 0.36, base: 0.45, moelleux: true, tone: 'terre' },
+  { roomId: 'sejour', x: 2.22, y: 2.99, w: 0.4, d: 0.16, h: 0.36, base: 0.45, moelleux: true, tone: 'terre' },
   { roomId: 'sejour', x: 1.7, y: 1.8, w: 1.0, d: 0.52, h: 0.4, shape: 'table', tone: 'bois' },
   // Un cadre au-dessus du canapé. Un mur nu de deux mètres soixante se remarque.
   { roomId: 'sejour', x: 1.7, y: 3.68, w: 0.9, d: 0.04, h: 0.6, base: 1.15, tone: 'bois' },
@@ -188,28 +217,41 @@ export const SHOWCASE_MASSING: Massing[] = [
   /* La rosace, au-dessus de la suspension : la tige partait du vide. */
   { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.34, d: 0.34, h: 0.04, base: 2.56, shape: 'rosace', tone: 'platre' },
   { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.025, d: 0.025, h: 0.5, base: 2.1, tone: 'laiton' },
-  { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.24, d: 0.24, h: 0.13, base: 1.97, tone: 'laiton' },
+  { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.14, d: 0.4, h: 0.24, base: 1.86, shape: 'suspension', tone: 'laiton' },
 
   /* La cuisine en linéaire. Le plan de travail est d'une autre teinte que les
      caissons — c'est ce qui la fait lire comme une cuisine plutôt que comme un
      bloc, et c'est vrai de presque toutes les cuisines. */
-  { roomId: 'sejour', x: 4.31, y: 0.6, w: 1.6, d: 0.6, h: 0.9, tone: 'cabinet' },
+  { roomId: 'sejour', x: 4.31, y: 0.6, w: 1.6, d: 0.6, h: 0.9, shape: 'placard', portes: 3, tone: 'cabinet' },
   { roomId: 'sejour', x: 4.31, y: 0.62, w: 1.6, d: 0.64, h: 0.045, base: 0.9, tone: 'sombre' },
   { roomId: 'sejour', x: 4.0, y: 0.62, w: 0.46, d: 0.38, h: 0.02, base: 0.925, tone: 'lin' },
+  /* L'évier et son mitigeur. Le plan de travail portait déjà une plaque de
+     cuisson ; sans point d'eau, ce qu'on regardait était un meuble bas avec un
+     dessus noir. Le col de cygne est ce qui fait dire « cuisine » avant même
+     qu'on ait vu la cuve. */
+  { roomId: 'sejour', x: 4.62, y: 0.62, w: 0.42, d: 0.36, h: 0.012, base: 0.938, tone: 'sombre' },
+  { roomId: 'sejour', x: 4.62, y: 0.46, w: 0.036, d: 0.036, h: 0.26, base: 0.945, tone: 'laiton' },
+  { roomId: 'sejour', x: 4.62, y: 0.55, w: 0.03, d: 0.21, h: 0.03, base: 1.19, tone: 'laiton' },
   { roomId: 'sejour', x: 4.31, y: 0.32, w: 1.6, d: 0.04, h: 0.48, base: 0.945, tone: 'cabinet' },
-  { roomId: 'sejour', x: 4.31, y: 0.47, w: 1.6, d: 0.34, h: 0.62, base: 1.45, tone: 'cabinet' },
+  { roomId: 'sejour', x: 4.31, y: 0.47, w: 1.6, d: 0.34, h: 0.62, base: 1.45, shape: 'placard', portes: 3, tone: 'cabinet' },
   // Le placard d'entrée, contre la façade.
   { roomId: 'sejour', x: 0.6, y: 1.1, w: 0.6, d: 1.6, h: 2.05, shape: 'placard', tone: 'cabinet' },
 
   /* ------------------------------------------------------------ chambre --- */
   { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.6, d: 2.0, h: 0.4, tone: 'bois' },
-  { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.55, d: 1.95, h: 0.18, base: 0.4, tone: 'lin' },
-  // La couette reprend la couleur du canapé : c'est ce qui relie les deux pièces,
-  // et ce qui empêche la chambre de paraître décorée par quelqu'un d'autre.
-  { roomId: 'chambre', x: 8.4, y: 1.62, w: 1.55, d: 1.3, h: 0.1, base: 0.58, tone: 'petrole' },
-  { roomId: 'chambre', x: 8.4, y: 1.06, w: 1.55, d: 0.34, h: 0.05, base: 0.58, tone: 'terre' },
-  { roomId: 'chambre', x: 8.05, y: 2.68, w: 0.58, d: 0.34, h: 0.13, base: 0.58, tone: 'lin' },
-  { roomId: 'chambre', x: 8.75, y: 2.68, w: 0.58, d: 0.34, h: 0.13, base: 0.58, tone: 'lin' },
+  { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.55, d: 1.95, h: 0.18, base: 0.4, moelleux: true, tone: 'lin' },
+  /* La couette reprend la couleur du canapé : c'est ce qui relie les deux
+     pièces, et ce qui empêche la chambre de paraître décorée par quelqu'un
+     d'autre.
+     Elle déborde le matelas de cinq centimètres de chaque côté et redescend
+     sous son plan de couchage. C'est la seule chose qui la distingue d'un
+     couvercle : une couette à fleur du matelas, si épaisse soit-elle, se lit
+     comme une plaque de couleur posée sur une caisse — c'est exactement ce
+     qu'on voyait en image avant de la faire retomber. */
+  { roomId: 'chambre', x: 8.4, y: 1.62, w: 1.66, d: 1.36, h: 0.2, base: 0.5, moelleux: true, tone: 'petrole' },
+  { roomId: 'chambre', x: 8.4, y: 1.12, w: 1.72, d: 0.32, h: 0.075, base: 0.65, moelleux: true, tone: 'terre' },
+  { roomId: 'chambre', x: 8.05, y: 2.68, w: 0.62, d: 0.38, h: 0.17, base: 0.58, moelleux: true, tone: 'lin' },
+  { roomId: 'chambre', x: 8.75, y: 2.68, w: 0.62, d: 0.38, h: 0.17, base: 0.58, moelleux: true, tone: 'lin' },
   { roomId: 'chambre', x: 8.4, y: 2.99, w: 1.7, d: 0.1, h: 1.0, tone: 'bois' },
   // Sous la fenêtre de la chambre, contre la façade est.
   { roomId: 'chambre', x: 9.645, y: 1.3, w: 0.85, d: 0.11, h: 0.62, yaw: 90, shape: 'radiateur', tone: 'cabinet' },
@@ -221,6 +263,28 @@ export const SHOWCASE_MASSING: Massing[] = [
   { roomId: 'chambre', x: 8.4, y: 0.525, w: 1.1, d: 0.45, h: 0.78, shape: 'table', tone: 'bois' },
   { roomId: 'chambre', x: 8.4, y: 0.34, w: 0.7, d: 0.04, h: 0.45, base: 1.25, tone: 'bois' },
   { roomId: 'chambre', x: 8.4, y: 0.365, w: 0.6, d: 0.02, h: 0.35, base: 1.3, tone: 'petrole' },
+  /*
+   * Les rideaux, de part et d'autre de la fenêtre sur cour.
+   *
+   * Une fenêtre nue dans une pièce meublée se lit comme un trou dans le mur :
+   * c'est le seul endroit du logement où le regard sort, et il en sort sans
+   * rien pour l'y retenir. Deux masses verticales de tissu suffisent — elles
+   * encadrent l'ouverture, elles donnent au mur la seule verticale qu'il ait,
+   * et elles reçoivent le soleil de biais, donc elles bougent avec lui.
+   *
+   * La tringle passe vingt centimètres au-dessus du linteau et déborde
+   * l'ouverture des deux côtés, comme une vraie : un rideau posé au ras du
+   * tableau ferme la fenêtre au lieu de l'ouvrir.
+   */
+  /* En lin, et plissés. Une première version les donnait en volumes lisses :
+     deux capsules identiques, de la couleur du mur, qui se lisaient comme des
+     piliers. Éclaircir la teinte n'était pas la réponse — l'étude du nuancier
+     mesure le voile clair à 2,2 d'écart du mur, c'est-à-dire invisible dessus.
+     Ce qui fait un rideau, ce sont ses plis : une alternance d'avancées et de
+     retraits qui accroche la lumière rasante de la fenêtre. */
+  { roomId: 'chambre', x: 9.6, y: 0.52, w: 0.17, d: 0.32, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre', x: 9.6, y: 2.16, w: 0.17, d: 0.32, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre', x: 9.64, y: 1.34, w: 0.028, d: 1.98, h: 0.028, base: 2.42, tone: 'laiton' },
 
   /* --------------------------------------------------------- salle d’eau --- */
   /* La douche occupe l'angle le plus éloigné de la porte. Elle était d'abord
@@ -246,7 +310,7 @@ export const SHOWCASE_MASSING: Massing[] = [
   { roomId: 'salle-eau', x: 7.5175, y: 4.3, w: 0.035, d: 0.8, h: 1.9, base: 0.07, tone: 'cabinet' },
   { roomId: 'salle-eau', x: 7.9, y: 3.9175, w: 0.8, d: 0.035, h: 1.9, base: 0.07, tone: 'cabinet' },
   // Meuble vasque sous la fenêtre, contre la façade.
-  { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.45, d: 0.7, h: 0.86, tone: 'bois' },
+  { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.45, d: 0.7, h: 0.86, shape: 'placard', tone: 'bois' },
   { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.34, d: 0.44, h: 0.055, base: 0.86, tone: 'cabinet' },
   // Le miroir passe sur le mur nord : la fenêtre occupe déjà la façade.
   { roomId: 'salle-eau', x: 7.15, y: 3.32, w: 0.55, d: 0.06, h: 0.8, base: 1.15, tone: 'cabinet' },
