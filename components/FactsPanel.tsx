@@ -1,5 +1,6 @@
 'use client';
 
+import { Tag } from '@/components/pro/Pro';
 import { useActionState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { prefillFacts, saveFacts, type ActionResult } from '@/app/admin/actions';
@@ -48,7 +49,7 @@ export function FactsPanel({
   return (
     <>
       <section className="card">
-        <h2 className="admin-h2">
+        <h2 className="pro-card-title">
           Ce qu’il reste à faire <small>avant de publier</small>
         </h2>
 
@@ -84,7 +85,7 @@ export function FactsPanel({
       </section>
 
       <section className="card">
-        <h2 className="admin-h2">
+        <h2 className="pro-card-title">
           Fiche du logement <small>elle nourrit la présentation et l’assistant</small>
         </h2>
 
@@ -131,7 +132,7 @@ export function FactsPanel({
               <>
                 {question.label}
                 {question.required && ' *'}
-                {proposed && <span className="tag tag-demo" style={{ marginLeft: 8 }}>Proposé</span>}
+                {proposed && <Tag tone="warn">Proposé</Tag>}
               </>
             );
 
@@ -191,7 +192,7 @@ export function FactsPanel({
           {state && !state.ok && <div className="callout-box callout-warn">{state.error}</div>}
 
           <div className="row">
-            <button className="btn btn-dark btn-sm" type="submit" disabled={saving}>
+            <button className="btn btn-accent btn-sm" type="submit" disabled={saving}>
               {saving ? 'Enregistrement…' : 'Enregistrer la fiche'}
             </button>
             <span className="tiny">

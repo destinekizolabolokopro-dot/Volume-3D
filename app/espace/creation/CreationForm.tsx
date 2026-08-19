@@ -75,7 +75,7 @@ export function CreationForm() {
         </div>
       )}
 
-      <button className="btn btn-dark" type="submit" disabled={pending}>
+      <button className="btn btn-accent" type="submit" disabled={pending}>
         {pending ? 'Création…' : 'Créer le bien'}
       </button>
     </form>

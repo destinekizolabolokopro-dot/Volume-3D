@@ -1,4 +1,6 @@
 import 'server-only';
+import { reviewIntake } from './intake';
+import { reviewJourney, type Journey } from './journey';
 import { getStore } from './store';
 import type { FloorPlan, Hotspot, PlanDoor, Preview, PreviewShot, Property, Scene, TourMode } from './types';
 
@@ -80,4 +82,59 @@ export async function bumpViews(table: 'properties' | 'previews', id: string, cu
   } catch (error) {
     console.error('[views] incrément impossible', error);
   }
+}
+
+/**
+ * L'avancement du dossier de plusieurs logements, en quatre requêtes.
+ *
+ * Une liste de biens veut afficher, pour chacun, où en est son dossier. Le
+ * calculer bien par bien demanderait quatre requêtes **par ligne** — la panne
+ * classique, celle qui ne se voit pas sur deux logements et met la page à
+ * genoux sur cinquante. On charge donc tout d'un coup et on regroupe en
+ * mémoire : le coût ne dépend plus du nombre de biens.
+ */
+export async function reviewMany(properties: Property[]): Promise<Map<string, Journey>> {
+  const result = new Map<string, Journey>();
+  if (properties.length === 0) return result;
+
+  const store = getStore();
+  const [scenes, photos, plans, doors] = await Promise.all([
+    store.list('scenes'),
+    store.list('photos'),
+    store.list('plans'),
+    store.list('planDoors'),
+  ]);
+
+  const group = <T,>(rows: T[], key: (row: T) => string): Map<string, T[]> => {
+    const map = new Map<string, T[]>();
+    for (const row of rows) {
+      const bucket = map.get(key(row));
+      if (bucket) bucket.push(row);
+      else map.set(key(row), [row]);
+    }
+    return map;
+  };
+
+  const scenesBy = group(scenes, (scene) => scene.propertyId);
+  const photosBy = group(photos, (photo) => photo.propertyId);
+  const plansBy = group(plans, (plan) => plan.propertyId);
+  const doorsBy = group(doors, (door) => door.planId);
+
+  for (const property of properties) {
+    const plan = plansBy.get(property.id)?.[0] ?? null;
+    const propertyPhotos = photosBy.get(property.id) ?? [];
+    const intake = reviewIntake(plan, plan ? (doorsBy.get(plan.id) ?? []) : [], propertyPhotos);
+    result.set(
+      property.id,
+      reviewJourney({
+        property,
+        sceneCount: scenesBy.get(property.id)?.length ?? 0,
+        photoCount: propertyPhotos.length,
+        plan,
+        intake,
+        facts: property.facts ?? [],
+      }),
+    );
+  }
+  return result;
 }

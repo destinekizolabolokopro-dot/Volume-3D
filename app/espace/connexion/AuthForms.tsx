@@ -40,7 +40,7 @@ export function AuthForms() {
               {loginState.error}
             </div>
           )}
-          <button className="btn btn-dark" type="submit" disabled={loginPending}>
+          <button className="btn btn-accent" type="submit" disabled={loginPending}>
             {loginPending ? 'Connexion…' : 'Se connecter'}
           </button>
         </form>
@@ -104,7 +104,7 @@ export function AuthForms() {
             </div>
           )}
 
-          <button className="btn btn-dark" type="submit" disabled={joinPending}>
+          <button className="btn btn-accent" type="submit" disabled={joinPending}>
             {joinPending ? 'Création…' : 'Créer mon espace'}
           </button>
         </form>

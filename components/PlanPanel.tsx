@@ -59,7 +59,7 @@ export function PlanPanel({
 
   return (
     <section className="card">
-      <h2 className="admin-h2">
+      <h2 className="pro-card-title">
         Visite depuis le plan <small>quand il n’y a pas de panorama 360°</small>
       </h2>
 
@@ -117,7 +117,7 @@ export function PlanPanel({
         </div>
 
         <div className="row">
-          <button className="btn btn-dark btn-sm" type="submit" disabled={reading || !readerConfigured}>
+          <button className="btn btn-accent btn-sm" type="submit" disabled={reading || !readerConfigured}>
             {reading ? 'Lecture du plan…' : plan ? 'Relire le plan' : 'Lire le plan'}
           </button>
           {reading && <span className="tiny">Comptez une trentaine de secondes.</span>}
@@ -186,7 +186,7 @@ export function PlanPanel({
 
           <div className="row" style={{ marginTop: 12 }}>
             <button
-              className={plan.confirmed ? 'btn btn-ghost btn-sm' : 'btn btn-dark btn-sm'}
+              className={plan.confirmed ? 'btn btn-ghost btn-sm' : 'btn btn-accent btn-sm'}
               type="button"
               disabled={pending}
               onClick={() => start(async () => {

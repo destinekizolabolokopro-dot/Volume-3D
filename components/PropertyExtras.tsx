@@ -111,7 +111,7 @@ export function PropertyExtras({
               {photoState.error}
             </div>
           )}
-          <button className="btn btn-dark btn-sm" type="submit" disabled={photoPending}>
+          <button className="btn btn-accent btn-sm" type="submit" disabled={photoPending}>
             {photoPending ? 'Envoi…' : 'Ajouter des photos'}
           </button>
         </form>

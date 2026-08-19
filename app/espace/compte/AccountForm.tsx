@@ -68,7 +68,7 @@ export function AccountForm({ account, used, limit }: { account: Account; used: 
         </div>
       )}
 
-      <button className="btn btn-dark" type="submit" disabled={pending}>
+      <button className="btn btn-accent" type="submit" disabled={pending}>
         {pending ? 'Enregistrement…' : 'Enregistrer'}
       </button>
     </form>

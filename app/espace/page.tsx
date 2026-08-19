@@ -1,10 +1,11 @@
 import { EspaceNav } from '@/components/EspaceNav';
 import { AttentionPanel } from '@/components/AttentionPanel';
+import { Empty, Meter, ProHead, Section, Stat, StatBand } from '@/components/pro/Pro';
 import { PLAN_LABELS, PLAN_LIMITS } from '@/lib/accounts';
 import { isAssistantConfigured } from '@/lib/assistant';
 import { requireAccount } from '@/lib/require-account';
 import { getStore } from '@/lib/store';
-import type { ChatMessage, Plan, Property } from '@/lib/types';
+import type { ChatMessage, Plan } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,24 +53,28 @@ export default async function EspaceDashboard() {
   const questionsThisWeek = messages.filter((message) => Date.parse(message.createdAt) > week).length;
 
   return (
-    <div className="shell">
+    <div className="pro">
       <EspaceNav account={account} current="/espace" />
 
-      <main className="page">
-        <div className="page-head">
-          <div>
-            <h1>Bonjour {account.name.split(' ')[0]}</h1>
-            <p>
+      <main className="pro-page">
+        <ProHead
+          title={`Bonjour ${account.name.split(' ')[0]}`}
+          sub={
+            <>
               Formule {PLAN_LABELS[account.plan as Plan] ?? account.plan} ·{' '}
-              {limit === Infinity ? 'logements illimités' : `${properties.length} / ${limit} logement${limit > 1 ? 's' : ''}`}
-            </p>
-          </div>
-          <a className="btn btn-dark btn-sm" href="/espace/creation">
-            + Créer un bien
-          </a>
-        </div>
+              {limit === Infinity
+                ? 'logements illimités'
+                : `${properties.length} / ${limit} logement${limit > 1 ? 's' : ''}`}
+            </>
+          }
+          actions={
+            <a className="btn btn-accent btn-sm" href="/espace/creation">
+              Créer un bien
+            </a>
+          }
+        />
 
-        <div className="stats-grid">
+        <StatBand>
           <Stat label="Vues des visites" value={views} hint="Depuis la mise en ligne" />
           <Stat label="Visites en ligne" value={published.length} hint={`${properties.length} bien${properties.length > 1 ? 's' : ''} au total`} />
           <Stat label="Questions posées" value={messages.length} hint={`${questionsThisWeek} cette semaine`} />
@@ -78,45 +83,44 @@ export default async function EspaceDashboard() {
             value={published.length > 0 ? Math.round(views / published.length) : 0}
             hint="Moyenne"
           />
-        </div>
+        </StatBand>
 
+        {/* Ce n'est pas une erreur du propriétaire : c'est une fonction que
+            l'installation n'a pas encore. Le rouge d'alerte laissait croire à
+            une panne de son côté. */}
         {!isAssistantConfigured() && (
-          <div className="note note-warn" style={{ marginBottom: 24 }}>
-            L’assistant n’est pas activé sur cette installation : vos voyageurs ne peuvent pas encore poser de
-            questions. Contactez-nous pour l’activer.
-          </div>
+          <p className="pro-notice">
+            <span>
+              <strong>L’assistant n’est pas encore activé.</strong> Vos visites fonctionnent normalement,
+              mais vos voyageurs ne peuvent pas y poser de questions. Écrivez-nous pour l’ouvrir sur votre
+              compte.
+            </span>
+          </p>
         )}
 
         <AttentionPanel rows={attention} rooms={attentionRooms} />
 
-        <section className="panel">
-          <div className="panel-head">
-            <h2>Ce que vos voyageurs demandent</h2>
-            <small>Les questions posées à l’assistant sur vos visites</small>
-          </div>
-
+        <Section title="Ce que vos voyageurs demandent" note="questions posées à l’assistant">
           {messages.length === 0 ? (
-            <div className="empty">
-              <strong>Aucune question pour l’instant</strong>
+            <Empty title="Aucune question pour l’instant">
               Dès que vos visites seront consultées, les questions de vos voyageurs apparaîtront ici. C’est le
               meilleur indicateur de ce que votre annonce n’explique pas encore.
-            </div>
+            </Empty>
           ) : (
-            <>
-              <div className="stack-sm" style={{ marginBottom: 24 }}>
-                {topQuestions(messages).map((entry) => (
-                  <div className="row row-between" key={entry.question}>
-                    <span style={{ fontSize: 14 }}>{entry.question}</span>
-                    <span className="tiny">
-                      {entry.count} fois
-                    </span>
-                  </div>
-                ))}
-              </div>
+            <div className="pro-panel pro-rows">
+              {topQuestions(messages).map((entry) => (
+                <div className="pro-ask" key={entry.question}>
+                  <span className="pro-ask-q">{entry.question}</span>
+                  <span className="pro-ask-count">{entry.count} fois</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
 
-              <div className="panel-head">
-                <h2 style={{ fontSize: 16 }}>Dernières questions</h2>
-              </div>
+        {messages.length > 0 && (
+          <Section title="Dernières questions" note="et ce que l’assistant a répondu">
+            <div className="pro-panel">
               {recent.map((message) => (
                 <div className="qa" key={message.id}>
                   <p className="qa-q">{message.question}</p>
@@ -127,56 +131,40 @@ export default async function EspaceDashboard() {
                   </p>
                 </div>
               ))}
-            </>
-          )}
-        </section>
-
-        <section className="panel">
-          <div className="panel-head">
-            <h2>Vues par bien</h2>
-            <small>Ce que chaque visite génère</small>
-          </div>
-          {properties.length === 0 ? (
-            <div className="empty">
-              <strong>Aucun bien pour l’instant</strong>
-              Commencez par <a href="/espace/creation">créer votre premier bien</a>.
             </div>
+          </Section>
+        )}
+
+        <Section title="Vues par bien" note="ce que chaque visite génère">
+          {properties.length === 0 ? (
+            <Empty
+              title="Aucun bien pour l’instant"
+              action={
+                <a className="btn btn-accent btn-sm" href="/espace/creation">
+                  Créer mon premier bien
+                </a>
+              }
+            >
+              Envoyez le plan et les photos de chaque pièce : la visite se construit à partir de là.
+            </Empty>
           ) : (
-            <div className="stack-sm">
+            <div className="pro-panel">
               {[...properties]
                 .sort((a, b) => b.views - a.views)
                 .map((property) => (
-                  <ViewBar key={property.id} property={property} max={Math.max(1, views)} />
+                  <Meter
+                    key={property.id}
+                    href={`/espace/biens/${property.id}`}
+                    label={property.name}
+                    note={`${property.views} vue${property.views > 1 ? 's' : ''}`}
+                    share={property.views / Math.max(1, views)}
+                  />
                 ))}
             </div>
           )}
-        </section>
+        </Section>
       </main>
     </div>
   );
 }
 
-function Stat({ label, value, hint }: { label: string; value: number; hint: string }) {
-  return (
-    <div className="stat">
-      <div className="stat-label">{label}</div>
-      <div className="stat-value">{value.toLocaleString('fr-FR')}</div>
-      <div className="stat-hint">{hint}</div>
-    </div>
-  );
-}
-
-function ViewBar({ property, max }: { property: Property; max: number }) {
-  const share = Math.round((property.views / max) * 100);
-  return (
-    <a href={`/espace/biens/${property.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div className="row row-between" style={{ marginBottom: 4 }}>
-        <span style={{ fontSize: 14, fontWeight: 500 }}>{property.name}</span>
-        <span className="tiny">{property.views} vue{property.views > 1 ? 's' : ''}</span>
-      </div>
-      <div style={{ height: 6, background: 'var(--line)', borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{ width: `${share}%`, height: '100%', background: 'var(--accent)' }} />
-      </div>
-    </a>
-  );
-}

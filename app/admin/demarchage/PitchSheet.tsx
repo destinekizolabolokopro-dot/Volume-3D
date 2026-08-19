@@ -36,7 +36,7 @@ export function PitchSheet({ defaultLink, contactEmail }: { defaultLink: string;
   return (
     <>
       <section className="card no-print">
-        <h2 className="admin-h2">
+        <h2 className="pro-card-title">
           Préparer la fiche <small>elle s’imprime en une page A4</small>
         </h2>
 
@@ -102,7 +102,7 @@ export function PitchSheet({ defaultLink, contactEmail }: { defaultLink: string;
           </div>
 
           <div className="row">
-            <button className="btn btn-dark btn-sm" type="button" onClick={() => window.print()}>
+            <button className="btn btn-accent btn-sm" type="button" onClick={() => window.print()}>
               Imprimer la fiche
             </button>
             <span className="tiny">

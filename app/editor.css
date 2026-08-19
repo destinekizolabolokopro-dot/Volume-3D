@@ -15,31 +15,6 @@
   margin-top: 14px;
 }
 
-.tag {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 4px 9px;
-  border-radius: 2px;
-}
-
-.tag-draft {
-  background: var(--bg-sunk);
-  color: var(--ink-soft);
-}
-
-.tag-live {
-  background: var(--positive-wash);
-  color: var(--positive);
-}
-
-.tag-demo {
-  background: var(--danger-wash);
-  color: var(--danger);
-}
-
 /* -------------------------------------------------------------- éditeur --- */
 
 .editor {

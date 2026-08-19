@@ -1,10 +1,12 @@
 import { headers } from 'next/headers';
-import { LogoMark } from '@/components/Logo';
+import { AdminBar } from '@/components/pro/AdminBar';
+import { Empty, ProHead, Section, Stat, StatBand } from '@/components/pro/Pro';
+import { PropertyTile } from '@/components/pro/PropertyTile';
 import { isAiConfigured } from '@/lib/ai-preview';
 import { upcoming } from '@/lib/booking';
+import { reviewMany } from '@/lib/queries';
 import { requireAuth } from '@/lib/require-auth';
 import { getStore, isLocalStore } from '@/lib/store';
-import { logout } from './actions';
 import { LeadRow, NewPreviewForm, NewPropertyForm, PreviewRow } from './DashboardForms';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +20,14 @@ async function currentOrigin(): Promise<string> {
   return `${protocol}://${host}`;
 }
 
+/**
+ * Le back-office.
+ *
+ * Il ouvre sur des chiffres, et c'est le point : un outil de travail répond
+ * d'abord à « où j'en suis », pas à « qu'est-ce que je peux faire ». Ce qui
+ * attend d'être traité — un rendez-vous à confirmer, une demande sans réponse —
+ * passe en tuile d'alerte plutôt que de se cacher au bas d'une liste.
+ */
 export default async function AdminHome() {
   await requireAuth();
 
@@ -29,132 +39,122 @@ export default async function AdminHome() {
     store.list('appointments'),
   ]);
   const origin = await currentOrigin();
+  // Une seule passe pour tous les dossiers : le coût ne dépend pas du nombre
+  // de logements.
+  const journeys = await reviewMany(properties);
 
   const byDate = <T extends { createdAt: string }>(list: T[]) =>
     [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
+  const live = properties.filter((property) => property.status === 'published');
+  const views = properties.reduce((total, property) => total + property.views, 0);
   const pendingLeads = leads.filter((lead) => !lead.handled).length;
-  const pendingAppointments = upcoming(appointments, new Date()).filter(
-    (appointment) => appointment.status === 'demande',
-  ).length;
+  const nextAppointments = upcoming(appointments, new Date());
+  const toConfirm = nextAppointments.filter((appointment) => appointment.status === 'demande').length;
+  const waiting = pendingLeads + toConfirm;
 
   return (
-    <div className="admin">
-      <header className="admin-bar">
-        <div className="admin-bar-brand">
-          <LogoMark size={20} onDark />
-          <span>
-            Volume<span>3D</span>
-          </span>
-        </div>
-        <nav className="admin-nav">
-          <a href="/admin/rendez-vous">
-            Rendez-vous{pendingAppointments > 0 ? ` (${pendingAppointments})` : ''}
-          </a>
-          <a href="/admin/demarchage">Fiche de démarchage</a>
-          <a href="/" target="_blank" rel="noopener noreferrer">
-            Voir le site ↗
-          </a>
-          <form action={logout}>
-            <button type="submit" className="btn btn-on-dark btn-sm">
-              Déconnexion
-            </button>
-          </form>
-        </nav>
-      </header>
+    <div className="pro">
+      <AdminBar current="/admin" toConfirm={toConfirm} />
 
-      <main className="admin-main">
-        <h1 className="admin-h1">Tableau de bord</h1>
-        <p className="admin-sub">
-          {properties.length} logement{properties.length > 1 ? 's' : ''} ·{' '}
-          {properties.filter((property) => property.status === 'published').length} visite
-          {properties.filter((property) => property.status === 'published').length > 1 ? 's' : ''} en ligne ·{' '}
-          {pendingLeads} demande{pendingLeads > 1 ? 's' : ''} à traiter
-        </p>
+      <main className="pro-page">
+        <ProHead
+          title="Tableau de bord"
+          sub={
+            waiting > 0
+              ? `${waiting} chose${waiting > 1 ? 's' : ''} vous attend${waiting > 1 ? 'ent' : ''}.`
+              : 'Rien en attente. Tout est traité.'
+          }
+          actions={<NewPropertyForm />}
+        />
+
+        <StatBand>
+          <Stat
+            label="Logements"
+            value={properties.length}
+            hint={`${live.length} en ligne`}
+          />
+          <Stat label="Vues cumulées" value={views} hint="Toutes visites confondues" />
+          <Stat
+            label="Rendez-vous"
+            value={nextAppointments.length}
+            hint={toConfirm > 0 ? `${toConfirm} à confirmer` : 'Tous confirmés'}
+            alert={toConfirm > 0}
+          />
+          <Stat
+            label="Demandes"
+            value={pendingLeads}
+            hint={pendingLeads > 0 ? 'Sans réponse' : 'Toutes traitées'}
+            alert={pendingLeads > 0}
+          />
+        </StatBand>
 
         {isLocalStore() && (
-          <div className="callout-box" style={{ marginBottom: 24 }}>
-            <strong>Mode développement.</strong> Les données sont enregistrées dans le dossier <code>.data/</code> de ce
-            projet, et disparaîtront au prochain déploiement. Renseignez <code>SUPABASE_URL</code> et{' '}
-            <code>SUPABASE_SERVICE_ROLE_KEY</code> pour passer sur la base hébergée.
-          </div>
+          <p className="pro-notice">
+            <span>
+              <strong>Mode développement.</strong> Les données sont enregistrées dans <code>.data/</code>
+              et disparaîtront au prochain déploiement. Renseignez <code>SUPABASE_URL</code> et{' '}
+              <code>SUPABASE_SERVICE_ROLE_KEY</code> pour passer sur la base hébergée.
+            </span>
+          </p>
         )}
 
         {/* ---------------------------------------------------- logements --- */}
-        <section>
-          <div className="row row-between" style={{ marginBottom: 14 }}>
-            <h2 className="admin-h2">
-              Logements <small>visites réelles, scannées sur place</small>
-            </h2>
-            <NewPropertyForm />
-          </div>
-
+        <Section title="Logements" note="visites réelles, scannées sur place">
           {properties.length === 0 ? (
-            <div className="empty">
-              Aucun logement pour l’instant. Créez-en un, ajoutez les panoramas de chaque pièce, puis publiez.
-            </div>
+            <Empty title="Aucun logement pour l’instant" action={<NewPropertyForm />}>
+              Créez-en un, envoyez le plan et les photos de chaque pièce, puis publiez. Le lien de visite
+              se génère tout seul.
+            </Empty>
           ) : (
-            <div className="grid-cards">
+            <div className="pro-grid">
               {byDate(properties).map((property) => (
-                <a className="property-card" key={property.id} href={`/admin/logements/${property.id}`}>
-                  <div className="row row-between" style={{ alignItems: 'flex-start' }}>
-                    <div style={{ minWidth: 0 }}>
-                      <div className="property-name">{property.name}</div>
-                      <div className="tiny">
-                        {property.city || 'ville non renseignée'} · {property.views} vue
-                        {property.views > 1 ? 's' : ''}
-                      </div>
-                    </div>
-                    <span className={`tag ${property.status === 'published' ? 'tag-live' : 'tag-draft'}`}>
-                      {property.status === 'published' ? 'En ligne' : 'Brouillon'}
-                    </span>
-                  </div>
-                  {property.ownerName && <div className="tiny" style={{ marginTop: 8 }}>{property.ownerName}</div>}
-                </a>
+                <PropertyTile
+                  key={property.id}
+                  property={property}
+                  href={`/admin/logements/${property.id}`}
+                  journey={journeys.get(property.id)}
+                />
               ))}
             </div>
           )}
-        </section>
+        </Section>
 
         {/* ------------------------------------------------------ aperçus --- */}
-        <section>
-          <div className="row row-between" style={{ marginBottom: 14 }}>
-            <h2 className="admin-h2">
-              Aperçus de démarchage <small>simulations IA, privées et temporaires</small>
-            </h2>
-            <NewPreviewForm aiConfigured={isAiConfigured()} />
-          </div>
-
+        <Section
+          title="Aperçus de démarchage"
+          note="simulations, privées et temporaires"
+          action={<NewPreviewForm aiConfigured={isAiConfigured()} />}
+        >
           {previews.length === 0 ? (
-            <div className="empty">
-              Aucun aperçu. Partez des photos publiques d’une annonce pour montrer à son propriétaire ce que donnerait
+            <Empty title="Aucun aperçu">
+              Partez des photos publiques d’une annonce pour montrer à son propriétaire ce que donnerait
               une visite — en lui indiquant clairement qu’il s’agit d’une simulation.
-            </div>
+            </Empty>
           ) : (
-            <div className="stack">
+            <div className="pro-panel pro-rows">
               {byDate(previews).map((preview) => (
                 <PreviewRow key={preview.id} preview={preview} origin={origin} />
               ))}
             </div>
           )}
-        </section>
+        </Section>
 
         {/* ----------------------------------------------------- demandes --- */}
-        <section>
-          <h2 className="admin-h2">
-            Demandes reçues <small>formulaire de la landing</small>
-          </h2>
-
+        <Section title="Demandes reçues" note="formulaire de la page d’accueil">
           {leads.length === 0 ? (
-            <div className="empty">Aucune demande pour l’instant.</div>
+            <Empty title="Aucune demande pour l’instant">
+              Les messages laissés depuis la page d’accueil arrivent ici. Les rendez-vous, eux, ont leur
+              propre page.
+            </Empty>
           ) : (
-            <div className="stack">
+            <div className="pro-panel pro-rows">
               {byDate(leads).map((lead) => (
                 <LeadRow key={lead.id} lead={lead} />
               ))}
             </div>
           )}
-        </section>
+        </Section>
       </main>
     </div>
   );

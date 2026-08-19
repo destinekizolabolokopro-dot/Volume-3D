@@ -20,7 +20,7 @@ export function LoginForm() {
         </div>
       )}
 
-      <button className="btn btn-dark" type="submit" disabled={pending}>
+      <button className="btn btn-accent" type="submit" disabled={pending}>
         {pending ? 'Connexion…' : 'Se connecter'}
       </button>
     </form>

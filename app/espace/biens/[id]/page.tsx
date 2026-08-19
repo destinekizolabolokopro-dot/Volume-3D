@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { EspaceNav } from '@/components/EspaceNav';
+import { ProHead, Tag } from '@/components/pro/Pro';
 import { FactsPanel } from '@/components/FactsPanel';
 import { JourneyBar } from '@/components/JourneyBar';
 import { PlanPanel } from '@/components/PlanPanel';
@@ -61,22 +62,39 @@ export default async function BienPage({ params }: Params) {
   const origin = await currentOrigin();
 
   return (
-    <div className="shell">
+    <div className="pro">
       <EspaceNav account={account} current="/espace/biens" />
 
-      <main className="page">
-        <div className="page-head">
-          <div>
-            <h1>{property.name}</h1>
-            <p>
+      <main className="pro-page">
+        <ProHead
+          title={property.name}
+          sub={
+            <>
               {property.city || 'Ville non renseignée'} · {property.views} vue
-              {property.views > 1 ? 's' : ''} · {property.status === 'published' ? 'en ligne' : 'brouillon'}
-            </p>
-          </div>
-          <a className="btn btn-ghost btn-sm" href="/espace/biens">
-            ← Mes biens
-          </a>
-        </div>
+              {property.views > 1 ? 's' : ''}{' '}
+              <Tag tone={property.status === 'published' ? 'live' : 'draft'}>
+                {property.status === 'published' ? 'En ligne' : 'Brouillon'}
+              </Tag>
+            </>
+          }
+          actions={
+            <>
+              {property.status === 'published' && (
+                <a
+                  className="btn btn-ghost btn-sm"
+                  href={`/v/${property.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Voir la visite ↗
+                </a>
+              )}
+              <a className="btn btn-ghost btn-sm" href="/espace/biens">
+                ← Mes biens
+              </a>
+            </>
+          }
+        />
 
         <JourneyBar journey={journey} />
 

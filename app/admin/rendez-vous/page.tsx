@@ -1,8 +1,8 @@
-import { LogoMark } from '@/components/Logo';
+import { AdminBar } from '@/components/pro/AdminBar';
+import { Empty, ProHead, Section, Tag } from '@/components/pro/Pro';
 import { channelLabel, slotLabel, upcoming, type Appointment } from '@/lib/booking';
 import { requireAuth } from '@/lib/require-auth';
 import { getStore } from '@/lib/store';
-import { logout } from '../actions';
 import { setAppointmentStatus } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -28,82 +28,60 @@ export default async function AppointmentsPage() {
   const waiting = next.filter((appointment) => appointment.status === 'demande').length;
 
   return (
-    <div className="admin">
-      <header className="admin-bar">
-        <div className="admin-bar-brand">
-          <LogoMark size={20} onDark />
-          <span>
-            Volume<span>3D</span>
-          </span>
-        </div>
-        <nav className="admin-nav">
-          <a href="/admin">← Tableau de bord</a>
-          <form action={logout}>
-            <button type="submit" className="btn btn-on-dark btn-sm">
-              Déconnexion
-            </button>
-          </form>
-        </nav>
-      </header>
+    <div className="pro">
+      <AdminBar current="/admin/rendez-vous" toConfirm={waiting} />
 
-      <main className="admin-main">
-        <h1 className="admin-h1">Rendez-vous</h1>
-        <p className="admin-sub">
-          Pris depuis la page d’accueil. Aucun e-mail de confirmation n’est envoyé pour l’instant : cette
-          page est le seul endroit où vous les voyez arriver.
-        </p>
+      <main className="pro-page">
+        <ProHead
+          title="Rendez-vous"
+          sub="Pris depuis la page d’accueil. Aucun e-mail de confirmation n’est envoyé pour l’instant : cette page est le seul endroit où vous les voyez arriver."
+        />
 
-        <section>
-          <h2 className="admin-h2">
-            À venir
-            <small>
-              {next.length === 0
-                ? 'aucun'
-                : `${next.length} · ${waiting} à confirmer`}
-            </small>
-          </h2>
+        <Section
+          title="À venir"
+          note={next.length === 0 ? 'aucun' : `${next.length} · ${waiting} à confirmer`}
+        >
           {next.length === 0 ? (
-            <p className="empty">Rien de prévu. Les demandes arriveront ici.</p>
+            <Empty title="Rien de prévu">
+              Les rendez-vous pris depuis la page d’accueil arriveront ici, le plus proche en premier.
+            </Empty>
           ) : (
-            <div className="stack">
+            <div className="pro-panel pro-rows">
               {next.map((appointment) => (
-                <AppointmentCard key={appointment.id} appointment={appointment} />
+                <AppointmentRow key={appointment.id} appointment={appointment} />
               ))}
             </div>
           )}
-        </section>
+        </Section>
 
         {past.length > 0 && (
-          <section>
-            <h2 className="admin-h2">
-              Passés et annulés<small>{past.length}</small>
-            </h2>
-            <div className="stack">
+          <Section title="Passés et annulés" note={String(past.length)}>
+            <div className="pro-panel pro-rows">
               {past.slice(0, 25).map((appointment) => (
-                <AppointmentCard key={appointment.id} appointment={appointment} past />
+                <AppointmentRow key={appointment.id} appointment={appointment} past />
               ))}
             </div>
-          </section>
+          </Section>
         )}
       </main>
     </div>
   );
 }
 
-function AppointmentCard({ appointment, past = false }: { appointment: Appointment; past?: boolean }) {
-  const tag =
+function AppointmentRow({ appointment, past = false }: { appointment: Appointment; past?: boolean }) {
+  const state =
     appointment.status === 'annule'
-      ? { className: 'tag tag-draft', label: 'Annulé' }
+      ? { tone: 'draft' as const, label: 'Annulé' }
       : appointment.status === 'confirme'
-        ? { className: 'tag tag-live', label: 'Confirmé' }
-        : { className: 'tag tag-draft', label: 'À confirmer' };
+        ? { tone: 'live' as const, label: 'Confirmé' }
+        : { tone: 'warn' as const, label: 'À confirmer' };
 
   return (
-    <article className="card">
-      <div className="row row-between">
+    <article>
+      <div className="pro-row-top">
         <div>
-          <p className="property-name">{slotLabel(appointment.slot)}</p>
-          <p className="muted">
+          <p className="pro-row-title">{slotLabel(appointment.slot)}</p>
+          <p className="pro-row-sub">
             {appointment.name} · {channelLabel(appointment.channel)}
             {appointment.city ? ` · ${appointment.city}` : ''}
             {appointment.listings > 0
@@ -111,18 +89,20 @@ function AppointmentCard({ appointment, past = false }: { appointment: Appointme
               : ''}
           </p>
         </div>
-        <span className={tag.className}>{tag.label}</span>
+        <Tag tone={state.tone}>{state.label}</Tag>
       </div>
 
-      <p className="row" style={{ marginTop: 12 }}>
+      {/* Le numéro d'abord : c'est par là que ça commence, et depuis un
+          téléphone le lien compose directement. */}
+      <p className="pro-row-links">
         <a href={`tel:${appointment.phone.replace(/\s/g, '')}`}>{appointment.phone}</a>
         <a href={`mailto:${appointment.email}`}>{appointment.email}</a>
       </p>
 
-      {appointment.message && <p className="muted">« {appointment.message} »</p>}
+      {appointment.message && <p className="pro-row-quote">{appointment.message}</p>}
 
       {!past && (
-        <div className="row" style={{ marginTop: 12 }}>
+        <div className="pro-row-actions">
           {appointment.status !== 'confirme' && (
             <form action={setAppointmentStatus}>
               <input type="hidden" name="id" value={appointment.id} />

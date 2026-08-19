@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { LogoMark } from '@/components/Logo';
+import { AdminBar } from '@/components/pro/AdminBar';
+import { ProHead, Tag } from '@/components/pro/Pro';
 import { FactsPanel } from '@/components/FactsPanel';
 import { JourneyBar } from '@/components/JourneyBar';
 import { PlanPanel } from '@/components/PlanPanel';
@@ -13,7 +14,6 @@ import { reviewIntake } from '@/lib/intake';
 import { reviewJourney } from '@/lib/journey';
 import { isPlanReaderConfigured } from '@/lib/plan-reader';
 import { getStore } from '@/lib/store';
-import { logout } from '../../actions';
 import { TourEditor } from './TourEditor';
 
 export const dynamic = 'force-dynamic';
@@ -60,35 +60,39 @@ export default async function PropertyEditorPage({ params }: Params) {
   const origin = await currentOrigin();
 
   return (
-    <div className="admin">
-      <header className="admin-bar">
-        <div className="admin-bar-brand">
-          <LogoMark size={20} onDark />
-          <span>
-            Volume<span>3D</span>
-          </span>
-        </div>
-        <nav className="admin-nav">
-          <a href="/admin">← Tableau de bord</a>
-          {property.status === 'published' && (
-            <a href={`/v/${property.slug}`} target="_blank" rel="noopener noreferrer">
-              Voir la visite ↗
-            </a>
-          )}
-          <form action={logout}>
-            <button type="submit" className="btn btn-on-dark btn-sm">
-              Déconnexion
-            </button>
-          </form>
-        </nav>
-      </header>
+    <div className="pro">
+      <AdminBar current="/admin" />
 
-      <main className="admin-main">
-        <h1 className="admin-h1">{property.name}</h1>
-        <p className="admin-sub">
-          {property.city || 'Ville non renseignée'} · créé le{' '}
-          {new Date(property.createdAt).toLocaleDateString('fr-FR')} · /v/{property.slug}
-        </p>
+      <main className="pro-page">
+        <ProHead
+          title={property.name}
+          sub={
+            <>
+              {property.city || 'Ville non renseignée'} · créé le{' '}
+              {new Date(property.createdAt).toLocaleDateString('fr-FR')} · /v/{property.slug}
+              <Tag tone={property.status === 'published' ? 'live' : 'draft'}>
+                {property.status === 'published' ? 'En ligne' : 'Brouillon'}
+              </Tag>
+            </>
+          }
+          actions={
+            <>
+              {property.status === 'published' && (
+                <a
+                  className="btn btn-ghost btn-sm"
+                  href={`/v/${property.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Voir la visite ↗
+                </a>
+              )}
+              <a className="btn btn-ghost btn-sm" href="/admin">
+                ← Tableau de bord
+              </a>
+            </>
+          }
+        />
 
         <JourneyBar journey={journey} />
 

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import '../pro.css';
 import '../editor.css';
 import './espace.css';
 

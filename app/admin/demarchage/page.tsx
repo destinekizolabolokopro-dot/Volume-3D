@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
-import { LogoMark } from '@/components/Logo';
+import { AdminBar } from '@/components/pro/AdminBar';
+import { ProHead } from '@/components/pro/Pro';
 import { requireAuth } from '@/lib/require-auth';
-import { logout } from '../actions';
 import { PitchSheet } from './PitchSheet';
 
 export const dynamic = 'force-dynamic';
@@ -28,30 +28,18 @@ export default async function DemarchagePage() {
   const contact = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'scan@volume3d.fr';
 
   return (
-    <div className="admin">
-      <header className="admin-bar no-print">
-        <div className="admin-bar-brand">
-          <LogoMark size={20} onDark />
-          <span>
-            Volume<span>3D</span>
-          </span>
-        </div>
-        <nav className="admin-nav">
-          <a href="/admin">← Tableau de bord</a>
-          <form action={logout}>
-            <button type="submit" className="btn btn-on-dark btn-sm">
-              Déconnexion
-            </button>
-          </form>
-        </nav>
-      </header>
+    <div className="pro">
+      <div className="no-print">
+        <AdminBar current="/admin/demarchage" />
+      </div>
 
-      <main className="admin-main">
-        <h1 className="admin-h1 no-print">Fiche de démarchage</h1>
-        <p className="admin-sub no-print">
-          Ce qu’on laisse au propriétaire après lui avoir montré une visite. Le QR ouvre la visite sur son
-          téléphone : c’est elle qui vend, pas la feuille.
-        </p>
+      <main className="pro-page">
+        <div className="no-print">
+          <ProHead
+            title="Fiche de démarchage"
+            sub="Ce qu’on laisse au propriétaire après lui avoir montré une visite. Le QR ouvre la visite sur son téléphone : c’est elle qui vend, pas la feuille."
+          />
+        </div>
 
         <PitchSheet defaultLink={origin} contactEmail={contact} />
       </main>

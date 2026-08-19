@@ -89,7 +89,7 @@ export function PublishKit({
 
   return (
     <section className="card">
-      <h2 className="admin-h2">
+      <h2 className="pro-card-title">
         À publier sur votre annonce <small>déduit de votre plan et de votre fiche</small>
       </h2>
 
@@ -115,7 +115,7 @@ export function PublishKit({
             <img src={svgUri} alt={`Plan de ${property.name}`} style={{ width: '100%', display: 'block' }} />
           </div>
           <div className="row" style={{ marginBottom: 22 }}>
-            <button className="btn btn-dark btn-sm" type="button" onClick={downloadPlan}>
+            <button className="btn btn-accent btn-sm" type="button" onClick={downloadPlan}>
               Télécharger le plan
             </button>
             <span className="tiny">

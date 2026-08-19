@@ -2,6 +2,7 @@
 
 import { useActionState, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Tag } from '@/components/pro/Pro';
 import { CopyField } from '@/components/CopyField';
 import type { Lead, Preview } from '@/lib/types';
 import {
@@ -29,8 +30,8 @@ export function NewPropertyForm() {
 
   if (!open) {
     return (
-      <button type="button" className="btn btn-dark btn-sm" onClick={() => setOpen(true)}>
-        + Nouveau logement
+      <button type="button" className="btn btn-accent btn-sm" onClick={() => setOpen(true)}>
+        Nouveau logement
       </button>
     );
   }
@@ -65,7 +66,7 @@ export function NewPropertyForm() {
       )}
 
       <div className="row">
-        <button className="btn btn-dark btn-sm" type="submit" disabled={pending}>
+        <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
           {pending ? 'Création…' : 'Créer et ouvrir l’éditeur'}
         </button>
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
@@ -85,7 +86,7 @@ export function NewPreviewForm({ aiConfigured }: { aiConfigured: boolean }) {
   if (!open) {
     return (
       <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(true)}>
-        + Nouvel aperçu de démarchage
+        Nouvel aperçu
       </button>
     );
   }
@@ -146,7 +147,7 @@ export function NewPreviewForm({ aiConfigured }: { aiConfigured: boolean }) {
       )}
 
       <div className="row">
-        <button className="btn btn-dark btn-sm" type="submit" disabled={pending}>
+        <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
           {pending ? 'Génération en cours…' : 'Générer l’aperçu'}
         </button>
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
@@ -163,19 +164,20 @@ export function PreviewRow({ preview, origin }: { preview: Preview; origin: stri
   const [pending, start] = useTransition();
   const expired = Date.parse(preview.expiresAt) < Date.now();
 
+  /* Une ligne dans un bloc, pas une carte : la carte est déjà autour. */
   return (
-    <div className="card">
-      <div className="row row-between">
+    <div>
+      <div className="pro-row-top">
         <div>
-          <div className="property-name">{preview.propertyName}</div>
-          <div className="tiny">
+          <p className="pro-row-title">{preview.propertyName}</p>
+          <p className="pro-row-sub">
             {preview.city ? `${preview.city} · ` : ''}
             {preview.views} vue{preview.views > 1 ? 's' : ''} ·{' '}
             {expired ? 'lien expiré' : `expire le ${new Date(preview.expiresAt).toLocaleDateString('fr-FR')}`}
-          </div>
+          </p>
         </div>
-        <div className="row">
-          <span className="tag tag-demo">Aperçu simulé</span>
+        <div className="pro-row-side">
+          <Tag tone="demo">Aperçu simulé</Tag>
           <button
             type="button"
             className="mini-btn mini-btn-danger"
@@ -192,7 +194,7 @@ export function PreviewRow({ preview, origin }: { preview: Preview; origin: stri
         </div>
       </div>
 
-      {preview.error && <div className="callout-box callout-warn" style={{ marginTop: 10 }}>{preview.error}</div>}
+      {preview.error && <p className="pro-row-warn">{preview.error}</p>}
 
       {!expired && (
         <div style={{ marginTop: 12 }}>
@@ -201,7 +203,7 @@ export function PreviewRow({ preview, origin }: { preview: Preview; origin: stri
       )}
 
       {preview.listingUrl && (
-        <a className="tiny" href={preview.listingUrl} target="_blank" rel="noopener noreferrer">
+        <a className="pro-row-link" href={preview.listingUrl} target="_blank" rel="noopener noreferrer">
           Voir l’annonce d’origine ↗
         </a>
       )}
@@ -213,18 +215,18 @@ export function LeadRow({ lead }: { lead: Lead }) {
   const [pending, start] = useTransition();
 
   return (
-    <div className="card" style={{ opacity: lead.handled ? 0.6 : 1 }}>
-      <div className="row row-between">
+    <div data-handled={lead.handled ? '1' : undefined} className="pro-row">
+      <div className="pro-row-top">
         <div>
-          <div className="property-name">
+          <p className="pro-row-title">
             {lead.name} · <a href={`mailto:${lead.email}`}>{lead.email}</a>
-          </div>
-          <div className="tiny">
+          </p>
+          <p className="pro-row-sub">
             {lead.city} · {lead.profile} · {lead.phone || 'sans téléphone'} ·{' '}
             {new Date(lead.createdAt).toLocaleDateString('fr-FR')}
-          </div>
+          </p>
         </div>
-        <div className="row">
+        <div className="pro-row-side">
           <button
             type="button"
             className="btn btn-ghost btn-sm"
@@ -246,7 +248,7 @@ export function LeadRow({ lead }: { lead: Lead }) {
           </button>
         </div>
       </div>
-      {lead.message && <p className="muted" style={{ margin: '10px 0 0' }}>{lead.message}</p>}
+      {lead.message && <p className="pro-row-quote">{lead.message}</p>}
     </div>
   );
 }

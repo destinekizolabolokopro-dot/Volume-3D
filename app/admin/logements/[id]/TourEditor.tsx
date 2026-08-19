@@ -329,7 +329,7 @@ function PublishPanel({
 
       <button
         type="button"
-        className={published ? 'btn btn-ghost btn-sm' : 'btn btn-dark btn-sm'}
+        className={published ? 'btn btn-ghost btn-sm' : 'btn btn-accent btn-sm'}
         disabled={pending}
         onClick={() =>
           act(
@@ -396,7 +396,7 @@ function AddSceneForm({ propertyId }: { propertyId: string }) {
           {state.error}
         </div>
       )}
-      <button className="btn btn-dark btn-sm" type="submit" disabled={pending}>
+      <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
         {pending ? 'Envoi…' : 'Ajouter la ou les pièces'}
       </button>
     </form>
@@ -425,7 +425,7 @@ function ModelUploadForm({ property }: { property: Property }) {
           {state.error}
         </div>
       )}
-      <button className="btn btn-dark btn-sm" type="submit" disabled={pending}>
+      <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
         {pending ? 'Envoi…' : 'Envoyer le modèle'}
       </button>
     </form>
@@ -458,7 +458,7 @@ function VideoUploadForm({ property }: { property: Property }) {
           {state.error}
         </div>
       )}
-      <button className="btn btn-dark btn-sm" type="submit" disabled={pending}>
+      <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
         {pending ? 'Envoi…' : property.videoUrl ? 'Remplacer la vidéo' : 'Envoyer la vidéo'}
       </button>
     </form>
@@ -573,7 +573,7 @@ function SettingsForm({ property }: { property: Property }) {
         </div>
       )}
 
-      <button className="btn btn-dark btn-sm" type="submit" disabled={pending}>
+      <button className="btn btn-accent btn-sm" type="submit" disabled={pending}>
         {pending ? 'Enregistrement…' : 'Enregistrer'}
       </button>
     </form>

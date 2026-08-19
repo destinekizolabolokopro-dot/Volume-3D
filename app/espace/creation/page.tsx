@@ -1,4 +1,5 @@
 import { EspaceNav } from '@/components/EspaceNav';
+import { ProHead } from '@/components/pro/Pro';
 import { PLAN_LIMITS } from '@/lib/accounts';
 import { requireAccount } from '@/lib/require-account';
 import { getStore } from '@/lib/store';
@@ -14,25 +15,23 @@ export default async function CreationPage() {
   const full = properties.length >= limit;
 
   return (
-    <div className="shell">
+    <div className="pro">
       <EspaceNav account={account} current="/espace/creation" />
 
-      <main className="page">
-        <div className="page-head">
-          <div>
-            <h1>Création</h1>
-            <p>
-              Décrivez votre bien et ajoutez vos photos. Vous pourrez ensuite y attacher une visite 360°, une vidéo
-              de déambulation, ou les deux.
-            </p>
-          </div>
-        </div>
+      <main className="pro-page">
+        <ProHead
+          title="Création"
+          sub="Décrivez votre bien et ajoutez vos photos. Vous pourrez ensuite y attacher une visite 360°, une vidéo de déambulation, ou les deux."
+        />
 
         {full ? (
-          <div className="note note-warn" style={{ maxWidth: 720 }}>
-            Votre formule autorise {limit} bien{limit > 1 ? 's' : ''} et vous en avez déjà {properties.length}.
-            Changez de formule depuis <a href="/espace/compte">votre compte</a> pour en ajouter d’autres.
-          </div>
+          <p className="pro-notice">
+            <span>
+              <strong>Votre formule est complète.</strong> Elle autorise {limit} bien{limit > 1 ? 's' : ''} et
+              vous en avez déjà {properties.length}. Changez de formule depuis{' '}
+              <a href="/espace/compte">votre compte</a> pour en ajouter d’autres.
+            </span>
+          </p>
         ) : (
           <CreationForm />
         )}

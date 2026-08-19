@@ -1,4 +1,5 @@
 import { EspaceNav } from '@/components/EspaceNav';
+import { ProHead } from '@/components/pro/Pro';
 import { PLAN_LIMITS } from '@/lib/accounts';
 import { requireAccount } from '@/lib/require-account';
 import { getStore } from '@/lib/store';
@@ -13,16 +14,11 @@ export default async function ComptePage() {
   const limit = PLAN_LIMITS[account.plan as Plan] ?? 1;
 
   return (
-    <div className="shell">
+    <div className="pro">
       <EspaceNav account={account} current="/espace/compte" />
 
-      <main className="page">
-        <div className="page-head">
-          <div>
-            <h1>Mon compte</h1>
-            <p>Vos coordonnées et votre formule d’abonnement.</p>
-          </div>
-        </div>
+      <main className="pro-page">
+        <ProHead title="Mon compte" sub="Vos coordonnées et votre formule d’abonnement." />
 
         <AccountForm account={account} used={properties.length} limit={limit} />
       </main>
