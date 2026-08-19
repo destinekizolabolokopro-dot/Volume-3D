@@ -1,24 +1,54 @@
-import { ContactForm } from '@/components/ContactForm';
+import { BookingForm } from '@/components/BookingForm';
 import { LogoMark } from '@/components/Logo';
-import { DemoTour } from '@/components/landing/DemoTour';
-import { DemoVideo } from '@/components/landing/DemoVideo';
+import { EntranceTour } from '@/components/landing/EntranceTour';
 import { Reveal } from '@/components/landing/Reveal';
 import { SiteNav } from '@/components/landing/SiteNav';
 import { IconCheck, IconDot, RESULT_ICONS } from '@/components/landing/icons';
+import { bookedSlots, offeredDays } from '@/lib/booking';
+import { area } from '@/lib/journey-path';
+import { totalArea } from '@/lib/plan';
 import {
   AGENCY_FEATURES,
   COMPARE,
   CONTACT_EMAIL,
   FAQ,
-  HERO,
   OWNER_FEATURES,
   PRICE_PER_LISTING,
   RESULTS,
   STEPS,
 } from '@/lib/content';
+import {
+  SHOWCASE_CAPTIONS,
+  SHOWCASE_CLOSING,
+  SHOWCASE_DOORS,
+  SHOWCASE_IDENTITY,
+  SHOWCASE_MASSING,
+  SHOWCASE_OPENING,
+  SHOWCASE_ROOMS,
+} from '@/lib/showcase';
+import { getStore } from '@/lib/store';
 import './landing.css';
 
-export default function HomePage() {
+/* Les créneaux dépendent de l'heure et de ce qui est déjà pris : cette page ne
+   peut pas être figée à la compilation. */
+export const dynamic = 'force-dynamic';
+
+/**
+ * L'accueil.
+ *
+ * Un seul site, et il commence par la visite. Le visiteur n'arrive pas sur un
+ * argumentaire qui décrit le produit : il arrive **dedans**, il fait défiler,
+ * la porte s'ouvre, il traverse le logement, et les mesures apparaissent au fur
+ * et à mesure. Le discours vient après, quand il sait déjà de quoi on parle.
+ *
+ * Le reste de la page suit l'ordre d'une conversation de démarchage : ce qu'il
+ * vient de voir, ce que ça change chez lui, comment ça se passe, combien, et
+ * enfin le rendez-vous. Rien n'est en dessous du rendez-vous.
+ */
+export default async function HomePage() {
+  const taken = bookedSlots(await getStore().list('appointments'));
+  const days = offeredDays(new Date(), taken);
+
   return (
     <div className="lp" id="haut">
       <a className="skip-link" href="#contenu">
@@ -33,7 +63,7 @@ export default function HomePage() {
             '@type': 'ProfessionalService',
             name: 'Volume3D',
             description:
-              'Visites virtuelles 360° pour propriétaires et conciergeries de locations saisonnières.',
+              'Visites virtuelles 3D pour propriétaires et conciergeries de locations saisonnières.',
             areaServed: { '@type': 'Country', name: 'France' },
             email: CONTACT_EMAIL,
             priceRange: PRICE_PER_LISTING,
@@ -46,87 +76,76 @@ export default function HomePage() {
         }}
       />
 
-      <SiteNav />
+      <SiteNav darkUntil="#visite" />
 
       <main id="contenu">
-        {/* ---------------------------------------------------------- héros --- */}
-        <section className="hero">
-          <div className="wrap hero-grid">
-            <div>
-              <p className="eyebrow">
-                <i aria-hidden="true" />
-                {HERO.eyebrow}
-              </p>
-              <h1>{HERO.headline}</h1>
-              <p className="hero-sub">{HERO.lede}</p>
+        {/* ---------------------------------------------------------- entrée --- */}
+        <div id="visite">
+          <EntranceTour
+            rooms={SHOWCASE_ROOMS}
+            doors={SHOWCASE_DOORS}
+            massing={SHOWCASE_MASSING}
+            opening={SHOWCASE_OPENING}
+            captions={SHOWCASE_CAPTIONS}
+            closing={SHOWCASE_CLOSING}
+            skipTo="#apres"
+            disclaimer={SHOWCASE_IDENTITY.disclaimer}
+          />
+        </div>
 
-              <div className="hero-actions">
-                <a className="btn btn-accent" href="#rendez-vous">
-                  Demander un scan
-                </a>
-                <a className="btn btn-ghost" href="#demonstration">
-                  Voir la vidéo
-                </a>
-              </div>
-
-              <ul className="hero-facts">
-                {HERO.facts.map((fact) => (
-                  <li key={fact}>
-                    <IconCheck />
-                    {fact}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* La démonstration est le premier argument : elle passe avant le
-                discours, et c'est le viewer de production, pas une capture. */}
-            <div className="frame">
-              <div className="frame-bar">
-                <span className="frame-dots" aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span className="frame-url">volume3d.fr/v/appartement-republique</span>
-              </div>
-              <div className="frame-body">
-                <DemoTour />
-              </div>
-              <p className="frame-note">
-                <span>
-                  <strong>Exemple de visite livrée.</strong> Faites glisser pour regarder autour de vous.
-                </span>
-                <span>Salon · Chambre · Salle de bain</span>
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------- démonstration --- */}
-        <section className="sec sec-alt" id="demonstration">
+        {/* ------------------------------------------- ce qu’on vient de voir --- */}
+        <section className="sec" id="apres">
           <div className="wrap">
-            <Reveal className="sec-head center">
-              <p className="kicker">Démonstration</p>
-              <h2>Ce que voit votre voyageur</h2>
+            <Reveal className="sec-head">
+              <p className="kicker">Ce que vous venez de faire</p>
+              <h2>Vous avez visité un logement sans y être allé</h2>
               <p>
-                Il ouvre le lien, il regarde autour de lui, il passe dans la pièce d’à côté. Aucune
-                application à installer, rien à créer de son côté. C’est exactement ce que vous enverrez.
+                Vous n’avez rien installé, rien ouvert, rien cliqué. Vous avez fait défiler une page. Vos
+                voyageurs feront exactement la même chose, depuis leur téléphone, avant de réserver — et
+                ils sauront à quoi ressemblent vos {area(totalArea(SHOWCASE_ROOMS))} avant de vous
+                écrire.
               </p>
             </Reveal>
 
-            <Reveal>
-              <DemoVideo src="/demo/visite" poster="/demo/poster.jpg" />
-              <p className="video-legend">
-                <span>Visite de démonstration · 45 secondes · sans son</span>
-                <span>Fonctionne sur téléphone, tablette et ordinateur, sans application</span>
-              </p>
+            <Reveal className="after-grid">
+              <article className="after-card">
+                <h3>La visite guidée</h3>
+                <p>
+                  Celle que vous venez de voir. Elle raconte le logement dans un ordre choisi, avec les
+                  mesures aux bons endroits. C’est ce qu’on met en tête d’annonce.
+                </p>
+                <p className="after-note">Vous y êtes.</p>
+              </article>
+
+              <article className="after-card after-card-lead">
+                <h3>La visite libre</h3>
+                <p>
+                  La même géométrie, mais c’est le voyageur qui conduit : il tourne la tête, il avance, il
+                  passe d’une pièce à l’autre à son rythme. C’est le lien que vous lui envoyez.
+                </p>
+                <a className="btn btn-accent" href="/demonstration">
+                  Essayer la visite libre
+                </a>
+              </article>
+
+              <article className="after-card">
+                <h3>Et chez vous&nbsp;?</h3>
+                <p>
+                  On relève votre logement sur place en une vingtaine de minutes. Le volume vient de vos
+                  murs, pas d’un modèle générique : les distances sont les vôtres.
+                </p>
+                <a className="after-link" href="#rendez-vous">
+                  Prendre trente minutes pour en parler →
+                </a>
+              </article>
             </Reveal>
+
+            <p className="after-mention">{SHOWCASE_IDENTITY.disclaimer}</p>
           </div>
         </section>
 
         {/* -------------------------------------------------------- résultats --- */}
-        <section className="sec" id="resultats">
+        <section className="sec sec-alt" id="resultats">
           <div className="wrap">
             <Reveal className="sec-head">
               <p className="kicker">Ce que ça change pour vous</p>
@@ -155,7 +174,7 @@ export default function HomePage() {
         </section>
 
         {/* --------------------------------------------------- avant / après --- */}
-        <section className="sec sec-alt">
+        <section className="sec">
           <div className="wrap">
             <Reveal className="sec-head center">
               <p className="kicker">Comparaison</p>
@@ -190,7 +209,7 @@ export default function HomePage() {
         </section>
 
         {/* ----------------------------------------------------- fonctionnement --- */}
-        <section className="sec" id="fonctionnement">
+        <section className="sec sec-alt" id="fonctionnement">
           <div className="wrap">
             <Reveal className="sec-head">
               <p className="kicker">Comment ça se passe</p>
@@ -214,7 +233,7 @@ export default function HomePage() {
         </section>
 
         {/* ------------------------------------------------------------ tarifs --- */}
-        <section className="sec sec-alt" id="tarifs">
+        <section className="sec" id="tarifs">
           <div className="wrap">
             <Reveal className="sec-head center">
               <p className="kicker">Tarifs</p>
@@ -242,7 +261,7 @@ export default function HomePage() {
                   ))}
                 </ul>
                 <a className="btn btn-accent btn-block" href="#rendez-vous">
-                  Demander un scan
+                  Prendre rendez-vous
                 </a>
               </Reveal>
 
@@ -263,7 +282,7 @@ export default function HomePage() {
                   ))}
                 </ul>
                 <a className="btn btn-ghost btn-block" href="#rendez-vous">
-                  Demander un devis
+                  En parler trente minutes
                 </a>
               </Reveal>
             </div>
@@ -271,7 +290,7 @@ export default function HomePage() {
         </section>
 
         {/* --------------------------------------------------------- questions --- */}
-        <section className="sec">
+        <section className="sec sec-alt">
           <div className="wrap">
             <Reveal className="sec-head center">
               <p className="kicker">Questions fréquentes</p>
@@ -297,29 +316,31 @@ export default function HomePage() {
           <div className="wrap">
             <div className="cta-grid">
               <div>
-                <h2>Faites scanner votre logement</h2>
+                <p className="kicker">Rendez-vous</p>
+                <h2>Trente minutes, et vous saurez si ça vaut le coup</h2>
                 <p>
-                  Dites-nous où il se trouve, on vous propose un créneau. Réponse sous 24 h, scan dans la
-                  semaine.
+                  Choisissez un créneau, laissez un numéro. Je vous appelle à l’heure dite, on regarde
+                  votre logement ensemble et je vous dis franchement ce que ça donnerait. Si ce n’est pas
+                  pour vous, je vous le dirai aussi.
                 </p>
                 <ul className="cta-list">
                   <li>
                     <IconCheck />
-                    Aucun engagement, aucun paiement à la demande
+                    Trente minutes, sans engagement et sans paiement
                   </li>
                   <li>
                     <IconCheck />
-                    On se déplace entre deux séjours si le logement est loué
+                    Par téléphone ou en visio, comme vous préférez
                   </li>
                   <li>
                     <IconCheck />
-                    Vos coordonnées servent uniquement à vous recontacter
+                    Vos coordonnées servent à ce rendez-vous, à rien d’autre
                   </li>
                 </ul>
               </div>
 
               <div className="cta-card">
-                <ContactForm />
+                <BookingForm days={days} />
               </div>
             </div>
           </div>

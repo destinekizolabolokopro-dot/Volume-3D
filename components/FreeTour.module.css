@@ -1,0 +1,134 @@
+/* La visite libre : une scène plein cadre, et le strict nécessaire par-dessus. */
+
+.tour {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 78dvh;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #101614;
+  border: 1px solid var(--line);
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+  /* Le glissement sert à regarder autour : sans cette ligne, le navigateur
+     l'interprète comme un défilement de page et la visite ne répond pas. */
+  touch-action: none;
+}
+
+.canvas[data-dragging='1'] {
+  cursor: grabbing;
+}
+
+.canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas canvas:focus-visible {
+  outline: 2px solid var(--accent-on-dark);
+  outline-offset: -4px;
+}
+
+.hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px 16px;
+  background: linear-gradient(to top, rgba(8, 12, 11, 0.82), rgba(8, 12, 11, 0));
+  pointer-events: none;
+}
+
+.room {
+  margin: 0;
+  flex: none;
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.help {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+/*
+ * Deux aides, une par appareil, et une seule affichée.
+ *
+ * `hover: hover` distingue un appareil à pointeur d'un écran tactile bien mieux
+ * qu'une largeur d'écran : une tablette large n'a pas de clavier, un petit
+ * portable en a un.
+ */
+.desktop {
+  display: none;
+}
+
+.touch {
+  display: inline;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .desktop {
+    display: inline;
+  }
+  .touch {
+    display: none;
+  }
+}
+
+.reset {
+  flex: none;
+  pointer-events: auto;
+  padding: 7px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.reset:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: #fff;
+}
+
+.fallback {
+  padding: 32px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  color: var(--ink-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.fallback p {
+  margin: 0;
+  max-width: 52ch;
+}
+
+@media (max-width: 700px) {
+  .tour {
+    aspect-ratio: 3 / 4;
+  }
+  .help {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

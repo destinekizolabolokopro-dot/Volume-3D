@@ -271,8 +271,9 @@ export interface Lead {
 }
 
 import type { RoomAttention } from './attention';
+import type { Appointment } from './booking';
 
-export type { RoomAttention };
+export type { Appointment, RoomAttention };
 
 export interface Database {
   accounts: Account[];
@@ -289,6 +290,8 @@ export interface Database {
   leads: Lead[];
   /* Compteurs d'attention, agrégés par logement, jour et pièce. */
   attention: RoomAttention[];
+  /* Rendez-vous pris depuis le site public. */
+  appointments: Appointment[];
 }
 
 export const EMPTY_DB: Database = {
@@ -305,4 +308,5 @@ export const EMPTY_DB: Database = {
   previewShots: [],
   leads: [],
   attention: [],
+  appointments: [],
 };

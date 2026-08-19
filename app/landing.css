@@ -897,3 +897,335 @@
 .foot a:hover {
   color: var(--ink-strong);
 }
+
+/* =========================================================================
+   L'entrée : la barre sur le sombre, puis ce qui suit la visite
+   ========================================================================= */
+
+/*
+ * Tant que la barre survole la visite, elle n'a pas de fond.
+ *
+ * Un bandeau blanc posé en haut d'une image plein écran coupe le premier écran
+ * en deux et annule l'effet qu'on vient de mettre en place. Elle reprend son
+ * fond clair dès qu'elle passe sur le reste de la page — et pas une seconde
+ * avant, sinon le texte blanc se retrouve sur du blanc.
+ */
+.nav[data-dark='1'] {
+  /* Le ciel de la scène est clair : un voile trop discret laisserait du blanc
+     sur du blanc. Il tient sur toute la hauteur de la barre et ne s'éteint que
+     juste en dessous. */
+  background: linear-gradient(to bottom, rgba(8, 12, 11, 0.72) 0%, rgba(8, 12, 11, 0.5) 62%, rgba(8, 12, 11, 0) 100%);
+  backdrop-filter: none;
+  border-bottom-color: transparent;
+}
+
+.nav[data-dark='1'] .brand,
+.nav[data-dark='1'] .brand-name {
+  color: #fff;
+}
+
+.nav[data-dark='1'] .nav-links a,
+.nav[data-dark='1'] .nav-side .sign-in {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.nav[data-dark='1'] .nav-links a:hover,
+.nav[data-dark='1'] .nav-side .sign-in:hover {
+  color: #fff;
+}
+
+.nav[data-dark='1'] .nav-burger {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.42);
+  color: #fff;
+}
+
+/* ------------------------------------------- ce qu’on vient de voir --- */
+
+.after-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  margin-top: clamp(28px, 4vw, 44px);
+}
+
+.after-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+/* La carte du milieu porte l'action : elle doit se voir sans crier. */
+.after-card-lead {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+.after-card h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+
+.after-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--ink-muted);
+}
+
+.after-card .btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.after-note {
+  margin-top: auto !important;
+  font-size: 13px !important;
+  color: var(--ink-faint) !important;
+}
+
+.after-link {
+  margin-top: auto;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.after-link:hover {
+  text-decoration: underline;
+}
+
+.after-mention {
+  margin: 22px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-faint);
+  max-width: 62ch;
+}
+
+/* =========================================================================
+   Choix d'un créneau
+   ========================================================================= */
+
+.booking-slots {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.booking-slots legend {
+  padding: 0;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+/*
+ * Les jours défilent horizontalement plutôt que de passer à la ligne : sur un
+ * téléphone, douze jours empilés repoussent le formulaire hors de l'écran, et
+ * personne ne fait défiler pour trouver un bouton qu'il ne sait pas là.
+ */
+.booking-days {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  /* Le défilement s'arrête sur un jour entier, jamais au milieu de deux. */
+  scroll-snap-type: x proximity;
+}
+
+.booking-day {
+  flex: none;
+  scroll-snap-align: start;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.booking-day:hover {
+  border-color: var(--line-strong);
+  color: var(--ink-strong);
+}
+
+.booking-day[aria-pressed='true'] {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: #fff;
+}
+
+.booking-hours {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.booking-hour {
+  padding: 10px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.booking-hour:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.booking-hour[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+/* Un créneau pris reste affiché : le voir occupé renseigne, le voir disparaître
+   donne l'impression que la page a bougé toute seule. */
+.booking-hour:disabled {
+  background: var(--bg-sunk);
+  border-color: var(--line);
+  color: var(--ink-faint);
+  cursor: not-allowed;
+  text-decoration: line-through;
+  font-size: 12px;
+}
+
+.booking-chosen {
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+}
+
+.booking-chosen strong {
+  color: var(--ink-strong);
+}
+
+/* Le choix du canal : une pastille par ligne, avec sa conséquence en clair. */
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  font-size: 14.5px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.check input[type='radio'] {
+  width: auto;
+  flex: none;
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.check em {
+  display: block;
+  font-style: normal;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.cta-band .kicker {
+  color: var(--accent-on-dark);
+}
+
+/* =========================================================================
+   Page de démonstration
+   ========================================================================= */
+
+.demo-stage {
+  padding: clamp(28px, 4vw, 48px) 0 clamp(40px, 6vw, 72px);
+}
+
+.demo-title {
+  margin: 8px 0 12px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(30px, 4.4vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--ink-strong);
+}
+
+.demo-lead {
+  margin: 0 0 26px;
+  max-width: 58ch;
+  font-size: 16.5px;
+  line-height: 1.62;
+  color: var(--ink-muted);
+}
+
+.demo-mention {
+  margin: 16px 0 0;
+  max-width: 66ch;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-faint);
+}
+
+.demo-rooms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 14px;
+  margin-top: clamp(24px, 3.5vw, 38px);
+}
+
+.demo-room {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.demo-room h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.demo-area {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--ink-strong);
+}
+
+.demo-room p:last-child {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.demo-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0;
+}

@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { LogoMark } from '@/components/Logo';
 import { isAiConfigured } from '@/lib/ai-preview';
+import { upcoming } from '@/lib/booking';
 import { requireAuth } from '@/lib/require-auth';
 import { getStore, isLocalStore } from '@/lib/store';
 import { logout } from './actions';
@@ -21,10 +22,11 @@ export default async function AdminHome() {
   await requireAuth();
 
   const store = getStore();
-  const [properties, previews, leads] = await Promise.all([
+  const [properties, previews, leads, appointments] = await Promise.all([
     store.list('properties'),
     store.list('previews'),
     store.list('leads'),
+    store.list('appointments'),
   ]);
   const origin = await currentOrigin();
 
@@ -32,6 +34,9 @@ export default async function AdminHome() {
     [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   const pendingLeads = leads.filter((lead) => !lead.handled).length;
+  const pendingAppointments = upcoming(appointments, new Date()).filter(
+    (appointment) => appointment.status === 'demande',
+  ).length;
 
   return (
     <div className="admin">
@@ -43,6 +48,9 @@ export default async function AdminHome() {
           </span>
         </div>
         <nav className="admin-nav">
+          <a href="/admin/rendez-vous">
+            Rendez-vous{pendingAppointments > 0 ? ` (${pendingAppointments})` : ''}
+          </a>
           <a href="/admin/demarchage">Fiche de démarchage</a>
           <a href="/" target="_blank" rel="noopener noreferrer">
             Voir le site ↗

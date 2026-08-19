@@ -269,3 +269,59 @@ test('reachableToward ne rend rien quand il n’y a pas un centimètre à gagner
   // Départ hors de la pièce : rien à faire.
   assert.equal(reachableToward(room, { x: 9, y: 9 }, { x: 2, y: 1.5 }), null);
 });
+
+/* ================================================ déplacement libre === */
+
+import {
+  roomAt as roomAtPoint,
+  slideAnywhere as slideAcross,
+  standableAnywhere as standAcross,
+} from '../lib/plan.ts';
+import { SHOWCASE_DOORS, SHOWCASE_ROOMS } from '../lib/showcase.ts';
+
+test('on peut se tenir au milieu de chaque pièce du logement de démonstration', () => {
+  for (const room of SHOWCASE_ROOMS) {
+    assert.ok(
+      standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, roomCenter(room)),
+      `on ne peut pas se tenir au centre de ${room.id}`,
+    );
+  }
+});
+
+test('on ne peut pas se tenir hors du logement', () => {
+  assert.equal(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: -2, y: 2 }), false);
+  assert.equal(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 50, y: 50 }), false);
+  // Le vide entre la chambre et la salle d'eau, côté x = 9 : hors bâti.
+  assert.equal(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 9.5, y: 4.5 }), false);
+});
+
+test('un seuil se franchit, un mur plein ne se franchit pas', () => {
+  // La porte entre le dégagement et la chambre est à x = 6,6, y ∈ [1,5 ; 2,4].
+  assert.ok(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 6.55, y: 1.95 }));
+  /* Le même mur, mais à une hauteur où il est plein : y = 3,00 est au-dessus
+     de la porte de la chambre (1,50–2,40) et au-dessous de celle de la salle
+     d'eau (3,50–4,30). Un premier essai visait y = 3,60 — c'est-à-dire pile
+     dans l'embrasure de la salle d'eau, donc un passage parfaitement légitime
+     que le test comptait comme une faute. */
+  const through = slideAcross(
+    SHOWCASE_ROOMS,
+    SHOWCASE_DOORS,
+    { x: 6.0, y: 3.0 },
+    { x: 6.9, y: 3.0 },
+  );
+  assert.ok(through.x < 6.6, 'la marche a traversé une cloison pleine');
+});
+
+test('on longe un mur au lieu de s’y coller net', () => {
+  // Vers le mur du fond du séjour, en biais : la composante utile passe.
+  const from = { x: 2.6, y: 3.3 };
+  const slid = slideAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, from, { x: 3.4, y: 4.2 });
+  assert.ok(slid.x > from.x, 'le déplacement latéral doit passer');
+  assert.ok(slid.y <= 3.7, 'le déplacement vers le mur doit être bloqué');
+});
+
+test('on sait dans quelle pièce on se trouve', () => {
+  assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 2.6, y: 2 })?.id, 'sejour');
+  assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 8.3, y: 1.6 })?.id, 'chambre');
+  assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 40, y: 40 }), null);
+});

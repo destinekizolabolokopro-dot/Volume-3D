@@ -255,6 +255,63 @@ export function reachableToward(
   return distance(from, result) < precision ? null : result;
 }
 
+/**
+ * Vrai si l'on peut se tenir en ce point, dans le logement pris comme un tout.
+ *
+ * `canStandAt` raisonne pièce par pièce, ce qui convient à une visite où l'on
+ * saute d'une pièce à l'autre. Une visite libre, elle, traverse : la contrainte
+ * devient « rester dans le logement ». Reste le cas du seuil — on y frôle les
+ * jambages par construction, et appliquer la marge habituelle interdirait de
+ * franchir la moindre porte. On l'autorise donc à condition d'être réellement
+ * dans l'une des deux pièces que la porte relie.
+ */
+export function standableAnywhere(
+  rooms: PlanRoom[],
+  doors: PlanDoor[],
+  point: PlanPoint,
+  /* Plus généreuse que celle de la marche pièce par pièce (0,35 m), et pour une
+     raison de cadrage : collé à trente centimètres d'une cloison, on ne voit
+     plus qu'un aplat. Quarante-cinq centimètres, c'est la distance à laquelle un
+     mur reste un mur. Le dégagement en garde cinquante de large, de quoi
+     passer. */
+  margin = 0.45,
+): boolean {
+  if (rooms.some((room) => canStandAt(room, point, margin))) return true;
+
+  const passage = doors.find(
+    (door) => door.kind !== 'window' && distanceToSegment(point, { a: door.a, b: door.b }) < 0.6,
+  );
+  if (!passage) return false;
+  return rooms.some(
+    (room) => (room.id === passage.from || room.id === passage.to) && containsPoint(room, point),
+  );
+}
+
+/**
+ * Le déplacement le plus proche de celui demandé, sans traverser de cloison.
+ *
+ * Même principe que `slideMove` — on tente le pas entier, puis chaque axe — mais
+ * à l'échelle du logement, seuils compris.
+ */
+export function slideAnywhere(
+  rooms: PlanRoom[],
+  doors: PlanDoor[],
+  from: PlanPoint,
+  to: PlanPoint,
+  margin = 0.45,
+): PlanPoint {
+  if (standableAnywhere(rooms, doors, to, margin)) return to;
+  const alongX = { x: to.x, y: from.y };
+  if (standableAnywhere(rooms, doors, alongX, margin)) return alongX;
+  const alongY = { x: from.x, y: to.y };
+  if (standableAnywhere(rooms, doors, alongY, margin)) return alongY;
+  return from;
+}
+
+/** La pièce qui contient un point, s'il y en a une. */
+export const roomAt = (rooms: PlanRoom[], point: PlanPoint): PlanRoom | null =>
+  rooms.find((room) => containsPoint(room, point)) ?? null;
+
 /* ------------------------------------------------------------- navigation */
 
 /** Les pièces accessibles depuis une pièce donnée, via une ouverture franchissable. */

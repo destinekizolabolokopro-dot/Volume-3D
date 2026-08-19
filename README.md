@@ -7,11 +7,140 @@ y crée ses biens, et suit ce qu'ils rapportent.
 
 | Zone | URL | Qui y accède |
 |---|---|---|
-| **Landing** | `/` | Le public. Présentation de l'offre + formulaire de contact. |
+| **Accueil** | `/` | Le public. **La page est la visite** : le défilement fait entrer dans le logement. Prise de rendez-vous en bas. |
+| **Visite libre** | `/demonstration` | Le public. Le même logement, mais c'est le visiteur qui conduit. |
 | **Espace client** | `/espace` | Vos abonnés, chacun sur ses propres biens. |
 | **Back-office** | `/admin` | Vous seul, par mot de passe. Vue sur l'ensemble. |
+| **Rendez-vous** | `/admin/rendez-vous` | Vous seul. Ce que le site a pris comme rendez-vous. |
 | **Visite publique** | `/v/{slug}` | Les voyageurs, sans compte, avec assistant. |
 | **Aperçu de démarchage** | `/demo/{token}` | Un prospect précis, en privé, temporairement. |
+
+
+---
+
+## L'accueil est la visite
+
+Le premier écran du site n'est pas un argumentaire : c'est un palier d'immeuble,
+avec une porte. On fait défiler, la porte s'ouvre, la caméra entre, traverse le
+séjour, le dégagement, la chambre, la salle d'eau, et revient. À chaque pièce,
+un panneau donne la surface et ce que le relevé permet d'en dire. Le discours
+commence en dessous, quand le visiteur sait déjà de quoi on parle.
+
+### Comment c'est fait
+
+Trois fichiers, et la séparation entre eux est le cœur du procédé.
+
+| Fichier | Rôle |
+|---|---|
+| `lib/journey-path.ts` | **La timeline.** Du calcul pur : un plan entre, une suite de poses de caméra indexées par un curseur `t` sort. Ni DOM, ni WebGL, ni défilement. |
+| `components/three/interior.ts` | **Le logement en volume.** Sols, murs percés, plinthes, mobilier, palier, porte, vis-à-vis. Ne connaît ni le scénario ni React. |
+| `components/landing/EntranceTour.tsx` | **Le lien entre les deux.** Lit la position dans la page, la transforme en `t`, demande la pose, dessine. |
+
+Ce découpage est ce qui rend la chose testable : `tests/journey-path.test.ts` et
+`tests/showcase.test.ts` vérifient sans ouvrir de navigateur qu'à aucun instant
+la caméra ne traverse un mur, que les pièces sont visitées dans l'ordre, et que
+deux légendes ne se superposent jamais.
+
+### Quatre décisions qui vont à contre-courant
+
+**On ne détourne pas le défilement.** Pas de `preventDefault`, pas de scroll
+simulé : la page défile normalement, on se contente de *lire* où elle en est. La
+molette garde son inertie, la barre de défilement fonctionne, Espace et les
+flèches marchent, la recherche dans la page marche, le lecteur d'écran suit. Les
+sites qui reprennent la main sur le défilement gagnent trois pour cent d'effet
+et perdent tout le reste.
+
+**L'image suit le curseur avec du retard.** Un amortissement à chaque image,
+normalisé sur le temps écoulé — la même douceur à 60 et à 120 images par
+seconde. Sans lui, l'image colle à la molette et saccade à chaque cran.
+
+**Position et regard sont deux pistes distinctes.** La position suit une
+polyligne dense dont les angles sont arrondis, parcourue à vitesse constante. Le
+regard, lui, est fait de temps forts : on entre, on tourne la tête vers ce que la
+pièce a de plus parlant, on repart. Tout lisser donnait une caméra qui ralentit à
+chaque point de passage ; les garder distinctes donne une marche régulière sous
+un regard qui prend son temps.
+
+**Rien ne passe par React pendant le défilement.** Opacités, voile, barre de
+progression : tout est écrit directement dans le DOM depuis la boucle de rendu.
+Un `setState` par image ferait retomber la page à vingt images par seconde sur un
+téléphone.
+
+Et `prefers-reduced-motion` ne dégrade pas : il rend les mêmes textes, dans le
+même ordre, lisibles d'un coup, sans WebGL du tout.
+
+### Le parcours n'est écrit nulle part
+
+`buildJourney(rooms, doors)` le fabrique depuis n'importe quel plan relevé :
+il repère la porte palière, parcourt le logement en profondeur d'abord — la plus
+grande pièce à chaque embranchement, comme on fait visiter — et conserve les
+retours, parce qu'il **faut** repasser par le dégagement pour aller de la chambre
+à la salle d'eau. Une caméra qui se téléporte détruit en une seconde la
+crédibilité du volume.
+
+Deux règles valent d'être signalées, parce qu'elles viennent d'un rendu raté :
+
+- **On ne s'arrête pas au centre d'une petite pièce.** Au milieu d'une salle
+  d'eau de trois mètres carrés, la caméra est à quatre-vingt-dix centimètres de
+  chaque mur : quelle que soit la direction, l'image est un aplat. En dessous de
+  sept mètres carrés, on s'arrête dans l'embrasure et on cadre la pièce entière,
+  comme un photographe d'intérieur.
+- **On regarde à un mètre soixante devant.** Viser le point de passage suivant
+  paraît naturel jusqu'à ce que deux points soient séparés d'un demi-mètre : dans
+  un dégagement d'un mètre quarante, la caméra se met alors à fixer le mur
+  qu'elle longe.
+
+### Le logement de démonstration
+
+Il vit dans `lib/showcase.ts`, **dans le code et pas dans la base**. La page
+d'accueil est la visite : elle ne peut pas dépendre du contenu d'une base qui
+peut être vide. Un premier déploiement sur une base neuve montre déjà quelque
+chose, et le logement d'un client n'est jamais exposé.
+
+Ce qu'il faut en dire, et que la page dit : les mesures sont **cohérentes de bout
+en bout** — surfaces, hauteurs, largeurs d'ouverture, circulation — mais le bien
+est **fictif** tant qu'un vrai logement n'a pas été relevé. On vend la fidélité du
+volume ; on ne peut pas la revendiquer sur un appartement qui n'existe pas.
+
+`tests/showcase.test.ts` contrôle ce plan à chaque exécution : pièces qui ne se
+chevauchent pas, portes qui reposent réellement sur un mur de leurs deux pièces,
+ouvertures qui ne dépassent pas la hauteur sous plafond, mobilier qui tient dans
+sa pièce, surfaces annoncées égales aux surfaces calculées. Ces contrôles
+viennent d'un vrai défaut : une porte déclarée entre le dégagement et la salle
+d'eau alors que les deux polygones ne se touchaient pas. La caméra franchissait
+vingt centimètres de vide, sans sol ni plafond, et on voyait le ciel au milieu de
+l'appartement.
+
+---
+
+## Prendre rendez-vous
+
+Le service est vendu par une personne, pas par une plateforme. Le visiteur
+choisit un créneau, laisse un numéro, et il est rappelé. Pas de calendrier
+partagé, pas de synchronisation, pas de visioconférence intégrée — trois choses
+qui demanderaient un service extérieur et n'apporteraient rien tant qu'il n'y a
+qu'un interlocuteur.
+
+- `lib/booking.ts` calcule les créneaux **à l'heure de Paris**, changement d'heure
+  compris, à partir de plages ouvertes déclarées jour par jour. Un délai de
+  prévenance de trois heures évite de promettre un appel dans dix minutes.
+- `app/api/rendez-vous/route.ts` **recalcule la liste des créneaux valables à la
+  réception**. Un formulaire n'est jamais une source de vérité : sans ce
+  recalcul, on accepterait un rendez-vous à trois heures du matin parce que
+  quelqu'un aurait modifié une valeur dans la page.
+- Deux compteurs de débit distincts, et c'est délibéré : l'un borne les requêtes,
+  l'autre les **réservations abouties**. Avec un compteur unique, quelqu'un qui se
+  trompe quatre fois d'adresse e-mail se retrouvait interdit de réservation
+  pendant dix minutes.
+- Quand un créneau vient d'être pris entre l'affichage et l'envoi, le serveur
+  répond 409 **avec la liste à jour**, et le formulaire la réaffiche aussitôt.
+  C'est la différence entre une course perdue et une page cassée.
+
+> **Aucun e-mail n'est envoyé.** Il n'y a pas d'expéditeur configuré dans ce
+> projet, et la page ne promet donc pas de confirmation. `/admin/rendez-vous` est
+> le seul endroit où l'on voit les demandes arriver — la page le dit, et le
+> message de confirmation aussi. Annuler un rendez-vous y libère immédiatement le
+> créneau côté public.
 
 ---
 
@@ -186,6 +315,14 @@ Ce qu'on montre au propriétaire ne peut donc pas diverger du produit.
 
 Quatre écrans, atteignables par la barre en bas : l'accueil, la visite
 publique, le tableau de bord du client, et la fiche d'un bien.
+
+> **Le fichier versionné date d'avant la nouvelle page d'accueil.** Il montre
+> l'ancien accueil, pas la visite au défilement — et c'est une limite du procédé
+> plus qu'un oubli : l'extraction fige le HTML et les feuilles de style d'une
+> page, or la nouvelle entrée est une scène WebGL pilotée par la position dans
+> le document. Il faudrait embarquer le moteur, pas une capture. Relancez
+> `npm run standalone` quand vous en aurez besoin en rendez-vous ; le résultat
+> restera une démonstration des écrans, pas de l'entrée.
 
 Ce qui **fonctionne vraiment** dedans, pas en image :
 
@@ -558,8 +695,9 @@ app/
   globals.css                  jetons de design et primitives partagées
   fonts.css                    @font-face de la fonte auto-hébergée (généré)
   layout.tsx                   coquille HTML, métadonnées, préchargement de la fonte
-  page.tsx                     page publique
-  landing.css                  feuille de la page publique
+  page.tsx                     accueil : la visite au défilement, puis l'offre et le rendez-vous
+  demonstration/page.tsx       visite libre, conduite par le visiteur
+  landing.css                  feuille des pages publiques
   v/[slug]/                    visite publique (panoramas, vidéo, modèle 3D ou embed)
   demo/[token]/                aperçu de démarchage, filigrané et temporaire
   espace/                      espace client : tableau de bord, biens, création, compte
@@ -568,10 +706,16 @@ app/
     page.tsx                   tableau de bord interne
     logements/[id]/            éditeur de visite
   editor.css                   éditeur de visite, partagé admin / espace client
+    rendez-vous/               les rendez-vous pris depuis le site
   api/chat/                    assistant du voyageur (Claude)
   api/contact/                 réception du formulaire
+  api/rendez-vous/             réservation d'un créneau, et liste des créneaux libres
   api/files/[...path]/         service des fichiers en développement
 components/
+  three/interior.ts            le logement en volume : murs percés, mobilier, palier, porte
+  landing/EntranceTour.tsx     l'accueil : le défilement fait la visite
+  FreeTour.tsx                 la visite libre : le visiteur conduit
+  BookingForm.tsx              choix d'un créneau et coordonnées
   PanoViewer.tsx               viewer 360° : rotation, zoom, passages, plein écran
   PlanViewer.tsx               viewer du volume reconstruit depuis un plan
   PlanPanel.tsx                relevé du plan et relecture, dans l'éditeur
@@ -584,6 +728,9 @@ components/
   ChatWidget.tsx               assistant posé sur la visite
   landing/                     SiteNav, DemoTour, DemoVideo, Reveal, icônes
 lib/
+  journey-path.ts              la timeline de l'accueil : plan → poses de caméra indexées par t
+  showcase.ts                  le logement de démonstration, dans le code et non dans la base
+  booking.ts                   créneaux à l'heure de Paris, contrôle serveur, formatage
   plan.ts                      géométrie des visites depuis un plan, marche, validation du relevé
   plan-reader.ts               lecture du plan et rattachement des photos (Claude, vision)
   intake.ts                    contrôle de complétude du dossier, sans appel à un modèle

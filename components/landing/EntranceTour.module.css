@@ -1,0 +1,254 @@
+/*
+ * L'entrée. Le canvas est collant, la section est haute : c'est la hauteur de la
+ * section qui donne au visiteur de quoi faire défiler, et le collant qui garde
+ * l'image sous les yeux pendant qu'il le fait.
+ */
+
+.tour {
+  position: relative;
+  /* La hauteur est posée en ligne : elle dépend de la longueur du parcours. */
+  background: #101614;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow: hidden;
+  /* Un conteneur d'empilement propre : sans lui, les légendes passeraient
+     derrière la barre de navigation sur certains navigateurs. */
+  isolation: isolate;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * Le voile.
+ *
+ * Un texte blanc posé sur une image 3D est lisible ou non selon ce qui passe
+ * derrière — et ici, ce qui passe derrière change à chaque image. Le dégradé
+ * garantit le contraste quoi qu'il arrive : c'est la seule façon d'écrire sur
+ * une vidéo sans jouer aux dés.
+ */
+.veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(8, 12, 11, 0.9) 0%, rgba(8, 12, 11, 0.3) 30%, rgba(8, 12, 11, 0) 58%),
+    linear-gradient(to right, rgba(8, 12, 11, 0.55) 0%, rgba(8, 12, 11, 0) 48%);
+}
+
+/* ------------------------------------------------------------- légendes --- */
+
+.caption {
+  position: absolute;
+  left: clamp(20px, 5vw, 68px);
+  bottom: clamp(96px, 13vh, 150px);
+  margin: 0;
+  max-width: min(30rem, calc(100% - 40px));
+  color: #fff;
+  /* Les deux seules propriétés qu'un compositeur peut animer sans repeindre. */
+  will-change: opacity, transform;
+}
+
+.caption figcaption {
+  display: block;
+}
+
+.kicker {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7fd4c6;
+}
+
+.title {
+  margin: 0 0 12px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(30px, 5.4vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.text {
+  margin: 0;
+  font-size: clamp(15px, 1.5vw, 17.5px);
+  line-height: 1.62;
+  color: rgba(255, 255, 255, 0.86);
+  text-wrap: pretty;
+}
+
+/* --------------------------------------------------------------- repères --- */
+
+.cue {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(96px, 13vh, 150px);
+  transform: translateX(-50%);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  pointer-events: none;
+}
+
+.cueLine {
+  width: 1px;
+  height: 42px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.75));
+  animation: drip 2.1s ease-in-out infinite;
+}
+
+@keyframes drip {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scaleY(0.55);
+    transform-origin: top;
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+.hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px clamp(20px, 5vw, 68px) 22px;
+}
+
+.track {
+  flex: 1;
+  min-width: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: #4fb3a6;
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.skip {
+  flex: none;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.34);
+  padding-bottom: 2px;
+}
+
+.skip:hover,
+.skip:focus-visible {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.mention {
+  /* Dans la barre du bas, pas en haut : en haut elle tombait sur la barre de
+     navigation, et sur un ciel clair elle devenait illisible. Ici elle profite
+     du voile, comme le reste. */
+  flex: none;
+  max-width: 22rem;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+@media (max-width: 760px) {
+  .caption {
+    bottom: clamp(84px, 12vh, 120px);
+    max-width: calc(100% - 40px);
+  }
+  /* Sur un téléphone, le repère « faites défiler » tomberait sur la légende :
+     l'un des deux doit partir, et c'est le repère — la légende porte le fond. */
+  .cue {
+    display: none;
+  }
+  /* Sur un téléphone, la barre du bas n'a pas la place : la mention reste
+     dans la section « ce que vous venez de voir », juste dessous, où elle est
+     de toute façon reprise en entier. */
+  .mention {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------ version sans animation --- */
+
+.still {
+  background: #101614;
+  color: #fff;
+  padding: clamp(48px, 9vw, 96px) clamp(20px, 5vw, 68px);
+}
+
+.stillList {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 46rem;
+  display: grid;
+  gap: clamp(32px, 5vw, 52px);
+}
+
+.stillTitle {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.stillText {
+  margin: 0;
+  font-size: 16.5px;
+  line-height: 1.62;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.disclaimer {
+  max-width: 46rem;
+  margin: clamp(36px, 6vw, 56px) auto 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stillLink {
+  display: inline-block;
+  margin: 28px auto 0;
+  color: #7fd4c6;
+  font-size: 15px;
+}
