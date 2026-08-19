@@ -167,3 +167,61 @@ export const SUBTLE: [MaterialName, MaterialName][] = [['chene', 'chene_joint']]
 export const MIN_SEPARATION = 4;
 /** Écart maximal toléré pour une nuance interne à un même matériau. */
 export const MAX_SUBTLETY = 12;
+
+/* ============================================================== matière === */
+
+/*
+ * La rugosité des surfaces.
+ *
+ * La couleur ne fait pas la matière. Deux surfaces du même beige — un mur
+ * peint et un plan de travail — se distinguent d'abord par la façon dont elles
+ * renvoient la lumière : le mur la diffuse entièrement, le plan de travail en
+ * garde une trace directionnelle. Un moteur qui ignore cette différence rend
+ * tout en papier, quelle que soit la justesse du nuancier.
+ *
+ * Les valeurs suivent la convention habituelle : 0 est un miroir, 1 est un
+ * diffuseur parfait. Les repères viennent des relevés de matériaux publiés pour
+ * les moteurs temps réel, ramenés à ce qu'on trouve dans un logement parisien.
+ *
+ *  · peinture mate murale        0,90 – 0,95
+ *  · peinture satinée boiserie   0,50 – 0,60
+ *  · parquet chêne vitrifié      0,35 – 0,45
+ *  · carrelage émaillé           0,20 – 0,30
+ *  · tissu, laine                0,90 – 1,00
+ *  · laiton brossé               0,30 – 0,40, métal
+ *
+ * Ce qui se voit, concrètement : la plinthe et la corniche prennent un reflet
+ * que le mur n'a pas, donc elles se détachent sans qu'on ait eu à les peindre
+ * d'une autre couleur — et c'est exactement ce que fait la peinture satinée
+ * dans un vrai appartement.
+ */
+export const ROUGHNESS = {
+  mur: 0.93,
+  plafond: 0.95,
+  menuiserie: 0.55,
+  parquet: 0.42,
+  carrelage: 0.26,
+  verre: 0.06,
+  /* Dehors : la pierre et l'enrobé ne renvoient rien de directionnel à cette
+     distance, et un reflet sur un immeuble à trente mètres ne ferait que
+     attirer l'œil hors de la fenêtre. */
+  dehors: 0.95,
+} as const;
+
+/** Rugosité du mobilier, par teinte du nuancier. */
+export const FURNITURE_ROUGHNESS: Record<keyof typeof FURNITURE, number> = {
+  cabinet: 0.5,
+  bois: 0.55,
+  lin: 0.95,
+  petrole: 0.88,
+  terre: 0.88,
+  sombre: 0.62,
+  tapis: 0.98,
+  laiton: 0.35,
+};
+
+/** Ce qui est métallique. Le laiton, et rien d'autre : un métal mal placé se
+ *  voit immédiatement, parce qu'il devient noir là où rien ne se reflète. */
+export const FURNITURE_METAL: Partial<Record<keyof typeof FURNITURE, number>> = {
+  laiton: 0.85,
+};

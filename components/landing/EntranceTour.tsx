@@ -13,6 +13,7 @@ import {
   type Journey,
 } from '@/lib/journey-path';
 import { buildInterior, configure } from '@/components/three/interior';
+import { adaptQuality } from '@/components/three/quality';
 import type { Massing } from '@/lib/showcase';
 import type { PlanDoor, PlanPoint, PlanRoom } from '@/lib/types';
 import styles from './EntranceTour.module.css';
@@ -191,7 +192,7 @@ function MovingTour({
       'Vue en trois dimensions du logement, qui avance à mesure que la page défile.',
     );
 
-    const interior = buildInterior({ rooms, doors, massing, entrance: journey.entrance });
+    const interior = buildInterior({ rooms, doors, massing, entrance: journey.entrance, renderer });
     const { scene, origin, leaf } = interior;
     const camera = new THREE.PerspectiveCamera(66, 1, 0.04, 300);
 
@@ -232,6 +233,8 @@ function MovingTour({
     let cursor = progress();
     let previous = performance.now();
     let frame = 0;
+    /* La résolution suit ce que la machine sait tenir. Voir `quality.ts`. */
+    const quality = adaptQuality(renderer, Math.min(window.devicePixelRatio, 2));
 
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw);
@@ -239,6 +242,7 @@ function MovingTour({
         previous = now;
         return;
       }
+      quality.tick(now);
       const elapsed = Math.min(0.05, (now - previous) / 1000);
       previous = now;
 
@@ -302,6 +306,7 @@ function MovingTour({
 
     return () => {
       cancelAnimationFrame(frame);
+      quality.dispose();
       observer.disconnect();
       watcher.disconnect();
       interior.dispose();

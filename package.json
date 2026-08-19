@@ -13,7 +13,8 @@
     "demo:video": "node scripts/record-demo.mjs",
     "standalone": "node scripts/standalone/extract.mjs && node scripts/standalone/assemble.mjs",
     "palette": "node --experimental-strip-types scripts/palette.mjs",
-    "contraste": "node scripts/contraste.mjs"
+    "contraste": "node scripts/contraste.mjs",
+    "budget": "node scripts/budget.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

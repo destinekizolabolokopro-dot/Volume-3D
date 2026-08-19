@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { buildInterior, configure } from '@/components/three/interior';
+import { adaptQuality } from '@/components/three/quality';
 import { EYE, verticalFov } from '@/lib/journey-path';
 import { reachableAnywhere, roomAt, roomCenter, slideAnywhere, standableAnywhere } from '@/lib/plan';
 import type { Massing } from '@/lib/showcase';
@@ -75,7 +76,7 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
       'Visite en trois dimensions. Flèches ou Z Q S D pour avancer, glisser pour regarder autour.',
     );
 
-    const interior = buildInterior({ rooms, doors, massing });
+    const interior = buildInterior({ rooms, doors, massing, renderer });
     const { scene, origin } = interior;
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.04, 300);
 
@@ -268,8 +269,10 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
 
     let frame = 0;
     let previous = performance.now();
+    const quality = adaptQuality(renderer, Math.min(window.devicePixelRatio, 2));
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw);
+      quality.tick(performance.now());
       if (document.hidden) {
         previous = now;
         return;
@@ -298,6 +301,7 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
 
     return () => {
       cancelAnimationFrame(frame);
+      quality.dispose();
       observer.disconnect();
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);

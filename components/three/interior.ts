@@ -13,6 +13,7 @@
  */
 
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {
   WALL_FACADE,
   WALL_SKIN,
@@ -27,7 +28,14 @@ import {
   wallThickness,
   type Interval,
 } from '@/lib/plan';
-import { FURNITURE, OUTSIDE, SHELL } from '@/lib/palette';
+import {
+  FURNITURE,
+  FURNITURE_METAL,
+  FURNITURE_ROUGHNESS,
+  OUTSIDE,
+  ROUGHNESS,
+  SHELL,
+} from '@/lib/palette';
 import type { Massing } from '@/lib/showcase';
 import type { PlanDoor, PlanPoint, PlanRoom } from '@/lib/types';
 
@@ -49,8 +57,79 @@ const SKIN = WALL_SKIN;
 const FACADE = WALL_FACADE;
 /** Hauteur des plinthes. Un détail minuscule qui fait « pièce » plutôt que « boîte ». */
 const SKIRTING = 0.09;
+
+/** Réutilisés à chaque pièce plutôt que réalloués : la construction en pose
+ *  quelques milliers. */
+const AXE_Y = new THREE.Vector3(0, 1, 0);
+const IDENTITE = new THREE.Matrix4();
 /** Hauteur de la corniche, au raccord du mur et du plafond. */
 const CORNICE = 0.12;
+
+/* --------------------------------------------------------- fusion --- */
+
+/**
+ * Le fusionneur.
+ *
+ * Un logement construit pièce par pièce donne trois cent soixante-seize appels
+ * de dessin pour cinq mille triangles : chaque pan de mur, chaque plinthe,
+ * chaque pied de table est un objet distinct que la carte graphique doit
+ * préparer séparément. Le coût n'est pas dans les triangles — cinq mille, c'est
+ * une misère — il est dans le nombre d'objets.
+ *
+ * On accumule donc les géométries par matériau, on les transforme une fois pour
+ * toutes dans le repère de la scène, et on n'envoie qu'un objet par matériau.
+ * Le compte tombe à une dizaine d'appels, et le budget ainsi libéré paie le
+ * détail : chanfreins, profils de moulure, plus de mobilier.
+ *
+ * Toutes les géométries d'un même lot doivent porter les mêmes attributs. On
+ * complète donc `color` en blanc quand l'occlusion n'a pas été cuite : sans ça
+ * la fusion échoue, et elle échoue silencieusement.
+ */
+class Batch {
+  private readonly lots = new Map<THREE.Material, THREE.BufferGeometry[]>();
+
+  add(geometry: THREE.BufferGeometry, material: THREE.Material, matrix: THREE.Matrix4): void {
+    geometry.applyMatrix4(matrix);
+    if (!geometry.getAttribute('color')) {
+      const count = geometry.getAttribute('position').count;
+      geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3).fill(1), 3));
+    }
+    // `uv` manque sur certaines primitives ; il doit exister partout ou nulle part.
+    if (!geometry.getAttribute('uv')) {
+      const count = geometry.getAttribute('position').count;
+      geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2));
+    }
+    const lot = this.lots.get(material);
+    if (lot) lot.push(geometry);
+    else this.lots.set(material, [geometry]);
+  }
+
+  /** Verse les objets fusionnés dans un groupe, et rend les géométries sources. */
+  flush(group: THREE.Group, disposables: { dispose(): void }[]): void {
+    for (const [material, lot] of this.lots) {
+      const merged = lot.length === 1 ? lot[0] : mergeGeometries(lot, false);
+      if (!merged) {
+        // La fusion refuse des attributs incompatibles : on retombe sur des
+        // objets séparés plutôt que de perdre la géométrie.
+        for (const geometry of lot) {
+          disposables.push(geometry);
+          const mesh = new THREE.Mesh(geometry, material);
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          group.add(mesh);
+        }
+        continue;
+      }
+      if (merged !== lot[0]) for (const geometry of lot) geometry.dispose();
+      disposables.push(merged);
+      const mesh = new THREE.Mesh(merged, material);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+    }
+    this.lots.clear();
+  }
+}
 
 /* ------------------------------------------------- ombrage des raccords --- */
 
@@ -127,6 +206,15 @@ export interface InteriorOptions {
   massing?: Massing[];
   /** Renseignée pour que la scène porte un palier et une porte qui s'ouvre. */
   entrance?: Entrance | null;
+  /**
+   * Le renderer, pour cuire la carte d'environnement.
+   *
+   * C'est la seule chose que la construction lui demande, et elle la lui rend
+   * aussitôt : la carte est une texture, la scène n'en garde pas d'autre trace.
+   * Sans elle, les matériaux physiques n'ont rien à refléter et rendent comme
+   * du Lambert.
+   */
+  renderer?: THREE.WebGLRenderer | null;
 }
 
 export interface Interior {
@@ -147,6 +235,7 @@ export interface Interior {
  * lumières dans l'échelle et rend au blanc ses nuances.
  */
 export function configure(renderer: THREE.WebGLRenderer): void {
+  /* La résolution de départ ; `adaptQuality` la corrige ensuite à la mesure. */
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x101614, 1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -155,14 +244,72 @@ export function configure(renderer: THREE.WebGLRenderer): void {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 }
 
+/**
+ * Le ciel, cuit en carte d'environnement.
+ *
+ * Un matériau physique a besoin de savoir ce qu'il reflète. Sans environnement,
+ * son terme spéculaire n'a rien à renvoyer : il rend exactement comme du
+ * Lambert, c'est-à-dire comme du papier, et tout le travail de rugosité ne se
+ * voit nulle part.
+ *
+ * On n'a pas d'image HDR à charger — et on n'en veut pas : c'est un fichier de
+ * plusieurs mégaoctets pour une page d'accueil. On cuit donc la carte à partir
+ * du dégradé de ciel qui est déjà là. Le résultat n'est pas un panorama de
+ * référence, mais il porte l'essentiel : plus clair en haut, plus chaud en bas,
+ * et c'est ce dégradé qui donne aux surfaces satinées leur reflet doux.
+ *
+ * `PMREMGenerator` fait le filtrage par rugosité une fois pour toutes ; il est
+ * détruit juste après, il ne sert qu'à la cuisson.
+ */
+function environnement(
+  renderer: THREE.WebGLRenderer,
+  disposables: { dispose(): void }[],
+): THREE.Texture {
+  const cuisine = new THREE.Scene();
+  const dome = sky(disposables);
+  cuisine.add(dome);
+  /* Un sol clair sous le dôme : sans lui, la moitié basse de la carte est
+     noire, et tout ce qui regarde vers le bas — le dessous d'une tablette, le
+     nez d'une marche — se retrouve éteint. Une pièce a un sol ; sa carte
+     d'environnement doit en avoir un aussi. */
+  const sol = new THREE.Mesh(
+    new THREE.PlaneGeometry(400, 400),
+    new THREE.MeshBasicMaterial({ color: 0xcfc7ba, side: THREE.DoubleSide }),
+  );
+  sol.rotation.x = -Math.PI / 2;
+  sol.position.y = -12;
+  cuisine.add(sol);
+
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const cible = pmrem.fromScene(cuisine, 0.04);
+  pmrem.dispose();
+  sol.geometry.dispose();
+  (sol.material as THREE.Material).dispose();
+  disposables.push(cible);
+  return cible.texture;
+}
+
 /** Monte la scène complète. Un seul appel, un seul `dispose`. */
-export function buildInterior({ rooms, doors, massing = [], entrance = null }: InteriorOptions): Interior {
+export function buildInterior({
+  rooms,
+  doors,
+  massing = [],
+  entrance = null,
+  renderer = null,
+}: InteriorOptions): Interior {
   const box = planBounds(rooms);
   const origin = { x: (box.minX + box.maxX) / 2, y: (box.minY + box.maxY) / 2 };
   const bin: Bin[] = [];
 
   const scene = new THREE.Scene();
   scene.add(sky(bin));
+  if (renderer) {
+    scene.environment = environnement(renderer, bin);
+    /* Le ciel cuit est un ciel dégagé : pris à sa valeur, il éclaire un
+       logement comme une véranda. La moitié suffit à faire vivre le spéculaire
+       sans effacer le soleil, qui doit rester la source qu'on lit. */
+    scene.environmentIntensity = 1.05;
+  }
   lights(scene, Math.max(box.maxX - box.minX, box.maxY - box.minY));
   scene.add(ground(bin));
   scene.add(surroundings(rooms, doors, origin, bin));
@@ -226,20 +373,31 @@ function sky(disposables: { dispose(): void }[]): THREE.Mesh {
  * c'est justement ce qui rend la scène crédible.
  */
 function lights(scene: THREE.Scene, extent: number): void {
-  /* La composante basse est claire, et ce n'est pas un caprice : c'est elle qui
-     éclaire tout ce qui regarde vers le bas, donc les plafonds. Réglée sombre,
-     un plafond peint en blanc rend gris sale — physiquement défendable, mais
-     c'est exactement l'inverse de ce qu'on vient montrer. */
-  scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 1.2));
-  /* L'ambiante remonte l'ombre. Le soleil est fort, sa portée dans un logement
-     est courte, et la moitié du sol reste hors de sa tache : réglée trop bas,
-     cette moitié tombe dans un gris sourd où le parquet n'a plus de couleur. */
-  scene.add(new THREE.AmbientLight(0xfff8ef, 0.52));
+  /*
+   * L'équilibre a été refait quand la carte d'environnement est arrivée.
+   *
+   * Avant elle, l'ambiante et l'hémisphérique portaient à elles seules tout ce
+   * que le soleil n'atteint pas, et il leur fallait des valeurs fortes. La carte
+   * fait maintenant ce travail — mieux, puisqu'elle est directionnelle : un mur
+   * tourné vers la fenêtre reçoit le ciel, un mur tourné vers l'intérieur reçoit
+   * la pièce. Garder les anciennes valeurs revenait à compter deux fois, et
+   * l'image partait au blanc.
+   *
+   * Il reste une hémisphérique faible, et elle sert à une chose précise : la
+   * carte est cuite dehors, elle ne sait rien des plafonds. Sans ce reste, un
+   * plafond peint en blanc rend gris sale — physiquement défendable, mais c'est
+   * l'inverse de ce qu'on vient montrer.
+   */
+  scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 0.6));
 
-  const sun = new THREE.DirectionalLight(0xfff0d6, 1.95);
+  const sun = new THREE.DirectionalLight(0xfff0d6, 2.4);
   sun.position.set(-4, 7, -11);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(1024, 1024);
+  /* Mille vingt-quatre pixels pour un logement entier donnaient une ombre en
+     escalier sur le nez des marches et le bord des tablettes. Le coût d'une
+     carte deux fois plus fine se paie une fois par image, et la scène ne compte
+     plus qu'une cinquantaine d'appels : elle peut se le permettre. */
+  sun.shadow.mapSize.set(2048, 2048);
   const reach = extent / 2 + 2;
   const frustum = sun.shadow.camera as THREE.OrthographicCamera;
   frustum.left = -reach;
@@ -251,12 +409,12 @@ function lights(scene: THREE.Scene, extent: number): void {
   frustum.updateProjectionMatrix();
   // Le biais compense l'auto-ombrage d'une surface plane : sans lui, les sols
   // se couvrent de moirures là où la lumière les frôle.
-  sun.shadow.bias = -0.0007;
-  sun.shadow.normalBias = 0.03;
+  sun.shadow.bias = -0.0004;
+  sun.shadow.normalBias = 0.022;
   scene.add(sun);
   scene.add(sun.target);
 
-  const bounce = new THREE.DirectionalLight(0xd8e4f2, 0.45);
+  const bounce = new THREE.DirectionalLight(0xd8e4f2, 0.3);
   bounce.position.set(9, 4, 7);
   scene.add(bounce);
 }
@@ -272,7 +430,7 @@ function lights(scene: THREE.Scene, extent: number): void {
  */
 function ground(disposables: { dispose(): void }[]): THREE.Mesh {
   const geometry = new THREE.PlaneGeometry(220, 220);
-  const material = new THREE.MeshLambertMaterial({ color: OUTSIDE.rue });
+  const material = new THREE.MeshStandardMaterial({ color: OUTSIDE.rue, roughness: ROUGHNESS.dehors });
   disposables.push(geometry, material);
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
@@ -301,10 +459,10 @@ function surroundings(
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'vis-a-vis';
-  const stone = new THREE.MeshLambertMaterial({ color: OUTSIDE.vis_a_vis });
+  const stone = new THREE.MeshStandardMaterial({ color: OUTSIDE.vis_a_vis, roughness: ROUGHNESS.dehors });
   // Plus loin, plus clair : c'est ce que fait l'atmosphère, et c'est ce qui
   // donne la profondeur sans coûter un seul calcul de plus.
-  const far = new THREE.MeshLambertMaterial({ color: OUTSIDE.vis_a_vis_loin });
+  const far = new THREE.MeshStandardMaterial({ color: OUTSIDE.vis_a_vis_loin, roughness: ROUGHNESS.dehors });
   disposables.push(stone, far);
 
   const placed: number[] = [];
@@ -445,23 +603,48 @@ function shell(
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'bati';
+  const batch = new Batch();
+  const matrix = new THREE.Matrix4();
+  const quaternion = new THREE.Quaternion();
+  const position = new THREE.Vector3();
+  const echelle = new THREE.Vector3(1, 1, 1);
 
-  const wall = new THREE.MeshLambertMaterial({ color: SHELL.mur, vertexColors: true });
+  const wall = new THREE.MeshStandardMaterial({
+    color: SHELL.mur,
+    roughness: ROUGHNESS.mur,
+    vertexColors: true,
+  });
   /* Une seule peinture pour tout ce qui est menuiserie : plinthes, corniches,
      chambranles, dormants, battants. C'est ainsi qu'on peint un appartement, et
      c'est aussi ce qui donne à la scène son unité. */
-  const joinery = new THREE.MeshLambertMaterial({ color: SHELL.menuiserie, vertexColors: true });
-  const parquet = new THREE.MeshLambertMaterial({ map: plankTexture(disposables) });
-  const carrelage = new THREE.MeshLambertMaterial({ color: SHELL.carrelage });
-  const ceiling = new THREE.MeshLambertMaterial({ color: SHELL.plafond, side: THREE.DoubleSide });
+  const joinery = new THREE.MeshStandardMaterial({
+    color: SHELL.menuiserie,
+    roughness: ROUGHNESS.menuiserie,
+    vertexColors: true,
+  });
+  const parquet = new THREE.MeshStandardMaterial({
+    map: plankTexture(disposables),
+    roughness: ROUGHNESS.parquet,
+  });
+  const carrelage = new THREE.MeshStandardMaterial({
+    color: SHELL.carrelage,
+    roughness: ROUGHNESS.carrelage,
+  });
+  const ceiling = new THREE.MeshStandardMaterial({
+    color: SHELL.plafond,
+    roughness: ROUGHNESS.plafond,
+    side: THREE.DoubleSide,
+  });
   /* Un rien de verre : de quoi dire qu'il y en a, sans éteindre la vue. Sous un
      éclairage sans reflets, une vitre trop marquée devient un voile gris et le
      logement paraît sale. */
-  const glass = new THREE.MeshLambertMaterial({
+  const glass = new THREE.MeshStandardMaterial({
     vertexColors: true,
     color: 0xdce9f2,
+    roughness: ROUGHNESS.verre,
+    metalness: 0,
     transparent: true,
-    opacity: 0.1,
+    opacity: 0.12,
     depthWrite: false,
   });
   disposables.push(wall, joinery, parquet, carrelage, ceiling, glass);
@@ -489,18 +672,12 @@ function shell(
     const shape = new THREE.Shape(room.points.map(toSlab));
     const slab = new THREE.ShapeGeometry(shape);
     slab.rotateX(-Math.PI / 2);
-    disposables.push(slab);
-    const floor = new THREE.Mesh(slab, /eau|bain|wc/i.test(room.id + room.name) ? carrelage : parquet);
-    floor.receiveShadow = true;
-    group.add(floor);
+    batch.add(slab, /eau|bain|wc/i.test(room.id + room.name) ? carrelage : parquet, IDENTITE);
 
     // Le plafond regarde vers le bas. Il reste en double face : depuis la pièce
     // voisine, le regard passe par une porte et le prend par-dessus.
     const top = slab.clone();
-    disposables.push(top);
-    const lid = new THREE.Mesh(top, ceiling);
-    lid.position.y = room.height;
-    group.add(lid);
+    batch.add(top, ceiling, matrix.makeTranslation(0, room.height, 0));
 
     /*
      * Les murs montent vingt centimètres au-dessus du plafond.
@@ -573,17 +750,13 @@ function shell(
         const centre = pointAt(segment, (from + to) / 2);
         const geometry = new THREE.BoxGeometry(width, height, depth);
         bakeContact(geometry, bottom, height, room.height);
-        disposables.push(geometry);
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(
+        position.set(
           centre.x - origin.x + normal.x * (depth / 2),
           bottom + height / 2,
           centre.y - origin.y + normal.y * (depth / 2),
         );
-        mesh.rotation.y = -angle;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        group.add(mesh);
+        quaternion.setFromAxisAngle(AXE_Y, -angle);
+        batch.add(geometry, material, matrix.compose(position, quaternion, echelle));
       };
 
       for (const span of solidSpans(openings)) {
@@ -611,6 +784,8 @@ function shell(
       }
     }
   }
+
+  batch.flush(group, disposables);
   return group;
 }
 
@@ -626,12 +801,22 @@ function furniture(
 
   const materials = new Map<string, THREE.Material>();
   const shadow = contactShadow(disposables);
+  const batch = new Batch();
+  const matrix = new THREE.Matrix4();
+  const quaternion = new THREE.Quaternion();
+  const position = new THREE.Vector3();
+  const echelle = new THREE.Vector3(1, 1, 1);
 
   for (const item of items) {
     const key = item.tone;
     let material = materials.get(key);
     if (!material) {
-      material = new THREE.MeshLambertMaterial({ color: TONES[item.tone] });
+      material = new THREE.MeshStandardMaterial({
+        color: TONES[item.tone],
+        roughness: FURNITURE_ROUGHNESS[item.tone],
+        metalness: FURNITURE_METAL[item.tone] ?? 0,
+        vertexColors: true,
+      });
       materials.set(key, material);
       disposables.push(material);
     }
@@ -641,17 +826,13 @@ function furniture(
     /** Pose une boîte, exprimée dans le repère local du meuble. */
     const part = (w: number, h: number, d: number, dx: number, y: number, dz: number) => {
       const geometry = new THREE.BoxGeometry(w, h, d);
-      disposables.push(geometry);
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(
+      position.set(
         item.x - origin.x + dx * Math.cos(spin) + dz * Math.sin(spin),
         y,
         item.y - origin.y - dx * Math.sin(spin) + dz * Math.cos(spin),
       );
-      mesh.rotation.y = spin;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.add(mesh);
+      quaternion.setFromAxisAngle(AXE_Y, spin);
+      batch.add(geometry, material!, matrix.compose(position, quaternion, echelle));
     };
 
     if (item.shape === 'table') {
@@ -712,13 +893,12 @@ function furniture(
        s'il ne sait pas dire pourquoi. */
     if (item.tone === 'tapis' || base > 0.4) continue;
     const patch = new THREE.PlaneGeometry(item.w * 1.7, item.d * 1.7);
-    disposables.push(patch);
-    const mark = new THREE.Mesh(patch, shadow);
-    mark.rotation.x = -Math.PI / 2;
-    mark.rotation.z = -((item.yaw ?? 0) * Math.PI) / 180;
-    mark.position.set(item.x - origin.x, base + 0.004, item.y - origin.y);
-    group.add(mark);
+    patch.rotateX(-Math.PI / 2);
+    patch.rotateY(((item.yaw ?? 0) * Math.PI) / 180);
+    batch.add(patch, shadow, matrix.makeTranslation(item.x - origin.x, base + 0.004, item.y - origin.y));
   }
+
+  batch.flush(group, disposables);
   return group;
 }
 
@@ -782,8 +962,8 @@ function landing(
   const WIDTH = 4.6;
   const DEPTH = 3.4;
   const HEIGHT = 2.7;
-  const stone = new THREE.MeshLambertMaterial({ color: OUTSIDE.palier });
-  const tiling = new THREE.MeshLambertMaterial({ color: OUTSIDE.palier_sol });
+  const stone = new THREE.MeshStandardMaterial({ color: OUTSIDE.palier, roughness: 0.9 });
+  const tiling = new THREE.MeshStandardMaterial({ color: OUTSIDE.palier_sol, roughness: 0.6 });
   disposables.push(stone, tiling);
 
   /** Pose une paroi, repérée par son centre exprimé en (le long du mur, vers l'extérieur). */
@@ -910,9 +1090,12 @@ function doorLeaf(
    * travers du séjour, et on aurait juré un trou dans la géométrie.
    */
   const leaf = new THREE.BoxGeometry(width, height, 0.055);
-  const outside = new THREE.MeshLambertMaterial({ color: OUTSIDE.porte });
-  const inside = new THREE.MeshLambertMaterial({ color: SHELL.menuiserie });
-  const edge = new THREE.MeshLambertMaterial({ color: FURNITURE.cabinet });
+  const outside = new THREE.MeshStandardMaterial({ color: OUTSIDE.porte, roughness: 0.45 });
+  const inside = new THREE.MeshStandardMaterial({
+    color: SHELL.menuiserie,
+    roughness: ROUGHNESS.menuiserie,
+  });
+  const edge = new THREE.MeshStandardMaterial({ color: FURNITURE.cabinet, roughness: 0.5 });
   disposables.push(leaf, outside, inside, edge);
   /* Faces d'une BoxGeometry : +x, −x, +y, −y, +z, −z. L'épaisseur est portée
      par Z, donc ce sont les deux dernières qui comptent. Le +Z local pointe
@@ -939,7 +1122,11 @@ function doorLeaf(
   // La poignée : deux centimètres de laiton qui font toute la différence entre
   // « un panneau qui tourne » et « une porte ».
   const knob = new THREE.BoxGeometry(0.11, 0.03, 0.03);
-  const brass = new THREE.MeshLambertMaterial({ color: FURNITURE.laiton });
+  const brass = new THREE.MeshStandardMaterial({
+    color: FURNITURE.laiton,
+    roughness: FURNITURE_ROUGHNESS.laiton,
+    metalness: FURNITURE_METAL.laiton ?? 0,
+  });
   disposables.push(knob, brass);
   const handle = new THREE.Mesh(knob, brass);
   handle.position.set(width - 0.14, 1.05, plusZIsInside ? -0.045 : 0.045);
@@ -948,7 +1135,7 @@ function doorLeaf(
 
   // Deux panneaux moulurés, à peine en relief : ce qui distingue une porte
   // d'immeuble d'une plaque de contreplaqué.
-  const moulding = new THREE.MeshLambertMaterial({ color: 0x2b3833 });
+  const moulding = new THREE.MeshStandardMaterial({ color: 0x2b3833, roughness: 0.45 });
   disposables.push(moulding);
   const face = plusZIsInside ? -0.032 : 0.032;
   for (const [centre, tall] of [
