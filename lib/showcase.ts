@@ -137,7 +137,7 @@ export interface Massing {
    * pieds de six centimètres suffisent à ce que l'œil lise « table » et passe à
    * autre chose.
    */
-  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace' | 'suspension' | 'rideau';
+  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace' | 'suspension' | 'rideau' | 'plante';
   /**
    * Rembourré : l'arête s'arrondit franchement au lieu de recevoir le chanfrein
    * de deux millimètres du mobilier menuisé.
@@ -187,7 +187,22 @@ export const SHOWCASE_MASSING: Massing[] = [
      là qu'il est toujours — sous l'ouverture, là où le froid entre — et il
      dit l'époque du bâtiment plus vite que n'importe quel autre objet. */
   { roomId: 'sejour', x: 2.1, y: 0.365, w: 1.0, d: 0.11, h: 0.62, shape: 'radiateur', tone: 'cabinet' },
-  { roomId: 'sejour', x: 1.7, y: 2.15, w: 2.6, d: 1.8, h: 0.012, tone: 'tapis' },
+  /* Le tapis prend deux centimètres et une arête adoucie : à douze millimètres
+     et à angle vif, il ne se distinguait pas d'un rectangle peint sur le sol. */
+  { roomId: 'sejour', x: 1.7, y: 2.15, w: 2.6, d: 1.8, h: 0.02, moelleux: true, tone: 'tapis' },
+  /*
+   * La plante, dans l'angle au bout de la cuisine.
+   *
+   * Deux placements ont été essayés et écartés en image. À côté du canapé,
+   * elle était à un mètre de l'objectif : un mètre quinze de feuillage
+   * remplissait le quart bas du champ et se lisait comme un rocher — une
+   * plante est un objet de fond de pièce, pas de premier plan. Derrière le
+   * canapé, elle était à la bonne distance mais sur le mauvais fond : le
+   * feuillage et le dossier partagent le pétrole du nuancier, et les deux
+   * masses n'en faisaient plus qu'une. Contre un mur clair, à l'autre bout de
+   * la pièce, elle se détache et donne de la profondeur au séjour.
+   */
+  { roomId: 'sejour', x: 4.85, y: 3.5, w: 0.3, d: 0.3, h: 1.0, shape: 'plante', tone: 'terre' },
   /* Le canapé porte la seule couleur franche de la scène ; les coussins lui
      répondent en terre cuite, presque à l'opposé sur le cercle des teintes.
      Il repose sur un piètement sombre en retrait : sans lui, l'assise descend

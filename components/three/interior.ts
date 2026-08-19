@@ -1929,6 +1929,60 @@ function furniture(
           alongW ? (epaisseur - saillie) / 2 : shift,
         );
       }
+    } else if (item.shape === 'plante') {
+      /*
+       * Une plante en pot.
+       *
+       * C'est le seul objet de la scène qui ne soit ni bâti ni menuisé, et
+       * c'est pour cela qu'il compte : tout le reste du logement est fait de
+       * plans et d'angles droits, y compris les textiles. Une masse irrégulière
+       * dans un coin est ce qui fait passer une image d'« intérieur modélisé »
+       * à « intérieur habité », et aucune quantité de moulures ne la remplace.
+       *
+       * Le pot est en terre cuite — la contre-note du nuancier, déjà portée par
+       * les coussins — et le feuillage en pétrole, qui est un vert rompu : la
+       * scène n'a pas de vert franc et n'en veut pas, un feuillage saturé
+       * tirerait l'œil hors de la pièce.
+       */
+      const potHaut = item.h * 0.28;
+      const rayon = Math.min(item.w, item.d) / 2;
+      const pot = new THREE.CylinderGeometry(rayon, rayon * 0.72, potHaut, 16);
+      position.set(item.x - origin.x, base + potHaut / 2, item.y - origin.y);
+      quaternion.setFromAxisAngle(AXE_Y, spin);
+      batch.add(pot, material, matrix.compose(position, quaternion, echelle), (x, y, z) =>
+        daylightAt(jour, x, y, z),
+      );
+
+      /*
+       * Cinq masses décalées plutôt qu'une.
+       *
+       * Une sphère unique se lit comme une boule, et une boule sur un pot est
+       * un buis taillé, pas une plante d'intérieur. Ce qui distingue les deux
+       * est la silhouette : celle d'un feuillage est dissymétrique, et il en
+       * faut au moins quatre ou cinq pour qu'elle cesse d'avoir un axe. Les
+       * décalages sont fixes, pas tirés au hasard — une scène doit se
+       * reconstruire à l'identique d'un chargement à l'autre.
+       */
+      const feuillage = matiere('petrole');
+      const hautFeuillage = item.h - potHaut;
+      for (const [dx, dz, dh, facteur] of [
+        [0, 0, 0.4, 1],
+        [-0.3, 0.18, 0.62, 0.78],
+        [0.32, -0.12, 0.7, 0.7],
+        [0.1, 0.34, 0.86, 0.56],
+        [-0.16, -0.26, 0.9, 0.48],
+      ] as const) {
+        const r = rayon * 1.55 * facteur;
+        const masse = new THREE.SphereGeometry(r, 12, 9);
+        position.set(
+          item.x - origin.x + (dx * Math.cos(spin) + dz * Math.sin(spin)) * rayon,
+          base + potHaut + hautFeuillage * dh,
+          item.y - origin.y + (-dx * Math.sin(spin) + dz * Math.cos(spin)) * rayon,
+        );
+        batch.add(masse, feuillage, matrix.compose(position, quaternion, echelle), (x, y, z) =>
+          daylightAt(jour, x, y, z),
+        );
+      }
     } else if (item.shape === 'suspension') {
       /*
        * L'abat-jour du luminaire, en tronc de cône.
