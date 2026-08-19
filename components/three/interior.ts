@@ -220,7 +220,13 @@ const CORNICE = 0.12;
 class Batch {
   private readonly lots = new Map<THREE.Material, THREE.BufferGeometry[]>();
 
-  add(source: THREE.BufferGeometry, material: THREE.Material, matrix: THREE.Matrix4): void {
+  add(
+    source: THREE.BufferGeometry,
+    material: THREE.Material,
+    matrix: THREE.Matrix4,
+    /** Facteur de luminosité par sommet, dans le repère de la scène. */
+    paint?: (x: number, y: number, z: number) => number,
+  ): void {
     let geometry = source;
     geometry.applyMatrix4(matrix);
     /*
@@ -238,9 +244,28 @@ class Batch {
       if (indexed !== geometry) geometry.dispose();
       geometry = indexed;
     }
+    const position = geometry.getAttribute('position');
     if (!geometry.getAttribute('color')) {
-      const count = geometry.getAttribute('position').count;
-      geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3).fill(1), 3));
+      geometry.setAttribute(
+        'color',
+        new THREE.BufferAttribute(new Float32Array(position.count * 3).fill(1), 3),
+      );
+    }
+    /* Le pinceau s'applique après la transformation : il raisonne en
+       coordonnées de scène, donc il peut dépendre de la hauteur ou de la
+       distance à une fenêtre, ce qu'un repère local ne permet pas. */
+    if (paint) {
+      const colour = geometry.getAttribute('color') as THREE.BufferAttribute;
+      for (let index = 0; index < position.count; index += 1) {
+        const k = paint(position.getX(index), position.getY(index), position.getZ(index));
+        colour.setXYZ(
+          index,
+          colour.getX(index) * k,
+          colour.getY(index) * k,
+          colour.getZ(index) * k,
+        );
+      }
+      colour.needsUpdate = true;
     }
     // `uv` manque sur certaines primitives ; il doit exister partout ou nulle part.
     if (!geometry.getAttribute('uv')) {
@@ -310,6 +335,53 @@ const AO_FLOOR_STRENGTH = 0.74;
 const AO_CEILING = 0.18;
 const AO_CEILING_STRENGTH = 0.9;
 
+/*
+ * La lumière du jour, cuite dans les sommets.
+ *
+ * C'est l'effet dominant de toute photographie d'intérieur, et il manquait
+ * entièrement : une pièce était éclairée aussi fort au fond qu'au bord de la
+ * fenêtre. Physiquement, la lumière d'une ouverture décroît avec le carré de la
+ * distance et avec l'angle sous lequel on la voit ; un moteur sans éclairage
+ * global ne calcule ni l'un ni l'autre — il traite la carte d'environnement
+ * comme un ciel vu de partout, y compris depuis le fond d'un couloir aveugle.
+ *
+ * On corrige donc à la main, par la seule chose qui compte à l'œil : la
+ * distance à l'ouverture la plus proche. Le fond d'une pièce garde un peu plus
+ * de la moitié de sa lumière — assez pour que la profondeur se lise, pas assez
+ * pour qu'on croie à une panne d'éclairage.
+ */
+const JOUR_PROCHE = 1.4;
+const JOUR_LOIN = 7.5;
+const JOUR_FOND = 0.58;
+
+/** Les centres des ouvertures sur l'extérieur, dans le repère de la scène. */
+function daylightSources(doors: PlanDoor[], origin: PlanPoint): THREE.Vector3[] {
+  const points: THREE.Vector3[] = [];
+  for (const door of doors) {
+    if (door.kind !== 'window') continue;
+    points.push(
+      new THREE.Vector3(
+        (door.a.x + door.b.x) / 2 - origin.x,
+        (door.sill + door.height) / 2,
+        (door.a.y + door.b.y) / 2 - origin.y,
+      ),
+    );
+  }
+  return points;
+}
+
+/** Facteur de lumière du jour en un point, entre `JOUR_FOND` et 1. */
+function daylightAt(sources: THREE.Vector3[], x: number, y: number, z: number): number {
+  if (sources.length === 0) return 1;
+  let nearest = Infinity;
+  for (const source of sources) {
+    const d = Math.hypot(source.x - x, source.y - y, source.z - z);
+    if (d < nearest) nearest = d;
+  }
+  const t = Math.min(1, Math.max(0, (nearest - JOUR_PROCHE) / (JOUR_LOIN - JOUR_PROCHE)));
+  return 1 - (1 - JOUR_FOND) * smoothstep(t);
+}
+
 /** Facteur d'occlusion à une hauteur donnée, sous un plafond donné. */
 function occlusionAt(y: number, ceiling: number): number {
   const fromFloor = Math.min(1, Math.max(0, y / AO_FLOOR));
@@ -323,29 +395,6 @@ function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
 }
 
-/**
- * Écrit l'occlusion dans l'attribut `color` d'une boîte.
- *
- * `bottom` est l'altitude du bas de la boîte dans la scène et `height` sa
- * hauteur : la géométrie est centrée sur son origine, donc son y local va de
- * `-height / 2` à `+height / 2`.
- */
-function bakeContact(
-  geometry: THREE.BufferGeometry,
-  bottom: number,
-  height: number,
-  ceiling: number,
-): void {
-  const position = geometry.getAttribute('position');
-  const colors = new Float32Array(position.count * 3);
-  for (let i = 0; i < position.count; i++) {
-    const k = occlusionAt(bottom + height / 2 + position.getY(i), ceiling);
-    colors[i * 3] = k;
-    colors[i * 3 + 1] = k;
-    colors[i * 3 + 2] = k;
-  }
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-}
 
 /**
  * Les teintes du mobilier viennent de `lib/palette.ts`, où elles sont
@@ -489,7 +538,8 @@ export function buildInterior({
   scene.add(ground(bin));
   scene.add(surroundings(rooms, doors, origin, bin));
   scene.add(shell(rooms, doors, origin, bin));
-  scene.add(furniture(massing, origin, bin));
+  scene.add(baseShadow(rooms, origin, bin));
+  scene.add(furniture(massing, doors, origin, bin));
 
   const leaf = entrance ? doorLeaf(entrance, rooms, origin, bin) : null;
   if (leaf) scene.add(leaf.group);
@@ -735,6 +785,71 @@ function ground(disposables: { dispose(): void }[]): THREE.Mesh {
  * qu'il n'y a rien derrière — le volume perd d'un coup ce qu'on venait de lui
  * gagner. Avec, la profondeur de champ existe : il y a un dehors.
  */
+/**
+ * La façade d'en face, avec ses fenêtres.
+ *
+ * Ce qu'on voit par une fenêtre compte autant que la fenêtre. Un aplat brun à
+ * dix-neuf mètres ne dit rien — ni la distance, ni l'échelle, ni qu'il y a une
+ * rue. Quelques rangées de fenêtres suffisent : elles donnent au vis-à-vis une
+ * taille, donc une distance, et le logement cesse d'être une boîte posée dans
+ * le vide.
+ *
+ * Volontairement sans détail : ce sont des rectangles sombres sur une pierre
+ * claire, à la limite de la lisibilité depuis l'intérieur. Une façade
+ * travaillée attirerait le regard dehors, ce qui est exactement ce qu'on ne
+ * veut pas d'une visite d'appartement.
+ */
+function facadeTexture(tone: number, disposables: Bin[]): THREE.Texture {
+  /* Assez fin pour que la fenêtre ait un bord : à deux cent cinquante-six
+     pixels de large pour trente-huit mètres, un texel faisait quinze
+     centimètres et les fenêtres rendaient en carrés flous. */
+  const W = 512;
+  const H = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const context = canvas.getContext('2d')!;
+  const hex = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
+  context.fillStyle = hex(tone);
+  context.fillRect(0, 0, W, H);
+
+  /* Un étage tous les huit pixels de hauteur : la texture couvre trente-huit
+     mètres de large sur douze de haut, donc l'étage fait à peu près deux
+     mètres soixante-quinze. */
+  /* Quatre étages sur douze mètres : deux mètres soixante-quinze de hauteur
+     d'étage, et treize travées sur trente-huit mètres, soit une travée de deux
+     mètres quatre-vingt-dix. Ce sont les proportions d'un immeuble de rapport,
+     et c'est ce qui donne au vis-à-vis son échelle — donc sa distance. */
+  const etages = 4;
+  const travees = 13;
+  const hauteurEtage = H / (etages + 0.5);
+  const pas = W / travees;
+  for (let etage = 0; etage < etages; etage += 1) {
+    for (let travee = 0; travee < travees; travee += 1) {
+      /* Deux fenêtres sur trente sont éteintes ou masquées : une grille
+         parfaitement régulière se lit comme un motif, pas comme un immeuble. */
+      const manque = bruit(travee, etage, 21) < 0.07;
+      if (manque) continue;
+      const largeur = pas * 0.34;
+      const hauteur = hauteurEtage * 0.52;
+      const x = travee * pas + (pas - largeur) / 2;
+      const y = H - (etage + 1) * hauteurEtage + hauteurEtage * 0.2;
+      // Le tableau de la fenêtre, puis le vitrage, plus sombre encore.
+      context.fillStyle = 'rgba(255,255,255,0.22)';
+      context.fillRect(x - 1.5, y - 1.5, largeur + 3, hauteur + 3);
+      const nuit = 0.34 + bruit(travee, etage, 31) * 0.18;
+      context.fillStyle = `rgba(26,24,22,${nuit.toFixed(3)})`;
+      context.fillRect(x, y, largeur, hauteur);
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  disposables.push(texture);
+  return texture;
+}
+
 function surroundings(
   rooms: PlanRoom[],
   doors: PlanDoor[],
@@ -743,10 +858,16 @@ function surroundings(
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'vis-a-vis';
-  const stone = new THREE.MeshStandardMaterial({ color: OUTSIDE.vis_a_vis, roughness: ROUGHNESS.dehors });
+  const stone = new THREE.MeshStandardMaterial({
+    map: facadeTexture(OUTSIDE.vis_a_vis, disposables),
+    roughness: ROUGHNESS.dehors,
+  });
   // Plus loin, plus clair : c'est ce que fait l'atmosphère, et c'est ce qui
   // donne la profondeur sans coûter un seul calcul de plus.
-  const far = new THREE.MeshStandardMaterial({ color: OUTSIDE.vis_a_vis_loin, roughness: ROUGHNESS.dehors });
+  const far = new THREE.MeshStandardMaterial({
+    map: facadeTexture(OUTSIDE.vis_a_vis_loin, disposables),
+    roughness: ROUGHNESS.dehors,
+  });
   disposables.push(stone, far);
 
   const placed: number[] = [];
@@ -895,75 +1016,127 @@ function plasterNormal(disposables: Bin[]): THREE.Texture {
   return normalMap(size, 0.9, (x, y) => cache[y * size + x], disposables);
 }
 
-/** Les rainures entre les lames, et le bombé de chaque lame. */
+/** Les rainures entre les lames du point de Hongrie, et leur bombé. */
 function plankNormal(disposables: Bin[]): THREE.Texture {
-  const size = 512;
-  const PLANKS = 10;
-  const band = size / PLANKS;
+  const size = CHEVRON_SIZE;
   const cache = new Float32Array(size * size);
+
   /* Une gorge adoucie, et non une marche.
      Le premier essai faisait tomber la hauteur d'un pixel à l'autre : la pente
      devenait quasi verticale, la normale basculait à quatre-vingt-dix degrés et
      le joint ressortait en trait blanc — l'inverse d'un creux. Une gorge en V
-     sur trois pixels donne la pente d'un vrai chanfrein de lame. */
+     sur deux pixels et demi donne la pente d'un vrai chanfrein de lame. */
   const gorge = (distance: number, largeur: number) =>
     distance >= largeur ? 1 : Math.pow(distance / largeur, 0.8);
 
   for (let y = 0; y < size; y += 1) {
-    const dansLame = (y % band) / band;
-    const bordLame = Math.min(dansLame, 1 - dansLame) * band;
-    // La lame est très légèrement bombée : c'est ce qui la fait exister entre
-    // ses deux joints au lieu d'être un simple ruban plat.
-    const bombe = Math.sin(dansLame * Math.PI) * 0.1;
     for (let x = 0; x < size; x += 1) {
-      const cut = (Math.floor(y / band) * 173) % size;
-      const bordBout = Math.abs(x - cut);
-      // Le fil du bois, allongé dans le sens de la lame.
-      const fil = bruit(Math.floor(x / 3), Math.floor(y / 22), 7) * 0.06;
-      cache[y * size + x] =
-        gorge(bordLame, 3) * gorge(bordBout, 2.5) * (0.8 + bombe + fil);
+      const a = travers(x, y);
+      const rang = Math.floor(a / LAME);
+      const colonne = Math.floor(x / COLONNE);
+      // Distances aux deux familles de joints, ramenées en pixels d'écran.
+      const aRive =
+        Math.min(a - rang * LAME, (rang + 1) * LAME - a) * Math.SQRT2;
+      const aAxe = Math.min(x - colonne * COLONNE, (colonne + 1) * COLONNE - x);
+      /* La lame est très légèrement bombée : c'est ce qui la fait exister entre
+         ses deux joints au lieu d'être un simple ruban plat. */
+      const bombe = Math.sin(((a - rang * LAME) / LAME) * Math.PI) * 0.1;
+      const fil = bruit(Math.floor(a), Math.floor(x / 3), 7) * 0.06;
+      cache[y * size + x] = gorge(aRive, 2.5) * gorge(aAxe, 2) * (0.8 + bombe + fil);
     }
   }
   return normalMap(size, 1.1, (x, y) => cache[y * size + x], disposables);
 }
 
+/* ------------------------------------------------- point de Hongrie --- */
+
+/*
+ * Le parquet à chevrons, dit point de Hongrie.
+ *
+ * C'est la signature d'un appartement parisien, plus encore que la corniche :
+ * on la reconnaît sur une photographie de vingt centimètres de côté. Les lames
+ * sont coupées en biais et se rejoignent bout à bout le long d'un axe, ce qui
+ * dessine des V emboîtés — à ne pas confondre avec les bâtons rompus, où les
+ * lames sont coupées droit et s'emboîtent en L.
+ *
+ * Le motif se ramène à deux familles de droites, ce qui le rend exactement
+ * répétable :
+ *
+ *  · les **axes**, verticaux, tous les `COLONNE` pixels : ce sont les lignes
+ *    où deux lames se rencontrent bout à bout, et où le V se referme ;
+ *  · les **rives**, obliques à quarante-cinq degrés, tous les `LAME` pixels
+ *    mesurés perpendiculairement : ce sont les longs côtés des lames.
+ *
+ * L'inclinaison s'inverse d'une colonne à l'autre. C'est ce qui fait que les
+ * rives des deux colonnes voisines se rejoignent exactement sur l'axe — la
+ * démonstration tient en une ligne : à `u = 0` d'un côté et `u = COLONNE` de
+ * l'autre, les deux familles retombent sur les mêmes ordonnées, multiples de
+ * `LAME · √2`. Sans cette coïncidence le motif ne serait pas un chevron mais
+ * deux hachures voisines.
+ */
+const CHEVRON_SIZE = 512;
+/** Largeur d'une colonne, en pixels de texture. Une colonne vaut 50 cm au sol. */
+const COLONNE = 128;
+/** Nombre de rives par côté de texture. Fixe la largeur d'une lame : 8,8 cm. */
+const RIVES = 16;
+const LAME = CHEVRON_SIZE / (RIVES * Math.SQRT2);
+
+/** Coordonnée en travers des lames, en pixels. Les rives sont ses multiples. */
+function travers(x: number, y: number): number {
+  const colonne = Math.floor(x / COLONNE);
+  const u = x - colonne * COLONNE;
+  const sens = colonne % 2 === 0 ? 1 : -1;
+  return (u - sens * y) / Math.SQRT2;
+}
+
+/** Numéro de la lame sous un pixel : colonne et rang, pour la teinter. */
+function lameSous(x: number, y: number): { colonne: number; rang: number } {
+  return {
+    colonne: Math.floor(x / COLONNE),
+    rang: Math.floor(travers(x, y) / LAME),
+  };
+}
+
 function plankTexture(disposables: Bin[]): THREE.Texture {
-  const SIZE = 512;
-  const PLANKS = 10;
+  const SIZE = CHEVRON_SIZE;
   const canvas = document.createElement('canvas');
   canvas.width = SIZE;
   canvas.height = SIZE;
   const context = canvas.getContext('2d')!;
+  const image = context.createImageData(SIZE, SIZE);
 
-  const hex = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
-  context.fillStyle = hex(SHELL.chene);
-  context.fillRect(0, 0, SIZE, SIZE);
+  const base = SHELL.chene;
+  const joint = SHELL.chene_joint;
+  const canal = (couleur: number, decalage: number) => (couleur >> decalage) & 255;
 
-  const band = SIZE / PLANKS;
-  for (let row = 0; row < PLANKS; row += 1) {
-    /* Chaque lame prend son propre écart de teinte, très faible et déterministe :
-       un vrai parquet n'a pas deux lames identiques, mais l'écart entre elles se
-       compte en unités, pas en dizaines. */
-    const shade = 1 + (((row * 7) % 5) - 2) * 0.05;
-    const base = SHELL.chene;
-    const tint =
-      (Math.min(255, Math.round(((base >> 16) & 255) * shade)) << 16) |
-      (Math.min(255, Math.round(((base >> 8) & 255) * shade)) << 8) |
-      Math.min(255, Math.round((base & 255) * shade));
-    context.fillStyle = hex(tint);
-    context.fillRect(0, row * band, SIZE, band);
+  for (let y = 0; y < SIZE; y += 1) {
+    for (let x = 0; x < SIZE; x += 1) {
+      const { colonne, rang } = lameSous(x, y);
+      /* Chaque lame prend son propre écart de teinte, faible et déterministe :
+         un vrai parquet n'a pas deux lames identiques, mais l'écart entre elles
+         se compte en unités, pas en dizaines. */
+      const teinte = 1 + (((rang * 5 + colonne * 3) % 7) - 3) * 0.035;
+      // Le fil du bois court dans le sens de la lame.
+      const fil = 1 + (bruit(Math.floor(travers(x, y)), Math.floor(x / 3), 11) - 0.5) * 0.05;
 
-    /* Le joint fait trois pixels, soit un peu plus d'un centimètre à l'échelle.
-       Une première version en dessinait un et demi : six millimètres, c'est-à-dire
-       moins d'un pixel à l'écran dès qu'on s'éloigne d'un mètre. Le parquet
-       existait dans la texture et n'existait nulle part ailleurs. */
-    context.fillStyle = hex(SHELL.chene_joint);
-    context.fillRect(0, row * band, SIZE, 3);
+      // Distance aux deux familles de joints, en pixels.
+      const aRive = Math.min(
+        Math.abs(travers(x, y) - rang * LAME),
+        Math.abs((rang + 1) * LAME - travers(x, y)),
+      ) * Math.SQRT2;
+      const aAxe = Math.min(x - colonne * COLONNE, (colonne + 1) * COLONNE - x);
+      const creux = Math.min(aRive, aAxe) < 1.6 ? 1 : 0;
 
-    // Un joint en bout, décalé d'une rangée à l'autre.
-    const cut = ((row * 173) % SIZE) | 0;
-    context.fillRect(cut, row * band, 3, band);
+      const index = (y * SIZE + x) * 4;
+      for (let c = 0; c < 3; c += 1) {
+        const decalage = 16 - c * 8;
+        const bois = Math.min(255, Math.round(canal(base, decalage) * teinte * fil));
+        image.data[index + c] = creux ? canal(joint, decalage) : bois;
+      }
+      image.data[index + 3] = 255;
+    }
   }
+  context.putImageData(image, 0, 0);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
@@ -1005,6 +1178,7 @@ function shell(
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'bati';
+  const jour = daylightSources(doors, origin);
   const batch = new Batch();
   const matrix = new THREE.Matrix4();
   const quaternion = new THREE.Quaternion();
@@ -1085,12 +1259,19 @@ function shell(
     const shape = new THREE.Shape(room.points.map(toSlab));
     const slab = new THREE.ShapeGeometry(shape);
     slab.rotateX(-Math.PI / 2);
-    batch.add(slab, /eau|bain|wc/i.test(room.id + room.name) ? carrelage : parquet, IDENTITE);
+    batch.add(
+      slab,
+      /eau|bain|wc/i.test(room.id + room.name) ? carrelage : parquet,
+      IDENTITE,
+      (x, y, z) => daylightAt(jour, x, y, z),
+    );
 
     // Le plafond regarde vers le bas. Il reste en double face : depuis la pièce
     // voisine, le regard passe par une porte et le prend par-dessus.
     const top = slab.clone();
-    batch.add(top, ceiling, matrix.makeTranslation(0, room.height, 0));
+    batch.add(top, ceiling, matrix.makeTranslation(0, room.height, 0), (x, y, z) =>
+      daylightAt(jour, x, y, z),
+    );
 
     /*
      * Les murs montent vingt centimètres au-dessus du plafond.
@@ -1163,14 +1344,15 @@ function shell(
         const centre = pointAt(segment, (from + to) / 2);
         const geometry = box(width, height, depth, CHANFREIN_BATI);
         worldUv(geometry, width, height, from * length, bottom);
-        bakeContact(geometry, bottom, height, room.height);
         position.set(
           centre.x - origin.x + normal.x * (depth / 2),
           bottom + height / 2,
           centre.y - origin.y + normal.y * (depth / 2),
         );
         quaternion.setFromAxisAngle(AXE_Y, -angle);
-        batch.add(geometry, material, matrix.compose(position, quaternion, echelle));
+        batch.add(geometry, material, matrix.compose(position, quaternion, echelle), (x, y, z) =>
+          occlusionAt(y, room.height) * daylightAt(jour, x, y, z),
+        );
       };
 
       /**
@@ -1204,7 +1386,9 @@ function shell(
           normal.y, 0, dir.y, start.y - origin.y + normal.y * thickness,
           0,        0, 0,     1,
         );
-        batch.add(geometry, material, placement);
+        batch.add(geometry, material, placement, (x, y, z) =>
+          occlusionAt(y, room.height) * daylightAt(jour, x, y, z),
+        );
       };
 
       for (const span of solidSpans(openings)) {
@@ -1235,9 +1419,88 @@ function shell(
   return group;
 }
 
+/**
+ * L'ombre au pied des murs.
+ *
+ * Les murs s'assombrissent sur leurs trente derniers centimètres — l'occlusion
+ * cuite dans leurs sommets — mais le sol, lui, ne s'assombrit pas en les
+ * approchant. L'angle n'est donc sombre que d'un côté, et le raccord se lit
+ * comme un décollement : le mur ne pose pas sur le sol, il flotte au-dessus.
+ *
+ * Le sol ne peut pas recevoir la même occlusion : sa dalle est une
+ * triangulation de contour, tous ses sommets sont sur le bord, et les teinter
+ * assombrirait la pièce entière. On peint donc une bande dégradée le long de
+ * chaque mur — c'est le même procédé que sous un meuble, et pour la même
+ * raison : une tache peinte n'a pas de géométrie, donc pas de coin à rater.
+ */
+const OMBRE_PLINTHE = 0.34;
+
+function baseShadow(
+  rooms: PlanRoom[],
+  origin: PlanPoint,
+  disposables: Bin[],
+): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'ombre-plinthe';
+
+  /* Un dégradé horizontal : opaque contre le mur, transparent au bout de la
+     bande. Une seule texture pour toutes les pièces. */
+  const size = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = 1;
+  const context = canvas.getContext('2d')!;
+  const degrade = context.createLinearGradient(0, 0, size, 0);
+  degrade.addColorStop(0, 'rgba(20,17,13,0.4)');
+  degrade.addColorStop(0.45, 'rgba(20,17,13,0.13)');
+  degrade.addColorStop(1, 'rgba(20,17,13,0)');
+  context.fillStyle = degrade;
+  context.fillRect(0, 0, size, 1);
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    userData: { sansOmbre: true },
+  });
+  disposables.push(texture, material);
+
+  const batch = new Batch();
+  const matrix = new THREE.Matrix4();
+
+  for (const room of rooms) {
+    for (const wall of roomWalls(room)) {
+      const length = Math.hypot(wall.b.x - wall.a.x, wall.b.y - wall.a.y);
+      if (length < 0.2) continue;
+      const angle = Math.atan2(wall.b.y - wall.a.y, wall.b.x - wall.a.x);
+      const normal = inwardNormal(room, wall.a, wall.b);
+      const thickness = wallThickness(room, wall, rooms, SKIN, FACADE);
+
+      /* Le plan naît dans XY : on le couche, u le long du mur et v en travers,
+         le dégradé partant de la face du mur vers l'intérieur. */
+      const geometry = new THREE.PlaneGeometry(OMBRE_PLINTHE, length);
+      geometry.rotateZ(Math.PI / 2);
+      geometry.rotateX(-Math.PI / 2);
+      const centre = pointAt(wall, 0.5);
+      const recul = thickness + OMBRE_PLINTHE / 2;
+      matrix.makeRotationY(-angle);
+      matrix.setPosition(
+        centre.x - origin.x + normal.x * recul,
+        0.003,
+        centre.y - origin.y + normal.y * recul,
+      );
+      batch.add(geometry, material, matrix);
+    }
+  }
+
+  batch.flush(group, disposables);
+  return group;
+}
+
 /** Le mobilier, ramené à ses masses, posé sur son ombre de contact. */
 function furniture(
   items: Massing[],
+  doors: PlanDoor[],
   origin: PlanPoint,
   disposables: { dispose(): void }[],
 ): THREE.Group {
@@ -1248,6 +1511,10 @@ function furniture(
   const materials = new Map<string, THREE.Material>();
   const shadow = contactShadow(disposables);
   const batch = new Batch();
+  /* Le mobilier reçoit la même décroissance que le bâti : un canapé au fond de
+     la pièce doit s'assombrir comme le mur derrière lui, sinon il s'en détache
+     et se met à flotter. */
+  const jour = daylightSources(doors, origin);
   const matrix = new THREE.Matrix4();
   const quaternion = new THREE.Quaternion();
   const position = new THREE.Vector3();
@@ -1278,7 +1545,9 @@ function furniture(
         item.y - origin.y - dx * Math.sin(spin) + dz * Math.cos(spin),
       );
       quaternion.setFromAxisAngle(AXE_Y, spin);
-      batch.add(geometry, material!, matrix.compose(position, quaternion, echelle));
+      batch.add(geometry, material!, matrix.compose(position, quaternion, echelle), (x, y, z) =>
+        daylightAt(jour, x, y, z),
+      );
     };
 
     if (item.shape === 'table') {
@@ -1357,7 +1626,9 @@ function furniture(
           item.y - origin.y - ((index + 0.5) * ecart - item.w / 2) * Math.sin(spin),
         );
         quaternion.setFromAxisAngle(AXE_Y, spin);
-        batch.add(geometry, material!, matrix.compose(position, quaternion, echelle));
+        batch.add(geometry, material!, matrix.compose(position, quaternion, echelle), (x, y, z) =>
+          daylightAt(jour, x, y, z),
+        );
       }
       // Les collecteurs haut et bas, qui tiennent les colonnes ensemble.
       part(item.w, rail, item.d * 0.7, 0, base + rail / 2, 0);
@@ -1387,7 +1658,9 @@ function furniture(
         const geometry = new THREE.CylinderGeometry(rayon * facteur, rayon * facteur, epaisseur, 24);
         position.set(item.x - origin.x, niveau + epaisseur / 2, item.y - origin.y);
         quaternion.setFromAxisAngle(AXE_Y, 0);
-        batch.add(geometry, material!, matrix.compose(position, quaternion, echelle));
+        batch.add(geometry, material!, matrix.compose(position, quaternion, echelle), (x, y, z) =>
+          daylightAt(jour, x, y, z),
+        );
         niveau += epaisseur;
       }
     } else {
