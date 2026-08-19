@@ -8,6 +8,7 @@ import {
   planBounds,
   reachableToward,
   roomCenter,
+  canStandAt,
   roomWalls,
   slideMove,
   wallThickness,
@@ -416,6 +417,36 @@ export function PlanViewer({
        * devenait un pan de peinture.
        */
       const aim = lookTarget(rooms, doors, photos, target, centre);
+
+      /*
+       * On recule un peu, et davantage sur un écran étroit.
+       *
+       * Au centre d'une pièce, le mur qu'on regarde est à deux mètres. Sur un
+       * ordinateur, cinquante degrés d'horizontale en montrent près de deux
+       * mètres — la pièce se lit. Sur un téléphone tenu debout, le champ
+       * horizontal tombe à une cinquantaine de degrés et il ne reste qu'un pan
+       * nu de mur, sans angle ni ouverture pour dire où l'on est.
+       *
+       * Reculer coûte moins cher qu'élargir : élargir déforme les bords et
+       * couche les verticales, reculer ne fait que montrer plus. On ne recule
+       * évidemment que tant qu'on reste dans la pièce.
+       */
+      const vers = Math.hypot(aim.x - centre.x, aim.y - centre.y);
+      if (vers > 0.01) {
+        const recul = context.camera.aspect < 1.2 ? 1.35 : 0.6;
+        for (let essai = recul; essai > 0.05; essai -= 0.15) {
+          const candidat = {
+            x: centre.x - ((aim.x - centre.x) / vers) * essai,
+            y: centre.y - ((aim.y - centre.y) / vers) * essai,
+          };
+          if (canStandAt(target, candidat)) {
+            context.camera.position.x = candidat.x - origin.x;
+            context.camera.position.z = candidat.y - origin.y;
+            break;
+          }
+        }
+      }
+
       context.view.yaw = (Math.atan2(aim.x - centre.x, -(aim.y - centre.y)) * 180) / Math.PI;
       /* Légère plongée, mais légère : à onze degrés le sol prenait la moitié du
          cadre et la pièce se lisait comme un plancher. Quatre suffisent à ce

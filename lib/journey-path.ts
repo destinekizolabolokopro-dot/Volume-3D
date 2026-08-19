@@ -283,7 +283,21 @@ export function wallNormal(a: PlanPoint, b: PlanPoint, room: PlanRoom): PlanPoin
  * côté occupe la moitié de l'image.
  */
 const REFERENCE_ASPECT = 16 / 9;
-const MAX_VERTICAL_FOV = 96;
+/*
+ * Le plafond du champ vertical.
+ *
+ * Il était à 96°, et c'était trop. Sur un téléphone tenu debout, la règle de
+ * largeur constante réclamait 136° : ramenés à 96, on voyait encore du sol à
+ * quarante-quatre degrés sous l'horizon et du plafond à quarante-quatre
+ * au-dessus — c'est-à-dire, dans une pièce de deux mètres soixante, surtout du
+ * sol et du plafond, et très peu de mur.
+ *
+ * Quatre-vingt-quatre degrés laissent cinquante-deux degrés d'horizontale sur
+ * un écran de téléphone. C'est moins qu'un ordinateur, et c'est assumé : un
+ * téléphone montre moins. Ce qu'il ne doit pas faire, c'est montrer *autre
+ * chose* — un plancher et un plafond à la place d'une pièce.
+ */
+const MAX_VERTICAL_FOV = 84;
 
 export function verticalFov(base: number, aspect: number): number {
   if (!Number.isFinite(aspect) || aspect <= 0) return base;
