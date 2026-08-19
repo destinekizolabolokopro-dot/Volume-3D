@@ -243,7 +243,23 @@ function MovingTour({
         return;
       }
       quality.tick(now);
-      const elapsed = Math.min(0.05, (now - previous) / 1000);
+      /*
+       * Le plafond sur le temps écoulé était à cinquante millisecondes, et
+       * c'était un défaut sur les machines lentes.
+       *
+       * Il est là pour qu'une image en retard — un ramasse-miettes, un onglet
+       * qui revient — ne fasse pas sauter la caméra d'un bond. Mais réglé à
+       * vingt images par seconde, il bride aussi le cas ordinaire d'un appareil
+       * modeste : à quatre images par seconde, chaque image ne rattrapait qu'un
+       * quart du retard au lieu des quatre cinquièmes que le temps réellement
+       * écoulé justifie. La caméra décrochait du doigt qui fait défiler — sur
+       * l'appareil où l'on voudrait le moins que ça arrive.
+       *
+       * Un quart de seconde protège toujours du saut (l'onglet caché est déjà
+       * traité au-dessus, et il remet la référence de temps), et laisse la
+       * caméra suivre à quatre images par seconde.
+       */
+      const elapsed = Math.min(0.25, (now - previous) / 1000);
       previous = now;
 
       /* Amortissement normalisé sur le temps : la même douceur à 60 et à

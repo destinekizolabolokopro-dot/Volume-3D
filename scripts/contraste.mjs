@@ -55,17 +55,22 @@ const BASE = process.env.BASE || 'http://localhost:3000';
 const WIDTH = Number(process.env.W || 1280);
 const HEIGHT = Number(process.env.H || 800);
 const SEUIL = 4.5;
-const PAS = Number(process.env.PAS || 40);
+const PAS = Number(process.env.PAS || 24);
 
 /**
- * Le temps qu'on laisse à la caméra avant de mesurer.
+ * Le temps maximal accordé à la caméra pour rejoindre sa cible.
  *
- * Elle suit le défilement avec amortissement : après un saut, le curseur met
- * environ une seconde à rejoindre sa cible. Mesurer avant, c'est mesurer une
- * image transitoire — vraie, mais que personne ne verra à l'arrêt, et différente
- * à chaque exécution.
+ * Elle suit le défilement avec amortissement. Un délai fixe ne convient pas :
+ * l'amortissement est normalisé sur le temps écoulé, donc sur une machine qui
+ * rend à trois images par seconde — un rendu logiciel d'intégration, par
+ * exemple — la convergence prend plusieurs secondes au lieu d'une fraction. Les
+ * premières versions de ce script mesuraient donc des images de transition, et
+ * deux exécutions ne donnaient jamais le même résultat.
+ *
+ * On attend maintenant la convergence elle-même : la barre de progression porte
+ * le curseur amorti, il suffit de la regarder s'immobiliser.
  */
-const REPOS = 1200;
+const REPOS_MAX = 20000;
 
 /** Luminance relative WCAG 2.1 d'un canal sRGB 0..255. */
 const canal = (value) => {
@@ -91,6 +96,44 @@ if (!section) {
   console.error('Aucune section de visite sur la page : le serveur tourne-t-il sur ' + BASE + ' ?');
   await browser.close();
   process.exit(1);
+}
+
+/**
+ * Attend que la caméra ait rejoint sa cible.
+ *
+ * La barre de progression est mise à l'échelle du curseur amorti à chaque
+ * image : quand sa transformation cesse de bouger, la caméra est arrivée. C'est
+ * un signal que le produit affiche déjà, donc rien à instrumenter.
+ */
+async function reposer() {
+  /*
+   * Le sondage doit être plus lent que l'intervalle entre deux images.
+   *
+   * Sinon « immobile » ne veut pas dire « arrivé » : sous un rendu logiciel à
+   * une image et demie par seconde, trois sondages à cent vingt millisecondes
+   * tombent tous dans la même image, la valeur ne bouge pas, et on conclut à
+   * une convergence qui n'a pas commencé. La première version de ce script
+   * mesurait ainsi le tout début de la visite en croyant mesurer son milieu.
+   */
+  const PAUSE = 250;
+  const IDENTIQUES = 8;
+  const debut = Date.now();
+  let precedent = '';
+  let stable = 0;
+  while (Date.now() - debut < REPOS_MAX) {
+    await page.waitForTimeout(PAUSE);
+    const courant = await page.evaluate(() => {
+      const bar = document.querySelector('[class*="bar"]');
+      return bar ? getComputedStyle(bar).transform : '';
+    });
+    if (courant === precedent) {
+      stable += 1;
+      if (stable >= IDENTIQUES) return;
+    } else {
+      stable = 0;
+      precedent = courant;
+    }
+  }
 }
 
 /** La légende visible, son cadre, et ce qu'il y a derrière elle. */
@@ -161,7 +204,7 @@ for (let index = 0; index <= PAS; index += 1) {
   const t = index / PAS;
   const y = Math.round(section.top + t * (section.height - section.vh));
   await page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
-  await page.waitForTimeout(REPOS);
+  await reposer();
   const found = await mesure();
   if (found) brut.push({ t, ...found });
 }

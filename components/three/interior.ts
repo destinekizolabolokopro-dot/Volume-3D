@@ -13,6 +13,7 @@
  */
 
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {
   WALL_FACADE,
@@ -62,6 +63,87 @@ const SKIRTING = 0.09;
  *  quelques milliers. */
 const AXE_Y = new THREE.Vector3(0, 1, 0);
 const IDENTITE = new THREE.Matrix4();
+
+/* ------------------------------------------------------- arêtes vives --- */
+
+/*
+ * Rien n'a d'arête parfaitement vive.
+ *
+ * Une boîte rendue avec des arêtes à angle droit ne renvoie de lumière que par
+ * ses faces : l'arête elle-même n'a aucune surface, donc aucun reflet, et deux
+ * faces mates se rencontrent sur une ligne qui n'existe pas dans le monde. Un
+ * chanfrein de quelques millimètres suffit à lui donner une largeur — et cette
+ * largeur, orientée autrement que les deux faces, accroche un filet de lumière
+ * qui souligne le volume.
+ *
+ * C'est le détail le moins cher de toute la scène : quelques dizaines de
+ * triangles par objet, invisibles au budget maintenant que tout est fusionné,
+ * et c'est ce qui fait qu'un meuble cesse de ressembler à un carton. Il ne
+ * devient visible qu'avec des matériaux physiques : sous Lambert, une arête
+ * chanfreinée rend exactement comme une arête vive.
+ *
+ * Deux rayons, et la différence est structurelle. Le bâti se contente de deux
+ * millimètres — c'est le rayon d'un angle de plâtre, et surtout deux panneaux
+ * qui se rejoignent laissent alors une rainure de deux millimètres, invisible à
+ * distance de pièce. Un chanfrein de menuiserie sur un mur ouvrirait des joints
+ * qu'on verrait.
+ */
+const CHANFREIN_BATI = 0.002;
+const CHANFREIN_MEUBLE = 0.006;
+
+/**
+ * Côté, en mètres, de la maille du grain d'enduit.
+ *
+ * Les coordonnées de texture d'une boîte vont de zéro à un par face, quelle que
+ * soit sa taille : la même carte de grain s'étirerait sur un mur de cinq mètres
+ * et se serrerait sur un chambranle de six centimètres, et le raccord entre les
+ * deux se verrait comme un changement de matière. On remet donc les coordonnées
+ * à l'échelle du monde — un pavé de trente centimètres partout — pour que le
+ * grain ait la même finesse sur toute la scène.
+ *
+ * L'approximation porte sur les joues : elles reçoivent l'échelle de la face,
+ * ce qui est faux d'un facteur égal au rapport de l'épaisseur à la largeur.
+ * Sur des joues de quelques centimètres, cela ne se voit pas.
+ */
+const MAILLE_GRAIN = 0.3;
+
+/**
+ * Met les coordonnées de texture d'une boîte à l'échelle du monde, et les cale
+ * sur la position du panneau dans le mur.
+ *
+ * L'échelle seule ne suffit pas. Deux panneaux voisins commencent tous deux à
+ * zéro : le motif redémarre à leur jonction, et la coupure se lit comme une
+ * ligne horizontale en travers du mur. En décalant les coordonnées de la
+ * position réelle du panneau, le grain traverse le raccord sans le voir.
+ */
+function worldUv(
+  geometry: THREE.BufferGeometry,
+  width: number,
+  height: number,
+  alongOffset: number,
+  heightOffset: number,
+): void {
+  const uv = geometry.getAttribute('uv') as THREE.BufferAttribute | undefined;
+  if (!uv) return;
+  const u = width / MAILLE_GRAIN;
+  const v = height / MAILLE_GRAIN;
+  const du = alongOffset / MAILLE_GRAIN;
+  const dv = heightOffset / MAILLE_GRAIN;
+  for (let index = 0; index < uv.count; index += 1) {
+    uv.setXY(index, uv.getX(index) * u + du, uv.getY(index) * v + dv);
+  }
+  uv.needsUpdate = true;
+}
+
+/**
+ * Une boîte aux arêtes adoucies, avec repli sur la boîte franche quand elle est
+ * trop mince pour recevoir un chanfrein.
+ */
+function box(w: number, h: number, d: number, radius: number): THREE.BufferGeometry {
+  const r = Math.min(radius, Math.min(w, h, d) * 0.3);
+  if (r < 0.0006) return new THREE.BoxGeometry(w, h, d);
+  return new RoundedBoxGeometry(w, h, d, 1, r);
+}
 /** Hauteur de la corniche, au raccord du mur et du plafond. */
 const CORNICE = 0.12;
 
@@ -525,6 +607,124 @@ function surroundings(
  * en mètres — `ShapeGeometry` les reprend telles quelles — donc une répétition
  * de 0,5 fait tomber le motif exactement sur ses deux mètres.
  */
+/*
+ * Le relief, cuit en cartes de normales.
+ *
+ * Une peinture murale n'est pas un plan mathématique : elle porte la trace du
+ * rouleau, le grain de l'enduit, les défauts du support. À un mètre, on ne voit
+ * aucun de ces accidents séparément — mais on voit qu'ils sont là, parce qu'ils
+ * cassent la lumière et empêchent le mur d'être un aplat.
+ *
+ * Une carte de normales suffit à les rendre : elle ne déplace rien, elle ment
+ * seulement sur l'orientation de la surface, et c'est cette orientation qui
+ * décide de la lumière reçue. Coût : une texture de 256 pixels de côté,
+ * fabriquée au chargement, et pas un triangle de plus.
+ *
+ * L'amplitude est volontairement minuscule. Un relief d'enduit visible se lit
+ * comme du crépi, et un logement parisien n'est pas crépi — la valeur juste est
+ * celle qu'on ne remarque pas et dont l'absence se remarque.
+ */
+
+/** Bruit de valeur lissé, déterministe : deux exécutions donnent le même mur. */
+function bruit(x: number, y: number, graine: number): number {
+  const n = Math.sin(x * 127.1 + y * 311.7 + graine * 74.7) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+/**
+ * Fabrique une carte de normales à partir d'une fonction de hauteur.
+ *
+ * On dérive la hauteur en x et en y — la pente locale — et on encode la normale
+ * dans le rouge et le vert, le bleu portant la composante verticale. C'est la
+ * convention OpenGL, celle que three.js attend.
+ */
+function normalMap(
+  size: number,
+  amplitude: number,
+  height: (x: number, y: number) => number,
+  disposables: Bin[],
+): THREE.Texture {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext('2d')!;
+  const image = context.createImageData(size, size);
+  const at = (x: number, y: number) => height((x + size) % size, (y + size) % size);
+
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const dx = (at(x + 1, y) - at(x - 1, y)) * amplitude;
+      const dy = (at(x, y + 1) - at(x, y - 1)) * amplitude;
+      // Normale de la surface z = h(x, y) : (-dh/dx, -dh/dy, 1), normalisée.
+      const length = Math.hypot(dx, dy, 1);
+      const index = (y * size + x) * 4;
+      image.data[index] = Math.round(((-dx / length) * 0.5 + 0.5) * 255);
+      image.data[index + 1] = Math.round(((-dy / length) * 0.5 + 0.5) * 255);
+      image.data[index + 2] = Math.round((1 / length) * 255);
+      image.data[index + 3] = 255;
+    }
+  }
+  context.putImageData(image, 0, 0);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.anisotropy = 4;
+  disposables.push(texture);
+  return texture;
+}
+
+/** Le grain d'un enduit peint : deux échelles de bruit, très faibles. */
+function plasterNormal(disposables: Bin[]): THREE.Texture {
+  const size = 256;
+  const cache = new Float32Array(size * size);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      /* Deux fréquences : le grain fin de l'enduit, et une ondulation lente qui
+         est celle du support. Sans la seconde, le mur a du grain mais reste
+         plan, et cela se voit sur les grandes surfaces en lumière rasante. */
+      const fin = bruit(Math.floor(x / 2), Math.floor(y / 2), 1);
+      const lent =
+        bruit(Math.floor(x / 24), Math.floor(y / 24), 2) * 0.6 +
+        bruit(Math.floor(x / 48), Math.floor(y / 48), 3) * 0.4;
+      cache[y * size + x] = fin * 0.62 + lent * 0.38;
+    }
+  }
+  return normalMap(size, 0.9, (x, y) => cache[y * size + x], disposables);
+}
+
+/** Les rainures entre les lames, et le bombé de chaque lame. */
+function plankNormal(disposables: Bin[]): THREE.Texture {
+  const size = 512;
+  const PLANKS = 10;
+  const band = size / PLANKS;
+  const cache = new Float32Array(size * size);
+  /* Une gorge adoucie, et non une marche.
+     Le premier essai faisait tomber la hauteur d'un pixel à l'autre : la pente
+     devenait quasi verticale, la normale basculait à quatre-vingt-dix degrés et
+     le joint ressortait en trait blanc — l'inverse d'un creux. Une gorge en V
+     sur trois pixels donne la pente d'un vrai chanfrein de lame. */
+  const gorge = (distance: number, largeur: number) =>
+    distance >= largeur ? 1 : Math.pow(distance / largeur, 0.8);
+
+  for (let y = 0; y < size; y += 1) {
+    const dansLame = (y % band) / band;
+    const bordLame = Math.min(dansLame, 1 - dansLame) * band;
+    // La lame est très légèrement bombée : c'est ce qui la fait exister entre
+    // ses deux joints au lieu d'être un simple ruban plat.
+    const bombe = Math.sin(dansLame * Math.PI) * 0.1;
+    for (let x = 0; x < size; x += 1) {
+      const cut = (Math.floor(y / band) * 173) % size;
+      const bordBout = Math.abs(x - cut);
+      // Le fil du bois, allongé dans le sens de la lame.
+      const fil = bruit(Math.floor(x / 3), Math.floor(y / 22), 7) * 0.06;
+      cache[y * size + x] =
+        gorge(bordLame, 3) * gorge(bordBout, 2.5) * (0.8 + bombe + fil);
+    }
+  }
+  return normalMap(size, 1.1, (x, y) => cache[y * size + x], disposables);
+}
+
 function plankTexture(disposables: Bin[]): THREE.Texture {
   const SIZE = 512;
   const PLANKS = 10;
@@ -609,9 +809,15 @@ function shell(
   const position = new THREE.Vector3();
   const echelle = new THREE.Vector3(1, 1, 1);
 
+  /* Une seule carte de grain pour l'enduit : murs et plafond la partagent, et
+     comme les UV sont mis à l'échelle du monde, elle ne se répète pas d'un pan
+     à l'autre. */
+  const grain = plasterNormal(disposables);
   const wall = new THREE.MeshStandardMaterial({
     color: SHELL.mur,
     roughness: ROUGHNESS.mur,
+    normalMap: grain,
+    normalScale: new THREE.Vector2(0.35, 0.35),
     vertexColors: true,
   });
   /* Une seule peinture pour tout ce qui est menuiserie : plinthes, corniches,
@@ -624,6 +830,8 @@ function shell(
   });
   const parquet = new THREE.MeshStandardMaterial({
     map: plankTexture(disposables),
+    normalMap: plankNormal(disposables),
+    normalScale: new THREE.Vector2(0.32, 0.32),
     roughness: ROUGHNESS.parquet,
   });
   const carrelage = new THREE.MeshStandardMaterial({
@@ -633,6 +841,8 @@ function shell(
   const ceiling = new THREE.MeshStandardMaterial({
     color: SHELL.plafond,
     roughness: ROUGHNESS.plafond,
+    normalMap: grain,
+    normalScale: new THREE.Vector2(0.25, 0.25),
     side: THREE.DoubleSide,
   });
   /* Un rien de verre : de quoi dire qu'il y en a, sans éteindre la vue. Sous un
@@ -748,7 +958,8 @@ function shell(
         const width = (to - from) * length;
         if (width < 0.008 || height < 0.008) return;
         const centre = pointAt(segment, (from + to) / 2);
-        const geometry = new THREE.BoxGeometry(width, height, depth);
+        const geometry = box(width, height, depth, CHANFREIN_BATI);
+        worldUv(geometry, width, height, from * length, bottom);
         bakeContact(geometry, bottom, height, room.height);
         position.set(
           centre.x - origin.x + normal.x * (depth / 2),
@@ -825,7 +1036,7 @@ function furniture(
 
     /** Pose une boîte, exprimée dans le repère local du meuble. */
     const part = (w: number, h: number, d: number, dx: number, y: number, dz: number) => {
-      const geometry = new THREE.BoxGeometry(w, h, d);
+      const geometry = box(w, h, d, CHANFREIN_MEUBLE);
       position.set(
         item.x - origin.x + dx * Math.cos(spin) + dz * Math.sin(spin),
         y,
