@@ -14,7 +14,7 @@
 
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {
   WALL_FACADE,
   WALL_SKIN,
@@ -220,8 +220,24 @@ const CORNICE = 0.12;
 class Batch {
   private readonly lots = new Map<THREE.Material, THREE.BufferGeometry[]>();
 
-  add(geometry: THREE.BufferGeometry, material: THREE.Material, matrix: THREE.Matrix4): void {
+  add(source: THREE.BufferGeometry, material: THREE.Material, matrix: THREE.Matrix4): void {
+    let geometry = source;
     geometry.applyMatrix4(matrix);
+    /*
+     * Indexées ou pas, mais pas les deux.
+     *
+     * Les primitives de three.js sont indexées ; une extrusion ne l'est pas. La
+     * fusion refuse un mélange des deux — et elle le refuse en écrivant dans la
+     * console, pas en levant une erreur : le lot retombait sur des objets
+     * séparés et la moitié du gain de la fusion disparaissait sans que rien ne
+     * le signale. On indexe donc ce qui ne l'est pas, ce qui soude au passage
+     * les sommets rigoureusement identiques.
+     */
+    if (!geometry.index) {
+      const indexed = mergeVertices(geometry);
+      if (indexed !== geometry) geometry.dispose();
+      geometry = indexed;
+    }
     if (!geometry.getAttribute('color')) {
       const count = geometry.getAttribute('position').count;
       geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3).fill(1), 3));
@@ -380,7 +396,21 @@ export function configure(renderer: THREE.WebGLRenderer): void {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  /*
+   * PCF, et non le filtrage doux.
+   *
+   * `PCFSoftShadowMap` est abandonné par three.js : il retombe silencieusement
+   * sur PCF, si bien qu'on croyait avoir des ombres douces sans en avoir. Le
+   * choisir explicitement change deux choses — la console se tait, et l'intention
+   * est dite.
+   *
+   * Et c'est le bon choix, pas un pis-aller. La source qui compte ici est le
+   * soleil : vu de la Terre il fait un demi-degré, ses ombres sont presque
+   * nettes, et l'ombre d'un meneau sur un placard doit se lire comme un meneau.
+   * Le flou, on l'obtient là où il existe vraiment — dans les angles — par
+   * l'occlusion cuite dans les sommets.
+   */
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 }
 
 /**
@@ -449,7 +479,13 @@ export function buildInterior({
        sans effacer le soleil, qui doit rester la source qu'on lit. */
     scene.environmentIntensity = 1.05;
   }
-  lights(scene, Math.max(box.maxX - box.minX, box.maxY - box.minY), rooms, doors, origin);
+  lights(
+    scene,
+    Math.max(box.maxX - box.minX, box.maxY - box.minY),
+    rooms.reduce((tallest, room) => Math.max(tallest, room.height), 2.5),
+    rooms,
+    doors,
+  );
   scene.add(ground(bin));
   scene.add(surroundings(rooms, doors, origin, bin));
   scene.add(shell(rooms, doors, origin, bin));
@@ -598,10 +634,12 @@ function sunDirection(rooms: PlanRoom[], doors: PlanDoor[]): THREE.Vector3 {
 
 function lights(
   scene: THREE.Scene,
+  /** Le plus grand côté de l'emprise, en mètres. */
   extent: number,
+  /** La plus haute hauteur sous plafond du logement. */
+  ceiling: number,
   rooms: PlanRoom[],
   doors: PlanDoor[],
-  origin: PlanPoint,
 ): void {
   /*
    * L'équilibre a été refait quand la carte d'environnement est arrivée.
@@ -621,14 +659,30 @@ function lights(
   scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 0.6));
 
   const sun = new THREE.DirectionalLight(0xfff0d6, 2.4);
-  sun.position.copy(sunDirection(rooms, doors));
+  const from = sunDirection(rooms, doors);
+  sun.position.copy(from);
   sun.castShadow = true;
   /* Mille vingt-quatre pixels pour un logement entier donnaient une ombre en
      escalier sur le nez des marches et le bord des tablettes. Le coût d'une
      carte deux fois plus fine se paie une fois par image, et la scène ne compte
      plus qu'une cinquantaine d'appels : elle peut se le permettre. */
   sun.shadow.mapSize.set(2048, 2048);
-  const reach = extent / 2 + 2;
+  /*
+   * L'étendue de la carte d'ombre, calculée et non devinée.
+   *
+   * Elle valait « la moitié du plus grand côté, plus deux mètres ». Pour un
+   * logement en L de dix mètres sur cinq, cela fait sept — mais la caméra
+   * d'ombre regarde en biais, et ce qu'elle doit couvrir est la *diagonale* du
+   * plan, augmentée de ce que la hauteur projette au sol sous l'angle du
+   * soleil. Le compte tombait à peu près trois mètres court : au-delà, plus
+   * rien n'était ombré, et la limite se voyait en trait clair en travers du
+   * mur du fond.
+   *
+   * On ne prend pas non plus une marge confortable : à résolution fixe, une
+   * carte deux fois plus large est une ombre deux fois plus grossière.
+   */
+  const elevation = Math.max(0.15, Math.atan2(from.y, Math.hypot(from.x, from.z)));
+  const reach = extent * 0.72 + ceiling / Math.tan(elevation);
   const frustum = sun.shadow.camera as THREE.OrthographicCamera;
   frustum.left = -reach;
   frustum.right = reach;
@@ -1275,6 +1329,66 @@ function furniture(
           base + plinth + (item.h - plinth) / 2,
           alongW ? 0 : shift,
         );
+      }
+    } else if (item.shape === 'radiateur') {
+      /*
+       * Un radiateur en fonte à colonnes.
+       *
+       * C'est, avec la rosace, l'objet qui fait reconnaître un appartement
+       * haussmannien en une image — plus sûrement que la hauteur sous plafond,
+       * qu'on ne peut pas juger sur un écran. Et il est toujours au même
+       * endroit : sous la fenêtre, parce que c'est là que le froid entre.
+       *
+       * Des colonnes rondes plutôt qu'un panneau plat : ce sont elles qui
+       * portent l'objet. Un panneau lisse de la même taille se lit comme un
+       * radiateur moderne, ce qui est exactement le contraire de ce qu'on veut
+       * montrer, et coûte le même nombre de triangles.
+       */
+      const colonnes = Math.max(4, Math.round(item.w / 0.055));
+      const rayon = Math.min(0.026, item.d / 2);
+      const ecart = item.w / colonnes;
+      const rail = 0.035;
+      const hauteurColonnes = item.h - rail;
+      for (let index = 0; index < colonnes; index += 1) {
+        const geometry = new THREE.CylinderGeometry(rayon, rayon, hauteurColonnes, 8);
+        position.set(
+          item.x - origin.x + ((index + 0.5) * ecart - item.w / 2) * Math.cos(spin),
+          base + rail / 2 + hauteurColonnes / 2,
+          item.y - origin.y - ((index + 0.5) * ecart - item.w / 2) * Math.sin(spin),
+        );
+        quaternion.setFromAxisAngle(AXE_Y, spin);
+        batch.add(geometry, material!, matrix.compose(position, quaternion, echelle));
+      }
+      // Les collecteurs haut et bas, qui tiennent les colonnes ensemble.
+      part(item.w, rail, item.d * 0.7, 0, base + rail / 2, 0);
+      part(item.w, rail, item.d * 0.7, 0, base + item.h - rail / 2, 0);
+      // Les deux pieds.
+      for (const side of [-1, 1]) {
+        part(0.03, 0.06, item.d * 0.8, (side * item.w) / 2.6, base + 0.03, 0);
+      }
+    } else if (item.shape === 'rosace') {
+      /*
+       * La rosace de plafond, en deux gradins.
+       *
+       * Le luminaire pendait du vide. Une rosace, même réduite à deux disques,
+       * rattache la suspension au plafond et donne à celui-ci le seul relief
+       * qu'il ait — un plafond parfaitement lisse est ce qui trahit le plus
+       * vite un rendu.
+       */
+      const rayon = item.w / 2;
+      /* Deux gradins, montés depuis `base` comme tout le reste : le plus large
+         contre le plafond, le plus petit en dessous. C'est le sens de lecture
+         d'une moulure — chaque gradin porte le suivant. */
+      let niveau = base;
+      for (const [facteur, epaisseur] of [
+        [0.68, 0.018],
+        [1, 0.022],
+      ] as const) {
+        const geometry = new THREE.CylinderGeometry(rayon * facteur, rayon * facteur, epaisseur, 24);
+        position.set(item.x - origin.x, niveau + epaisseur / 2, item.y - origin.y);
+        quaternion.setFromAxisAngle(AXE_Y, 0);
+        batch.add(geometry, material!, matrix.compose(position, quaternion, echelle));
+        niveau += epaisseur;
       }
     } else {
       part(item.w, item.h, item.d, 0, base + item.h / 2, 0);

@@ -75,6 +75,9 @@ export const SHELL = {
 /* ================================================================ mobilier === */
 
 export const FURNITURE = {
+  /** Le plâtre d'une moulure — rosace, cimaise. Peint avec le plafond, donc
+   *  presque blanc, mais assez en dessous pour que le relief se lise. */
+  platre: 0xeae7e0,
   /** Placards, cuisine, douche : un grège franchement sous le mur. */
   cabinet: 0xcfc8b6,
   /** Plateaux, chevets, tête de lit : un bois plus foncé que le sol. */
@@ -210,6 +213,9 @@ export const ROUGHNESS = {
 
 /** Rugosité du mobilier, par teinte du nuancier. */
 export const FURNITURE_ROUGHNESS: Record<keyof typeof FURNITURE, number> = {
+  /* Le plâtre d'une moulure : mat comme le mur, mais pas tout à fait — il est
+     peint avec le plafond, donc un rien plus lisse que l'enduit brut. */
+  platre: 0.9,
   cabinet: 0.5,
   bois: 0.55,
   lin: 0.95,

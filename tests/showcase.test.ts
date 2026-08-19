@@ -105,10 +105,22 @@ test('aucun meuble n’est enfoncé dans la maçonnerie', () => {
     const room = byId.get(item.roomId);
     assert.ok(room, `mobilier orphelin dans ${item.roomId}`);
 
-    // Les quatre coins de l'empreinte au sol : aucun meuble de cette liste
-    // n'est pivoté.
+    /* Les quatre coins de l'empreinte au sol, pivot compris.
+       Le contrôle les calculait sans tenir compte du `yaw` — ce qui allait tant
+       qu'aucun meuble n'était pivoté, et devenait faux dès le premier : il
+       cherchait le radiateur de la chambre à quarante centimètres de sa vraie
+       place. La rotation reprend celle de `furniture()` : le repère du plan a
+       son y vers le bas, d'où le signe. */
+    const spin = -((item.yaw ?? 0) * Math.PI) / 180;
     const corners = [-1, 1].flatMap((sx) =>
-      [-1, 1].map((sy) => ({ x: item.x + (sx * item.w) / 2, y: item.y + (sy * item.d) / 2 })),
+      [-1, 1].map((sy) => {
+        const dx = (sx * item.w) / 2;
+        const dz = (sy * item.d) / 2;
+        return {
+          x: item.x + dx * Math.cos(spin) + dz * Math.sin(spin),
+          y: item.y - dx * Math.sin(spin) + dz * Math.cos(spin),
+        };
+      }),
     );
 
     for (const corner of corners) {

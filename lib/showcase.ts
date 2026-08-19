@@ -123,6 +123,13 @@ export interface Massing {
    * `bloc` : une masse pleine, pour ce qui touche le sol — canapé, plan de
    * travail. `table` : un plateau sur quatre pieds. `placard` : une armoire,
    * avec sa plinthe en retrait et le joint entre ses deux portes.
+   * `radiateur` : un radiateur en fonte à colonnes, sous une fenêtre.
+   * `rosace` : une rosace de plafond, sous laquelle pend le luminaire.
+   *
+   * Les deux derniers ne sont pas du décor. Un radiateur en fonte sous la
+   * fenêtre et une rosace au plafond sont les deux objets qui font qu'on
+   * reconnaît un appartement haussmannien en une image — plus sûrement que la
+   * hauteur sous plafond, qu'on ne peut pas juger sur un écran.
    *
    * La distinction n'est pas cosmétique. Une table rendue en bloc plein
    * ressemble à une caisse posée au milieu de la pièce, et comme elle occupe le
@@ -130,7 +137,7 @@ export interface Massing {
    * pieds de six centimètres suffisent à ce que l'œil lise « table » et passe à
    * autre chose.
    */
-  shape?: 'bloc' | 'table' | 'placard';
+  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace';
   /** Une teinte du nuancier étudié (`lib/palette.ts`), jamais une valeur libre. */
   tone: FurnitureTone;
 }
@@ -152,6 +159,10 @@ export interface Massing {
  */
 export const SHOWCASE_MASSING: Massing[] = [
   /* ------------------------------------------------------------- séjour --- */
+  /* Le radiateur en fonte sous la fenêtre sur rue. Il est là parce que c'est
+     là qu'il est toujours — sous l'ouverture, là où le froid entre — et il
+     dit l'époque du bâtiment plus vite que n'importe quel autre objet. */
+  { roomId: 'sejour', x: 2.1, y: 0.365, w: 1.0, d: 0.11, h: 0.62, shape: 'radiateur', tone: 'cabinet' },
   { roomId: 'sejour', x: 1.7, y: 2.15, w: 2.6, d: 1.8, h: 0.012, tone: 'tapis' },
   // Le canapé porte la seule couleur franche de la scène ; les coussins lui
   // répondent en terre cuite, presque à l'opposé sur le cercle des teintes.
@@ -174,6 +185,8 @@ export const SHOWCASE_MASSING: Massing[] = [
   { roomId: 'sejour', x: 4.05, y: 1.81, w: 0.42, d: 0.05, h: 0.44, base: 0.46, tone: 'sombre' },
   // La suspension : une tige et un abat-jour. Deux boîtes, et la pièce cesse
   // d'être un volume vide au-dessus d'un mètre quatre-vingts.
+  /* La rosace, au-dessus de la suspension : la tige partait du vide. */
+  { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.34, d: 0.34, h: 0.04, base: 2.56, shape: 'rosace', tone: 'platre' },
   { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.025, d: 0.025, h: 0.5, base: 2.1, tone: 'laiton' },
   { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.24, d: 0.24, h: 0.13, base: 1.97, tone: 'laiton' },
 
@@ -198,6 +211,8 @@ export const SHOWCASE_MASSING: Massing[] = [
   { roomId: 'chambre', x: 8.05, y: 2.68, w: 0.58, d: 0.34, h: 0.13, base: 0.58, tone: 'lin' },
   { roomId: 'chambre', x: 8.75, y: 2.68, w: 0.58, d: 0.34, h: 0.13, base: 0.58, tone: 'lin' },
   { roomId: 'chambre', x: 8.4, y: 2.99, w: 1.7, d: 0.1, h: 1.0, tone: 'bois' },
+  // Sous la fenêtre de la chambre, contre la façade est.
+  { roomId: 'chambre', x: 9.645, y: 1.3, w: 0.85, d: 0.11, h: 0.62, yaw: 90, shape: 'radiateur', tone: 'cabinet' },
   { roomId: 'chambre', x: 7.4, y: 2.75, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
   { roomId: 'chambre', x: 9.4, y: 2.75, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
   { roomId: 'chambre', x: 7.4, y: 2.75, w: 0.18, d: 0.18, h: 0.26, base: 0.52, tone: 'laiton' },
