@@ -118,11 +118,25 @@ function brightness(facts: PropertyFact[]): string {
  */
 export function buildTitle(property: Property, plan: FloorPlan | null, facts: PropertyFact[]): string {
   const type = typology(plan);
-  const area = plan ? Math.round(totalArea(plan.rooms)) : 0;
+  /*
+   * La surface du titre est celle du relevé, au dixième, sans arrondi.
+   *
+   * Elle était arrondie à l'entier : un logement mesuré à 37,8 m² se retrouvait
+   * annoncé « T2 38 m² » juste au-dessus d'un plan qui écrit 37,8 et d'une
+   * description qui écrit 37,8. Trois chiffres pour la même pièce, sur le même
+   * écran, dont un plus grand que la mesure.
+   *
+   * Arrondir vers le haut une surface annoncée est le seul arrondi qu'on ne
+   * puisse pas se permettre ici : c'est la promesse que le produit vend — « les
+   * dimensions viennent du relevé, pas de l'annonce » — et un dixième de mètre
+   * carré gagné ne fait louer personne. La limite de titre n'y est pour rien :
+   * « T2 37,8 m² — Paris 3e » fait vingt-deux caractères sur cinquante.
+   */
+  const area = plan ? totalArea(plan.rooms) : 0;
   const place = shortPlace(owned(facts, 'adresse') || property.city);
   const light = brightness(facts);
 
-  const head = [type, light, area ? `${area} m²` : ''].filter(Boolean).join(' ');
+  const head = [type, light, area ? formatArea(area) : ''].filter(Boolean).join(' ');
   const candidates = [
     head && place ? `${head} — ${place}` : '',
     head || place,

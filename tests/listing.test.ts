@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { atPlace, bedroomCount, buildListing, buildTitle, TITLE_LIMIT, typology } from '../lib/listing.ts';
+import { formatArea } from '../lib/floorplan-svg.ts';
 import type { FloorPlan, PlanRoom, Property, PropertyFact } from '../lib/types.ts';
 
 const room = (id: string, name: string, w: number, h: number, x = 0): PlanRoom => ({
@@ -90,13 +91,36 @@ test('le titre reste sous la limite d’Airbnb', () => {
 test('le titre réunit typologie, surface et lieu', () => {
   const title = buildTitle(
     property(),
-    plan([room('sejour', 'Séjour', 5, 4), room('ch', 'Chambre', 3, 3, 5)]),
+    /* Une surface volontairement non entière : c'est le seul cas où un arrondi
+       peut annoncer plus que ce qui a été mesuré, donc le seul qui teste
+       quelque chose. Avec 5 × 4 le contrôle plus bas serait toujours vrai. */
+    plan([room('sejour', 'Séjour', 5, 4.15), room('ch', 'Chambre', 3, 3, 5)]),
     [owner('adresse', 'Le Marais'), owner('exposition', 'Très lumineux')],
   );
   assert.ok(title.includes('T2'), title);
   assert.ok(title.includes('m²'), title);
   assert.ok(title.includes('Marais'), title);
   assert.ok(title.length <= TITLE_LIMIT);
+
+  /*
+   * Le titre annonce exactement la surface que le plan dessine.
+   *
+   * Elle était arrondie à l'entier de son côté : un logement relevé à 37,8 m²
+   * devenait « T2 38 m² » juste au-dessus d'un plan qui écrivait 37,8 et d'une
+   * description qui écrivait 37,8. Trois chiffres pour la même pièce, sur le
+   * même écran, dont un plus grand que la mesure.
+   *
+   * Le contrôle a d'abord été écrit « le titre ne dépasse jamais la surface
+   * mesurée », et il échouait de cinq centièmes sur la version corrigée :
+   * `formatArea` arrondit lui aussi au dixième. C'était la mauvaise règle. Ce
+   * qu'on veut n'est pas une borne, c'est qu'il n'y ait **qu'un seul chiffre**
+   * pour un logement — celui du plan.
+   */
+  const mesuree = 5 * 4.15 + 3 * 3;
+  assert.ok(
+    title.includes(formatArea(mesuree)),
+    `le titre « ${title} » n’annonce pas ${formatArea(mesuree)}`,
+  );
 });
 
 test('une réponse non confirmée par le propriétaire n’entre pas dans l’annonce', () => {
