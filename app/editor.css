@@ -85,6 +85,42 @@
   background: var(--bg-alt);
 }
 
+/*
+ * Le champ d'un formulaire d'ajout, à ne pas confondre avec `.scene-name`.
+ *
+ * `.scene-name` est sans bordure, et c'est voulu : c'est le nom d'une pièce
+ * déjà là, qu'on renomme en cliquant dessus dans la liste. Un cadre autour de
+ * chaque ligne d'une liste ferait une grille de formulaire là où il n'y a que
+ * des noms.
+ *
+ * Le même style avait servi pour le champ « Nom de la pièce » du formulaire
+ * d'ajout, où il n'y a rien à renommer : le client y voyait une phrase grise
+ * flottant sous un titre, sans rien qui dise qu'on peut écrire dedans. Un des
+ * deux appels avait d'ailleurs déjà été rattrapé par une bordure posée en
+ * ligne dans le JSX — le signe qu'il manquait une classe, pas une exception.
+ */
+.field-inline {
+  flex: 1 1 140px;
+  min-width: 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  transition: border-color 0.15s ease;
+}
+
+.field-inline::placeholder {
+  color: var(--ink-faint);
+}
+
+.field-inline:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .mini-btn {
   border: 1px solid var(--line);
   background: #fff;
@@ -186,8 +222,15 @@
  * l'utilisateur, pas dans celle de la page. Le remplacer demanderait de
  * masquer le contrôle natif et d'en refaire un en JavaScript, ce qui coûterait
  * l'accessibilité qu'il apporte gratuitement.
+ *
+ * La règle ne vise pas `.file-drop` mais tout champ de fichier de l'espace pro.
+ * Adossée à la boîte en pointillés, elle laissait dehors ceux qui n'en ont pas
+ * — l'ajout de pièces 360° de l'éditeur, entre autres — et on retombait sur ce
+ * qu'on voulait corriger : un bouton système au milieu d'une page habillée.
+ * Cette feuille n'est chargée que par les mises en page `/espace` et `/admin`,
+ * donc la portée reste celle du produit et n'atteint pas la page publique.
  */
-.file-drop input[type='file']::file-selector-button {
+input[type='file']::file-selector-button {
   margin-right: 12px;
   padding: 7px 14px;
   border: 1px solid var(--line-strong);
@@ -201,7 +244,7 @@
   transition: background-color 0.16s ease, border-color 0.16s ease;
 }
 
-.file-drop input[type='file']::file-selector-button:hover {
+input[type='file']::file-selector-button:hover {
   background: var(--bg-alt);
   border-color: var(--accent);
 }

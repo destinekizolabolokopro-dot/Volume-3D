@@ -286,13 +286,8 @@ export function TourEditor({
                 <div className="row" style={{ marginTop: 4 }}>
                   <select
                     aria-label="Ajouter un passage vers une autre pièce"
-                    className="scene-name"
-                    style={{
-                      border: "1px solid var(--line)",
-                      padding: 8,
-                      borderRadius: 2,
-                      flex: "1 1 180px",
-                    }}
+                    className="field-inline"
+                    style={{ flex: "1 1 180px" }}
                     defaultValue=""
                     onChange={(event) => {
                       if (event.target.value)
@@ -558,7 +553,7 @@ function AddSceneForm({ propertyId }: { propertyId: string }) {
         name="name"
         placeholder="Nom de la pièce (facultatif)"
         maxLength={60}
-        className="scene-name"
+        className="field-inline"
       />
       <input
         aria-label="Panoramas 360° à envoyer"

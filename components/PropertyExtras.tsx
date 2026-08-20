@@ -153,20 +153,19 @@ export function PropertyExtras({
             <input
               aria-label="Nom de la pièce du repère"
               name="label"
-              className="scene-name"
+              className="field-inline"
               placeholder="Nom de la pièce"
               maxLength={60}
               required
-              style={{ flex: '1 1 140px', border: '1px solid var(--line)', padding: 8, borderRadius: 2 }}
             />
             <input
               aria-label="Minute du repère dans la vidéo"
               name="time"
-              className="scene-name"
+              className="field-inline"
               placeholder="1:30"
               maxLength={12}
               required
-              style={{ flex: '0 0 90px', border: '1px solid var(--line)', padding: 8, borderRadius: 2 }}
+              style={{ flex: '0 0 90px' }}
             />
           </div>
           {chapterState?.error && (

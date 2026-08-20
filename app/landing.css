@@ -1035,14 +1035,40 @@
  * téléphone, douze jours empilés repoussent le formulaire hors de l'écran, et
  * personne ne fait défiler pour trouver un bouton qu'il ne sait pas là.
  */
+/*
+ * Sur un écran large, les jours passent à la ligne ; sur un téléphone, ils
+ * défilent.
+ *
+ * Le défilement horizontal a été mis là pour une bonne raison — sur un
+ * téléphone, douze jours empilés repoussent le formulaire hors de l'écran — mais
+ * il s'appliquait aussi à un panneau de cinq cents pixels, où il ne servait
+ * qu'à couper « Lundi 2… » au bord, sans barre ni dégradé pour dire qu'il y a
+ * une suite. Un contenu tronqué sans affordance ne se lit pas comme un
+ * défilement : il se lit comme un débordement, c'est-à-dire comme un défaut.
+ *
+ * En passant à la ligne, tous les créneaux du fond sont visibles d'un coup, ce
+ * qui est exactement ce qu'on veut d'un choix de date. La règle du téléphone,
+ * elle, ne change pas.
+ */
 .booking-days {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
   padding-bottom: 8px;
-  scrollbar-width: thin;
-  /* Le défilement s'arrête sur un jour entier, jamais au milieu de deux. */
-  scroll-snap-type: x proximity;
+}
+
+@media (max-width: 560px) {
+  .booking-days {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    /* Le défilement s'arrête sur un jour entier, jamais au milieu de deux. */
+    scroll-snap-type: x proximity;
+    /* Un dégradé au bord droit : sur un téléphone il n'y a ni barre de
+       défilement visible ni place pour une flèche, et sans lui rien ne dit
+       qu'il reste des jours après celui qu'on voit à moitié. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
 }
 
 .booking-day {
