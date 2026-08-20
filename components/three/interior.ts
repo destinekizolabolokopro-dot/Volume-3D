@@ -85,28 +85,49 @@ const FACADE = WALL_FACADE;
  */
 type Profil = [number, number][];
 
+/**
+ * De combien une moulure s'enfonce dans la surface qu'elle rejoint.
+ *
+ * La corniche montait pile à la hauteur du plafond, la plinthe descendait pile
+ * au niveau du sol, et **toutes deux s'adossaient pile au nu du mur** : à chaque
+ * fois deux faces exactement coplanaires, et le tampon de profondeur n'a alors
+ * aucun moyen de choisir. Ce que ça donne à l'écran n'est pas une erreur
+ * franche mais un pointillé le long du raccord, qui bouge quand la caméra
+ * bouge — le défaut le plus visible de l'image et le plus difficile à nommer
+ * quand on ne sait pas d'où il vient.
+ *
+ * Le premier passage n'avait traité que les extrémités hautes et basses. Le dos
+ * restait à fleur du mur, et le pointillé avec lui, sur toute la longueur de la
+ * corniche : il faut donc enfoncer les trois côtés — d'où le `-NOYADE` en tête
+ * et en queue des profils, qui est la saillie depuis la face du mur.
+ *
+ * Deux millimètres et demi suffisent à trancher, et personne ne voit deux
+ * millimètres et demi.
+ */
+const NOYADE = 0.0025;
+
 /** Plinthe à doucine : montant droit, deux redans, retour au mur. */
 const PROFIL_PLINTHE: Profil = [
-  [0, 0],
+  [-NOYADE, 0],
   [0.019, 0],
   [0.019, 0.062],
   [0.014, 0.07],
   [0.014, 0.076],
   [0.009, 0.082],
   [0.009, 0.088],
-  [0, 0.09],
+  [-NOYADE, 0.09],
 ];
 
 /** Corniche à gorge : la diagonale creuse, puis deux ressauts vers le plafond. */
 const PROFIL_CORNICHE: Profil = [
-  [0, 0],
+  [-NOYADE, 0],
   [0.048, 0.052],
   [0.048, 0.07],
   [0.036, 0.081],
   [0.036, 0.097],
   [0.016, 0.112],
   [0.016, 0.12],
-  [0, 0.12],
+  [-NOYADE, 0.12],
 ];
 
 /** Réutilisés à chaque pièce plutôt que réalloués : la construction en pose
@@ -315,21 +336,6 @@ function subdiviser(
 /** Hauteur de la corniche, au raccord du mur et du plafond. Elle doit
  *  correspondre au dernier point de `PROFIL_CORNICHE`. */
 const CORNICE = 0.12;
-
-/**
- * De combien une moulure s'enfonce dans la surface qu'elle rejoint.
- *
- * La corniche montait pile à la hauteur du plafond et la plinthe descendait
- * pile au niveau du sol : dans les deux cas, deux faces exactement coplanaires,
- * et le tampon de profondeur n'a alors aucun moyen de choisir. Ce que ça donne
- * à l'écran n'est pas une erreur franche mais un pointillé le long du raccord,
- * qui bouge quand la caméra bouge — le défaut le plus visible de l'image et le
- * plus difficile à nommer quand on ne sait pas d'où il vient.
- *
- * Deux millimètres et demi d'enfoncement suffisent à trancher, et personne ne
- * voit deux millimètres et demi.
- */
-const NOYADE = 0.0025;
 
 /* --------------------------------------------------------- fusion --- */
 
@@ -1812,6 +1818,8 @@ function furniture(
 
   /** Le verre des parois de douche, construit à la première qui s'en sert. */
   let vitre: THREE.MeshStandardMaterial | undefined;
+  /** Le verre lumineux d'un plafonnier, de même. */
+  let verre: THREE.MeshBasicMaterial | undefined;
 
   /** Le matériau d'une teinte, construit une fois pour toute la scène. */
   const matiere = (tone: FurnitureTone): THREE.Material => {
@@ -1964,6 +1972,42 @@ function furniture(
           'laiton',
         );
       }
+    } else if (item.shape === 'plafonnier') {
+      /*
+       * Un plafonnier qui éclaire vraiment.
+       *
+       * Le dégagement n'a pas de fenêtre. La décroissance du jour l'amène donc
+       * à son plancher, et c'est juste : un couloir intérieur *est* sombre. Mais
+       * la visite y passe deux fois, et c'est par là qu'on va de la chambre à la
+       * salle d'eau — le moment le moins lisible de tout le parcours se trouvait
+       * être aussi celui où le visiteur a le plus besoin de comprendre où il
+       * est.
+       *
+       * Un couloir aveugle a une lumière, et elle est allumée. C'est le même
+       * remède que sur le palier, appliqué à l'autre pièce sans jour, et il ne
+       * coûte qu'une lampe : pas d'ombre portée — une seconde carte d'ombres
+       * pour un couloir coûterait celle du soleil — et un disque de verre pour
+       * que la lumière ait une source visible plutôt que de sortir du plâtre.
+       */
+      const rayon = Math.min(item.w, item.d) / 2;
+      const galette = new THREE.CylinderGeometry(rayon, rayon * 0.88, item.h, 20);
+      position.set(item.x - origin.x, base + item.h / 2, item.y - origin.y);
+      quaternion.setFromAxisAngle(AXE_Y, 0);
+      batch.add(galette, material, matrix.compose(position, quaternion, echelle), () => 1);
+
+      if (!verre) {
+        verre = new THREE.MeshBasicMaterial({ color: 0xfff2dc });
+        disposables.push(verre);
+      }
+      const globe = new THREE.SphereGeometry(rayon * 0.72, 14, 8);
+      disposables.push(globe);
+      const source = new THREE.Mesh(globe, verre);
+      source.position.set(item.x - origin.x, base - rayon * 0.2, item.y - origin.y);
+      group.add(source);
+
+      const lampe = new THREE.PointLight(0xffdfb4, 9, 7, 2);
+      lampe.position.set(item.x - origin.x, base - rayon * 0.2, item.y - origin.y);
+      group.add(lampe);
     } else if (item.shape === 'vitrage') {
       /*
        * Une paroi de douche, en verre.

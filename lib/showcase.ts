@@ -137,7 +137,7 @@ export interface Massing {
    * pieds de six centimètres suffisent à ce que l'œil lise « table » et passe à
    * autre chose.
    */
-  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace' | 'suspension' | 'rideau' | 'plante' | 'vitrage';
+  shape?: 'bloc' | 'table' | 'placard' | 'radiateur' | 'rosace' | 'suspension' | 'rideau' | 'plante' | 'vitrage' | 'plafonnier';
   /**
    * Rembourré : l'arête s'arrondit franchement au lieu de recevoir le chanfrein
    * de deux millimètres du mobilier menuisé.
@@ -361,6 +361,9 @@ export const SHOWCASE_MASSING: Massing[] = [
   /* Le placard tient le fond du couloir, et rien d'autre n'y tient : un mètre
      quarante de large ne se meuble pas des deux côtés. */
   { roomId: 'degagement', x: 5.46, y: 3.5, w: 0.34, d: 1.2, h: 2.2, shape: 'placard', tone: 'cabinet' },
+  /* Le plafonnier du dégagement, allumé. C'est la seule pièce sans fenêtre du
+     logement, et la visite y passe deux fois. */
+  { roomId: 'degagement', x: 5.9, y: 2.8, w: 0.26, d: 0.26, h: 0.05, base: 2.55, shape: 'plafonnier', tone: 'platre' },
 ];
 
 /* ============================================================== légendes === */
