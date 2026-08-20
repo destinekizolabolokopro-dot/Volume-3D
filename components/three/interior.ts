@@ -580,6 +580,9 @@ function angleMort(
   return 1 - RECOIN_FORCE * (1 - smoothstep(Math.min(1, proche / portee)));
 }
 
+/** Hauteur de la faïence dans une pièce d'eau. Un mètre vingt est l'usage. */
+const FAIENCE = 1.2;
+
 /** Pas de subdivision des dalles : au-delà, la décroissance redevient un plan. */
 const MAILLE_DALLE = 0.55;
 
@@ -1522,6 +1525,10 @@ function shell(
   const toSlab = (p: PlanPoint) => new THREE.Vector2(p.x - origin.x, -(p.y - origin.y));
 
   for (const room of rooms) {
+    /* Pièce d'eau : le sol est carrelé, et les murs le sont jusqu'à hauteur
+       d'usage. Le test porte sur l'identifiant *et* le nom, parce qu'un relevé
+       peut nommer la pièce sans que son identifiant le dise. */
+    const mouille = /eau|bain|wc|douche/i.test(room.id + room.name);
     const shape = new THREE.Shape(room.points.map(toSlab));
     const slab = new THREE.ShapeGeometry(shape);
     slab.rotateX(-Math.PI / 2);
@@ -1532,7 +1539,7 @@ function shell(
     const top = slab.clone();
     batch.add(
       slab,
-      /eau|bain|wc/i.test(room.id + room.name) ? carrelage : parquet,
+      mouille ? carrelage : parquet,
       IDENTITE,
       (x, y, z) => daylightAt(jour, x, y, z) * angleMort(bord, x, z, RECOIN_SOL),
       MAILLE_DALLE,
@@ -1688,7 +1695,25 @@ function shell(
       };
 
       for (const span of solidSpans(openings)) {
-        panel(span.from, span.to, 0, shellTop, wall);
+        /*
+         * Une salle d'eau est carrelée, et ça se voit avant qu'on ait rien lu.
+         *
+         * Elle était peinte du même enduit que les chambres. Or ce qui fait
+         * reconnaître une salle d'eau sur une image, avant la douche et avant la
+         * vasque, c'est la faïence : elle ne rend pas la lumière comme une
+         * peinture mate — l'étude de matière lui donne 0,26 de rugosité contre
+         * 0,93 — donc elle accroche un reflet là où le mur n'en a aucun. C'est
+         * ce reflet qui dit « pièce d'eau », pas le motif.
+         *
+         * À un mètre vingt, hauteur d'usage en France, et seulement dans les
+         * pièces d'eau : le même mur reste peint partout ailleurs.
+         */
+        if (mouille && FAIENCE < shellTop) {
+          panel(span.from, span.to, 0, FAIENCE, carrelage);
+          panel(span.from, span.to, FAIENCE, shellTop - FAIENCE, wall);
+        } else {
+          panel(span.from, span.to, 0, shellTop, wall);
+        }
         moulding(span.from, span.to, -NOYADE, PROFIL_PLINTHE, joinery);
       }
       for (const { span, door } of framed) {

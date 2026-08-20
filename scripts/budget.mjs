@@ -127,8 +127,21 @@ const relevé = await page.evaluate(async (images) => {
   });
   temps.sort((a, b) => a - b);
 
-  // Les appels sont comptés sur toute la fenêtre : on les ramène à une image,
-  // seule unité comparable d'un commit à l'autre.
+  /*
+   * Les appels sont comptés sur toute la fenêtre : on les ramène à une image,
+   * seule unité comparable d'un commit à l'autre.
+   *
+   * Une réserve, apprise en croyant à une régression qui n'existait pas : c'est
+   * une **moyenne sur le trajet parcouru**, et le trajet dépend de la vitesse à
+   * laquelle la machine rend. La caméra est amortie ; à quatre-vingt-dix
+   * images, une machine chargée la fait moins avancer, donc la mesure porte sur
+   * une autre portion du logement, où le tri par le tronc de vue ne garde pas
+   * les mêmes objets. Un relevé pris pendant qu'une autre mesure tournait a
+   * ainsi donné cinquante-sept appels au lieu de quarante-neuf, sans qu'une
+   * ligne de la scène ait changé.
+   *
+   * À ne comparer qu'entre relevés pris seuls sur la machine.
+   */
   return {
     largeur: canvas.width,
     hauteur: canvas.height,

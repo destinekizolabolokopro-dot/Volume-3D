@@ -77,6 +77,15 @@
  * C'est le sens de cette mesure. Une amélioration du cadrage a dégradé la
  * lisibilité d'un texte trois écrans plus loin, et rien dans la relecture du
  * code ne pouvait le montrer.
+ *
+ * Le réglage a ensuite été **desserré**, et pour une raison qui compte autant :
+ * la première correction avait porté les légendes à seize pour un, quand le
+ * seuil est quatre et demi. Ce n'est pas de la marge, c'est du gaspillage — un
+ * voile ne sert qu'à la lettre, et chaque point de contraste en trop est un
+ * point de logement en moins. Une salle d'eau de trois mètres carrés vue sous
+ * ce voile-là n'était plus une salle d'eau, c'était un rectangle sombre avec du
+ * texte dessus. On vise donc une marge d'un tiers au-dessus du seuil, pas le
+ * maximum atteignable.
  */
 .veil {
   position: absolute;
@@ -85,17 +94,17 @@
   background:
     linear-gradient(
       to top,
-      rgba(8, 12, 11, 0.95) 0%,
-      rgba(8, 12, 11, 0.87) 26%,
-      rgba(8, 12, 11, 0.6) 46%,
-      rgba(8, 12, 11, 0.16) 64%,
+      rgba(8, 12, 11, 0.94) 0%,
+      rgba(8, 12, 11, 0.8) 26%,
+      rgba(8, 12, 11, 0.5) 46%,
+      rgba(8, 12, 11, 0.12) 64%,
       rgba(8, 12, 11, 0) 74%
     ),
     linear-gradient(
       to right,
-      rgba(8, 12, 11, 0.82) 0%,
-      rgba(8, 12, 11, 0.42) 30%,
-      rgba(8, 12, 11, 0) 62%
+      rgba(8, 12, 11, 0.8) 0%,
+      rgba(8, 12, 11, 0.38) 30%,
+      rgba(8, 12, 11, 0) 60%
     );
 }
 
