@@ -9,6 +9,7 @@ import {
   sortPhotosIntoPlan,
   type ActionResult,
 } from '@/app/admin/actions';
+import { formatArea } from '@/lib/floorplan-svg';
 import { roomArea, totalArea } from '@/lib/plan';
 import type { FloorPlan, Photo, PlanDoor } from '@/lib/types';
 
@@ -130,8 +131,17 @@ export function PlanPanel({
         <>
           <div className="row row-between" style={{ marginTop: 22 }}>
             <strong>{plan.rooms.length} pièces relevées</strong>
+            {/*
+              * Les mêmes chiffres qu'ailleurs, écrits comme ailleurs.
+              *
+              * Le relevé affichait « 37.8 m² » et « 2.60 m » — le point décimal
+              * anglais — quand le plan public, la page de démonstration et le
+              * SVG téléchargeable écrivent tous « 37,8 m² ». C'est le même
+              * nombre, sur le même logement, dans le même produit. `formatArea`
+              * existait déjà pour cela ; ce panneau ne l'utilisait pas.
+              */}
             <span className="tiny">
-              {measured.toFixed(1)} m² mesurés · {passages} passage(s) · lu par {plan.readBy}
+              {formatArea(measured)} mesurés · {passages} passage(s) · lu par {plan.readBy}
             </span>
           </div>
 
@@ -142,7 +152,8 @@ export function PlanPanel({
                 <li key={room.id} className="row row-between" style={{ borderTop: '1px solid var(--line)', paddingTop: 8 }}>
                   <span>{room.name}</span>
                   <span className="tiny">
-                    {roomArea(room).toFixed(1)} m² · {room.height.toFixed(2)} m sous plafond ·{' '}
+                    {formatArea(roomArea(room))} · {room.height.toFixed(2).replace('.', ',')} m sous
+                    plafond ·{' '}
                     {inside > 0 ? `${inside} photo(s)` : 'aucune photo'}
                   </span>
                 </li>

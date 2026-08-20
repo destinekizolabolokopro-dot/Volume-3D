@@ -128,6 +128,7 @@ export default async function BienPage({ params }: Params) {
                 intake={intake}
                 readerConfigured={isFactsReaderConfigured()}
                 hasPhotos={photos.length > 0}
+                published={property.status === 'published'}
               />
             ),
             annonce: (

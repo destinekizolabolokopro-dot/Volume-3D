@@ -125,11 +125,27 @@ export function TourStage({
           <div className={styles.videoWrap}>
             {/* `key` force le remontage : sans lui, une vidéo déjà lancée
                 continue de tourner en fond quand on revient sur le panorama. */}
+            {/*
+              * Une affiche, sinon l'onglet s'ouvre sur du noir.
+              *
+              * `preload="metadata"` est le bon réglage — on ne télécharge pas
+              * une vidéo entière à quelqu'un qui ne l'a peut-être pas demandée —
+              * mais il a une conséquence : tant que le voyageur n'a pas appuyé
+              * sur lecture, le navigateur n'a aucune image à montrer et peint un
+              * rectangle noir. Sur la page qui vend un logement, un onglet qui
+              * s'ouvre sur du noir ne se lit pas comme « en attente » mais comme
+              * « cassé ».
+              *
+              * La première photo du bien fait l'affaire : c'est le même
+              * logement, elle est déjà chargée pour le reste de la page, et elle
+              * ne coûte donc rien de plus.
+              */}
             <video
               key={videoUrl}
               ref={videoRef}
               className={styles.media}
               src={videoUrl}
+              poster={photos[0]?.url}
               controls
               playsInline
               preload="metadata"

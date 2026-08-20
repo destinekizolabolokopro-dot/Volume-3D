@@ -22,12 +22,15 @@ export function FactsPanel({
   intake,
   readerConfigured,
   hasPhotos,
+  published,
 }: {
   propertyId: string;
   facts: PropertyFact[];
   intake: IntakeReport;
   readerConfigured: boolean;
   hasPhotos: boolean;
+  /** La visite est-elle déjà en ligne ? Voir les deux phrases plus bas. */
+  published: boolean;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -49,13 +52,30 @@ export function FactsPanel({
   return (
     <>
       <section className="card">
+        {/*
+          * Deux phrases qui dépendaient d'un état que ce panneau ne connaissait
+          * pas.
+          *
+          * Il annonçait « ce qu'il reste à faire — avant de publier » et, une
+          * fois tout rempli, « vous pouvez publier la visite ». Les deux sont
+          * justes sur un brouillon et faux dès que la visite est en ligne : le
+          * client lisait qu'il lui restait des choses à faire avant de publier
+          * un bien déjà publié, sur lequel la même page affiche quatre-vingt-
+          * quinze vues. Ce qui reste à faire ne disparaît pas à la publication —
+          * une pièce sans photo reste une pièce sans photo — mais ce n'est plus
+          * une condition, c'est une amélioration.
+          */}
         <h2 className="pro-card-title">
-          Ce qu’il reste à faire <small>avant de publier</small>
+          Ce qu’il reste à faire{' '}
+          <small>{published ? 'sur cette visite en ligne' : 'avant de publier'}</small>
         </h2>
 
         {intake.ready && review.ready ? (
           <div className="note">
-            <strong>Le dossier est complet.</strong> Vous pouvez publier la visite.
+            <strong>Le dossier est complet.</strong>{' '}
+            {published
+              ? 'La visite est en ligne et ne demande plus rien.'
+              : 'Vous pouvez publier la visite.'}
           </div>
         ) : (
           <ul className="stack-sm" style={{ listStyle: 'none', padding: 0, margin: 0 }}>

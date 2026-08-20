@@ -126,6 +126,7 @@ export default async function PropertyEditorPage({ params }: Params) {
                 intake={intake}
                 readerConfigured={isFactsReaderConfigured()}
                 hasPhotos={photos.length > 0}
+                published={property.status === 'published'}
               />
             ),
             annonce: (
