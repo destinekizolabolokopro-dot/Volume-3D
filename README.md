@@ -2,14 +2,22 @@
 
 Site et back-office du service de visites virtuelles 3D pour logements Airbnb.
 
-Le service est vendu **par abonnement** : chaque client dispose de son espace,
-y crée ses biens, et suit ce qu'ils rapportent.
+Le service est vendu **au logement, payé une fois** : le lien de visite reste
+en ligne sans abonnement ni frais d'hébergement. Chaque client dispose de son
+espace, y crée ses biens, et suit ce qu'ils rapportent ; sa formule ne fixe pas
+un loyer mensuel mais le nombre de biens qu'il peut tenir.
+
+> Cette phrase disait « vendu par abonnement », et ce n'était pas qu'une
+> approximation de rédaction : l'espace client affichait réellement « 29 € /mois »
+> et « 79 € /mois » au moment de créer un compte, quand la page d'accueil promet
+> le contraire en trois endroits. La contradiction se lisait à l'endroit exact
+> où le client s'engage.
 
 | Zone | URL | Qui y accède |
 |---|---|---|
 | **Accueil** | `/` | Le public. **La page est la visite** : le défilement fait entrer dans le logement. Prise de rendez-vous en bas. |
 | **Visite libre** | `/demonstration` | Le public. Le même logement, mais c'est le visiteur qui conduit. |
-| **Espace client** | `/espace` | Vos abonnés, chacun sur ses propres biens. |
+| **Espace client** | `/espace` | Vos clients, chacun sur ses propres biens. |
 | **Back-office** | `/admin` | Vous seul, par mot de passe. Vue sur l'ensemble. |
 | **Rendez-vous** | `/admin/rendez-vous` | Vous seul. Ce que le site a pris comme rendez-vous. |
 | **Visite publique** | `/v/{slug}` | Les voyageurs, sans compte, avec assistant. |
@@ -165,7 +173,31 @@ npm run dev        # serveur de développement
 npm run build      # compilation de production
 npm run test       # tests unitaires (géométrie 360°, validation, sécurité des chemins)
 npm run typecheck  # vérification des types
+npm run verify     # les trois ci-dessus qui n'ont besoin de rien d'autre
 ```
+
+Trois autres commandes ne vérifient pas du code mais des **images**, et elles
+sont le contrôle qualité réel de ce projet. Les deux dernières demandent un
+serveur en marche, parce qu'elles mesurent ce que le navigateur affiche pour de
+bon — pas ce que la feuille de style annonce.
+
+```bash
+npm run palette    # l'étude de couleur : écart entre surfaces voisines, harmonie des teintes
+BASE=http://localhost:3000 npm run contraste   # contraste au pixel des légendes et de la barre
+BASE=http://localhost:3000 npm run budget      # appels de rendu, triangles, temps par image
+```
+
+Chacune est née d'un défaut qu'aucune relecture n'avait vu : un rideau
+indiscernable du mur derrière lui, un libellé de navigation à 2,8:1 sur un mur
+en plein soleil, une scène partie de trois cent soixante-seize appels de rendu.
+Elles sont dans le dépôt pour que ces défauts ne reviennent pas sans qu'on le
+sache.
+
+> Il n'y a pas de `npm run lint` : le script hérité du gabarit Next.js appelait
+> `next lint`, déprécié, sans qu'ESLint soit installé ni configuré — il ouvrait
+> une invite interactive et bloquait toute exécution non surveillée. Un contrôle
+> qui ne peut pas tourner vaut moins que pas de contrôle du tout, parce qu'on
+> croit l'avoir.
 
 ---
 

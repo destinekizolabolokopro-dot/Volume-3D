@@ -84,11 +84,25 @@
   flex: 1;
 }
 
+/*
+ * Pas de transition sur la couleur, et c'est un correctif, pas un oubli.
+ *
+ * La barre change d'habit en quittant la visite : le fond passe du dégradé
+ * sombre au blanc translucide, instantanément, parce qu'un dégradé et une
+ * couleur ne s'interpolent pas. Les libellés, eux, avaient un fondu de cent
+ * cinquante millisecondes — donc pendant ces cent cinquante millisecondes ils
+ * étaient encore blancs sur un fond déjà blanc. Invisibles, à chaque passage,
+ * et c'est une capture d'écran de la section suivante qui l'a montré : la barre
+ * y apparaissait sans aucun lien.
+ *
+ * Un fondu de couleur sur un lien de navigation ne manque à personne ; du texte
+ * qui disparaît, si. Le survol reste franc, ce qui est le comportement de la
+ * grande majorité des barres de navigation.
+ */
 .nav-links a {
   font-size: 14.5px;
   color: var(--ink-muted);
   text-decoration: none;
-  transition: color 0.15s ease;
 }
 
 .nav-links a:hover {
@@ -911,10 +925,34 @@
  * avant, sinon le texte blanc se retrouve sur du blanc.
  */
 .nav[data-dark='1'] {
-  /* Le ciel de la scène est clair : un voile trop discret laisserait du blanc
-     sur du blanc. Il tient sur toute la hauteur de la barre et ne s'éteint que
-     juste en dessous. */
-  background: linear-gradient(to bottom, rgba(8, 12, 11, 0.72) 0%, rgba(8, 12, 11, 0.5) 62%, rgba(8, 12, 11, 0) 100%);
+  /*
+   * Le voile, mesuré plutôt qu'estimé.
+   *
+   * Le principe était bon — un dégradé qui tient la barre et s'éteint juste en
+   * dessous, pour ne pas couper le premier écran en deux — mais sa force avait
+   * été réglée à l'œil, sur une image de la visite. Or ce qu'il y a derrière
+   * change à chaque instant du défilement, et `npm run contraste` mesure
+   * maintenant la barre comme il mesurait déjà les légendes : au pixel, en
+   * composant soi-même le blanc semi-transparent des libellés sur le fond réel.
+   *
+   * Le relevé est sans appel — 2,8:1 sur « Connexion » au milieu du séjour,
+   * quand la caméra a un mur en plein soleil derrière elle. La WCAG demande
+   * 4,5:1 pour du texte de quatorze pixels et demi ; on était sous le seuil des
+   * grands caractères. Le voile ne tenait que sur les scènes sombres, et rien
+   * ne le signalait puisque personne ne regarde une barre de navigation.
+   *
+   * Il est donc plus dense là où les libellés se trouvent — le haut et le
+   * milieu — et s'éteint plus vite ensuite, ce qui garde le bord inférieur
+   * invisible. Le dégradé n'est pas linéaire pour cette raison : il faut de la
+   * densité sur les deux tiers hauts et rien du tout sur le dernier.
+   */
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 12, 11, 0.88) 0%,
+    rgba(8, 12, 11, 0.82) 52%,
+    rgba(8, 12, 11, 0.58) 76%,
+    rgba(8, 12, 11, 0) 100%
+  );
   backdrop-filter: none;
   border-bottom-color: transparent;
 }
@@ -924,9 +962,12 @@
   color: #fff;
 }
 
+/* Blanc franc, pas à quatre-vingt-deux pour cent : l'adoucissement coûtait un
+   demi-point de contraste sur un fond qu'on ne maîtrise pas, pour un gain
+   esthétique nul une fois le voile posé. */
 .nav[data-dark='1'] .nav-links a,
 .nav[data-dark='1'] .nav-side .sign-in {
-  color: rgba(255, 255, 255, 0.82);
+  color: #fff;
 }
 
 .nav[data-dark='1'] .nav-links a:hover,

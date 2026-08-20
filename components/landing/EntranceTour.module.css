@@ -64,9 +64,19 @@
  * qu'on éclaire un plateau par le haut plutôt qu'avec une lampe de poche.
  *
  * `npm run contraste` remesure et refuse en dessous de 4,5:1 sur le cinquième
- * centile du fond. Le réglage a déjà servi une fois : un changement de parcours
- * a mis l'image de fin devant un séjour en plein soleil, et la mesure est
- * tombée à 4,3.
+ * centile du fond. Le réglage a déjà servi deux fois, et les deux fois pour la
+ * même raison — l'image de fin.
+ *
+ * La première : un changement de parcours l'avait mise devant un séjour en
+ * plein soleil, et la mesure était tombée à 4,3. La seconde : la correction du
+ * rayon qui cherche l'axe le plus dégagé. Il traversait les cloisons, donc il
+ * élisait n'importe quoi ; une fois arrêté aux murs, il élit ce qu'il devait
+ * élire depuis le début — l'enfilade jusqu'aux fenêtres du séjour. Le plan de
+ * fin est devenu le bon, et le contre-jour avec : 3,3:1 sous la légende.
+ *
+ * C'est le sens de cette mesure. Une amélioration du cadrage a dégradé la
+ * lisibilité d'un texte trois écrans plus loin, et rien dans la relecture du
+ * code ne pouvait le montrer.
  */
 .veil {
   position: absolute;
@@ -76,15 +86,16 @@
     linear-gradient(
       to top,
       rgba(8, 12, 11, 0.95) 0%,
-      rgba(8, 12, 11, 0.72) 26%,
-      rgba(8, 12, 11, 0.38) 46%,
-      rgba(8, 12, 11, 0) 66%
+      rgba(8, 12, 11, 0.87) 26%,
+      rgba(8, 12, 11, 0.6) 46%,
+      rgba(8, 12, 11, 0.16) 64%,
+      rgba(8, 12, 11, 0) 74%
     ),
     linear-gradient(
       to right,
-      rgba(8, 12, 11, 0.78) 0%,
-      rgba(8, 12, 11, 0.34) 30%,
-      rgba(8, 12, 11, 0) 58%
+      rgba(8, 12, 11, 0.82) 0%,
+      rgba(8, 12, 11, 0.42) 30%,
+      rgba(8, 12, 11, 0) 62%
     );
 }
 

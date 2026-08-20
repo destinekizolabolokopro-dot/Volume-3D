@@ -163,6 +163,27 @@ a:hover {
   outline-offset: 2px;
 }
 
+/*
+ * L'anneau de focus sur fond sombre.
+ *
+ * L'accent est un pétrole à quarante et un de clarté : sur un fond clair il se
+ * détache franchement, sur le fond sombre du site il tombe à un peu plus de
+ * deux pour un. La WCAG 2.2 demande trois pour un entre l'indicateur de focus
+ * et ce qui l'entoure, et c'est la règle qui compte le plus pour quelqu'un qui
+ * navigue au clavier : un anneau qu'on ne voit pas revient à ne pas savoir où
+ * l'on est dans la page.
+ *
+ * Les fonds sombres du site sont connus et peu nombreux — la barre au-dessus de
+ * la visite, la bande d'appel à l'action, le cadre de la vidéo. On y passe au
+ * blanc, qui tient onze pour un contre le même fond.
+ */
+.nav[data-dark='1'] :focus-visible,
+.cta-band :focus-visible,
+.frame-body :focus-visible,
+.video :focus-visible {
+  outline-color: #fff;
+}
+
 h1,
 h2,
 h3 {

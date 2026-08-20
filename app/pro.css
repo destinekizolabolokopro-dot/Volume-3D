@@ -611,11 +611,39 @@ a.pro-meter:hover .pro-meter-label {
   color: var(--ink-strong);
 }
 
+/*
+ * L'intitulé d'une barre : trois chiffres, et sur un téléphone ils ne tiennent
+ * pas sur la même ligne que le nom de la pièce.
+ *
+ * Il n'en portait qu'un — la moyenne par ouverture — et il en porte trois
+ * depuis qu'on a mis en tête la part du temps, celle que la barre dessine
+ * réellement. Sur un écran large c'est encore une ligne ; à trois cent
+ * quatre-vingt-dix pixels, trois cent quinze pixels d'intitulé posés en
+ * `flex-shrink: 0` poussaient la page entière au-delà de la fenêtre, et le
+ * tableau de bord du client s'ouvrait avec une barre de défilement
+ * horizontale. Un contrôle de débordement l'a relevé ; l'œil, sur maquette
+ * large, ne pouvait pas.
+ *
+ * En dessous du pli, la tête de barre se déplie donc en deux lignes : le nom,
+ * puis les chiffres, alignés à gauche comme tout le reste de la colonne.
+ */
 .pro-meter-note {
   font-size: 12.5px;
   color: var(--ink-soft);
   text-align: right;
   flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .pro-meter-head {
+    display: block;
+  }
+
+  .pro-meter-note {
+    display: block;
+    text-align: left;
+    margin-top: 2px;
+  }
 }
 
 .pro-meter-track {
@@ -758,6 +786,27 @@ a.pro-meter:hover .pro-meter-label {
        sur la marge de la barre. */
     margin: 0 calc(-1 * clamp(16px, 3vw, 28px));
     padding: 0 clamp(16px, 3vw, 28px);
+    /* Un dégradé au bord droit : la barre de défilement est masquée — elle
+       couperait la ligne d'onglets en deux — donc rien ne disait qu'il reste
+       des onglets après celui qu'on voit à moitié. Même remède que le choix du
+       jour sur la page de rendez-vous, et pour la même raison : un contenu
+       tronqué sans affordance se lit comme un défaut. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+  }
+
+  /*
+   * Quatre chiffres en colonne, c'est six cents pixels de défilement.
+   *
+   * La grille se replie d'elle-même sous cent quatre-vingts pixels par tuile,
+   * donc sur un téléphone chaque chiffre prenait toute la largeur et sa propre
+   * hauteur de carte. Le client faisait défiler quatre écrans avant d'arriver à
+   * ce qu'il vient voir. Deux par ligne suffisent : un nombre à deux ou trois
+   * chiffres et son intitulé tiennent dans la moitié d'un écran de téléphone.
+   */
+  .pro-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 26px;
   }
   .pro-tab {
     padding: 12px 12px;

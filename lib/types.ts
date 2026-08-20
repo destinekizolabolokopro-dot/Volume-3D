@@ -22,7 +22,7 @@ export type TourMode =
 
 export type PropertyStatus = 'draft' | 'published';
 
-/** Formule d'abonnement du client. */
+/** Formule du client : elle plafonne son nombre de biens, pas une mensualité. */
 export type Plan = 'essentiel' | 'pro' | 'conciergerie';
 
 /**

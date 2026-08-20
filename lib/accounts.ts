@@ -15,8 +15,11 @@ const SESSION_DAYS = 30;
 /**
  * Comptes clients.
  *
- * Le service étant vendu par abonnement, chaque propriétaire ou conciergerie
- * dispose d'un espace où il crée et gère ses propres biens. Les mots de passe
+ * Chaque propriétaire ou conciergerie dispose d'un espace où il crée et gère
+ * ses propres biens. La formule ne fixe pas un loyer mensuel — le service se
+ * paie au logement, une fois — mais le nombre de biens qu'un compte peut
+ * tenir : voir `PLAN_LIMITS` plus bas, et `PLAN_OFFERS` dans `lib/content.ts`
+ * pour ce qu'on en dit au client. Les mots de passe
  * sont dérivés par scrypt avec un sel par compte : la base ne contient jamais
  * de mot de passe en clair, et deux clients ayant le même mot de passe ont des
  * empreintes différentes.
