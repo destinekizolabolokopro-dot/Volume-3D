@@ -291,12 +291,26 @@ export const MAISON_MASSING: Massing[] = [
   { roomId: 'salle-de-bain', x: 2.655, y: 5.95, w: 0.09, d: 0.5, h: 0.9, base: 0.6, tone: 'cabinet' },
   { roomId: 'salle-de-bain', x: 2.38, y: 6.6, w: 0.62, d: 0.38, h: 0.4, tone: 'cabinet' },
   { roomId: 'salle-de-bain', x: 2.6, y: 6.6, w: 0.18, d: 0.38, h: 0.52, base: 0.4, tone: 'cabinet' },
-  /* La baignoire sous la fenêtre sud. Une allège à 1,20 m passe au-dessus du
-     rebord sans qu'on ait à choisir entre l'intimité et la lumière. */
-  { roomId: 'salle-de-bain', x: 1.5, y: 7.72, w: 1.7, d: 0.75, h: 0.55, tone: 'cabinet' },
-  { roomId: 'salle-de-bain', x: 1.5, y: 7.72, w: 1.56, d: 0.62, h: 0.06, base: 0.49, tone: 'lin' },
-  { roomId: 'salle-de-bain', x: 0.78, y: 7.72, w: 0.05, d: 0.05, h: 0.2, base: 0.55, tone: 'laiton' },
-  { roomId: 'salle-de-bain', x: 0.9, y: 7.72, w: 0.22, d: 0.04, h: 0.04, base: 0.73, tone: 'laiton' },
+  /*
+   * La baignoire sous la fenêtre sud. Une allège à 1,20 m passe au-dessus du
+   * rebord sans qu'on ait à choisir entre l'intimité et la lumière.
+   *
+   * Elle est creuse, et c'est le seul point qui compte. Première version : un
+   * bloc plein de 1,70 × 0,75 surmonté d'un rectangle plus clair censé dire la
+   * cuve. En image, à contre-jour de la fenêtre, les deux teintes se
+   * confondaient et ce qu'on voyait était **une caisse** — le même défaut que
+   * celui du canapé rendu sans piètement, et il se règle de la même façon :
+   * par une ombre. Quatre margelles de onze centimètres et un fond posé plus
+   * bas creusent un vrai retrait, l'ombre s'y installe toute seule, et l'objet
+   * redevient une baignoire sans qu'on ait ajouté une seule couleur.
+   */
+  { roomId: 'salle-de-bain', x: 1.5, y: 7.4, w: 1.7, d: 0.11, h: 0.55, tone: 'cabinet' },
+  { roomId: 'salle-de-bain', x: 1.5, y: 8.03, w: 1.7, d: 0.11, h: 0.55, tone: 'cabinet' },
+  { roomId: 'salle-de-bain', x: 0.705, y: 7.715, w: 0.11, d: 0.74, h: 0.55, tone: 'cabinet' },
+  { roomId: 'salle-de-bain', x: 2.295, y: 7.715, w: 0.11, d: 0.74, h: 0.55, tone: 'cabinet' },
+  { roomId: 'salle-de-bain', x: 1.5, y: 7.715, w: 1.48, d: 0.62, h: 0.14, tone: 'lin' },
+  { roomId: 'salle-de-bain', x: 0.71, y: 7.715, w: 0.05, d: 0.05, h: 0.2, base: 0.55, tone: 'laiton' },
+  { roomId: 'salle-de-bain', x: 0.85, y: 7.715, w: 0.22, d: 0.04, h: 0.04, base: 0.73, tone: 'laiton' },
   { roomId: 'salle-de-bain', x: 1.55, y: 6.9, w: 0.9, d: 0.6, h: 0.02, moelleux: true, tone: 'tapis' },
   { roomId: 'salle-de-bain', x: 1.5, y: 6.2, w: 0.28, d: 0.28, h: 0.05, base: 2.45, shape: 'plafonnier', tone: 'platre' },
 
@@ -424,11 +438,11 @@ export const MAISON_IDENTITY = {
   name: 'Maison des Tilleuls',
   city: 'Maison de démonstration — plain-pied avec jardin',
   area: 94.1,
-  /** Au sens français : séjour et chambres. Deux chambres, un séjour. */
-  rooms: 3,
-  bedrooms: 2,
-  bathrooms: 1,
-  sleeps: 4,
+  /* Ni nombre de pièces, ni de chambres, ni de couchages : `MAISON_LISTING`
+     les porte déjà, et c'est de là que la page les lit. Deux endroits qui
+     décrivent le même logement finissent par diverger, et le second est alors
+     faux sans que rien ne le signale — on avait ici un « trois pièces » qui ne
+     servait à personne pendant que l'annonce annonçait deux chambres. */
   /** Bien fictif : à dire, toujours, et sans détour. */
   disclaimer:
     'Maison de démonstration. Les dimensions et la circulation sont cohérentes de bout en bout ; le bien, lui, est fictif — il n’est ni à louer ni à visiter.',
