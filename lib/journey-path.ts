@@ -481,11 +481,18 @@ interface Leg {
  * caméra qui se téléporte détruit en une seconde la crédibilité du volume.
  *
  * Par défaut, le dernier retour est coupé : la visite s'arrête où elle s'arrête.
- * Avec `returnToStart`, on garde le chemin du retour — c'est ce qu'on veut quand
- * la visite se termine par un mot de conclusion, parce que le dernier plan
- * tombe alors dans la plus grande pièce et non dans la salle d'eau. Terminer une
- * visite d'appartement sur trois mètres carrés de salle de bains gâche tout le
- * bénéfice de ce qui précède.
+ * Avec `returnToStart`, on repart vers la plus grande pièce — c'est ce qu'on
+ * veut quand la visite se termine par un mot de conclusion. Terminer une visite
+ * sur trois mètres carrés de salle de bains gâche tout le bénéfice de ce qui
+ * précède.
+ *
+ * Le drapeau a longtemps signifié « on garde le chemin du retour », ce qui
+ * revenait au même **tant que la porte d'entrée ouvrait sur la plus grande
+ * pièce** — c'est le cas de l'appartement, dont le séjour est aussi le palier
+ * d'arrivée. Ça cesse d'être vrai dès qu'un logement a une entrée : la maison
+ * de démonstration terminait son mot de la fin dans neuf mètres carrés de sas,
+ * face à un placard. On revient donc explicitement là où le logement est le
+ * plus beau, en repassant par les pièces qu'il faut traverser pour y aller.
  */
 export function tourOrder(
   startId: string,
@@ -515,10 +522,50 @@ export function tourOrder(
   };
   visit(startId);
 
-  if (!returnToStart) {
-    while (legs.length > 1 && legs[legs.length - 1].revisit) legs.pop();
-  }
+  // Les retours de fin de branche ne mènent nulle part : on les coupe, puis on
+  // décide nous-même où la visite doit se terminer.
+  while (legs.length > 1 && legs[legs.length - 1].revisit) legs.pop();
+  if (!returnToStart) return legs;
+
+  const finale = [...rooms].sort((a, b) => roomArea(b) - roomArea(a))[0]?.id ?? startId;
+  for (const leg of walkBack(legs[legs.length - 1].roomId, finale, rooms, doors)) legs.push(leg);
   return legs;
+}
+
+/**
+ * Le plus court chemin d'une pièce à une autre, porte par porte.
+ *
+ * Un simple parcours en largeur sur le graphe des ouvertures. Il ne sert qu'au
+ * retour : la caméra doit franchir chaque porte qui sépare les deux pièces, et
+ * une caméra qui se téléporte détruit en une seconde la crédibilité du volume.
+ */
+function walkBack(fromId: string, toId: string, rooms: PlanRoom[], doors: PlanDoor[]): Leg[] {
+  if (fromId === toId) return [];
+  const byId = new Map(rooms.map((room) => [room.id, room]));
+  const cameBy = new Map<string, { from: string; door: PlanDoor }>();
+  const seen = new Set<string>([fromId]);
+  const queue = [fromId];
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    if (id === toId) break;
+    for (const exit of exitsFrom(id, doors)) {
+      if (!byId.has(exit.targetId) || seen.has(exit.targetId)) continue;
+      seen.add(exit.targetId);
+      cameBy.set(exit.targetId, { from: id, door: exit.door });
+      queue.push(exit.targetId);
+    }
+  }
+
+  const back: Leg[] = [];
+  let cursor = toId;
+  while (cursor !== fromId) {
+    const step = cameBy.get(cursor);
+    // Pièce inatteignable : mieux vaut s'arrêter où l'on est que sauter un mur.
+    if (!step) return [];
+    back.unshift({ roomId: cursor, via: step.door, revisit: true });
+    cursor = step.from;
+  }
+  return back;
 }
 
 /* ================================================================ montage === */
