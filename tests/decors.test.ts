@@ -306,7 +306,9 @@ for (const decor of DECORS) {
    *
    *  · **1,70 m partout.** Une chambre cadrée en diagonale voit le coin opposé
    *    à deux mètres, et c'est le bon cadrage — on ne peut pas exiger plus sans
-   *    interdire les petites pièces.
+   *    interdire les petites pièces. La salle d'eau de l'appartement, cadrée
+   *    depuis son embrasure, tient 1,80 m : c'est le plus serré qui soit
+   *    légitime.
    *  · **2,50 m dans une pièce sans fenêtre.** Un sas ou un couloir n'a rien à
    *    montrer de lui-même : ce qu'il a à dire est ce qu'il ouvre, donc il doit
    *    porter loin. C'est le défaut qui a fait écrire ce contrôle — l'entrée de
@@ -337,6 +339,55 @@ for (const decor of DECORS) {
       const portee = freeRun(rooms, doors, pose, pose.yaw);
       if (portee < seuil) {
         faults.push(`${caption.kicker} : ${portee.toFixed(2)} m devant la caméra, il en faut ${seuil}`);
+      }
+    }
+    assert.deepEqual(faults, [], `\n  ${faults.join('\n  ')}`);
+  });
+
+  /**
+   * Une pièce qui a un jour se regarde vers son jour.
+   *
+   * Le contrôle précédent mesure ce que la caméra a **devant** elle, et il ne
+   * suffit pas : `freeRun` traverse les ouvertures, si bien que fixer une
+   * embrasure de porte donne une portée flatteuse. La suite de la villa en a
+   * fait la démonstration — mal classée comme pièce de passage, elle regardait
+   * la porte de sa salle d'eau, et le contrôle de portée l'a laissée passer
+   * sans broncher. Ce qu'il fallait mesurer n'était pas la distance mais la
+   * **direction**.
+   *
+   * La règle est donc : dans une pièce qui a au moins une fenêtre, il est
+   * interdit de les avoir toutes derrière soi. Quatre-vingt-dix degrés, pas
+   * moins — le séjour de l'appartement est cadré à cinquante-quatre degrés de
+   * sa fenêtre, vers le fond de la cuisine, et c'est un bon cadrage vérifié en
+   * image. La suite mal classée, elle, était à cent quatorze.
+   *
+   * Le mot de la fin est exempté : il ne décrit aucune pièce, il regarde l'axe
+   * qui traverse le logement, et c'est tout son intérêt.
+   */
+  test(`${label} — une pièce qui a un jour n’est pas cadrée dos à ses fenêtres`, () => {
+    const journey = buildJourney(rooms, doors, {
+      opening: decor.opening,
+      captions: decor.captions,
+      closing: decor.closing,
+    });
+    const ecart = (a: number, b: number) => Math.abs(((((a - b) % 360) + 540) % 360) - 180);
+    const faults: string[] = [];
+    for (const caption of journey.captions) {
+      if (caption.title === decor.opening.title || caption.title === decor.closing.title) continue;
+      const pose = sample(journey, (caption.from + caption.to) / 2);
+      const room = rooms.find((candidate) => containsPoint(candidate, pose));
+      if (!room) continue;
+      const baies = doors.filter(
+        (door) => door.kind === 'window' && (door.from === room.id || door.to === room.id),
+      );
+      if (baies.length === 0) continue;
+      const vers = baies.map((baie) => {
+        const milieu = { x: (baie.a.x + baie.b.x) / 2, y: (baie.a.y + baie.b.y) / 2 };
+        return ecart((Math.atan2(milieu.x - pose.x, -(milieu.y - pose.y)) * 180) / Math.PI, pose.yaw);
+      });
+      const plusProche = Math.min(...vers);
+      if (plusProche > 90) {
+        faults.push(`${caption.kicker} : sa fenêtre la plus proche est à ${plusProche.toFixed(0)}° du regard`);
       }
     }
     assert.deepEqual(faults, [], `\n  ${faults.join('\n  ')}`);

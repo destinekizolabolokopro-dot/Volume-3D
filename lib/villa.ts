@@ -187,7 +187,13 @@ export const VILLA_DOORS: PlanDoor[] = [
 
   // Le pignon ouest et la façade rue.
   opening('f-sejour-ouest', 'sejour', '', { x: 0, y: 2.2 }, { x: 0, y: 4.6 }, 'window', 2.5, 0.5),
-  opening('f-entree', 'entree', '', { x: 8.6, y: 0 }, { x: 9.4, y: 0 }, 'window', 2.4, 0.9),
+  /* Pas de fenêtre dans l'entrée, et c'est un choix de cadrage autant que
+     d'architecture. Une pièce qui a un jour se cadre sur son jour ; une pièce
+     qui n'en a pas se cadre sur ce qu'elle ouvre. Un sas de villa n'a rien à
+     montrer de lui-même — ce qu'il a à dire est qu'à gauche il y a soixante
+     mètres carrés de séjour et en face une galerie de onze mètres. Avec son
+     imposte latérale, la caméra regardait poliment le petit carreau, à cent dix
+     degrés de l'axe qui traverse la maison. */
   opening('f-bain', 'salle-de-bain', '', { x: 10.6, y: 0 }, { x: 11.8, y: 0 }, 'window', 2.3, 1.3),
   opening('f-chambre-2', 'chambre-2', '', { x: 14.2, y: 0 }, { x: 16.4, y: 0 }, 'window', 2.4, 0.9),
   opening('f-chambre-2-est', 'chambre-2', '', { x: 17.6, y: 1.4 }, { x: 17.6, y: 3.2 }, 'window', 2.4, 0.9),

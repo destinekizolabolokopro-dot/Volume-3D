@@ -142,12 +142,62 @@ n'est pas de la symétrie gratuite : la maison a été dessinée *après* que ce
 contrôles existaient, et elle a démarré avec trois défauts qu'ils ont rattrapés
 le jour même.
 
+### Et une villa, dans `lib/villa.ts`
+
+Le troisième décor et le plus grand : 190 m² de plain-pied autour d'une galerie
+de 11,60 m, huit pièces, trois baies sur la même terrasse, une piscine de
+10 × 4. Il ne répète pas les deux autres, et la raison n'est pas la surface. Un
+deux-pièces se parcourt en ligne ; une maison ajoute un couloir ; une villa
+ajoute **le dehors comme pièce**. Ce que la visite doit rendre ici, c'est qu'on
+va d'un bout à l'autre sans repasser au même endroit — et aucune photographie
+d'annonce ne montre ça. Elle vit sur `/villa`, présentée comme une annonce
+entière, mêmes précautions que la maison.
+
+### Où se plante la caméra, et pourquoi ça décide du mobilier
+
+Le point d'arrêt dans chaque pièce se **calcule** — aux deux tiers du chemin
+entre la porte et le centre — donc il se mesure, et il faut le mesurer avant de
+meubler. Quatre objets de la villa étaient dans l'objectif au premier jet :
+
+| Ce qu'on voyait | Ce qui se passait |
+| --- | --- |
+| Une ellipse dorée en travers du quart du cadre | Le centre d'un séjour de 5,60 × 10,80, c'est là qu'on met la table — donc là où pend la suspension. Elle était à 1,30 m |
+| Une planche en travers de la galerie | Dans un couloir d'1,22 m, un cadre à l'abscisse de l'arrêt est à 40 cm, et sa bordure vue par la tranche fait le reste |
+| Un mur de matelas | La face ouest du lit de la chambre double tombait à 8 cm du point d'arrêt |
+| Rien de reconnaissable | Le chevet de la suite était posé à 23 cm de l'arrêt : la caméra était dedans |
+
+La méthode tient en une ligne : `buildJourney` puis `sample` au milieu de chaque
+légende donne la position et le cap exacts, sans ouvrir de navigateur.
+
+### La démonstration publique, c'est le défilement et rien d'autre
+
+Plus de visite libre à la souris ni de panorama sur ce que voit un visiteur.
+`/demonstration` est retirée et redirigée vers `/villa`. Quelqu'un qui découvre
+le produit doit avoir **une** chose à faire, et cette chose doit être celle
+qu'il fait déjà : faire défiler une page. Le reste du produit — les formats
+livrés, l'éditeur de visite, l'espace client — n'a pas bougé : c'est ce qu'on
+vend, ce n'est pas ce par quoi on se présente.
+
+### Le rendu est une maquette, pas une photographie
+
+Le décor avait dérivé vers le presque-vrai : parquet vitrifié à 0,42 de
+rugosité, carrelage à 0,26, grain d'enduit en carte de normales, soleil quatre
+fois plus fort que le ciel. Physiquement défendable, et c'est le problème — à
+mi-chemin entre le dessin et la photographie, une image tombe dans le trou où
+l'œil sait que ce n'est pas vrai sans pouvoir dire pourquoi.
+
+Tout est donc mat (0,86 à 0,99), les cartes de normales sont supprimées, et le
+rapport soleil/ciel est tombé de quatre à un et demi. Ce qui porte le volume
+n'est pas le brillant : c'est l'occlusion cuite dans les sommets et la
+proportion des masses — les deux choses qu'une maquette d'architecte a, et
+qu'aucune annonce retouchée n'a.
+
 ### Le dehors n'est pas un détail
 
 `components/three/interior.ts` prend une option `dehors` : `ville` pose un palier
 d'immeuble derrière la porte et des façades en vis-à-vis, `jardin` pose une
 pelouse au niveau du plancher, une haie à neuf mètres, une ligne d'arbres et un
-perron couvert. Le dedans peut être générique — quatre murs sont quatre murs —
+perron couvert ; `piscine` ajoute un bassin de 10 × 4 au bout de la terrasse. Le dedans peut être générique — quatre murs sont quatre murs —
 mais le dehors dit ce qu'est le bien : la baie censée ouvrir sur un jardin
 donnait sur une cour parisienne, et la porte d'une maison de plain-pied s'ouvrait
 sur une cage d'escalier.

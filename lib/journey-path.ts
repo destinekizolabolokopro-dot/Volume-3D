@@ -893,8 +893,16 @@ export function lookTarget(
  *
  * Deux signes, et il en suffit d'un.
  *
- * **Elle en dessert au moins deux autres**, ce qui est la définition d'un
- * couloir.
+ * **Elle en dessert au moins trois autres**, ce qui est la définition d'un
+ * couloir. Le seuil était à deux, et deux ne suffit pas : une suite parentale
+ * ouvre sur la galerie et sur sa propre salle d'eau, donc elle desservait
+ * « deux autres pièces » et se retrouvait cadrée comme un couloir — regardée
+ * dans l'axe le plus dégagé, c'est-à-dire vers la porte de la salle de bains,
+ * au lieu de sa baie sur la piscine. La légende parlait d'un lit en 180 et
+ * d'une vue sur le bassin ; l'image montrait une embrasure et un pan de mur à
+ * 1,71 m. Une pièce qui mène à **une** autre n'est pas un passage : une chambre
+ * avec sa salle d'eau, un séjour ouvert sur sa cuisine, c'est encore une
+ * destination.
  *
  * **Ou elle n'a pas de jour.** Ce second signe a été ajouté pour l'entrée de la
  * maison : deux mètres quarante de large, aucune fenêtre, et une seule porte
@@ -916,7 +924,7 @@ function onTraverse(room: PlanRoom, doors: PlanDoor[]): boolean {
     }
     if (door.from && door.to) served += 1;
   }
-  return served >= 2 || (!jour && served >= 1);
+  return served >= 3 || (!jour && served >= 1);
 }
 
 

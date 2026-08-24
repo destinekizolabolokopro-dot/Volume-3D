@@ -14,7 +14,8 @@
     "palette": "node --experimental-strip-types scripts/palette.mjs",
     "contraste": "node scripts/contraste.mjs",
     "budget": "node scripts/budget.mjs",
-    "verify": "npm run typecheck && npm test && npm run palette"
+    "verify": "npm run typecheck && npm test && npm run palette",
+    "vues": "node scripts/vues.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
