@@ -8,48 +8,41 @@ import { CONTACT_EMAIL, PRICE_PER_LISTING } from '@/lib/content';
 import { area } from '@/lib/journey-path';
 import { roomArea } from '@/lib/plan';
 import {
-  MAISON_CAPTIONS,
-  MAISON_CLOSING,
-  MAISON_DOORS,
-  MAISON_IDENTITY,
-  MAISON_LISTING,
-  MAISON_MASSING,
-  MAISON_OPENING,
-  MAISON_ROOMS,
-} from '@/lib/maison';
+  VILLA_CAPTIONS,
+  VILLA_CLOSING,
+  VILLA_DOORS,
+  VILLA_IDENTITY,
+  VILLA_LISTING,
+  VILLA_MASSING,
+  VILLA_OPENING,
+  VILLA_ROOMS,
+} from '@/lib/villa';
 import '../landing.css';
-import './maison.css';
+import '../maison/maison.css';
 
 export const metadata: Metadata = {
-  title: 'Une annonce entière, visite comprise — Volume3D',
+  title: 'Une villa de 190 m², visitée au défilement — Volume3D',
   description:
-    'Une maison de démonstration présentée comme une vraie annonce : la visite en tête, puis le prix, la capacité et les équipements. Le bien est fictif.',
+    'Une villa de démonstration présentée comme une vraie annonce : la visite en tête, puis le prix, la capacité et les équipements. Le bien est fictif.',
 };
 
 /**
- * L'annonce de démonstration.
+ * L'annonce de la villa.
  *
- * L'accueil montre une visite ; cette page montre **une annonce**. La nuance
- * est tout le sujet : un propriétaire ne se demande pas si une visite 3D est
- * jolie, il se demande à quoi ressemblera *sa page* avec ça dedans, et ce que
- * le voyageur lira juste en dessous. Une visite posée dans le vide ne répond
- * pas à cette question. Une annonce complète — prix à la nuit, capacité,
- * équipements, règles — avec la visite en tête, y répond en un écran.
+ * Elle ne porte **que** la visite au défilement. Pas de visite libre à la
+ * souris, pas de panorama : un visiteur qui découvre le produit doit avoir une
+ * seule chose à faire, et cette chose doit être celle qu'il fait déjà — faire
+ * défiler une page. Tout le reste se propose ensuite, une fois qu'il sait de
+ * quoi on parle.
  *
- * D'où l'ordre : la visite d'abord, plein cadre, puis tout ce qu'une annonce
- * porte, dans l'ordre où on le lit. Et la mention du caractère fictif à trois
- * endroits — au-dessus de la visite, dans l'annonce, et au pied — parce que la
- * page imite volontairement une annonce réelle et qu'une imitation qui ne se
- * déclare pas est un faux.
- *
- * Il n'y a **ni note, ni avis, ni historique de réservation**, et c'est
- * délibéré. Une note en étoiles inventée est un faux document quelle que soit
- * la mention qui l'entoure — et c'est exactement la retouche qu'on reproche
- * aux annonces qu'on veut remplacer.
+ * Le décor, lui, est le plus grand des trois, et c'est délibéré : c'est sur un
+ * volume de cette taille qu'on voit ce qu'une visite apporte et qu'une galerie
+ * de photographies ne donne pas — qu'on peut aller d'un bout à l'autre sans
+ * repasser au même endroit.
  */
-export default function MaisonPage() {
-  const rooms = [...MAISON_ROOMS].sort((a, b) => roomArea(b) - roomArea(a));
-  const total = MAISON_LISTING.nightly * MAISON_LISTING.minimumNights + MAISON_LISTING.cleaning;
+export default function VillaPage() {
+  const rooms = [...VILLA_ROOMS].sort((a, b) => roomArea(b) - roomArea(a));
+  const total = VILLA_LISTING.nightly * VILLA_LISTING.minimumNights + VILLA_LISTING.cleaning;
 
   return (
     <div className="lp" id="haut">
@@ -62,38 +55,39 @@ export default function MaisonPage() {
       <main id="contenu">
         <div id="visite">
           <EntranceTour
-            rooms={MAISON_ROOMS}
-            doors={MAISON_DOORS}
-            massing={MAISON_MASSING}
-            opening={MAISON_OPENING}
-            captions={MAISON_CAPTIONS}
-            closing={MAISON_CLOSING}
+            rooms={VILLA_ROOMS}
+            doors={VILLA_DOORS}
+            massing={VILLA_MASSING}
+            opening={VILLA_OPENING}
+            captions={VILLA_CAPTIONS}
+            closing={VILLA_CLOSING}
             skipTo="#annonce"
-            disclaimer={MAISON_IDENTITY.disclaimer}
+            disclaimer={VILLA_IDENTITY.disclaimer}
             dehors="jardin"
+            piscine
           />
         </div>
 
-        {/* ------------------------------------------------------- l’annonce --- */}
         <section className="sec" id="annonce">
           <div className="wrap">
             <p className="fiction" role="note">
               <strong>Bien fictif.</strong> Cette page imite une annonce de location pour montrer ce
-              qu’une visite Volume3D y change. La maison, son nom et son prix sont inventés : elle
+              qu’une visite Volume3D y change. La villa, son nom et son prix sont inventés : elle
               n’est ni à louer, ni à visiter.
             </p>
 
             <Reveal className="listing-head">
               <div>
-                <p className="kicker">{MAISON_IDENTITY.city}</p>
-                <h1 className="listing-title">{MAISON_IDENTITY.name}</h1>
+                <p className="kicker">{VILLA_IDENTITY.city}</p>
+                <h1 className="listing-title">{VILLA_IDENTITY.name}</h1>
                 <p className="listing-lede">
-                  Une maison de plain-pied de {area(MAISON_IDENTITY.area)}, ouverte sur un jardin par
-                  une baie de 3,60 m. Deux chambres, une salle de bain de {area(10.92)}, et un couloir
-                  qui dessert tout sans une seule marche. Vous venez de la traverser.
+                  {area(VILLA_IDENTITY.area)} de plain-pied autour d’une galerie centrale. Un séjour
+                  traversant de {area(60.48)} sur 10,80 m, trois chambres dont une suite avec sa
+                  salle d’eau, et trois baies qui donnent sur la même terrasse. Vous venez de la
+                  traverser.
                 </p>
                 <ul className="listing-facts">
-                  {MAISON_LISTING.facts.map((fact) => (
+                  {VILLA_LISTING.facts.map((fact) => (
                     <li key={fact.label}>
                       <strong>{fact.value}</strong>
                       <span>{fact.label}</span>
@@ -104,22 +98,22 @@ export default function MaisonPage() {
 
               <aside className="listing-price" aria-label="Tarif du séjour">
                 <p className="listing-amount">
-                  <strong>{MAISON_LISTING.nightly}&nbsp;€</strong>
+                  <strong>{VILLA_LISTING.nightly}&nbsp;€</strong>
                   <span>par nuit</span>
                 </p>
                 <dl className="listing-bill">
                   <div>
                     <dt>
-                      {MAISON_LISTING.nightly}&nbsp;€ × {MAISON_LISTING.minimumNights} nuits
+                      {VILLA_LISTING.nightly}&nbsp;€ × {VILLA_LISTING.minimumNights} nuits
                     </dt>
-                    <dd>{MAISON_LISTING.nightly * MAISON_LISTING.minimumNights}&nbsp;€</dd>
+                    <dd>{VILLA_LISTING.nightly * VILLA_LISTING.minimumNights}&nbsp;€</dd>
                   </div>
                   <div>
                     <dt>Frais de ménage</dt>
-                    <dd>{MAISON_LISTING.cleaning}&nbsp;€</dd>
+                    <dd>{VILLA_LISTING.cleaning}&nbsp;€</dd>
                   </div>
                   <div className="listing-total">
-                    <dt>Séjour de {MAISON_LISTING.minimumNights} nuits</dt>
+                    <dt>Séjour de {VILLA_LISTING.minimumNights} nuits</dt>
                     <dd>{total}&nbsp;€</dd>
                   </div>
                 </dl>
@@ -131,14 +125,13 @@ export default function MaisonPage() {
           </div>
         </section>
 
-        {/* ------------------------------------------------- pièce par pièce --- */}
         <section className="sec sec-alt">
           <div className="wrap">
             <Reveal className="sec-head">
               <h2>Pièce par pièce</h2>
               <p>
                 Chaque surface est calculée sur le polygone de la pièce, pas recopiée d’une annonce.
-                C’est ce que change un relevé : le voyageur peut vérifier ce qu’il lit, et il vérifie.
+                Sur cent quatre-vingt-dix mètres carrés, c’est la seule façon d’être cru.
               </p>
             </Reveal>
 
@@ -147,18 +140,17 @@ export default function MaisonPage() {
                 <article className="demo-room" key={room.id}>
                   <h3>{room.name}</h3>
                   <p className="demo-area">{area(roomArea(room))}</p>
-                  <p>{MAISON_CAPTIONS[room.id]?.text}</p>
+                  <p>{VILLA_CAPTIONS[room.id]?.text}</p>
                 </article>
               ))}
             </Reveal>
           </div>
         </section>
 
-        {/* -------------------------------------------------- ce qu’il y a --- */}
         <section className="sec">
           <div className="wrap">
             <Reveal className="sec-head">
-              <h2>Ce que contient la maison</h2>
+              <h2>Ce que contient la villa</h2>
               <p>
                 La liste qu’un voyageur parcourt en diagonale avant de réserver. Avec la visite
                 au-dessus, elle cesse d’être une liste de promesses : chaque ligne se vérifie d’un
@@ -167,7 +159,7 @@ export default function MaisonPage() {
             </Reveal>
 
             <Reveal className="kit-grid">
-              {MAISON_LISTING.equipment.map((group) => (
+              {VILLA_LISTING.equipment.map((group) => (
                 <article className="kit" key={group.group}>
                   <h3>{group.group}</h3>
                   <ul>
@@ -185,13 +177,13 @@ export default function MaisonPage() {
             <Reveal className="rules">
               <h3>Règles du logement</h3>
               <ul>
-                {MAISON_LISTING.rules.map((rule) => (
+                {VILLA_LISTING.rules.map((rule) => (
                   <li key={rule}>{rule}</li>
                 ))}
               </ul>
             </Reveal>
 
-            <p className="demo-mention">{MAISON_IDENTITY.disclaimer}</p>
+            <p className="demo-mention">{VILLA_IDENTITY.disclaimer}</p>
           </div>
         </section>
 
@@ -202,10 +194,10 @@ export default function MaisonPage() {
                 <p className="kicker">Et chez vous</p>
                 <h2>La même page, avec vos murs</h2>
                 <p>
-                  On relève votre logement sur place en une vingtaine de minutes, et vous recevez les
-                  deux liens : la visite guidée et la visite libre. {PRICE_PER_LISTING} par logement,
-                  payé une fois, sans abonnement — ça, c’est le vrai prix, et il n’a rien à voir avec
-                  les 149 € par nuit de l’annonce ci-dessus.
+                  On relève votre logement sur place, et vous recevez ce lien-là.{' '}
+                  {PRICE_PER_LISTING} par logement, payé une fois, sans abonnement — ça, c’est le
+                  vrai prix, et il n’a rien à voir avec les {VILLA_LISTING.nightly} € par nuit de
+                  l’annonce ci-dessus.
                 </p>
               </div>
               <div>

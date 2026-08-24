@@ -33,6 +33,15 @@ import {
   MAISON_OPENING,
   MAISON_ROOMS,
 } from '../lib/maison.ts';
+import {
+  VILLA_CAPTIONS,
+  VILLA_CLOSING,
+  VILLA_DOORS,
+  VILLA_IDENTITY,
+  VILLA_MASSING,
+  VILLA_OPENING,
+  VILLA_ROOMS,
+} from '../lib/villa.ts';
 
 /*
  * Les deux décors écrits à la main.
@@ -90,6 +99,27 @@ const DECORS: Decor[] = [
     closing: MAISON_CLOSING,
     area: MAISON_IDENTITY.area,
     order: ['entree', 'degagement', 'sejour', 'chambre-1', 'chambre-2', 'salle-de-bain'],
+    finale: 'sejour',
+  },
+  {
+    label: 'villa',
+    rooms: VILLA_ROOMS,
+    doors: VILLA_DOORS,
+    massing: VILLA_MASSING,
+    opening: VILLA_OPENING,
+    captions: VILLA_CAPTIONS,
+    closing: VILLA_CLOSING,
+    area: VILLA_IDENTITY.area,
+    order: [
+      'entree',
+      'sejour',
+      'galerie',
+      'chambre-3',
+      'suite',
+      'bain-suite',
+      'chambre-2',
+      'salle-de-bain',
+    ],
     finale: 'sejour',
   },
 ];

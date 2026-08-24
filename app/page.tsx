@@ -118,24 +118,25 @@ export default async function HomePage() {
               </article>
 
               <article className="after-card after-card-lead">
-                <h3>La visite libre</h3>
+                <h3>Une annonce entière</h3>
                 <p>
-                  La même géométrie, mais c’est le voyageur qui conduit : il tourne la tête, il avance, il
-                  passe d’une pièce à l’autre à son rythme. C’est le lien que vous lui envoyez.
+                  La même visite, mais posée en tête d’une annonce complète : prix à la nuit,
+                  capacité, équipements. C’est à quoi ressemblera votre page, et c’est la seule
+                  question qu’un propriétaire se pose vraiment.
                 </p>
-                <a className="btn btn-accent" href="/demonstration">
-                  Essayer la visite libre
+                <a className="btn btn-accent" href="/villa">
+                  Voir l’annonce de la villa
                 </a>
               </article>
 
               <article className="after-card">
-                <h3>Une annonce entière</h3>
+                <h3>Sur un autre bien</h3>
                 <p>
-                  La même visite, mais posée en tête d’une annonce complète : prix à la nuit,
-                  capacité, équipements. C’est à quoi ressemblera votre page.
+                  Cent quatre-vingt-dix mètres carrés se racontent autrement que quatre-vingt-quatorze,
+                  et quatre-vingt-quatorze autrement que trente-neuf. Le même moteur, trois volumes.
                 </p>
                 <a className="after-link" href="/maison">
-                  Voir l’annonce de démonstration →
+                  Voir la maison de 94 m² →
                 </a>
               </article>
 

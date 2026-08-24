@@ -3,9 +3,14 @@
 import { useEffect, useState } from 'react';
 import { LogoMark } from '@/components/Logo';
 
+/*
+ * `/demonstration` — la visite libre à la souris — a quitté le site public.
+ * Il ne reste qu'une façon de voir le produit, et c'est la bonne : faire
+ * défiler une page. Les deux annonces la portent.
+ */
 const LINKS = [
-  { href: '/demonstration', label: 'Démonstration' },
-  { href: '/maison', label: 'Annonce type' },
+  { href: '/villa', label: 'La villa' },
+  { href: '/maison', label: 'La maison' },
   { href: '#resultats', label: 'Résultats' },
   { href: '#fonctionnement', label: 'Fonctionnement' },
   { href: '#tarifs', label: 'Tarifs' },

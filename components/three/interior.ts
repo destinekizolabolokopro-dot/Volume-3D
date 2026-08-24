@@ -639,6 +639,15 @@ export interface InteriorOptions {
    * quatre murs — mais le dehors dit ce qu'est le bien.
    */
   dehors?: Dehors;
+  /**
+   * Une piscine au sud, contre la terrasse.
+   *
+   * Séparée de `dehors` parce que ce sont deux faits indépendants : toutes les
+   * maisons de plain-pied n'ont pas de piscine, et c'est justement ce qui
+   * distingue la villa de la maison. Un troisième `Dehors` aurait mélangé les
+   * deux et obligé à recopier tout le jardin pour ajouter un rectangle d'eau.
+   */
+  piscine?: boolean;
 }
 
 export type Dehors = 'ville' | 'jardin';
@@ -737,6 +746,7 @@ export function buildInterior({
   entrance = null,
   renderer = null,
   dehors = 'ville',
+  piscine = false,
 }: InteriorOptions): Interior {
   const box = planBounds(rooms);
   const origin = { x: (box.minX + box.maxX) / 2, y: (box.minY + box.maxY) / 2 };
@@ -763,7 +773,7 @@ export function buildInterior({
     doors,
   );
   scene.add(ground(dehors, bin));
-  scene.add(surroundings(rooms, doors, origin, bin, dehors));
+  scene.add(surroundings(rooms, doors, origin, bin, dehors, piscine));
   scene.add(shell(rooms, doors, origin, bin));
   scene.add(baseShadow(rooms, origin, bin));
   scene.add(furniture(massing, doors, origin, bin));
@@ -1176,8 +1186,9 @@ function surroundings(
   origin: PlanPoint,
   disposables: { dispose(): void }[],
   dehors: Dehors = 'ville',
+  piscine = false,
 ): THREE.Group {
-  if (dehors === 'jardin') return garden(rooms, doors, origin, disposables);
+  if (dehors === 'jardin') return garden(rooms, doors, origin, disposables, piscine);
   const group = new THREE.Group();
   group.name = 'vis-a-vis';
   const stone = new THREE.MeshStandardMaterial({
@@ -1270,6 +1281,7 @@ function garden(
   doors: PlanDoor[],
   origin: PlanPoint,
   disposables: Bin[],
+  piscine = false,
 ): THREE.Group {
   void doors;
   const group = new THREE.Group();
@@ -1353,13 +1365,48 @@ function garden(
   /* La terrasse, contre la façade jardin, sous la baie. Sans elle, l'herbe
      monte jusqu'au vitrage et la baie donne l'impression de s'ouvrir sur un
      champ ; avec, on lit une maison qui a un dehors habité. */
+  const TERRASSE = piscine ? 3.6 : 3.2;
   pose(
-    new THREE.BoxGeometry(hx * 1.5, 0.1, 3.2),
+    new THREE.BoxGeometry(hx * (piscine ? 1.8 : 1.5), 0.1, TERRASSE),
     dalle,
     0,
     SOL + 0.05,
-    hz + 1.6,
+    hz + TERRASSE / 2,
   );
+
+  /*
+   * La piscine, au bout de la terrasse.
+   *
+   * Dix mètres sur quatre, et deux volumes seulement : une margelle qui
+   * dépasse de six centimètres, et un plan d'eau posé douze centimètres plus
+   * bas. Ce sont ces deux niveaux qui font lire un bassin plutôt qu'un
+   * rectangle bleu peint sur la pelouse — l'ombre tombe dans le retrait, et
+   * l'œil sait qu'il y a un creux.
+   *
+   * L'eau est franchement rompue vers le vert. Un bleu de nuancier, sur
+   * quarante mètres carrés en face d'une baie de 3,80 m, renvoie assez de cyan
+   * dans le séjour pour en changer la balance : le blanc des murs vire, et
+   * c'est le genre de faute qu'on ne voit qu'une fois qu'elle est là.
+   */
+  if (piscine) {
+    const eau = new THREE.MeshStandardMaterial({ color: OUTSIDE.eau, roughness: 0.5 });
+    disposables.push(eau);
+    const LONG = 10;
+    const LARGE = 4;
+    const MARGE = 0.5;
+    const bord = hz + TERRASSE;
+    const centre = bord + MARGE + LARGE / 2;
+
+    for (const [w, d, x, z] of [
+      [LONG + MARGE * 2, MARGE, 0, bord + MARGE / 2],
+      [LONG + MARGE * 2, MARGE, 0, bord + MARGE * 1.5 + LARGE],
+      [MARGE, LARGE, -(LONG / 2 + MARGE / 2), centre],
+      [MARGE, LARGE, LONG / 2 + MARGE / 2, centre],
+    ] as const) {
+      pose(new THREE.BoxGeometry(w, 0.12, d), dalle, x, SOL + 0.06, z);
+    }
+    pose(new THREE.BoxGeometry(LONG, 0.08, LARGE), eau, 0, SOL - 0.06, centre);
+  }
 
   /*
    * Le toit.

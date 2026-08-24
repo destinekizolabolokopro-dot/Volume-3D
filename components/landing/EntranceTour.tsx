@@ -67,6 +67,9 @@ export interface EntranceTourProps {
   disclaimer?: string;
   /** Ce qu'il y a derrière les fenêtres et la porte. Voir `interior.ts`. */
   dehors?: Dehors;
+  /** Une piscine au sud. Indépendant de `dehors` : toutes les maisons de
+   *  plain-pied n'en ont pas, et c'est ce qui distingue la villa. */
+  piscine?: boolean;
 }
 
 export function EntranceTour({
@@ -79,6 +82,7 @@ export function EntranceTour({
   skipTo,
   disclaimer,
   dehors,
+  piscine,
 }: EntranceTourProps) {
   const journey = useMemo(
     () => buildJourney(rooms, doors, { opening, captions, closing }),
@@ -109,6 +113,7 @@ export function EntranceTour({
       skipTo={skipTo}
       disclaimer={disclaimer}
       dehors={dehors}
+      piscine={piscine}
       ready={motion === 'oui'}
     />
   );
@@ -161,6 +166,7 @@ function MovingTour({
   skipTo,
   disclaimer,
   dehors,
+  piscine,
   ready,
 }: {
   journey: Journey;
@@ -170,6 +176,7 @@ function MovingTour({
   skipTo: string;
   disclaimer?: string;
   dehors?: Dehors;
+  piscine?: boolean;
   ready: boolean;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -215,7 +222,7 @@ function MovingTour({
       'Vue en trois dimensions du logement, qui avance à mesure que la page défile.',
     );
 
-    const interior = buildInterior({ rooms, doors, massing, entrance: journey.entrance, renderer, dehors });
+    const interior = buildInterior({ rooms, doors, massing, entrance: journey.entrance, renderer, dehors, piscine });
     const { scene, origin, leaf } = interior;
     const camera = new THREE.PerspectiveCamera(66, 1, 0.04, 300);
 
@@ -372,7 +379,7 @@ function MovingTour({
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, [ready, journey, rooms, doors, massing, dehors]);
+  }, [ready, journey, rooms, doors, massing, dehors, piscine]);
 
   if (failed) return <StillTour journey={journey} skipTo={skipTo} disclaimer={disclaimer} />;
 

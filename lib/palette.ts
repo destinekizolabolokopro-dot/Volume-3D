@@ -132,6 +132,9 @@ export const OUTSIDE = {
   enduit: 0xd6cfc0,
   /** L'ardoise du toit. Sombre, mais dans la plage utile du rendu. */
   toit: 0x5c5f63,
+  /** L'eau d'une piscine. Franchement rompue : un bleu de nuancier, sur
+   *  quarante mètres carrés en face d'une baie, tire toute l'image au cyan. */
+  eau: 0x6f9aa8,
 } as const;
 
 /** Tous les matériaux du logement, à plat. Sert à l'étude et au contrôle. */
