@@ -290,11 +290,11 @@ export const VILLA_MASSING: Massing[] = [
   { roomId: 'sejour', x: 5.475, y: 6.6, w: 0.05, d: 1.1, h: 0.8, base: 1.05, tone: 'bois' },
   { roomId: 'sejour', x: 5.45, y: 6.6, w: 0.02, d: 0.94, h: 0.66, base: 1.12, tone: 'terre' },
   { roomId: 'sejour', x: 5.1, y: 9.4, w: 0.42, d: 0.42, h: 1.5, shape: 'plante', tone: 'terre' },
-  { roomId: 'sejour', x: 0.75, y: 10.38, w: 0.34, d: 0.18, h: 2.66, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'sejour', x: 5.05, y: 10.38, w: 0.34, d: 0.18, h: 2.66, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 0.75, y: 10.38, w: 0.24, d: 0.18, h: 2.66, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 5.05, y: 10.38, w: 0.24, d: 0.18, h: 2.66, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'sejour', x: 2.9, y: 10.38, w: 4.64, d: 0.03, h: 0.03, base: 2.78, tone: 'laiton' },
-  { roomId: 'sejour', x: 0.48, y: 1.95, w: 0.18, d: 0.34, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'sejour', x: 0.48, y: 4.85, w: 0.18, d: 0.34, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 0.48, y: 1.95, w: 0.18, d: 0.24, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 0.48, y: 4.85, w: 0.18, d: 0.24, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'sejour', x: 0.48, y: 3.4, w: 0.03, d: 3.27, h: 0.03, base: 2.72, tone: 'laiton' },
 
   /* ------------------------------------------------------------- entrée --- */
@@ -352,8 +352,8 @@ export const VILLA_MASSING: Massing[] = [
   { roomId: 'chambre-2', x: 17.0, y: 1.3, w: 0.6, d: 1.2, h: 0.75, shape: 'table', tone: 'bois' },
   { roomId: 'chambre-2', x: 16.35, y: 1.5, w: 0.46, d: 0.46, h: 0.46, shape: 'table', tone: 'sombre' },
   { roomId: 'chambre-2', x: 16.35, y: 1.28, w: 0.46, d: 0.05, h: 0.46, base: 0.46, tone: 'sombre' },
-  { roomId: 'chambre-2', x: 14.08, y: 0.42, w: 0.28, d: 0.18, h: 2.5, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'chambre-2', x: 16.58, y: 0.42, w: 0.28, d: 0.18, h: 2.5, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre-2', x: 14.08, y: 0.42, w: 0.24, d: 0.18, h: 2.5, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre-2', x: 16.58, y: 0.42, w: 0.24, d: 0.18, h: 2.5, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'chambre-2', x: 15.33, y: 0.42, w: 2.78, d: 0.03, h: 0.03, base: 2.62, tone: 'laiton' },
   /* La fenêtre latérale reste nue, et c'est le seul endroit du décor où
      j'accepte une fenêtre sans rideau. Le lit repoussé vers l'est et le bureau
@@ -405,8 +405,8 @@ export const VILLA_MASSING: Massing[] = [
   { roomId: 'chambre-3', x: 6.01, y: 8.6, w: 0.64, d: 2.2, h: 2.4, shape: 'placard', portes: 3, tone: 'cabinet' },
   { roomId: 'chambre-3', x: 8.6, y: 6.09, w: 1.3, d: 0.6, h: 0.76, shape: 'table', tone: 'bois' },
   { roomId: 'chambre-3', x: 8.4, y: 8.4, w: 3.0, d: 2.2, h: 0.02, moelleux: true, tone: 'tapis' },
-  { roomId: 'chambre-3', x: 6.35, y: 10.38, w: 0.32, d: 0.18, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'chambre-3', x: 9.65, y: 10.38, w: 0.32, d: 0.18, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre-3', x: 6.35, y: 10.38, w: 0.24, d: 0.18, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre-3', x: 9.65, y: 10.38, w: 0.24, d: 0.18, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'chambre-3', x: 8.0, y: 10.38, w: 3.62, d: 0.03, h: 0.03, base: 2.72, tone: 'laiton' },
   { roomId: 'chambre-3', x: 8.0, y: 8.1, w: 0.32, d: 0.32, h: 0.06, base: 2.82, shape: 'plafonnier', tone: 'platre' },
 
@@ -430,8 +430,8 @@ export const VILLA_MASSING: Massing[] = [
   { roomId: 'suite', x: 13.1, y: 10.0, w: 0.8, d: 0.82, h: 0.32, base: 0.13, moelleux: true, tone: 'lin' },
   { roomId: 'suite', x: 13.1, y: 10.29, w: 0.8, d: 0.24, h: 0.58, base: 0.13, moelleux: true, tone: 'lin' },
   { roomId: 'suite', x: 11.9, y: 9.75, w: 2.6, d: 1.3, h: 0.02, moelleux: true, tone: 'tapis' },
-  { roomId: 'suite', x: 10.95, y: 10.38, w: 0.32, d: 0.18, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'suite', x: 14.02, y: 10.38, w: 0.28, d: 0.18, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'suite', x: 10.95, y: 10.38, w: 0.24, d: 0.18, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'suite', x: 14.02, y: 10.38, w: 0.24, d: 0.18, h: 2.6, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'suite', x: 12.48, y: 10.38, w: 3.37, d: 0.03, h: 0.03, base: 2.72, tone: 'laiton' },
   { roomId: 'suite', x: 12.2, y: 8.3, w: 0.32, d: 0.32, h: 0.06, base: 2.82, shape: 'plafonnier', tone: 'platre' },
 

@@ -225,8 +225,8 @@ export const MAISON_MASSING: Massing[] = [
   { roomId: 'chambre-1', x: 3.3, y: 2.9, w: 0.18, d: 0.18, h: 0.26, base: 0.5, tone: 'laiton' },
   { roomId: 'chambre-1', x: 6.59, y: 1.6, w: 0.62, d: 1.9, h: 2.15, shape: 'placard', portes: 3, tone: 'cabinet' },
   { roomId: 'chambre-1', x: 4.9, y: 0.37, w: 0.9, d: 0.11, h: 0.6, shape: 'radiateur', tone: 'cabinet' },
-  { roomId: 'chambre-1', x: 3.72, y: 0.4, w: 0.32, d: 0.17, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'chambre-1', x: 6.12, y: 0.4, w: 0.32, d: 0.17, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre-1', x: 3.72, y: 0.4, w: 0.24, d: 0.17, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre-1', x: 6.12, y: 0.4, w: 0.24, d: 0.17, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'chambre-1', x: 4.92, y: 0.4, w: 2.72, d: 0.028, h: 0.028, base: 2.28, tone: 'laiton' },
   { roomId: 'chambre-1', x: 4.9, y: 1.75, w: 0.3, d: 0.3, h: 0.05, base: 2.45, shape: 'plafonnier', tone: 'platre' },
 
@@ -247,8 +247,8 @@ export const MAISON_MASSING: Massing[] = [
   { roomId: 'chambre-2', x: 8.5, y: 1.46, w: 0.44, d: 0.05, h: 0.44, base: 0.46, tone: 'sombre' },
   { roomId: 'chambre-2', x: 7.21, y: 1.95, w: 0.24, d: 1.3, h: 1.8, shape: 'placard', portes: 2, tone: 'bois' },
   { roomId: 'chambre-2', x: 7.145, y: 0.85, w: 0.7, d: 0.11, h: 0.55, yaw: 90, shape: 'radiateur', tone: 'cabinet' },
-  { roomId: 'chambre-2', x: 7.88, y: 0.4, w: 0.32, d: 0.17, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'chambre-2', x: 10.32, y: 0.4, w: 0.32, d: 0.17, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre-2', x: 7.88, y: 0.4, w: 0.24, d: 0.17, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre-2', x: 10.32, y: 0.4, w: 0.24, d: 0.17, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'chambre-2', x: 9.1, y: 0.4, w: 2.76, d: 0.028, h: 0.028, base: 2.28, tone: 'laiton' },
   { roomId: 'chambre-2', x: 9.0, y: 1.75, w: 0.3, d: 0.3, h: 0.05, base: 2.45, shape: 'plafonnier', tone: 'platre' },
 
@@ -378,11 +378,11 @@ export const MAISON_MASSING: Massing[] = [
   /* Les rideaux de la baie et de la fenêtre est. Ils débordent l'ouverture
      des deux côtés et s'arrêtent à six centimètres du sol : posés au ras du
      tableau, ils fermeraient la baie au lieu de l'encadrer. */
-  { roomId: 'sejour', x: 4.95, y: 7.98, w: 0.32, d: 0.17, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'sejour', x: 9.05, y: 7.98, w: 0.32, d: 0.17, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 4.95, y: 7.98, w: 0.24, d: 0.17, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 9.05, y: 7.98, w: 0.24, d: 0.17, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'sejour', x: 7.0, y: 7.98, w: 4.42, d: 0.028, h: 0.028, base: 2.42, tone: 'laiton' },
-  { roomId: 'sejour', x: 10.72, y: 5.42, w: 0.17, d: 0.32, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'sejour', x: 10.72, y: 7.42, w: 0.17, d: 0.32, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 10.72, y: 5.42, w: 0.17, d: 0.24, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'sejour', x: 10.72, y: 7.42, w: 0.17, d: 0.24, h: 2.18, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
   { roomId: 'sejour', x: 10.75, y: 6.42, w: 0.028, d: 2.32, h: 0.028, base: 2.28, tone: 'laiton' },
 ];
 

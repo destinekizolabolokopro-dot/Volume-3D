@@ -963,9 +963,15 @@ function lights(
    * à un et demi. Les ombres restent — sans elles le décor redevient un patron
    * découpé — mais elles se lisent au lieu de trancher.
    */
-  scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 1.35));
+  /* Réglage revu une seconde fois, sur les images du haussmannien.
+     Un rapport soleil/ciel de un et demi effaçait le modelé : sur un mur de
+     3,25 m, la lumière ne variait plus assez du haut au bas pour qu'on lise
+     l'aplomb, et l'image entière prenait un voile. Un rapport d'un peu plus de
+     deux rend le relief sans ramener les ombres bouchées qu'on venait de
+     corriger — c'est la différence entre « mat » et « lavé ». */
+  scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 1.05));
 
-  const sun = new THREE.DirectionalLight(0xfff0d6, 1.45);
+  const sun = new THREE.DirectionalLight(0xfff0d6, 2.2);
   const from = sunDirection(rooms, doors);
   sun.position.copy(from);
   sun.castShadow = true;
@@ -2592,25 +2598,46 @@ function furniture(
       );
 
       /*
-       * Cinq masses décalées plutôt qu'une.
+       * Un tronc, puis une couronne — et non une pile de boules.
        *
-       * Une sphère unique se lit comme une boule, et une boule sur un pot est
-       * un buis taillé, pas une plante d'intérieur. Ce qui distingue les deux
-       * est la silhouette : celle d'un feuillage est dissymétrique, et il en
-       * faut au moins quatre ou cinq pour qu'elle cesse d'avoir un axe. Les
-       * décalages sont fixes, pas tirés au hasard — une scène doit se
+       * Première version : cinq sphères empilées depuis le haut du pot. En
+       * image elle donnait exactement ce qu'elle décrit — trois grosses masses
+       * l'une sur l'autre, plus larges que le pot, sans rien entre les deux.
+       * Ce n'était pas une plante, c'était un bonhomme de neige vert, et
+       * c'était l'objet le moins convaincant de tout le décor.
+       *
+       * Ce qui manquait est ce qui fait la silhouette d'une plante d'intérieur
+       * en pot — un ficus, un olivier : **du vide entre le pot et le
+       * feuillage**. La couronne est plus large que haute, elle se tient dans
+       * le tiers supérieur, et un tronc mince la relie au pot. Le vide fait
+       * plus que les masses : c'est lui qui dit qu'il y a une plante et non un
+       * buisson posé là.
+       *
+       * Les décalages restent fixes, pas tirés au hasard — une scène doit se
        * reconstruire à l'identique d'un chargement à l'autre.
        */
       const feuillage = matiere('petrole');
       const hautFeuillage = item.h - potHaut;
+
+      const tronc = new THREE.CylinderGeometry(rayon * 0.13, rayon * 0.17, hautFeuillage * 0.62, 8);
+      position.set(
+        item.x - origin.x,
+        base + potHaut + hautFeuillage * 0.31,
+        item.y - origin.y,
+      );
+      batch.add(tronc, matiere('bois'), matrix.compose(position, quaternion, echelle), (x, y, z) =>
+        daylightAt(jour, x, y, z),
+      );
+
       for (const [dx, dz, dh, facteur] of [
-        [0, 0, 0.4, 1],
-        [-0.3, 0.18, 0.62, 0.78],
-        [0.32, -0.12, 0.7, 0.7],
-        [0.1, 0.34, 0.86, 0.56],
-        [-0.16, -0.26, 0.9, 0.48],
+        [0, 0, 0.78, 1],
+        [-0.62, 0.34, 0.7, 0.72],
+        [0.66, -0.22, 0.74, 0.68],
+        [0.18, 0.68, 0.82, 0.6],
+        [-0.34, -0.58, 0.86, 0.56],
+        [0.1, -0.06, 0.95, 0.52],
       ] as const) {
-        const r = rayon * 1.55 * facteur;
+        const r = rayon * 1.15 * facteur;
         const masse = new THREE.SphereGeometry(r, 12, 9);
         position.set(
           item.x - origin.x + (dx * Math.cos(spin) + dz * Math.sin(spin)) * rayon,
