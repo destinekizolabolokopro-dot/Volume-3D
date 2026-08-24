@@ -120,6 +120,36 @@ d'eau alors que les deux polygones ne se touchaient pas. La caméra franchissait
 vingt centimètres de vide, sans sol ni plafond, et on voyait le ciel au milieu de
 l'appartement.
 
+### Le vaisseau amiral a changé de standing
+
+`lib/showcase.ts` portait un deux-pièces de 39,8 m² dans le Marais : honnête,
+bien coté, et le bien le moins désirable des trois qu'on montre — placé en
+première image du site. Un visiteur qui découvre un service de visites 3D juge
+en trois secondes, et ce qu'il jugeait était un studio.
+
+C'est maintenant un haussmannien d'angle de **165 m²** : 3,25 m sous plafond,
+enfilade salon / salle à manger par une double porte de 2,20 m, galerie de
+distribution, suite avec sa salle d'eau, balcon filant sur rue. Ce n'est pas de
+la surenchère — c'est le seul type de bien où la visite au défilement apporte
+quelque chose qu'une galerie de photographies ne donne pas : dans un
+deux-pièces, quatre photos suffisent ; dans 165 m² en enfilade, aucune photo ne
+dit qu'on voit la salle à manger depuis le salon.
+
+Deux règles de cadrage y ont été corrigées, et les deux se mesurent :
+
+- **`GRANDE_PIECE`** — un couloir n'est jamais grand. Le salon double a trois
+  portes (l'enfilade, la galerie, la cuisine) : le compte des portes le classait
+  en circulation, et la plus belle pièce de l'appartement se faisait cadrer
+  comme un couloir. Au-delà de 20 m², une pièce est une pièce. L'écart est franc
+  sur les trois décors : la plus grande circulation fait 18,1 m², la plus petite
+  pièce de réception 20,2.
+- **L'ordre de la visite.** Le parcours prend la plus grande pièce d'abord — « on
+  montre le séjour avant le cellier » — mais il ne regarde qu'un pas en avant.
+  Avec une porte de service entre l'entrée et la cuisine, la visite d'un 165 m²
+  commençait par la cuisine, parce que 18,9 m² bat 10,4 m² de galerie et que le
+  salon de 27 m² est derrière. La cuisine ouvre donc sur la réception, ce qui
+  est de toute façon le plan juste d'un haussmannien rénové.
+
 ### Et une maison, dans `lib/maison.ts`
 
 Un second décor, et il ne double pas le premier : il montre ce que l'appartement

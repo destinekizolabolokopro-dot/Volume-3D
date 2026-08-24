@@ -4,7 +4,21 @@
  * Il vit **dans le code**, pas dans la base. C'est délibéré : la page d'accueil
  * est la visite, et une page d'accueil qui dépend du contenu d'une base peut se
  * retrouver vide. Ici, le premier déploiement sur une base neuve montre déjà
- * quelque chose.
+ * quelque chose, et le logement d'un client n'est jamais exposé.
+ *
+ * **C'est le vaisseau amiral, et il a changé de standing.** Le décor précédent
+ * était un deux-pièces de 39,8 m² dans le Marais : honnête, bien coté, et le
+ * bien le moins désirable des trois qu'on montre — placé en première image du
+ * site. Un visiteur qui découvre un service de visites 3D pour de la location
+ * saisonnière juge en trois secondes, et ce qu'il jugeait était un studio.
+ *
+ * Celui-ci est un haussmannien d'angle de 165 m² au quatrième étage : 3,25 m
+ * sous plafond, enfilade salon / salle à manger en double porte, galerie de
+ * distribution, suite avec sa salle d'eau, balcon filant sur rue. Ce n'est pas
+ * de la surenchère — c'est le seul type de bien où **la visite au défilement
+ * apporte quelque chose qu'une galerie de photographies ne donne pas** : dans
+ * un deux-pièces, quatre photos suffisent ; dans 165 m² en enfilade, aucune
+ * photo ne dit qu'on voit la salle à manger depuis le salon.
  *
  * Ce qu'il faut savoir sur son honnêteté : **les mesures sont réelles au sens
  * où elles sont cohérentes** — surfaces, hauteurs, largeurs d'ouverture,
@@ -22,56 +36,136 @@ import type { FurnitureTone } from './palette.ts';
 import type { PlanDoor, PlanRoom } from './types.ts';
 import type { CaptionText } from './journey-path.ts';
 
+/*
+ * Le plan, en une image.
+ *
+ *        0        4,6      9,0    12,6      16,5
+ *   0    ┌─────────┬────────┬──────┬─────────┐
+ *        │         │ SALLE  │CHAM- │         │  ← rue, balcon filant
+ *        │  SALON  │   À    │ BRE  │ SUITE   │
+ *        │ DOUBLE  │ MANGER │      │         │
+ *   4,6  │         ├────────┴──────┤         │
+ *   5,9  ├─────────┴──GALERIE──────┼─────────┤
+ *        │         │        │      │  SALLE  │
+ *        │ CUISINE │ ENTRÉE │SALLE │  D'EAU  │
+ *        │         │        │ DE   │   DE LA │
+ *  10,0  └─────────┴────────┴BAINS─┴─ SUITE ─┘  ← cour, palier
+ *
+ * Trois choses font le haussmannien, et elles sont dans le plan avant d'être
+ * dans le décor :
+ *
+ *  · **l'enfilade.** Le salon et la salle à manger communiquent par une double
+ *    porte de 2,20 m, en plus de leurs portes sur la galerie. C'est la
+ *    signature du plan bourgeois, et c'est aussi le seul endroit du site où la
+ *    visite au défilement montre quelque chose d'irréductible à une photo : on
+ *    voit une pièce à travers une autre ;
+ *  · **la galerie**, qui dessert les chambres sans traverser les pièces de
+ *    réception ;
+ *  · **la suite**, qui prend l'angle et tient les deux bandes — c'est la seule
+ *    pièce du plan à toucher à la fois la rue et la cour.
+ */
+
+/** Trois mètres vingt-cinq : la cote qui dit « haussmannien » avant tout décor. */
+const HAUTEUR = 3.25;
+
 export const SHOWCASE_ROOMS: PlanRoom[] = [
   {
-    id: 'sejour',
-    name: 'Séjour & cuisine',
-    height: 2.6,
+    id: 'salon',
+    name: 'Salon double',
+    height: HAUTEUR,
     points: [
       { x: 0, y: 0 },
-      { x: 5.2, y: 0 },
-      { x: 5.2, y: 4 },
-      { x: 0, y: 4 },
+      { x: 4.6, y: 0 },
+      { x: 4.6, y: 5.9 },
+      { x: 0, y: 5.9 },
     ],
   },
-  /* Le dégagement descend jusqu'à 4,40 m, et ce n'est pas un détail de
-     dessin : il doit être réellement mitoyen des deux pièces qu'il dessert.
-     Dans une première version il s'arrêtait à 3,00 m tandis que la salle d'eau
-     commençait à 3,20 m — la porte déclarée entre les deux ne reposait donc sur
-     aucun mur commun, et la caméra traversait vingt centimètres de vide sans
-     sol ni plafond, par lesquels on voyait le ciel. Une porte doit toucher ses
-     deux pièces. */
   {
-    id: 'degagement',
-    name: 'Dégagement',
-    height: 2.6,
+    id: 'salle-a-manger',
+    name: 'Salle à manger',
+    height: HAUTEUR,
     points: [
-      { x: 5.2, y: 1.2 },
-      { x: 6.6, y: 1.2 },
-      { x: 6.6, y: 4.4 },
-      { x: 5.2, y: 4.4 },
+      { x: 4.6, y: 0 },
+      { x: 9, y: 0 },
+      { x: 9, y: 4.6 },
+      { x: 4.6, y: 4.6 },
     ],
   },
   {
     id: 'chambre',
     name: 'Chambre',
-    height: 2.6,
+    height: HAUTEUR,
     points: [
-      { x: 6.6, y: 0 },
-      { x: 10, y: 0 },
-      { x: 10, y: 3.2 },
-      { x: 6.6, y: 3.2 },
+      { x: 9, y: 0 },
+      { x: 12.6, y: 0 },
+      { x: 12.6, y: 4.6 },
+      { x: 9, y: 4.6 },
     ],
   },
   {
-    id: 'salle-eau',
-    name: 'Salle d’eau',
-    height: 2.6,
+    id: 'suite',
+    name: 'Suite parentale',
+    height: HAUTEUR,
     points: [
-      { x: 6.6, y: 3.2 },
-      { x: 8.6, y: 3.2 },
-      { x: 8.6, y: 5 },
-      { x: 6.6, y: 5 },
+      { x: 12.6, y: 0 },
+      { x: 16.5, y: 0 },
+      { x: 16.5, y: 5.9 },
+      { x: 12.6, y: 5.9 },
+    ],
+  },
+  {
+    id: 'galerie',
+    name: 'Galerie',
+    height: HAUTEUR,
+    points: [
+      { x: 4.6, y: 4.6 },
+      { x: 12.6, y: 4.6 },
+      { x: 12.6, y: 5.9 },
+      { x: 4.6, y: 5.9 },
+    ],
+  },
+  {
+    id: 'cuisine',
+    name: 'Cuisine',
+    height: HAUTEUR,
+    points: [
+      { x: 0, y: 5.9 },
+      { x: 4.6, y: 5.9 },
+      { x: 4.6, y: 10 },
+      { x: 0, y: 10 },
+    ],
+  },
+  {
+    id: 'entree',
+    name: 'Entrée',
+    height: HAUTEUR,
+    points: [
+      { x: 4.6, y: 5.9 },
+      { x: 8.6, y: 5.9 },
+      { x: 8.6, y: 10 },
+      { x: 4.6, y: 10 },
+    ],
+  },
+  {
+    id: 'salle-de-bains',
+    name: 'Salle de bains',
+    height: HAUTEUR,
+    points: [
+      { x: 8.6, y: 5.9 },
+      { x: 12.2, y: 5.9 },
+      { x: 12.2, y: 10 },
+      { x: 8.6, y: 10 },
+    ],
+  },
+  {
+    id: 'bain-suite',
+    name: 'Salle d’eau de la suite',
+    height: HAUTEUR,
+    points: [
+      { x: 12.2, y: 5.9 },
+      { x: 16.5, y: 5.9 },
+      { x: 16.5, y: 10 },
+      { x: 12.2, y: 10 },
     ],
   },
 ];
@@ -90,13 +184,61 @@ const opening = (
 export const SHOWCASE_DOORS: PlanDoor[] = [
   // La porte palière : `to` vide, elle ne mène à aucune pièce du plan. C'est ce
   // qui la distingue d'une porte intérieure, et c'est par là qu'on entre.
-  opening('entree', 'sejour', '', { x: 0, y: 2.35 }, { x: 0, y: 3.25 }, 'door', 2.1, 0),
-  opening('deg-sejour', 'sejour', 'degagement', { x: 5.2, y: 1.6 }, { x: 5.2, y: 2.5 }, 'opening', 2.15, 0),
-  opening('deg-chambre', 'degagement', 'chambre', { x: 6.6, y: 1.5 }, { x: 6.6, y: 2.4 }, 'door', 2.05, 0),
-  opening('deg-bain', 'degagement', 'salle-eau', { x: 6.6, y: 3.3 }, { x: 6.6, y: 4.0 }, 'door', 2.05, 0),
-  opening('f-sejour', 'sejour', '', { x: 1, y: 0 }, { x: 3.2, y: 0 }, 'window', 2.25, 0.85),
-  opening('f-chambre', 'chambre', '', { x: 10, y: 0.6 }, { x: 10, y: 2 }, 'window', 2.2, 0.9),
-  opening('f-bain', 'salle-eau', '', { x: 8.6, y: 3.35 }, { x: 8.6, y: 4.0 }, 'window', 2.1, 1.2),
+  opening('porte', 'entree', '', { x: 6, y: 10 }, { x: 7.1, y: 10 }, 'door', 2.6, 0),
+
+  /* La double porte de l'enfilade : 2,20 m entre le salon et la salle à
+     manger. Elle n'est pas là pour le décor — c'est par elle qu'on voit une
+     pièce à travers une autre, et c'est la seule chose de ce plan qu'une
+     galerie de photographies ne peut pas rendre. */
+  opening('enfilade', 'salon', 'salle-a-manger', { x: 4.6, y: 1 }, { x: 4.6, y: 3.2 }, 'opening', 2.75, 0),
+
+  opening('d-salon', 'salon', 'galerie', { x: 4.6, y: 4.85 }, { x: 4.6, y: 5.65 }, 'door', 2.6, 0),
+  opening('d-sam', 'salle-a-manger', 'galerie', { x: 6.6, y: 4.6 }, { x: 7.8, y: 4.6 }, 'opening', 2.6, 0),
+  opening('d-chambre', 'chambre', 'galerie', { x: 10.2, y: 4.6 }, { x: 11.1, y: 4.6 }, 'door', 2.5, 0),
+  opening('d-suite', 'suite', 'galerie', { x: 12.6, y: 4.85 }, { x: 12.6, y: 5.65 }, 'door', 2.5, 0),
+  opening('d-galerie', 'entree', 'galerie', { x: 5.6, y: 5.9 }, { x: 6.8, y: 5.9 }, 'opening', 2.6, 0),
+  /*
+   * La cuisine ouvre sur le salon, et **pas** sur l'entrée.
+   *
+   * Deux raisons, et la seconde est la vraie. La première : dans un
+   * haussmannien rénové, la cuisine s'ouvre sur la réception — c'est même à
+   * peu près la seule chose qu'on change dans ces appartements-là.
+   *
+   * La seconde tient à l'ordre de la visite. Le parcours prend, à chaque
+   * embranchement, la plus grande pièce d'abord — « on montre le séjour avant
+   * le cellier ». Avec une porte de service entre l'entrée et la cuisine, le
+   * vestibule avait deux sorties : la cuisine (18,9 m²) et la galerie
+   * (10,4 m²). La cuisine gagnait, et la visite d'un appartement de 165 m²
+   * commençait par la cuisine. La règle n'est pas fausse — elle ne regarde
+   * qu'un pas en avant, et derrière la galerie il y a le salon de 27 m².
+   * Retirer la porte de service règle le cas sans toucher à la règle, et donne
+   * un plan plus juste par-dessus le marché.
+   */
+  opening('d-cuisine', 'cuisine', 'salon', { x: 1.6, y: 5.9 }, { x: 2.6, y: 5.9 }, 'door', 2.5, 0),
+  opening('d-bains', 'salle-de-bains', 'galerie', { x: 10.5, y: 5.9 }, { x: 11.3, y: 5.9 }, 'door', 2.5, 0),
+  /* La salle d'eau ne s'ouvre que sur la suite, et c'est ce qui en fait une
+     suite. Elle touche pourtant la galerie sur quarante centimètres — une
+     seconde porte y tiendrait, et elle ruinerait tout. */
+  opening('d-bain-suite', 'bain-suite', 'suite', { x: 13.6, y: 5.9 }, { x: 14.4, y: 5.9 }, 'door', 2.5, 0),
+
+  /* Les portes-fenêtres sur rue, allège à 35 cm : c'est ce qui donne le
+     balcon filant, et c'est la cote haussmannienne. */
+  opening('pf-salon-1', 'salon', '', { x: 0.8, y: 0 }, { x: 2, y: 0 }, 'window', 2.9, 0.35),
+  opening('pf-salon-2', 'salon', '', { x: 2.8, y: 0 }, { x: 4, y: 0 }, 'window', 2.9, 0.35),
+  opening('pf-sam-1', 'salle-a-manger', '', { x: 5.4, y: 0 }, { x: 6.6, y: 0 }, 'window', 2.9, 0.35),
+  opening('pf-sam-2', 'salle-a-manger', '', { x: 7.2, y: 0 }, { x: 8.4, y: 0 }, 'window', 2.9, 0.35),
+  opening('f-chambre', 'chambre', '', { x: 9.8, y: 0 }, { x: 11.8, y: 0 }, 'window', 2.7, 0.9),
+  opening('f-suite', 'suite', '', { x: 13.6, y: 0 }, { x: 15.6, y: 0 }, 'window', 2.7, 0.9),
+
+  // L'angle : le salon et la suite prennent chacun un second jour.
+  opening('f-salon-ouest', 'salon', '', { x: 0, y: 1.6 }, { x: 0, y: 3.4 }, 'window', 2.7, 0.9),
+  opening('f-suite-est', 'suite', '', { x: 16.5, y: 1.4 }, { x: 16.5, y: 3.2 }, 'window', 2.7, 0.9),
+
+  // Sur cour.
+  opening('f-cuisine-ouest', 'cuisine', '', { x: 0, y: 7 }, { x: 0, y: 8.6 }, 'window', 2.5, 1),
+  opening('f-cuisine', 'cuisine', '', { x: 1.2, y: 10 }, { x: 2.6, y: 10 }, 'window', 2.5, 1),
+  opening('f-bains', 'salle-de-bains', '', { x: 9.6, y: 10 }, { x: 10.8, y: 10 }, 'window', 2.4, 1.4),
+  opening('f-bain-suite', 'bain-suite', '', { x: 14, y: 10 }, { x: 15.2, y: 10 }, 'window', 2.4, 1.4),
 ];
 
 /* ============================================================== mobilier === */
@@ -166,234 +308,297 @@ export interface Massing {
   tone: FurnitureTone;
 }
 
+
+
 /*
  * L'implantation.
  *
- * Deux règles ont guidé chaque position, et toutes deux viennent d'une erreur
- * qu'un contrôle a rattrapée.
+ * Les faces intérieures, une fois retirée la peau de chaque mur — trente
+ * centimètres contre une façade, neuf contre une cloison. C'est sur elles qu'on
+ * se cale, jamais sur les lignes du plan :
  *
- *  · **On se cale sur la face du mur, pas sur la ligne du plan.** Chaque pièce
- *    porte une peau intérieure — neuf centimètres pour une cloison, trente pour
- *    une façade. La cuisine était enfoncée d'un tiers dans la façade, le placard
- *    d'entrée à moitié dedans. À l'écran ça ne se lit pas comme une erreur, mais
- *    comme un meuble anormalement mince.
- *  · **Rien dans l'axe d'une porte.** Le placard du dégagement était posé pile
- *    devant l'ouverture du séjour, la douche devant la sienne : la caméra les
- *    traversait à chaque passage.
+ *   salon           x 0,30 → 4,51     y 0,30 → 5,81
+ *   salle à manger  x 4,69 → 8,91     y 0,30 → 4,51
+ *   chambre         x 9,09 → 12,51    y 0,30 → 4,51
+ *   suite           x 12,69 → 16,20   y 0,30 → 5,81
+ *   galerie         x 4,69 → 12,51    y 4,69 → 5,81
+ *   cuisine         x 0,30 → 4,51     y 5,99 → 9,70
+ *   entrée          x 4,69 → 8,51     y 5,99 → 9,70
+ *   salle de bains  x 8,69 → 12,11    y 5,99 → 9,70
+ *   salle d'eau     x 12,29 → 16,20   y 5,99 → 9,70
+ *
+ * Et les neuf points où la caméra s'arrête, qui se calculent et se mesurent
+ * avant de poser le premier meuble. Rien de haut ne doit s'en approcher à
+ * moins de soixante centimètres, sinon la légende d'une pièce se lit devant un
+ * dossier de fauteuil :
+ *
+ *   entrée (6,58 ; 8,73)      galerie (7,89 ; 5,44)    salon (3,03 ; 3,68)
+ *   salle à manger (6,17 ; 2,24)                       cuisine (2,24 ; 7,38)
+ *   suite (13,94 ; 3,66)      salle d'eau (14,25 ; 7,38)
+ *   chambre (10,76 ; 2,97)    salle de bains (10,23 ; 7,37)
  */
 export const SHOWCASE_MASSING: Massing[] = [
-  /* ------------------------------------------------------------- séjour --- */
-  /* Le radiateur en fonte sous la fenêtre sur rue. Il est là parce que c'est
-     là qu'il est toujours — sous l'ouverture, là où le froid entre — et il
-     dit l'époque du bâtiment plus vite que n'importe quel autre objet. */
-  { roomId: 'sejour', x: 2.1, y: 0.365, w: 1.0, d: 0.11, h: 0.62, shape: 'radiateur', tone: 'cabinet' },
-  /* Le tapis prend deux centimètres et une arête adoucie : à douze millimètres
-     et à angle vif, il ne se distinguait pas d'un rectangle peint sur le sol. */
-  { roomId: 'sejour', x: 1.7, y: 2.15, w: 2.6, d: 1.8, h: 0.02, moelleux: true, tone: 'tapis' },
-  /*
-   * La plante, dans l'angle au bout de la cuisine.
-   *
-   * Deux placements ont été essayés et écartés en image. À côté du canapé,
-   * elle était à un mètre de l'objectif : un mètre quinze de feuillage
-   * remplissait le quart bas du champ et se lisait comme un rocher — une
-   * plante est un objet de fond de pièce, pas de premier plan. Derrière le
-   * canapé, elle était à la bonne distance mais sur le mauvais fond : le
-   * feuillage et le dossier partagent le pétrole du nuancier, et les deux
-   * masses n'en faisaient plus qu'une. Contre un mur clair, à l'autre bout de
-   * la pièce, elle se détache et donne de la profondeur au séjour.
-   */
-  { roomId: 'sejour', x: 4.85, y: 3.5, w: 0.3, d: 0.3, h: 1.0, shape: 'plante', tone: 'terre' },
-  /* Le canapé porte la seule couleur franche de la scène ; les coussins lui
-     répondent en terre cuite, presque à l'opposé sur le cercle des teintes.
-     Il repose sur un piètement sombre en retrait : sans lui, l'assise descend
-     jusqu'au parquet et le canapé se lit comme un bloc de mousse posé là. Le
-     retrait de cinq centimètres suffit — c'est l'ombre sous le meuble qu'on
-     voit, pas le piètement. */
-  { roomId: 'sejour', x: 1.7, y: 2.9, w: 2.0, d: 0.76, h: 0.13, tone: 'sombre' },
-  { roomId: 'sejour', x: 1.7, y: 2.9, w: 2.1, d: 0.85, h: 0.32, base: 0.13, moelleux: true, tone: 'petrole' },
-  { roomId: 'sejour', x: 1.7, y: 3.19, w: 2.1, d: 0.28, h: 0.68, base: 0.13, moelleux: true, tone: 'petrole' },
-  { roomId: 'sejour', x: 0.78, y: 2.9, w: 0.26, d: 0.85, h: 0.5, base: 0.13, moelleux: true, tone: 'petrole' },
-  { roomId: 'sejour', x: 2.62, y: 2.9, w: 0.26, d: 0.85, h: 0.5, base: 0.13, moelleux: true, tone: 'petrole' },
-  { roomId: 'sejour', x: 1.18, y: 2.99, w: 0.4, d: 0.16, h: 0.36, base: 0.45, moelleux: true, tone: 'terre' },
-  { roomId: 'sejour', x: 2.22, y: 2.99, w: 0.4, d: 0.16, h: 0.36, base: 0.45, moelleux: true, tone: 'terre' },
-  { roomId: 'sejour', x: 1.7, y: 1.8, w: 1.0, d: 0.52, h: 0.4, shape: 'table', tone: 'bois' },
-  // Un cadre au-dessus du canapé. Un mur nu de deux mètres soixante se remarque.
-  { roomId: 'sejour', x: 1.7, y: 3.68, w: 0.9, d: 0.04, h: 0.6, base: 1.15, tone: 'bois' },
-  { roomId: 'sejour', x: 1.7, y: 3.655, w: 0.78, d: 0.02, h: 0.48, base: 1.21, tone: 'terre' },
+  /* -------------------------------------------------------------- salon --- */
+  /* Le canapé tourne le dos aux fenêtres et regarde la cheminée : c'est
+     l'organisation d'un salon bourgeois, et c'est aussi ce qui laisse le champ
+     libre entre l'objectif et les portes-fenêtres. */
+  { roomId: 'salon', x: 2.0, y: 3.4, w: 3.2, d: 3.2, h: 0.02, moelleux: true, tone: 'tapis' },
+  { roomId: 'salon', x: 2.0, y: 2.05, w: 2.3, d: 0.9, h: 0.14, tone: 'sombre' },
+  { roomId: 'salon', x: 2.0, y: 2.05, w: 2.4, d: 1.0, h: 0.36, base: 0.14, moelleux: true, tone: 'petrole' },
+  { roomId: 'salon', x: 2.0, y: 1.71, w: 2.4, d: 0.32, h: 0.76, base: 0.14, moelleux: true, tone: 'petrole' },
+  { roomId: 'salon', x: 0.94, y: 2.05, w: 0.28, d: 1.0, h: 0.58, base: 0.14, moelleux: true, tone: 'petrole' },
+  { roomId: 'salon', x: 3.06, y: 2.05, w: 0.28, d: 1.0, h: 0.58, base: 0.14, moelleux: true, tone: 'petrole' },
+  { roomId: 'salon', x: 1.45, y: 1.94, w: 0.46, d: 0.18, h: 0.42, base: 0.5, moelleux: true, tone: 'terre' },
+  { roomId: 'salon', x: 2.55, y: 1.94, w: 0.46, d: 0.18, h: 0.42, base: 0.5, moelleux: true, tone: 'terre' },
+  { roomId: 'salon', x: 1.7, y: 3.35, w: 1.1, d: 0.65, h: 0.38, shape: 'table', tone: 'bois' },
+  { roomId: 'salon', x: 1.07, y: 4.75, w: 0.74, d: 0.76, h: 0.13, tone: 'sombre' },
+  { roomId: 'salon', x: 1.07, y: 4.75, w: 0.86, d: 0.88, h: 0.34, base: 0.13, moelleux: true, tone: 'lin' },
+  { roomId: 'salon', x: 1.45, y: 4.75, w: 0.24, d: 0.88, h: 0.6, base: 0.13, moelleux: true, tone: 'lin' },
+  { roomId: 'salon', x: 1.15, y: 3.5, w: 0.74, d: 0.76, h: 0.13, tone: 'sombre' },
+  { roomId: 'salon', x: 1.15, y: 3.5, w: 0.86, d: 0.88, h: 0.34, base: 0.13, moelleux: true, tone: 'lin' },
+  { roomId: 'salon', x: 1.53, y: 3.5, w: 0.24, d: 0.88, h: 0.6, base: 0.13, moelleux: true, tone: 'lin' },
+  /* La cheminée de marbre et sa glace. Avec la rosace et le radiateur en
+     fonte, c'est l'objet qui dit « haussmannien » avant qu'on ait pu juger la
+     hauteur sous plafond — laquelle ne se juge pas sur un écran. */
+  { roomId: 'salon', x: 0.42, y: 4.85, w: 0.24, d: 1.3, h: 1.15, tone: 'platre' },
+  { roomId: 'salon', x: 0.34, y: 4.85, w: 0.06, d: 1.1, h: 1.3, base: 1.2, tone: 'cabinet' },
+  { roomId: 'salon', x: 2.4, y: 0.48, w: 0.75, d: 0.36, h: 0.85, shape: 'placard', portes: 2, tone: 'bois' },
+  { roomId: 'salon', x: 2.4, y: 0.34, w: 0.7, d: 0.06, h: 1.4, base: 1.05, tone: 'cabinet' },
+  { roomId: 'salon', x: 1.4, y: 0.4, w: 1.0, d: 0.12, h: 0.68, shape: 'radiateur', tone: 'cabinet' },
+  { roomId: 'salon', x: 3.4, y: 0.4, w: 1.0, d: 0.12, h: 0.68, shape: 'radiateur', tone: 'cabinet' },
+  { roomId: 'salon', x: 4.2, y: 0.75, w: 0.42, d: 0.42, h: 1.5, shape: 'plante', tone: 'terre' },
+  { roomId: 'salon', x: 0.58, y: 0.45, w: 0.34, d: 0.2, h: 2.95, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'salon', x: 4.22, y: 0.45, w: 0.34, d: 0.2, h: 2.95, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'salon', x: 2.4, y: 0.45, w: 3.98, d: 0.03, h: 0.03, base: 3.05, tone: 'laiton' },
+  { roomId: 'salon', x: 0.48, y: 1.38, w: 0.2, d: 0.34, h: 2.75, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'salon', x: 0.48, y: 3.62, w: 0.2, d: 0.34, h: 2.75, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'salon', x: 0.48, y: 2.5, w: 0.03, d: 2.58, h: 0.03, base: 3.05, tone: 'laiton' },
+  { roomId: 'salon', x: 1.9, y: 2.7, w: 0.5, d: 0.5, h: 0.06, base: 3.19, shape: 'rosace', tone: 'platre' },
+  { roomId: 'salon', x: 1.9, y: 2.7, w: 0.03, d: 0.03, h: 0.55, base: 2.64, tone: 'laiton' },
+  { roomId: 'salon', x: 1.9, y: 2.7, w: 0.62, d: 0.62, h: 0.34, base: 2.3, shape: 'suspension', tone: 'laiton' },
 
-  // Coin repas, sous la fenêtre.
-  { roomId: 'sejour', x: 4.05, y: 1.15, w: 1.35, d: 0.8, h: 0.74, shape: 'table', tone: 'bois' },
-  { roomId: 'sejour', x: 4.05, y: 0.68, w: 0.42, d: 0.42, h: 0.46, shape: 'table', tone: 'sombre' },
-  { roomId: 'sejour', x: 4.05, y: 0.49, w: 0.42, d: 0.05, h: 0.44, base: 0.46, tone: 'sombre' },
-  { roomId: 'sejour', x: 4.05, y: 1.62, w: 0.42, d: 0.42, h: 0.46, shape: 'table', tone: 'sombre' },
-  { roomId: 'sejour', x: 4.05, y: 1.81, w: 0.42, d: 0.05, h: 0.44, base: 0.46, tone: 'sombre' },
-  // La suspension : une tige et un abat-jour. Deux boîtes, et la pièce cesse
-  // d'être un volume vide au-dessus d'un mètre quatre-vingts.
-  /* La rosace, au-dessus de la suspension : la tige partait du vide. */
-  { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.34, d: 0.34, h: 0.04, base: 2.56, shape: 'rosace', tone: 'platre' },
-  { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.025, d: 0.025, h: 0.5, base: 2.1, tone: 'laiton' },
-  { roomId: 'sejour', x: 4.05, y: 1.15, w: 0.14, d: 0.4, h: 0.24, base: 1.86, shape: 'suspension', tone: 'laiton' },
-
-  /* La cuisine en linéaire. Le plan de travail est d'une autre teinte que les
-     caissons — c'est ce qui la fait lire comme une cuisine plutôt que comme un
-     bloc, et c'est vrai de presque toutes les cuisines. */
-  { roomId: 'sejour', x: 4.31, y: 0.6, w: 1.6, d: 0.6, h: 0.9, shape: 'placard', portes: 3, tone: 'cabinet' },
-  { roomId: 'sejour', x: 4.31, y: 0.62, w: 1.6, d: 0.64, h: 0.045, base: 0.9, tone: 'sombre' },
-  { roomId: 'sejour', x: 4.0, y: 0.62, w: 0.46, d: 0.38, h: 0.02, base: 0.925, tone: 'lin' },
-  /* L'évier et son mitigeur. Le plan de travail portait déjà une plaque de
-     cuisson ; sans point d'eau, ce qu'on regardait était un meuble bas avec un
-     dessus noir. Le col de cygne est ce qui fait dire « cuisine » avant même
-     qu'on ait vu la cuve. */
-  { roomId: 'sejour', x: 4.62, y: 0.62, w: 0.42, d: 0.36, h: 0.012, base: 0.938, tone: 'sombre' },
-  { roomId: 'sejour', x: 4.62, y: 0.46, w: 0.036, d: 0.036, h: 0.26, base: 0.945, tone: 'laiton' },
-  { roomId: 'sejour', x: 4.62, y: 0.55, w: 0.03, d: 0.21, h: 0.03, base: 1.19, tone: 'laiton' },
-  { roomId: 'sejour', x: 4.31, y: 0.32, w: 1.6, d: 0.04, h: 0.48, base: 0.945, tone: 'cabinet' },
-  { roomId: 'sejour', x: 4.31, y: 0.47, w: 1.6, d: 0.34, h: 0.62, base: 1.45, shape: 'placard', portes: 3, tone: 'cabinet' },
-  /* Le placard d'entrée, contre le mur ouest.
-     Il descendait jusqu'au nu de la façade et occupait donc le seul mètre où
-     un rideau pouvait pendre à gauche de la fenêtre. Vingt-cinq centimètres
-     plus loin de la façade, quarante de moins de long : il tient toujours son
-     rôle — c'est le placard d'entrée, on le voit en franchissant la porte — et
-     la fenêtre récupère ses deux côtés. */
-  { roomId: 'sejour', x: 0.6, y: 1.35, w: 0.6, d: 1.2, h: 2.05, shape: 'placard', tone: 'cabinet' },
-  /*
-   * Les rideaux de la fenêtre sur rue.
-   *
-   * C'est la fenêtre du séjour : deux mètres vingt d'ouverture, la seule chose
-   * du logement qu'une annonce mette en avant, et le premier plan de presque
-   * toutes les vues de la pièce. Elle était nue, alors que celle de la chambre,
-   * deux fois plus petite, était habillée — l'incohérence se voyait plus que
-   * l'absence.
-   *
-   * Ils débordent l'ouverture des deux côtés et s'arrêtent à six centimètres du
-   * parquet, comme des rideaux qu'on a fait tomber juste : posés au ras du
-   * tableau, ils fermeraient la fenêtre au lieu de l'encadrer.
-   */
-  { roomId: 'sejour', x: 0.79, y: 0.4, w: 0.32, d: 0.17, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'sejour', x: 3.34, y: 0.4, w: 0.32, d: 0.17, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'sejour', x: 2.07, y: 0.4, w: 2.88, d: 0.028, h: 0.028, base: 2.42, tone: 'laiton' },
+  /* ----------------------------------------------------- salle à manger --- */
+  /* La table occupe les deux tiers est : l'arrêt de la caméra tombe à
+     (6,17 ; 2,24), c'est-à-dire dans le tiers ouest, et une table centrée sur
+     la pièce l'aurait avalée. Pas de chaise côté ouest pour la même raison. */
+  { roomId: 'salle-a-manger', x: 7.55, y: 2.4, w: 2.0, d: 1.05, h: 0.76, shape: 'table', tone: 'bois' },
+  { roomId: 'salle-a-manger', x: 6.95, y: 1.5, w: 0.46, d: 0.46, h: 0.46, shape: 'table', tone: 'sombre' },
+  { roomId: 'salle-a-manger', x: 8.15, y: 1.5, w: 0.46, d: 0.46, h: 0.46, shape: 'table', tone: 'sombre' },
+  { roomId: 'salle-a-manger', x: 6.95, y: 1.29, w: 0.46, d: 0.05, h: 0.48, base: 0.46, tone: 'sombre' },
+  { roomId: 'salle-a-manger', x: 8.15, y: 1.29, w: 0.46, d: 0.05, h: 0.48, base: 0.46, tone: 'sombre' },
+  { roomId: 'salle-a-manger', x: 6.95, y: 3.3, w: 0.46, d: 0.46, h: 0.46, shape: 'table', tone: 'sombre' },
+  { roomId: 'salle-a-manger', x: 8.15, y: 3.3, w: 0.46, d: 0.46, h: 0.46, shape: 'table', tone: 'sombre' },
+  { roomId: 'salle-a-manger', x: 6.95, y: 3.51, w: 0.46, d: 0.05, h: 0.48, base: 0.46, tone: 'sombre' },
+  { roomId: 'salle-a-manger', x: 8.15, y: 3.51, w: 0.46, d: 0.05, h: 0.48, base: 0.46, tone: 'sombre' },
+  { roomId: 'salle-a-manger', x: 8.66, y: 3.7, w: 0.5, d: 1.2, h: 0.85, shape: 'placard', portes: 3, tone: 'bois' },
+  { roomId: 'salle-a-manger', x: 8.88, y: 3.7, w: 0.06, d: 1.0, h: 1.3, base: 1.0, tone: 'cabinet' },
+  { roomId: 'salle-a-manger', x: 6.0, y: 0.4, w: 1.0, d: 0.12, h: 0.68, shape: 'radiateur', tone: 'cabinet' },
+  { roomId: 'salle-a-manger', x: 7.8, y: 0.4, w: 1.0, d: 0.12, h: 0.68, shape: 'radiateur', tone: 'cabinet' },
+  { roomId: 'salle-a-manger', x: 5.15, y: 0.45, w: 0.34, d: 0.2, h: 2.95, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'salle-a-manger', x: 8.65, y: 0.45, w: 0.34, d: 0.2, h: 2.95, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'salle-a-manger', x: 6.9, y: 0.45, w: 3.84, d: 0.03, h: 0.03, base: 3.05, tone: 'laiton' },
+  { roomId: 'salle-a-manger', x: 5.0, y: 4.2, w: 0.42, d: 0.42, h: 1.4, shape: 'plante', tone: 'terre' },
+  { roomId: 'salle-a-manger', x: 7.55, y: 2.4, w: 0.5, d: 0.5, h: 0.06, base: 3.19, shape: 'rosace', tone: 'platre' },
+  { roomId: 'salle-a-manger', x: 7.55, y: 2.4, w: 0.03, d: 0.03, h: 0.6, base: 2.59, tone: 'laiton' },
+  { roomId: 'salle-a-manger', x: 7.55, y: 2.4, w: 0.58, d: 0.58, h: 0.32, base: 2.27, shape: 'suspension', tone: 'laiton' },
 
   /* ------------------------------------------------------------ chambre --- */
-  { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.6, d: 2.0, h: 0.4, tone: 'bois' },
-  { roomId: 'chambre', x: 8.4, y: 1.95, w: 1.55, d: 1.95, h: 0.18, base: 0.4, moelleux: true, tone: 'lin' },
-  /* La couette reprend la couleur du canapé : c'est ce qui relie les deux
-     pièces, et ce qui empêche la chambre de paraître décorée par quelqu'un
-     d'autre.
-     Elle déborde le matelas de cinq centimètres de chaque côté et redescend
-     sous son plan de couchage. C'est la seule chose qui la distingue d'un
-     couvercle : une couette à fleur du matelas, si épaisse soit-elle, se lit
-     comme une plaque de couleur posée sur une caisse — c'est exactement ce
-     qu'on voyait en image avant de la faire retomber. */
-  { roomId: 'chambre', x: 8.4, y: 1.62, w: 1.66, d: 1.36, h: 0.2, base: 0.5, moelleux: true, tone: 'petrole' },
-  { roomId: 'chambre', x: 8.4, y: 1.12, w: 1.72, d: 0.32, h: 0.075, base: 0.65, moelleux: true, tone: 'terre' },
-  { roomId: 'chambre', x: 8.05, y: 2.68, w: 0.62, d: 0.38, h: 0.17, base: 0.58, moelleux: true, tone: 'lin' },
-  { roomId: 'chambre', x: 8.75, y: 2.68, w: 0.62, d: 0.38, h: 0.17, base: 0.58, moelleux: true, tone: 'lin' },
-  { roomId: 'chambre', x: 8.4, y: 2.99, w: 1.7, d: 0.1, h: 1.0, tone: 'bois' },
-  // Sous la fenêtre de la chambre, contre la façade est.
-  { roomId: 'chambre', x: 9.645, y: 1.3, w: 0.85, d: 0.11, h: 0.62, yaw: 90, shape: 'radiateur', tone: 'cabinet' },
-  { roomId: 'chambre', x: 7.4, y: 2.75, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
-  { roomId: 'chambre', x: 9.4, y: 2.75, w: 0.4, d: 0.4, h: 0.52, shape: 'table', tone: 'bois' },
-  { roomId: 'chambre', x: 7.4, y: 2.75, w: 0.18, d: 0.18, h: 0.26, base: 0.52, tone: 'laiton' },
-  { roomId: 'chambre', x: 9.4, y: 2.75, w: 0.18, d: 0.18, h: 0.26, base: 0.52, tone: 'laiton' },
-  { roomId: 'chambre', x: 7.0, y: 0.9, w: 0.62, d: 1.2, h: 2.1, shape: 'placard', tone: 'cabinet' },
-  { roomId: 'chambre', x: 8.4, y: 0.525, w: 1.1, d: 0.45, h: 0.78, shape: 'table', tone: 'bois' },
-  { roomId: 'chambre', x: 8.4, y: 0.34, w: 0.7, d: 0.04, h: 0.45, base: 1.25, tone: 'bois' },
-  { roomId: 'chambre', x: 8.4, y: 0.365, w: 0.6, d: 0.02, h: 0.35, base: 1.3, tone: 'petrole' },
-  /*
-   * Les rideaux, de part et d'autre de la fenêtre sur cour.
-   *
-   * Une fenêtre nue dans une pièce meublée se lit comme un trou dans le mur :
-   * c'est le seul endroit du logement où le regard sort, et il en sort sans
-   * rien pour l'y retenir. Deux masses verticales de tissu suffisent — elles
-   * encadrent l'ouverture, elles donnent au mur la seule verticale qu'il ait,
-   * et elles reçoivent le soleil de biais, donc elles bougent avec lui.
-   *
-   * La tringle passe vingt centimètres au-dessus du linteau et déborde
-   * l'ouverture des deux côtés, comme une vraie : un rideau posé au ras du
-   * tableau ferme la fenêtre au lieu de l'ouvrir.
-   */
-  /* En lin, et plissés. Une première version les donnait en volumes lisses :
-     deux capsules identiques, de la couleur du mur, qui se lisaient comme des
-     piliers. Éclaircir la teinte n'était pas la réponse — l'étude du nuancier
-     mesure le voile clair à 2,2 d'écart du mur, c'est-à-dire invisible dessus.
-     Ce qui fait un rideau, ce sont ses plis : une alternance d'avancées et de
-     retraits qui accroche la lumière rasante de la fenêtre. */
-  { roomId: 'chambre', x: 9.6, y: 0.52, w: 0.17, d: 0.32, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'chambre', x: 9.6, y: 2.16, w: 0.17, d: 0.32, h: 2.3, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
-  { roomId: 'chambre', x: 9.64, y: 1.34, w: 0.028, d: 1.98, h: 0.028, base: 2.42, tone: 'laiton' },
+  { roomId: 'chambre', x: 9.14, y: 1.45, w: 0.1, d: 1.9, h: 1.2, tone: 'bois' },
+  { roomId: 'chambre', x: 10.24, y: 1.45, w: 2.1, d: 1.7, h: 0.38, tone: 'bois' },
+  { roomId: 'chambre', x: 10.24, y: 1.45, w: 2.05, d: 1.65, h: 0.2, base: 0.38, moelleux: true, tone: 'lin' },
+  { roomId: 'chambre', x: 10.46, y: 1.45, w: 1.65, d: 1.76, h: 0.22, base: 0.5, moelleux: true, tone: 'petrole' },
+  { roomId: 'chambre', x: 9.55, y: 1.05, w: 0.42, d: 0.68, h: 0.08, base: 0.64, moelleux: true, tone: 'terre' },
+  { roomId: 'chambre', x: 9.55, y: 1.85, w: 0.42, d: 0.68, h: 0.08, base: 0.64, moelleux: true, tone: 'terre' },
+  { roomId: 'chambre', x: 9.7, y: 2.6, w: 0.46, d: 0.46, h: 0.54, shape: 'table', tone: 'bois' },
+  { roomId: 'chambre', x: 9.7, y: 2.6, w: 0.2, d: 0.2, h: 0.3, base: 0.54, tone: 'laiton' },
+  { roomId: 'chambre', x: 12.19, y: 2.6, w: 0.64, d: 1.9, h: 2.6, shape: 'placard', portes: 3, tone: 'cabinet' },
+  { roomId: 'chambre', x: 11.0, y: 0.4, w: 0.9, d: 0.12, h: 0.68, shape: 'radiateur', tone: 'cabinet' },
+  { roomId: 'chambre', x: 9.58, y: 0.45, w: 0.34, d: 0.2, h: 2.75, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre', x: 12.02, y: 0.45, w: 0.34, d: 0.2, h: 2.75, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'chambre', x: 10.8, y: 0.45, w: 2.78, d: 0.03, h: 0.03, base: 2.85, tone: 'laiton' },
+  { roomId: 'chambre', x: 10.6, y: 1.6, w: 0.44, d: 0.44, h: 0.06, base: 3.19, shape: 'rosace', tone: 'platre' },
+  { roomId: 'chambre', x: 10.6, y: 1.6, w: 0.03, d: 0.03, h: 0.5, base: 2.69, tone: 'laiton' },
+  { roomId: 'chambre', x: 10.6, y: 1.6, w: 0.46, d: 0.46, h: 0.3, base: 2.39, shape: 'suspension', tone: 'laiton' },
 
-  /* --------------------------------------------------------- salle d’eau --- */
-  /* La douche occupe l'angle le plus éloigné de la porte. Elle était d'abord
-     posée dans l'angle d'à côté, c'est-à-dire exactement dans l'axe de son
-     ouverture : on entrait dedans. */
-  /*
-   * La salle d'eau a été redessinée, et pas pour l'esthétique.
-   *
-   * La douche de 90 était plantée en face de la porte : sa paroi, haute d'un
-   * mètre quatre-vingt-dix, se dressait à soixante-dix centimètres du seuil et
-   * remplissait tout le cadre. La légende annonçait une douche, un meuble vasque
-   * et une fenêtre ; l'image n'en montrait aucun.
-   *
-   * Le calcul est contraint : 2,00 × 1,80 hors œuvre, moins la peau des
-   * cloisons et l'épaisseur de deux façades, laisse 1,61 × 1,41 utiles. Une
-   * douche de 90 y occupe plus de la moitié de la profondeur — quelle que soit
-   * sa place, elle croise l'axe d'une porte de 80. On a donc ramené la porte au
-   * nord du mur, la douche à 80 dans l'angle du fond, et le meuble vasque sous
-   * la fenêtre. On entre le long du meuble, la douche est à droite, la fenêtre
-   * en face : les trois sont dans le champ et aucun n'est dans le passage.
-   */
-  /* La douche reste plaquée contre la façade sud : son bac affleure exactement
-     le nu intérieur du mur de trente. L'avoir descendue de quinze centimètres
-     pour dégager la fenêtre l'enfonçait d'autant dans la maçonnerie — un
-     contrôle l'a rattrapé. C'est le montant qui a changé, pas la douche. */
-  { roomId: 'salle-eau', x: 7.9, y: 4.3, w: 0.8, d: 0.8, h: 0.07, tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 7.5175, y: 4.3, w: 0.035, d: 0.8, h: 1.9, base: 0.07, shape: 'vitrage', tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 7.9, y: 3.9175, w: 0.8, d: 0.035, h: 1.9, base: 0.07, shape: 'vitrage', tone: 'cabinet' },
-  // Meuble vasque sous la fenêtre, contre la façade.
-  { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.45, d: 0.7, h: 0.86, shape: 'placard', tone: 'bois' },
-  { roomId: 'salle-eau', x: 8.075, y: 3.64, w: 0.34, d: 0.44, h: 0.055, base: 0.86, tone: 'cabinet' },
-  // Le miroir passe sur le mur nord : la fenêtre occupe déjà la façade.
-  { roomId: 'salle-eau', x: 7.15, y: 3.32, w: 0.55, d: 0.06, h: 0.8, base: 1.15, tone: 'cabinet' },
-  { roomId: 'salle-eau', x: 6.72, y: 4.5, w: 0.06, d: 0.4, h: 0.9, base: 0.55, tone: 'laiton' },
-  { roomId: 'salle-eau', x: 6.78, y: 4.5, w: 0.045, d: 0.3, h: 0.52, base: 0.72, tone: 'lin' },
+  /* -------------------------------------------------------------- suite --- */
+  { roomId: 'suite', x: 12.74, y: 2.1, w: 0.1, d: 2.14, h: 1.3, tone: 'bois' },
+  { roomId: 'suite', x: 13.86, y: 2.1, w: 2.14, d: 1.94, h: 0.38, tone: 'bois' },
+  { roomId: 'suite', x: 13.86, y: 2.1, w: 2.09, d: 1.89, h: 0.2, base: 0.38, moelleux: true, tone: 'lin' },
+  { roomId: 'suite', x: 14.08, y: 2.1, w: 1.65, d: 2.0, h: 0.22, base: 0.5, moelleux: true, tone: 'petrole' },
+  { roomId: 'suite', x: 13.15, y: 1.7, w: 0.42, d: 0.7, h: 0.08, base: 0.64, moelleux: true, tone: 'terre' },
+  { roomId: 'suite', x: 13.15, y: 2.5, w: 0.42, d: 0.7, h: 0.08, base: 0.64, moelleux: true, tone: 'terre' },
+  { roomId: 'suite', x: 12.95, y: 0.8, w: 0.46, d: 0.46, h: 0.54, shape: 'table', tone: 'bois' },
+  { roomId: 'suite', x: 13.0, y: 3.45, w: 0.46, d: 0.46, h: 0.54, shape: 'table', tone: 'bois' },
+  { roomId: 'suite', x: 12.95, y: 0.8, w: 0.2, d: 0.2, h: 0.3, base: 0.54, tone: 'laiton' },
+  { roomId: 'suite', x: 15.9, y: 2.3, w: 0.6, d: 1.4, h: 0.76, shape: 'table', tone: 'bois' },
+  { roomId: 'suite', x: 15.1, y: 1.05, w: 0.78, d: 0.8, h: 0.13, tone: 'sombre' },
+  { roomId: 'suite', x: 15.1, y: 1.05, w: 0.86, d: 0.88, h: 0.34, base: 0.13, moelleux: true, tone: 'lin' },
+  { roomId: 'suite', x: 15.1, y: 0.67, w: 0.86, d: 0.24, h: 0.6, base: 0.13, moelleux: true, tone: 'lin' },
+  { roomId: 'suite', x: 15.4, y: 5.5, w: 1.4, d: 0.5, h: 0.9, shape: 'placard', portes: 3, tone: 'bois' },
+  { roomId: 'suite', x: 15.4, y: 5.78, w: 1.1, d: 0.06, h: 1.2, base: 1.05, tone: 'cabinet' },
+  { roomId: 'suite', x: 14.2, y: 3.8, w: 2.6, d: 1.8, h: 0.02, moelleux: true, tone: 'tapis' },
+  { roomId: 'suite', x: 14.6, y: 0.4, w: 0.9, d: 0.12, h: 0.68, shape: 'radiateur', tone: 'cabinet' },
+  { roomId: 'suite', x: 13.38, y: 0.45, w: 0.34, d: 0.2, h: 2.75, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'suite', x: 15.82, y: 0.45, w: 0.34, d: 0.2, h: 2.75, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'suite', x: 14.6, y: 0.45, w: 2.78, d: 0.03, h: 0.03, base: 2.85, tone: 'laiton' },
+  { roomId: 'suite', x: 15.96, y: 1.18, w: 0.2, d: 0.34, h: 2.75, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'suite', x: 15.96, y: 3.42, w: 0.2, d: 0.34, h: 2.75, base: 0.06, moelleux: true, shape: 'rideau', tone: 'lin' },
+  { roomId: 'suite', x: 15.99, y: 2.3, w: 0.03, d: 2.58, h: 0.03, base: 2.85, tone: 'laiton' },
+  { roomId: 'suite', x: 14.4, y: 2.4, w: 0.5, d: 0.5, h: 0.06, base: 3.19, shape: 'rosace', tone: 'platre' },
+  { roomId: 'suite', x: 14.4, y: 2.4, w: 0.03, d: 0.03, h: 0.55, base: 2.64, tone: 'laiton' },
+  { roomId: 'suite', x: 14.4, y: 2.4, w: 0.52, d: 0.52, h: 0.32, base: 2.32, shape: 'suspension', tone: 'laiton' },
 
-  /* --------------------------------------------------------- dégagement --- */
-  /* Le placard tient le fond du couloir, et rien d'autre n'y tient : un mètre
-     quarante de large ne se meuble pas des deux côtés. */
-  { roomId: 'degagement', x: 5.46, y: 3.5, w: 0.34, d: 1.2, h: 2.2, shape: 'placard', tone: 'cabinet' },
-  /* Le plafonnier du dégagement, allumé. C'est la seule pièce sans fenêtre du
-     logement, et la visite y passe deux fois. */
-  { roomId: 'degagement', x: 5.9, y: 2.8, w: 0.26, d: 0.26, h: 0.05, base: 2.55, shape: 'plafonnier', tone: 'platre' },
+  /* ------------------------------------------------------------ galerie --- */
+  /* Un mètre douze de passage sur près de huit mètres. On ne meuble que le
+     cul-de-sac de l'est et les murs, et jamais à l'abscisse de l'arrêt : dans
+     une galerie, un cadre accroché là se retrouve à quarante centimètres de
+     l'objectif et sa bordure vue par la tranche barre l'image. */
+  { roomId: 'galerie', x: 8.9, y: 4.87, w: 1.0, d: 0.36, h: 0.85, shape: 'placard', portes: 2, tone: 'bois' },
+  { roomId: 'galerie', x: 8.9, y: 4.72, w: 0.9, d: 0.06, h: 1.4, base: 1.0, tone: 'cabinet' },
+  { roomId: 'galerie', x: 4.95, y: 4.72, w: 0.45, d: 0.04, h: 0.62, base: 1.25, tone: 'bois' },
+  { roomId: 'galerie', x: 4.95, y: 4.742, w: 0.35, d: 0.02, h: 0.5, base: 1.31, tone: 'terre' },
+  { roomId: 'galerie', x: 11.8, y: 5.78, w: 0.5, d: 0.04, h: 0.7, base: 1.2, tone: 'bois' },
+  { roomId: 'galerie', x: 11.8, y: 5.758, w: 0.4, d: 0.02, h: 0.58, base: 1.26, tone: 'terre' },
+  { roomId: 'galerie', x: 6.2, y: 5.25, w: 0.3, d: 0.3, h: 0.06, base: 3.17, shape: 'plafonnier', tone: 'platre' },
+  { roomId: 'galerie', x: 9.0, y: 5.25, w: 0.3, d: 0.3, h: 0.06, base: 3.17, shape: 'plafonnier', tone: 'platre' },
+  { roomId: 'galerie', x: 11.5, y: 5.25, w: 0.3, d: 0.3, h: 0.06, base: 3.17, shape: 'plafonnier', tone: 'platre' },
+
+  /* ------------------------------------------------------------ cuisine --- */
+  { roomId: 'cuisine', x: 3.3, y: 9.39, w: 2.2, d: 0.62, h: 0.92, shape: 'placard', portes: 4, tone: 'cabinet' },
+  { roomId: 'cuisine', x: 3.3, y: 9.39, w: 2.24, d: 0.62, h: 0.05, base: 0.92, tone: 'sombre' },
+  { roomId: 'cuisine', x: 3.3, y: 9.13, w: 2.24, d: 0.05, h: 0.6, base: 0.97, tone: 'cabinet' },
+  { roomId: 'cuisine', x: 2.6, y: 9.42, w: 0.5, d: 0.42, h: 0.012, base: 0.958, tone: 'sombre' },
+  { roomId: 'cuisine', x: 2.6, y: 9.21, w: 0.038, d: 0.038, h: 0.3, base: 0.965, tone: 'laiton' },
+  { roomId: 'cuisine', x: 2.6, y: 9.31, w: 0.032, d: 0.2, h: 0.032, base: 1.25, tone: 'laiton' },
+  { roomId: 'cuisine', x: 3.9, y: 9.42, w: 0.62, d: 0.5, h: 0.02, base: 0.965, tone: 'sombre' },
+  { roomId: 'cuisine', x: 3.9, y: 9.3, w: 0.62, d: 0.44, h: 0.55, base: 1.65, tone: 'cabinet' },
+  { roomId: 'cuisine', x: 4.19, y: 6.32, w: 0.64, d: 0.66, h: 2.6, shape: 'placard', portes: 2, tone: 'cabinet' },
+  { roomId: 'cuisine', x: 4.2, y: 7.8, w: 0.62, d: 2.2, h: 0.92, shape: 'placard', portes: 3, tone: 'cabinet' },
+  { roomId: 'cuisine', x: 4.19, y: 7.8, w: 0.64, d: 2.24, h: 0.05, base: 0.92, tone: 'sombre' },
+  { roomId: 'cuisine', x: 4.34, y: 7.8, w: 0.34, d: 1.8, h: 0.72, base: 1.65, shape: 'placard', portes: 3, tone: 'cabinet' },
+  { roomId: 'cuisine', x: 1.15, y: 7.8, w: 1.0, d: 1.4, h: 0.76, shape: 'table', tone: 'bois' },
+  { roomId: 'cuisine', x: 1.15, y: 6.85, w: 0.46, d: 0.46, h: 0.46, shape: 'table', tone: 'sombre' },
+  { roomId: 'cuisine', x: 1.15, y: 6.64, w: 0.46, d: 0.05, h: 0.48, base: 0.46, tone: 'sombre' },
+  { roomId: 'cuisine', x: 1.15, y: 8.75, w: 0.46, d: 0.46, h: 0.46, shape: 'table', tone: 'sombre' },
+  { roomId: 'cuisine', x: 1.15, y: 8.96, w: 0.46, d: 0.05, h: 0.48, base: 0.46, tone: 'sombre' },
+  { roomId: 'cuisine', x: 2.4, y: 7.8, w: 0.3, d: 0.3, h: 0.06, base: 3.17, shape: 'plafonnier', tone: 'platre' },
+
+  /* ------------------------------------------------------------- entrée --- */
+  { roomId: 'entree', x: 5.01, y: 7.4, w: 0.64, d: 1.8, h: 2.6, shape: 'placard', portes: 3, tone: 'cabinet' },
+  { roomId: 'entree', x: 8.26, y: 7.6, w: 0.5, d: 1.4, h: 0.85, shape: 'placard', portes: 2, tone: 'bois' },
+  { roomId: 'entree', x: 8.46, y: 7.6, w: 0.06, d: 1.2, h: 1.5, base: 1.0, tone: 'cabinet' },
+  { roomId: 'entree', x: 5.35, y: 9.4, w: 1.1, d: 0.42, h: 0.45, shape: 'table', tone: 'bois' },
+  { roomId: 'entree', x: 7.9, y: 9.3, w: 0.44, d: 0.44, h: 1.4, shape: 'plante', tone: 'terre' },
+  { roomId: 'entree', x: 6.55, y: 8.2, w: 1.8, d: 1.4, h: 0.02, moelleux: true, tone: 'tapis' },
+  { roomId: 'entree', x: 6.6, y: 7.8, w: 0.34, d: 0.34, h: 0.06, base: 3.17, shape: 'plafonnier', tone: 'platre' },
+
+  /* ----------------------------------------------------- salle de bains --- */
+  { roomId: 'salle-de-bains', x: 10.15, y: 8.955, w: 1.7, d: 0.11, h: 0.58, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 10.15, y: 9.605, w: 1.7, d: 0.11, h: 0.58, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 9.355, y: 9.28, w: 0.11, d: 0.76, h: 0.58, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 10.945, y: 9.28, w: 0.11, d: 0.76, h: 0.58, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 10.15, y: 9.28, w: 1.48, d: 0.54, h: 0.14, tone: 'lin' },
+  { roomId: 'salle-de-bains', x: 9.43, y: 9.28, w: 0.05, d: 0.05, h: 0.22, base: 0.58, tone: 'laiton' },
+  { roomId: 'salle-de-bains', x: 9.57, y: 9.28, w: 0.24, d: 0.04, h: 0.04, base: 0.77, tone: 'laiton' },
+  { roomId: 'salle-de-bains', x: 11.81, y: 7.2, w: 0.6, d: 1.6, h: 0.88, shape: 'placard', portes: 2, tone: 'bois' },
+  { roomId: 'salle-de-bains', x: 11.82, y: 7.2, w: 0.58, d: 1.64, h: 0.05, base: 0.88, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 11.82, y: 6.8, w: 0.42, d: 0.34, h: 0.02, base: 0.91, tone: 'lin' },
+  { roomId: 'salle-de-bains', x: 11.82, y: 7.6, w: 0.42, d: 0.34, h: 0.02, base: 0.91, tone: 'lin' },
+  { roomId: 'salle-de-bains', x: 11.98, y: 6.8, w: 0.05, d: 0.05, h: 0.26, base: 0.93, tone: 'laiton' },
+  { roomId: 'salle-de-bains', x: 11.98, y: 7.6, w: 0.05, d: 0.05, h: 0.26, base: 0.93, tone: 'laiton' },
+  { roomId: 'salle-de-bains', x: 11.86, y: 6.8, w: 0.22, d: 0.04, h: 0.04, base: 1.16, tone: 'laiton' },
+  { roomId: 'salle-de-bains', x: 11.86, y: 7.6, w: 0.22, d: 0.04, h: 0.04, base: 1.16, tone: 'laiton' },
+  { roomId: 'salle-de-bains', x: 12.08, y: 7.2, w: 0.05, d: 1.6, h: 1.2, base: 1.1, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 9.3, y: 6.6, w: 1.2, d: 1.1, h: 0.06, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 9.8775, y: 6.6, w: 0.045, d: 1.1, h: 2.2, base: 0.06, shape: 'vitrage', tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 9.3, y: 7.1275, w: 1.2, d: 0.045, h: 2.2, base: 0.06, shape: 'vitrage', tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 8.78, y: 6.6, w: 0.06, d: 0.24, h: 1.3, base: 0.95, tone: 'laiton' },
+  { roomId: 'salle-de-bains', x: 9.0, y: 6.6, w: 0.34, d: 0.26, h: 0.03, base: 2.35, tone: 'laiton' },
+  { roomId: 'salle-de-bains', x: 8.98, y: 8.6, w: 0.58, d: 0.4, h: 0.42, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 8.79, y: 8.6, w: 0.2, d: 0.4, h: 0.5, base: 0.42, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 12.06, y: 8.8, w: 0.09, d: 0.6, h: 1.1, base: 0.75, tone: 'cabinet' },
+  { roomId: 'salle-de-bains', x: 10.4, y: 8.2, w: 0.9, d: 0.6, h: 0.02, moelleux: true, tone: 'tapis' },
+  { roomId: 'salle-de-bains', x: 10.4, y: 7.8, w: 0.3, d: 0.3, h: 0.06, base: 3.17, shape: 'plafonnier', tone: 'platre' },
+
+  /* --------------------------------------------- salle d'eau de la suite --- */
+  { roomId: 'bain-suite', x: 13.45, y: 8.655, w: 1.7, d: 0.11, h: 0.58, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 13.45, y: 9.305, w: 1.7, d: 0.11, h: 0.58, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 12.655, y: 8.98, w: 0.11, d: 0.76, h: 0.58, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 14.245, y: 8.98, w: 0.11, d: 0.76, h: 0.58, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 13.45, y: 8.98, w: 1.48, d: 0.54, h: 0.14, tone: 'lin' },
+  { roomId: 'bain-suite', x: 12.73, y: 8.98, w: 0.05, d: 0.05, h: 0.22, base: 0.58, tone: 'laiton' },
+  { roomId: 'bain-suite', x: 12.87, y: 8.98, w: 0.24, d: 0.04, h: 0.04, base: 0.77, tone: 'laiton' },
+  { roomId: 'bain-suite', x: 15.55, y: 8.95, w: 1.2, d: 1.4, h: 0.06, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 14.9725, y: 8.95, w: 0.045, d: 1.4, h: 2.2, base: 0.06, shape: 'vitrage', tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 15.55, y: 8.2725, w: 1.2, d: 0.045, h: 2.2, base: 0.06, shape: 'vitrage', tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 16.13, y: 8.95, w: 0.06, d: 0.24, h: 1.3, base: 0.95, tone: 'laiton' },
+  { roomId: 'bain-suite', x: 15.9, y: 8.95, w: 0.34, d: 0.26, h: 0.03, base: 2.35, tone: 'laiton' },
+  { roomId: 'bain-suite', x: 12.59, y: 6.9, w: 0.6, d: 1.5, h: 0.88, shape: 'placard', portes: 2, tone: 'bois' },
+  { roomId: 'bain-suite', x: 12.6, y: 6.9, w: 0.62, d: 1.54, h: 0.05, base: 0.88, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 12.6, y: 6.9, w: 0.44, d: 0.5, h: 0.02, base: 0.91, tone: 'lin' },
+  { roomId: 'bain-suite', x: 12.36, y: 6.9, w: 0.05, d: 0.05, h: 0.26, base: 0.93, tone: 'laiton' },
+  { roomId: 'bain-suite', x: 12.48, y: 6.9, w: 0.22, d: 0.04, h: 0.04, base: 1.16, tone: 'laiton' },
+  { roomId: 'bain-suite', x: 12.32, y: 6.9, w: 0.05, d: 1.5, h: 1.2, base: 1.1, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 15.9, y: 6.6, w: 0.58, d: 0.4, h: 0.42, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 16.09, y: 6.6, w: 0.2, d: 0.4, h: 0.5, base: 0.42, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 16.14, y: 7.6, w: 0.09, d: 0.6, h: 1.1, base: 0.75, tone: 'cabinet' },
+  { roomId: 'bain-suite', x: 14.4, y: 8.0, w: 1.0, d: 0.7, h: 0.02, moelleux: true, tone: 'tapis' },
+  { roomId: 'bain-suite', x: 14.4, y: 7.6, w: 0.3, d: 0.3, h: 0.06, base: 3.17, shape: 'plafonnier', tone: 'platre' },
 ];
 
 /* ============================================================== légendes === */
 
 export const SHOWCASE_OPENING: CaptionText = {
-  kicker: 'Paris 3ᵉ · Le Marais',
-  title: 'Deux pièces, 39,8 m²',
+  kicker: 'Paris 8ᵉ · plaine Monceau',
+  title: 'Cinq pièces, 165 m²',
   text: 'Faites défiler. La porte s’ouvre et vous entrez.',
 };
 
 export const SHOWCASE_CAPTIONS: Record<string, CaptionText> = {
-  sejour: {
-    kicker: 'Séjour & cuisine',
-    title: '20,8 m²',
-    text: 'Une fenêtre de 2,20 m sur rue. La cuisine est en linéaire au fond, la table tient quatre couverts.',
+  entree: {
+    kicker: 'Entrée',
+    title: '16,4 m²',
+    text: 'Un vestibule, pas un couloir : penderie pleine hauteur, banc, console et glace. La galerie s’ouvre en face.',
   },
-  degagement: {
-    kicker: 'Dégagement',
-    title: '4,5 m²',
-    text: 'Il dessert la chambre et la salle d’eau, et porte le placard d’entrée. 1,40 m de large : deux personnes s’y croisent.',
+  galerie: {
+    kicker: 'Galerie',
+    title: '10,4 m²',
+    text: 'Elle dessert les chambres sans jamais traverser les pièces de réception. C’est tout le principe du plan bourgeois.',
+  },
+  salon: {
+    kicker: 'Salon double',
+    title: '27,1 m²',
+    text: 'Deux portes-fenêtres sur le balcon filant, cheminée de marbre, 3,25 m sous plafond. La salle à manger s’ouvre en enfilade.',
+  },
+  'salle-a-manger': {
+    kicker: 'Salle à manger',
+    title: '20,2 m²',
+    text: 'En enfilade du salon par une double porte de 2,20 m. Deux portes-fenêtres, table de six, desserte et glace.',
+  },
+  cuisine: {
+    kicker: 'Cuisine',
+    title: '18,9 m²',
+    text: 'Ouverte sur la réception, deux jours dont un sur cour, un linéaire de 2,20 m et une table de quatre.',
+  },
+  suite: {
+    kicker: 'Suite parentale',
+    title: '23,0 m²',
+    text: 'Elle prend l’angle : deux expositions, lit en 180, coiffeuse sous la fenêtre est, et sa salle d’eau privative.',
+  },
+  'bain-suite': {
+    kicker: 'Salle d’eau de la suite',
+    title: '17,6 m²',
+    text: 'Baignoire îlot, douche à l’italienne de 1,20 m, meuble vasque et WC. On n’y accède que par la suite.',
   },
   chambre: {
     kicker: 'Chambre',
-    title: '10,9 m²',
-    text: 'Un lit en 160 avec ses deux chevets, une armoire pleine hauteur, et il reste 80 cm de passage de chaque côté.',
+    title: '16,6 m²',
+    text: 'Lit en 160 tête contre le mur de refend, armoire pleine hauteur, et 90 cm de passage au pied du lit.',
   },
-  'salle-eau': {
-    kicker: 'Salle d’eau',
-    title: '3,6 m²',
-    text: 'Douche 80 × 80, meuble vasque, et une fenêtre — ce que la moitié des salles d’eau parisiennes n’ont pas.',
+  'salle-de-bains': {
+    kicker: 'Salle de bains',
+    title: '14,8 m²',
+    text: 'Baignoire sous la fenêtre sur cour, douche à l’italienne, double vasque et WC séparé du couchage par la galerie.',
   },
 };
 
@@ -405,11 +610,13 @@ export const SHOWCASE_CLOSING: CaptionText = {
 
 /** Ce qui s'affiche autour de la visite : le bien tel qu'on l'annoncerait. */
 export const SHOWCASE_IDENTITY = {
-  name: 'Appartement Sainte-Croix',
-  city: 'Paris 3ᵉ — Le Marais',
-  area: 39.8,
-  rooms: 2,
-  sleeps: 2,
+  name: 'Appartement Monceau',
+  city: 'Paris 8ᵉ — plaine Monceau',
+  area: 165,
+  /** Au sens français : salon, salle à manger, deux chambres, et la cuisine
+   *  qui ne compte pas. Cinq pièces principales. */
+  rooms: 5,
+  sleeps: 4,
   /** Appartement de démonstration : à dire, toujours, et sans détour. */
   disclaimer:
     'Appartement de démonstration. Les dimensions et la circulation sont cohérentes de bout en bout ; le bien, lui, est fictif tant qu’un vrai logement n’a pas été relevé.',

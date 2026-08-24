@@ -19,7 +19,7 @@ import {
   solidSpans,
   totalArea,
 } from '../lib/plan.ts';
-import type { PlanDoor, PlanRoom } from '../lib/types.ts';
+import type { PlanDoor, PlanPoint, PlanRoom } from '../lib/types.ts';
 
 /** Pièce rectangulaire de 4 × 3 m, coin supérieur gauche à l'origine. */
 const rectangle = (id: string, x = 0, y = 0, w = 4, h = 3): PlanRoom => ({
@@ -278,75 +278,132 @@ import {
   slideAnywhere as slideAcross,
   standableAnywhere as standAcross,
 } from '../lib/plan.ts';
-import { SHOWCASE_DOORS, SHOWCASE_ROOMS } from '../lib/showcase.ts';
 
-test('on peut se tenir au milieu de chaque pièce du logement de démonstration', () => {
-  for (const room of SHOWCASE_ROOMS) {
+/*
+ * Un plan à soi, et pas celui de la démonstration.
+ *
+ * Ces contrôles portaient sur `SHOWCASE_ROOMS` avec des coordonnées écrites en
+ * dur — « la porte entre le dégagement et la chambre est à x = 6,6 ». Ils
+ * testaient une bibliothèque et dépendaient d'un décor, c'est-à-dire d'un
+ * contenu : le jour où l'appartement de démonstration a changé de plan, cinq
+ * tests de collision sont tombés d'un coup, sans qu'aucune ligne de
+ * `lib/plan.ts` ait bougé. Un test qui casse quand rien de ce qu'il teste n'a
+ * changé ne dit plus rien à personne.
+ *
+ *        0       3,0   4,4          8,0
+ *   0    ┌────────┬─────┬────────────┐
+ *        │ SALON  │ COU-│  CHAMBRE   │
+ *        │        │ LOIR│            │
+ *   4,0  └────────┴─────┴────────────┘
+ *
+ * Trois rectangles, deux portes, une porte palière, une fenêtre. C'est le plus
+ * petit plan qui possède les quatre situations à vérifier : un intérieur, un
+ * dehors, un seuil franchissable et un mur plein.
+ */
+const PIECE = (id: string, x0: number, x1: number): PlanRoom => ({
+  id,
+  name: id,
+  height: 2.6,
+  points: [
+    { x: x0, y: 0 },
+    { x: x1, y: 0 },
+    { x: x1, y: 4 },
+    { x: x0, y: 4 },
+  ],
+});
+
+const LIBRE_ROOMS: PlanRoom[] = [
+  PIECE('salon', 0, 3),
+  PIECE('couloir', 3, 4.4),
+  PIECE('chambre', 4.4, 8),
+];
+
+const porte = (
+  id: string,
+  from: string,
+  to: string,
+  a: PlanPoint,
+  b: PlanPoint,
+  kind: PlanDoor['kind'] = 'door',
+): PlanDoor => ({ id, planId: 'libre', from, to, a, b, kind, height: 2.1, sill: 0 });
+
+const LIBRE_DOORS: PlanDoor[] = [
+  porte('paliere', 'salon', '', { x: 0, y: 1.4 }, { x: 0, y: 2.4 }),
+  porte('d-salon', 'salon', 'couloir', { x: 3, y: 0.8 }, { x: 3, y: 1.8 }),
+  porte('d-chambre', 'couloir', 'chambre', { x: 4.4, y: 2.2 }, { x: 4.4, y: 3.2 }),
+];
+
+test('on peut se tenir au milieu de chaque pièce', () => {
+  for (const room of LIBRE_ROOMS) {
     assert.ok(
-      standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, roomCenter(room)),
+      standAcross(LIBRE_ROOMS, LIBRE_DOORS, roomCenter(room)),
       `on ne peut pas se tenir au centre de ${room.id}`,
     );
   }
 });
 
 test('on ne peut pas se tenir hors du logement', () => {
-  assert.equal(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: -2, y: 2 }), false);
-  assert.equal(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 50, y: 50 }), false);
-  // Le vide entre la chambre et la salle d'eau, côté x = 9 : hors bâti.
-  assert.equal(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 9.5, y: 4.5 }), false);
+  assert.equal(standAcross(LIBRE_ROOMS, LIBRE_DOORS, { x: -2, y: 2 }), false);
+  assert.equal(standAcross(LIBRE_ROOMS, LIBRE_DOORS, { x: 50, y: 50 }), false);
+  assert.equal(standAcross(LIBRE_ROOMS, LIBRE_DOORS, { x: 4, y: 9 }), false);
 });
 
-test('un seuil se franchit, un mur plein ne se franchit pas', () => {
-  // La porte entre le dégagement et la chambre est à x = 6,6, y ∈ [1,5 ; 2,4].
-  assert.ok(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 6.55, y: 1.95 }));
-  /* Le même mur, mais à une hauteur où il est plein : y = 3,00 est au-dessus
-     de la porte de la chambre (1,50–2,40) et au-dessous de celle de la salle
-     d'eau (3,50–4,30). Un premier essai visait y = 3,60 — c'est-à-dire pile
-     dans l'embrasure de la salle d'eau, donc un passage parfaitement légitime
-     que le test comptait comme une faute. */
-  const through = slideAcross(
-    SHOWCASE_ROOMS,
-    SHOWCASE_DOORS,
-    { x: 6.0, y: 3.0 },
-    { x: 6.9, y: 3.0 },
-  );
-  assert.ok(through.x < 6.6, 'la marche a traversé une cloison pleine');
+test('un pas ne se termine jamais collé à une cloison', () => {
+  // La porte du couloir vers la chambre : x = 4,4, y ∈ [2,2 ; 3,2]. On s'y tient.
+  assert.ok(standAcross(LIBRE_ROOMS, LIBRE_DOORS, { x: 4.35, y: 2.7 }));
+
+  /*
+   * Le même mur, à une hauteur où il est plein : le pas est refusé et l'on
+   * reste sur place.
+   *
+   * C'est bien ce que `slideAnywhere` garantit, et rien de plus — elle ne
+   * regarde que l'arrivée. Un pas qui atterrirait à moins de quarante-cinq
+   * centimètres d'une cloison n'est jamais valide, donc un pas de la taille
+   * d'une image ne peut pas franchir un mur : il faudrait atterrir *dans* la
+   * marge de l'autre côté.
+   *
+   * La version précédente de ce contrôle affirmait davantage — qu'un
+   * déplacement d'un mètre cinquante ne traverse pas — et cette propriété-là
+   * est fausse : la fonction rendrait la cible si elle se trouve dans une
+   * pièce voisine. C'est le travail de `reachableAnywhere`, qui avance pas à
+   * pas et s'arrête au premier obstacle ; elle a son propre contrôle plus bas.
+   */
+  const bloque = slideAcross(LIBRE_ROOMS, LIBRE_DOORS, { x: 3.7, y: 0.8 }, { x: 4.2, y: 0.8 });
+  assert.deepEqual(bloque, { x: 3.7, y: 0.8 }, 'le pas vers la cloison doit être refusé');
 });
 
 test('on longe un mur au lieu de s’y coller net', () => {
-  // Vers le mur du fond du séjour, en biais : la composante utile passe.
-  const from = { x: 2.6, y: 3.3 };
-  const slid = slideAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, from, { x: 3.4, y: 4.2 });
+  // En biais vers le mur du fond : la composante utile passe, l'autre non.
+  const from = { x: 1.6, y: 3.2 };
+  const slid = slideAcross(LIBRE_ROOMS, LIBRE_DOORS, from, { x: 2.4, y: 4.1 });
   assert.ok(slid.x > from.x, 'le déplacement latéral doit passer');
   assert.ok(slid.y <= 3.7, 'le déplacement vers le mur doit être bloqué');
 });
 
 test('on sait dans quelle pièce on se trouve', () => {
-  assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 2.6, y: 2 })?.id, 'sejour');
-  assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 8.3, y: 1.6 })?.id, 'chambre');
-  assert.equal(roomAtPoint(SHOWCASE_ROOMS, { x: 40, y: 40 }), null);
+  assert.equal(roomAtPoint(LIBRE_ROOMS, { x: 1.5, y: 2 })?.id, 'salon');
+  assert.equal(roomAtPoint(LIBRE_ROOMS, { x: 6, y: 2 })?.id, 'chambre');
+  assert.equal(roomAtPoint(LIBRE_ROOMS, { x: 40, y: 40 }), null);
 });
 
 test('une tape au-delà d’un mur avance aussi loin que possible, pas plus', () => {
-  const from = { x: 2.6, y: 2 };
-  // Une cible franchement dehors, au-delà du mur de façade du séjour.
-  const clamped = reachAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, from, { x: 2.6, y: -4 });
+  const from = { x: 1.5, y: 2 };
+  // Une cible franchement dehors, au-delà du mur de façade du salon.
+  const clamped = reachAcross(LIBRE_ROOMS, LIBRE_DOORS, from, { x: 1.5, y: -4 });
   assert.ok(clamped, 'on doit pouvoir avancer dans cette direction');
-  assert.ok(clamped!.y > 0.4, `arrêt trop près du mur : y = ${clamped!.y}`);
+  assert.ok(clamped!.y > 0.2, `arrêt trop près du mur : y = ${clamped!.y}`);
   assert.ok(clamped!.y < 2, 'on doit avoir avancé');
-  assert.ok(standAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, clamped!));
+  assert.ok(standAcross(LIBRE_ROOMS, LIBRE_DOORS, clamped!));
 });
 
 test('une tape atteignable est rendue telle quelle', () => {
-  const target = { x: 1.6, y: 2.6 };
-  assert.deepEqual(
-    reachAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 2.6, y: 2 }, target),
-    target,
-  );
+  const target = { x: 1, y: 2.6 };
+  assert.deepEqual(reachAcross(LIBRE_ROOMS, LIBRE_DOORS, { x: 1.5, y: 2 }, target), target);
 });
 
 test('une tape derrière une cloison pleine ne fait pas traverser', () => {
-  // Depuis le séjour vers la chambre, en visant à travers le mur du dégagement.
-  const clamped = reachAcross(SHOWCASE_ROOMS, SHOWCASE_DOORS, { x: 2.6, y: 3.6 }, { x: 9, y: 3.6 });
-  if (clamped) assert.ok(clamped.x < 5.3, `la tape a traversé : x = ${clamped.x}`);
+  // Depuis le salon vers la chambre, en visant à travers le mur du couloir à
+  // une hauteur où il est plein.
+  const clamped = reachAcross(LIBRE_ROOMS, LIBRE_DOORS, { x: 1.5, y: 3.4 }, { x: 7, y: 3.4 });
+  if (clamped) assert.ok(clamped.x < 3, `la tape a traversé : x = ${clamped.x}`);
 });

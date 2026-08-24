@@ -914,6 +914,24 @@ export function lookTarget(
  * jour, donc aucun d'eux ne bascule par erreur du côté du couloir.
  */
 function onTraverse(room: PlanRoom, doors: PlanDoor[]): boolean {
+  /*
+   * Un couloir n'est jamais grand.
+   *
+   * Ce garde-fou vient du salon double du haussmannien : vingt-sept mètres
+   * carrés, deux portes-fenêtres, une fenêtre d'angle — et **trois** portes,
+   * l'enfilade vers la salle à manger, la galerie, la cuisine. Le compte des
+   * portes le classait donc en circulation, et la plus belle pièce de
+   * l'appartement se faisait cadrer comme un couloir : on regardait *à
+   * travers* elle au lieu de la regarder.
+   *
+   * Vingt mètres carrés est le seuil qui sépare les deux familles sur les
+   * trois décors, et l'écart y est franc : la plus grande circulation en fait
+   * 18,1, la plus petite pièce de réception 20,2. Ce n'est pas un réglage
+   * ajusté au cas par cas — c'est une différence de nature. On ne construit
+   * pas vingt mètres carrés pour les traverser.
+   */
+  if (roomArea(room) >= GRANDE_PIECE) return false;
+
   let served = 0;
   let jour = false;
   for (const door of doors) {
@@ -926,6 +944,9 @@ function onTraverse(room: PlanRoom, doors: PlanDoor[]): boolean {
   }
   return served >= 3 || (!jour && served >= 1);
 }
+
+/** Au-delà, une pièce est une pièce, quel que soit le nombre de ses portes. */
+const GRANDE_PIECE = 20;
 
 
 /** Vrai si un point est posé sur un segment, à deux centimètres près. */

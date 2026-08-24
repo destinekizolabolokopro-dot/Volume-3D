@@ -132,8 +132,9 @@ export default async function HomePage() {
               <article className="after-card">
                 <h3>Sur un autre bien</h3>
                 <p>
-                  Cent quatre-vingt-dix mètres carrés se racontent autrement que quatre-vingt-quatorze,
-                  et quatre-vingt-quatorze autrement que trente-neuf. Le même moteur, trois volumes.
+                  Cent quatre-vingt-dix mètres carrés se racontent autrement que cent soixante-cinq,
+                  et une maison de plain-pied autrement qu’un haussmannien. Le même moteur, trois
+                  volumes.
                 </p>
                 <a className="after-link" href="/maison">
                   Voir la maison de 94 m² →
