@@ -45,7 +45,7 @@ Trois fichiers, et la séparation entre eux est le cœur du procédé.
 | `components/landing/EntranceTour.tsx` | **Le lien entre les deux.** Lit la position dans la page, la transforme en `t`, demande la pose, dessine. |
 
 Ce découpage est ce qui rend la chose testable : `tests/journey-path.test.ts` et
-`tests/showcase.test.ts` vérifient sans ouvrir de navigateur qu'à aucun instant
+`tests/decors.test.ts` vérifient sans ouvrir de navigateur qu'à aucun instant
 la caméra ne traverse un mur, que les pièces sont visitées dans l'ordre, et que
 deux légendes ne se superposent jamais.
 
@@ -110,14 +110,61 @@ en bout** — surfaces, hauteurs, largeurs d'ouverture, circulation — mais le 
 est **fictif** tant qu'un vrai logement n'a pas été relevé. On vend la fidélité du
 volume ; on ne peut pas la revendiquer sur un appartement qui n'existe pas.
 
-`tests/showcase.test.ts` contrôle ce plan à chaque exécution : pièces qui ne se
+`tests/decors.test.ts` contrôle ces plans à chaque exécution : pièces qui ne se
 chevauchent pas, portes qui reposent réellement sur un mur de leurs deux pièces,
 ouvertures qui ne dépassent pas la hauteur sous plafond, mobilier qui tient dans
-sa pièce, surfaces annoncées égales aux surfaces calculées. Ces contrôles
+sa pièce, surfaces annoncées égales aux surfaces calculées, caméra qui ne sort
+jamais des murs, et aucune légende tenue le nez contre une cloison. Ces contrôles
 viennent d'un vrai défaut : une porte déclarée entre le dégagement et la salle
 d'eau alors que les deux polygones ne se touchaient pas. La caméra franchissait
 vingt centimètres de vide, sans sol ni plafond, et on voyait le ciel au milieu de
 l'appartement.
+
+### Et une maison, dans `lib/maison.ts`
+
+Un second décor, et il ne double pas le premier : il montre ce que l'appartement
+ne peut pas montrer. Deux pièces parisiennes se parcourent en ligne — c'est le
+cas facile. Une maison de plain-pied de 94 m² a un couloir de dix mètres qui
+dessert six pièces, une baie de 3,60 m sur le jardin et une cuisine ouverte :
+c'est là que se voient la circulation et le volume, les deux choses qu'on vend.
+
+Elle vit sur `/maison`, et pas comme une visite posée dans le vide : **la page
+est une annonce entière**, prix à la nuit, capacité, équipements, règles, avec la
+visite en tête. Un propriétaire ne se demande pas si une visite 3D est jolie ; il
+se demande à quoi ressemblera *sa page*. Le bien est fictif et la page le dit à
+trois endroits. Il n'y a **ni note, ni avis, ni historique de réservation** : une
+note en étoiles inventée est un faux document quelle que soit la mention qui
+l'entoure, et c'est exactement la retouche qu'on reproche aux annonces qu'on veut
+remplacer.
+
+Les huit contrôles de `tests/decors.test.ts` tournent sur les deux décors. Ce
+n'est pas de la symétrie gratuite : la maison a été dessinée *après* que ces
+contrôles existaient, et elle a démarré avec trois défauts qu'ils ont rattrapés
+le jour même.
+
+### Le dehors n'est pas un détail
+
+`components/three/interior.ts` prend une option `dehors` : `ville` pose un palier
+d'immeuble derrière la porte et des façades en vis-à-vis, `jardin` pose une
+pelouse au niveau du plancher, une haie à neuf mètres, une ligne d'arbres et un
+perron couvert. Le dedans peut être générique — quatre murs sont quatre murs —
+mais le dehors dit ce qu'est le bien : la baie censée ouvrir sur un jardin
+donnait sur une cour parisienne, et la porte d'une maison de plain-pied s'ouvrait
+sur une cage d'escalier.
+
+### Le son, coupé par défaut
+
+`lib/ambience.ts` synthétise le son de la visite, sans un seul fichier audio :
+un pas est une bouffée de bruit filtrée sous une enveloppe de cent
+millisecondes, une porte un déclic et une masse d'air. Le principe est que **le
+son suit les mètres, pas le temps** — on compte la distance réellement parcourue
+par la caméra et on pose un pas tous les 68 cm. Le doigt qui fait défiler commande
+donc la cadence, et le silence se fait dès qu'on s'arrête pour lire. La pièce
+s'entend aussi : une salle de bain carrelée renvoie, une chambre absorbe.
+
+Rien n'existe — pas même l'`AudioContext` — tant que personne n'a cliqué sur le
+bouton de la barre du bas. Une page qui se met à faire du bruit toute seule est
+une page qu'on ferme, et les navigateurs le refusent de toute façon.
 
 ---
 

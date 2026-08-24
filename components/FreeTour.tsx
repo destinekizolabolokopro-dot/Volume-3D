@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { buildInterior, configure } from '@/components/three/interior';
+import { buildInterior, configure, type Dehors } from '@/components/three/interior';
 import { adaptQuality } from '@/components/three/quality';
 import { EYE, verticalFov } from '@/lib/journey-path';
 import { reachableAnywhere, roomAt, roomCenter, slideAnywhere, standableAnywhere } from '@/lib/plan';
@@ -48,9 +48,11 @@ export interface FreeTourProps {
   massing?: Massing[];
   /** Pièce où l'on est déposé. Par défaut, la plus grande. */
   startRoomId?: string;
+  /** Ce qu'il y a derrière les fenêtres. Voir `interior.ts`. */
+  dehors?: Dehors;
 }
 
-export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourProps) {
+export function FreeTour({ rooms, doors, massing = [], startRoomId, dehors }: FreeTourProps) {
   const holderRef = useRef<HTMLDivElement>(null);
   const [room, setRoom] = useState('');
   const [failed, setFailed] = useState(false);
@@ -76,7 +78,7 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
       'Visite en trois dimensions. Flèches ou Z Q S D pour avancer, glisser pour regarder autour.',
     );
 
-    const interior = buildInterior({ rooms, doors, massing, renderer });
+    const interior = buildInterior({ rooms, doors, massing, renderer, dehors });
     const { scene, origin } = interior;
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.04, 300);
 
@@ -314,7 +316,7 @@ export function FreeTour({ rooms, doors, massing = [], startRoomId }: FreeTourPr
       renderer.domElement.remove();
       resetRef.current = null;
     };
-  }, [rooms, doors, massing, startRoomId]);
+  }, [rooms, doors, massing, startRoomId, dehors]);
 
   if (failed) {
     return (

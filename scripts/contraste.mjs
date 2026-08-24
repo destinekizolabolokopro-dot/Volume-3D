@@ -52,6 +52,11 @@ function navigateur() {
   return existsSync(binaire) ? binaire : undefined;
 }
 const BASE = process.env.BASE || 'http://localhost:3000';
+/* La page à mesurer. Deux décors, deux fonds : les légendes de la maison se
+   détachent sur un couloir clair et un jardin, celles de l'appartement sur des
+   murs de pierre. Mesurer l'un ne dit rien de l'autre.
+   `ROUTE=/maison npm run contraste`. */
+const ROUTE = process.env.ROUTE || '/';
 const WIDTH = Number(process.env.W || 1280);
 const HEIGHT = Number(process.env.H || 800);
 const SEUIL = 4.5;
@@ -84,7 +89,22 @@ const browser = await chromium.launch({
   args: ['--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader', '--no-sandbox'],
 });
 const page = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
-await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+/*
+ * Trente secondes ne suffisent plus.
+ *
+ * C'est le délai par défaut de Playwright, et il a tenu tant que la mesure ne
+ * portait que sur l'appartement : quarante-neuf appels de dessin, une image
+ * toutes les sept dixièmes de seconde en rendu logiciel. La maison en demande le
+ * double et rend une image toutes les quatre secondes et demie — une capture,
+ * qui attend une image stable, y dépasse la minute. L'outil s'arrêtait alors sur
+ * un dépassement de délai, c'est-à-dire sur ce qui ressemble à une panne et n'en
+ * est pas une.
+ *
+ * Le délai est donc dimensionné sur la scène la plus lourde, et réglable pour
+ * une machine plus lente encore.
+ */
+page.setDefaultTimeout(Number(process.env.DELAI || 180000));
+await page.goto(BASE + ROUTE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(3500);
 
 const section = await page.evaluate(() => {

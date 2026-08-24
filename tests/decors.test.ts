@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildJourney, captionOpacity, sample } from '../lib/journey-path.ts';
+import { buildJourney, captionOpacity, freeRun, sample } from '../lib/journey-path.ts';
 import {
   WALL_FACADE,
   WALL_SKIN,
@@ -261,6 +261,55 @@ for (const decor of DECORS) {
       if (!inDoorway) faults.push(`t=${t.toFixed(4)} (${pose.x.toFixed(2)}, ${pose.y.toFixed(2)})`);
     }
     assert.deepEqual(faults, [], `la caméra sort du logement : ${faults.slice(0, 4).join(', ')}`);
+  });
+
+  /**
+   * Personne ne lit une légende le nez contre un mur.
+   *
+   * Une légende tient l'écran pendant un dixième du défilement. Pendant tout ce
+   * temps l'image ne bouge pas, et c'est donc la seule chose que le visiteur
+   * regarde vraiment. Si la caméra fixe une cloison à un mètre, la pièce n'est
+   * pas montrée — elle est *décrite*, ce qui est exactement ce qu'on reproche
+   * aux annonces.
+   *
+   * Le contrôle mesure ce que la caméra a devant elle. Deux seuils :
+   *
+   *  · **1,70 m partout.** Une chambre cadrée en diagonale voit le coin opposé
+   *    à deux mètres, et c'est le bon cadrage — on ne peut pas exiger plus sans
+   *    interdire les petites pièces.
+   *  · **2,50 m dans une pièce sans fenêtre.** Un sas ou un couloir n'a rien à
+   *    montrer de lui-même : ce qu'il a à dire est ce qu'il ouvre, donc il doit
+   *    porter loin. C'est le défaut qui a fait écrire ce contrôle — l'entrée de
+   *    la maison, neuf mètres carrés mais deux mètres quarante de large,
+   *    regardait sa penderie à un mètre vingt.
+   *
+   * L'ouverture est exclue : elle se dit dehors, devant la porte, où le plan ne
+   * dit rien de ce qu'on a devant soi.
+   */
+  test(`${label} — aucune légende ne se lit le nez contre un mur`, () => {
+    const journey = buildJourney(rooms, doors, {
+      opening: decor.opening,
+      captions: decor.captions,
+      closing: decor.closing,
+    });
+    const aveugle = new Set(
+      rooms
+        .filter((room) => !doors.some((d) => d.kind === 'window' && (d.from === room.id || d.to === room.id)))
+        .map((room) => room.id),
+    );
+    const faults: string[] = [];
+    for (const caption of journey.captions) {
+      if (caption.title === decor.opening.title) continue;
+      const t = (caption.from + caption.to) / 2;
+      const pose = sample(journey, t);
+      const room = rooms.find((candidate) => containsPoint(candidate, pose));
+      const seuil = room && aveugle.has(room.id) ? 2.5 : 1.7;
+      const portee = freeRun(rooms, doors, pose, pose.yaw);
+      if (portee < seuil) {
+        faults.push(`${caption.kicker} : ${portee.toFixed(2)} m devant la caméra, il en faut ${seuil}`);
+      }
+    }
+    assert.deepEqual(faults, [], `\n  ${faults.join('\n  ')}`);
   });
 
   test(`${label} — à tout moment, au plus une légende occupe l’écran`, () => {

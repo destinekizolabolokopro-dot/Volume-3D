@@ -623,7 +623,25 @@ export interface InteriorOptions {
    * du Lambert.
    */
   renderer?: THREE.WebGLRenderer | null;
+  /**
+   * Ce qu'il y a autour du logement.
+   *
+   * `ville` — l'appartement : un palier d'immeuble derrière la porte, des
+   * façades haussmanniennes en vis-à-vis, le sol de la rue sept mètres plus
+   * bas. `jardin` — la maison de plain-pied : une pelouse au niveau du
+   * plancher, une haie, une ligne d'arbres, et un perron couvert.
+   *
+   * Le décor extérieur était écrit en dur pour l'appartement, et il a tenu tant
+   * qu'il n'y avait qu'un décor. Vu depuis la maison, il devenait franchement
+   * faux : la baie de 3,60 m censée ouvrir sur un jardin donnait sur une cour
+   * parisienne, et la porte d'entrée d'une maison de plain-pied s'ouvrait sur
+   * une cage d'escalier. Le dedans peut être générique — quatre murs sont
+   * quatre murs — mais le dehors dit ce qu'est le bien.
+   */
+  dehors?: Dehors;
 }
+
+export type Dehors = 'ville' | 'jardin';
 
 export interface Interior {
   scene: THREE.Scene;
@@ -718,6 +736,7 @@ export function buildInterior({
   massing = [],
   entrance = null,
   renderer = null,
+  dehors = 'ville',
 }: InteriorOptions): Interior {
   const box = planBounds(rooms);
   const origin = { x: (box.minX + box.maxX) / 2, y: (box.minY + box.maxY) / 2 };
@@ -739,15 +758,21 @@ export function buildInterior({
     rooms,
     doors,
   );
-  scene.add(ground(bin));
-  scene.add(surroundings(rooms, doors, origin, bin));
+  scene.add(ground(dehors, bin));
+  scene.add(surroundings(rooms, doors, origin, bin, dehors));
   scene.add(shell(rooms, doors, origin, bin));
   scene.add(baseShadow(rooms, origin, bin));
   scene.add(furniture(massing, doors, origin, bin));
 
   const leaf = entrance ? doorLeaf(entrance, rooms, origin, bin) : null;
   if (leaf) scene.add(leaf.group);
-  if (entrance) scene.add(landing(entrance, rooms, origin, bin));
+  if (entrance) {
+    scene.add(
+      dehors === 'jardin'
+        ? porch(entrance, rooms, doors, origin, bin)
+        : landing(entrance, rooms, origin, bin),
+    );
+  }
 
   return {
     scene,
@@ -966,17 +991,25 @@ function lights(
  * sol sous les pieds du visiteur — et il reçoit l'ombre de la façade, ce qui
  * ancre le bâti au lieu de le poser dessus.
  */
-function ground(disposables: { dispose(): void }[]): THREE.Mesh {
+function ground(dehors: Dehors, disposables: { dispose(): void }[]): THREE.Mesh {
+  const jardin = dehors === 'jardin';
   const geometry = new THREE.PlaneGeometry(220, 220);
-  const material = new THREE.MeshStandardMaterial({ color: OUTSIDE.rue, roughness: ROUGHNESS.dehors });
+  const material = new THREE.MeshStandardMaterial({
+    color: jardin ? OUTSIDE.pelouse : OUTSIDE.rue,
+    roughness: ROUGHNESS.dehors,
+  });
   disposables.push(geometry, material);
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
-  /* Sept mètres plus bas : le logement est à un étage, comme la quasi-totalité
-     des locations de ville. Au niveau du sol, chaque fenêtre donnait sur un
-     aplat de terre à hauteur d'œil — la vue la plus déprimante possible pour un
-     bien qu'on essaie de montrer sous son meilleur jour. */
-  mesh.position.y = -7;
+  /* En ville, sept mètres plus bas : le logement est à un étage, comme la
+     quasi-totalité des locations de ce type. Au niveau du sol, chaque fenêtre
+     donnait sur un aplat de terre à hauteur d'œil — la vue la plus déprimante
+     possible pour un bien qu'on essaie de montrer sous son meilleur jour.
+
+     Une maison de plain-pied, elle, est *au* sol : douze centimètres sous le
+     plancher, la hauteur d'une marche de seuil. C'est ce qui fait qu'on voit la
+     pelouse commencer au ras de la baie au lieu de flotter au-dessus. */
+  mesh.position.y = jardin ? -0.12 : -7;
   mesh.receiveShadow = true;
   return mesh;
 }
@@ -1124,7 +1157,9 @@ function surroundings(
   doors: PlanDoor[],
   origin: PlanPoint,
   disposables: { dispose(): void }[],
+  dehors: Dehors = 'ville',
 ): THREE.Group {
+  if (dehors === 'jardin') return garden(rooms, doors, origin, disposables);
   const group = new THREE.Group();
   group.name = 'vis-a-vis';
   const stone = new THREE.MeshStandardMaterial({
@@ -1183,6 +1218,420 @@ function surroundings(
       group.add(mesh);
     }
   }
+  return group;
+}
+
+/**
+ * Le dehors d'une maison de plain-pied.
+ *
+ * Il remplace le vis-à-vis d'immeuble, et il ne s'écrit pas de la même façon.
+ * En ville, on pose un pan de façade en face de chaque fenêtre : chaque
+ * ouverture regarde dans une direction, et cette direction a un vis-à-vis. Une
+ * maison, elle, est **posée dans un terrain** — la haie fait le tour, et ce qui
+ * compte est qu'il n'y ait pas de trou dans le coin où deux façades se
+ * rencontrent. On borne donc l'emprise du bâti, pas chaque baie.
+ *
+ * Trois plans, et pas un de plus :
+ *
+ *  · **la haie**, à neuf mètres, un mètre soixante-dix de haut. Sa hauteur est
+ *    le seul chiffre qui compte : elle passe à deux centimètres sous l'œil, si
+ *    bien qu'on voit son dessus et, par-dessus, autre chose. Montée à deux
+ *    mètres elle murait le jardin ; descendue à un mètre elle cessait de border
+ *    quoi que ce soit et le terrain partait à l'infini.
+ *  · **les arbres**, en masses de feuillage sans tronc. Un tronc à vingt mètres
+ *    fait deux pixels de large : il coûte de la géométrie et ne se voit pas.
+ *    Ce qui se lit d'une baie, c'est la silhouette des houppiers sur le ciel.
+ *  · **la lisière du fond**, à trente mètres, plus claire — l'atmosphère fait
+ *    ça, et c'est ce qui donne la profondeur sans un seul calcul de plus.
+ *
+ * Aucun détail au-delà. Un jardin travaillé attirerait le regard dehors, ce qui
+ * est exactement ce qu'on ne veut pas d'une visite de logement.
+ */
+function garden(
+  rooms: PlanRoom[],
+  doors: PlanDoor[],
+  origin: PlanPoint,
+  disposables: Bin[],
+): THREE.Group {
+  void doors;
+  const group = new THREE.Group();
+  group.name = 'jardin';
+
+  const box = planBounds(rooms);
+  const hx = (box.maxX - box.minX) / 2;
+  const hz = (box.maxY - box.minY) / 2;
+  const SOL = -0.12;
+
+  const haie = new THREE.MeshStandardMaterial({ color: OUTSIDE.haie, roughness: ROUGHNESS.dehors });
+  const loin = new THREE.MeshStandardMaterial({
+    color: OUTSIDE.lointain,
+    roughness: ROUGHNESS.dehors,
+  });
+  const dalle = new THREE.MeshStandardMaterial({
+    color: OUTSIDE.dalle,
+    roughness: ROUGHNESS.dehors,
+  });
+  disposables.push(haie, loin, dalle);
+
+  const batch = new Batch();
+  const pose = (
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    x: number,
+    y: number,
+    z: number,
+  ) => batch.add(geometry, material, new THREE.Matrix4().makeTranslation(x, y, z));
+
+  /* La haie : quatre haies qui se recouvrent aux angles. Se recouvrir est le
+     but — bout à bout, il restait au coin un jour de quelques centimètres par
+     lequel on voyait le ciel au ras du sol, et un trou de ciel au niveau de
+     l'herbe se remarque tout de suite. */
+  const RECUL = 9;
+  const HAUT = 1.7;
+  const EPAIS = 0.85;
+  const px = hx + RECUL;
+  const pz = hz + RECUL;
+  for (const z of [-pz, pz]) {
+    pose(new THREE.BoxGeometry(px * 2 + EPAIS, HAUT, EPAIS), haie, 0, SOL + HAUT / 2, z);
+  }
+  for (const x of [-px, px]) {
+    pose(new THREE.BoxGeometry(EPAIS, HAUT, pz * 2 + EPAIS), haie, x, SOL + HAUT / 2, 0);
+  }
+
+  /* Les houppiers. Les positions viennent d'une suite déterministe : une
+     scène qui change de forme à chaque chargement n'est pas une scène qu'on
+     peut contrôler en image. */
+  let graine = 7;
+  const suivant = () => {
+    graine = (graine * 1103515245 + 12345) % 2147483648;
+    return graine / 2147483648;
+  };
+  for (let i = 0; i < 14; i += 1) {
+    const angle = (i / 14) * Math.PI * 2 + suivant() * 0.3;
+    /* Vingt mètres au minimum. À quinze, un houppier passait dans le cadre
+       d'une fenêtre à une taille où l'on comptait ses facettes — et une sphère
+       à neuf méridiens comptée de près n'est pas un arbre, c'est un polyèdre.
+       Loin, la même sphère est une masse, ce qu'un houppier est effectivement. */
+    const rayon = 20 + suivant() * 9;
+    const taille = 2.4 + suivant() * 1.6;
+    pose(
+      new THREE.SphereGeometry(taille, 10, 7),
+      i % 3 === 0 ? loin : haie,
+      Math.cos(angle) * (px + rayon - RECUL),
+      SOL + 2.8 + suivant() * 2.2,
+      Math.sin(angle) * (pz + rayon - RECUL),
+    );
+  }
+
+  // La lisière du fond, qui ferme l'horizon sous le ciel.
+  const LOIN = 30;
+  for (const z of [-(hz + LOIN), hz + LOIN]) {
+    pose(new THREE.BoxGeometry((hx + LOIN) * 2, 7, 2.5), loin, 0, SOL + 3.5, z);
+  }
+  for (const x of [-(hx + LOIN), hx + LOIN]) {
+    pose(new THREE.BoxGeometry(2.5, 7, (hz + LOIN) * 2), loin, x, SOL + 3.5, 0);
+  }
+
+  /* La terrasse, contre la façade jardin, sous la baie. Sans elle, l'herbe
+     monte jusqu'au vitrage et la baie donne l'impression de s'ouvrir sur un
+     champ ; avec, on lit une maison qui a un dehors habité. */
+  pose(
+    new THREE.BoxGeometry(hx * 1.5, 0.1, 3.2),
+    dalle,
+    0,
+    SOL + 0.05,
+    hz + 1.6,
+  );
+
+  /*
+   * Le toit.
+   *
+   * Une maison sans toit vue du dehors n'est pas une maison : c'est une boîte.
+   * Et le dehors, ici, ce sont les trois premiers pour cent du défilement — la
+   * toute première image du site, celle qui décide si l'on continue. Deux pans
+   * et deux pignons suffisent à ce qu'on lise « maison de plain-pied » avant
+   * d'avoir lu la légende.
+   *
+   * **Il ne projette pas d'ombre**, et c'est délibéré. Le débord de quarante-
+   * cinq centimètres, sous un soleil à trente-quatre degrés, rabat soixante-sept
+   * centimètres d'ombre sur la façade — donc sur le haut de chaque fenêtre,
+   * donc sur la lumière de chaque pièce. Or il n'est vu que du dehors, et
+   * seulement en silhouette : lui payer une ombre reviendrait à assombrir tout
+   * l'intérieur pour un objet que la visite ne montre jamais de près.
+   */
+  const toit = new THREE.MeshStandardMaterial({
+    color: OUTSIDE.toit,
+    roughness: 0.85,
+    /* Le drapeau existe pour le verre — une vitre écrit dans la carte d'ombre
+       comme un mur — et il sert ici pour la même raison de fond : un objet
+       qu'on ne voit qu'en silhouette n'a pas à peser sur la lumière du dedans. */
+    userData: { sansOmbre: true },
+  });
+  disposables.push(toit);
+  const plafond = rooms.reduce((haut, room) => Math.max(haut, room.height), 2.5);
+  const DEBORD = 0.45;
+  const rx = hx + DEBORD;
+  const rz = hz + DEBORD;
+  const PENTE = (18 * Math.PI) / 180;
+  const faite = rz * Math.tan(PENTE);
+  const rampant = rz / Math.cos(PENTE);
+  /* Huit centimètres au-dessus du plafond, et pas zéro.
+     Posé pile dessus, le dessous du bandeau et la dalle de plafond étaient
+     coplanaires : deux surfaces à la même profondeur, que le tampon départage
+     au bit près. Le résultat se voyait dans *toutes* les images d'intérieur —
+     des échardes noires en travers du plafond, à chaque pièce. Un centimètre
+     aurait suffi à l'échelle de la scène ; huit tiennent aussi à distance de
+     projection, où la précision du tampon est plus grossière. */
+  const JEU = 0.08;
+
+  // Le bandeau, qui ferme le haut des murs sous les pans.
+  pose(new THREE.BoxGeometry(rx * 2, 0.24, rz * 2), toit, 0, plafond + JEU + 0.12, 0);
+
+  for (const sens of [-1, 1]) {
+    batch.add(
+      new THREE.BoxGeometry(rx * 2, 0.18, rampant),
+      toit,
+      new THREE.Matrix4()
+        .makeRotationX(-sens * PENTE)
+        .setPosition(0, plafond + JEU + 0.24 + faite / 2, (sens * rz) / 2),
+    );
+  }
+
+  for (const sens of [-1, 1]) {
+    const pignon = new THREE.Shape();
+    pignon.moveTo(-rz, 0);
+    pignon.lineTo(rz, 0);
+    pignon.lineTo(0, faite);
+    pignon.closePath();
+    batch.add(
+      new THREE.ShapeGeometry(pignon),
+      toit,
+      new THREE.Matrix4()
+        .makeRotationY((sens * Math.PI) / 2)
+        .setPosition(sens * rx, plafond + JEU + 0.24, 0),
+    );
+  }
+
+  batch.flush(group, disposables);
+  return group;
+}
+
+/**
+ * Le perron, devant la porte d'une maison.
+ *
+ * Il tient le même rôle que le palier d'immeuble — sans lui, la première image
+ * du site montre une porte et un pan de mur seuls dans le ciel, et une porte
+ * qu'on ne situe pas cesse d'être une porte — mais il le tient à l'envers.
+ *
+ * Le palier joue du contraste : on part d'une cage d'escalier sombre et fermée
+ * pour entrer dans un logement clair, et ce passage fait la moitié de l'effet.
+ * Devant une maison, ce contraste-là n'existe pas et le fabriquer serait un
+ * mensonge : on est dehors, en plein jour. Ce qui reste à faire est plus
+ * simple, et c'est déjà beaucoup — **donner un sol sous les pieds, un abri
+ * au-dessus de la tête et un cadre autour de la porte.** Trois choses, et l'on
+ * comprend qu'on se tient devant une entrée plutôt que devant une image.
+ */
+function porch(
+  entrance: Entrance,
+  rooms: PlanRoom[],
+  doors: PlanDoor[],
+  origin: PlanPoint,
+  disposables: Bin[],
+): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'perron';
+  const room = rooms.find((candidate) => candidate.id === entrance.roomId);
+  if (!room) return group;
+
+  const { a, b } = entrance.door;
+  const door = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const angle = Math.atan2(b.y - a.y, b.x - a.x);
+  let out = { x: Math.cos(angle + Math.PI / 2), y: Math.sin(angle + Math.PI / 2) };
+  if (containsPoint(room, { x: door.x + out.x * 0.05, y: door.y + out.y * 0.05 })) {
+    out = { x: -out.x, y: -out.y };
+  }
+
+  const dalle = new THREE.MeshStandardMaterial({
+    color: OUTSIDE.dalle,
+    roughness: ROUGHNESS.dehors,
+  });
+  const enduit = new THREE.MeshStandardMaterial({
+    color: OUTSIDE.enduit,
+    roughness: ROUGHNESS.dehors,
+  });
+  disposables.push(dalle, enduit);
+
+  /** Un point du perron, repéré en (le long du mur, vers l'extérieur, hauteur). */
+  const at = (alongWall: number, outward: number, lift: number) =>
+    new THREE.Vector3(
+      door.x - origin.x + Math.cos(angle) * alongWall + out.x * outward,
+      lift,
+      door.y - origin.y + Math.sin(angle) * alongWall + out.y * outward,
+    );
+
+  /* Un lot par matériau, comme partout ailleurs dans ce fichier.
+     Le perron compte une quinzaine de dalles pour deux teintes : posées une par
+     une, c'étaient quinze appels de dessin pour un décor qu'on ne voit que trois
+     secondes. Fusionnées, deux. Sur la maison entière la mesure est passée de
+     111 appels par image à moins de quatre-vingt-dix. */
+  const batch = new Batch();
+  const slab = (
+    alongWall: number,
+    outward: number,
+    lift: number,
+    size: [number, number, number],
+    material: THREE.Material,
+  ) => {
+    batch.add(
+      new THREE.BoxGeometry(size[0], size[1], size[2]),
+      material,
+      new THREE.Matrix4().makeRotationY(-angle).setPosition(at(alongWall, outward, lift)),
+    );
+  };
+
+  const LARGEUR = 3.4;
+  const PROFONDEUR = 2.8;
+  const ALLEE = 14;
+
+  /* La dalle du perron, puis l'allée qui s'en va. L'allée n'est pas du décor :
+     c'est elle qui donne la direction du regard sur la toute première image, et
+     sans elle la caméra se tient sur une pelouse, nulle part. */
+  slab(0, PROFONDEUR / 2, -0.035, [LARGEUR, 0.07, PROFONDEUR], dalle);
+  slab(0, PROFONDEUR + ALLEE / 2, -0.06, [1.5, 0.06, ALLEE], dalle);
+
+  /* Une marche au seuil : douze centimètres, la hauteur dont le terrain est
+     descendu. Sans elle, le plancher intérieur et la pelouse se rejoignaient
+     au même niveau et la maison paraissait posée sur l'herbe. */
+  slab(0, 0.28, -0.075, [LARGEUR * 0.62, 0.09, 0.56], dalle);
+
+  /* L'auvent et ses deux poteaux. C'est ce qui fait qu'on lit une entrée de
+     maison plutôt qu'une porte dans un mur : partout, une porte d'entrée est
+     abritée, et c'est cet abri qu'on reconnaît avant la porte. */
+  /*
+   * L'auvent, et rien d'autre au-dessus.
+   *
+   * Première version : un auvent de deux mètres dix sur deux poteaux, comme un
+   * porche. En image, la caméra se tenant à deux mètres quatre-vingt-dix de la
+   * porte se retrouvait *sous* l'abri, entre deux poteaux, sous un plafond —
+   * c'est-à-dire exactement dans la cage d'escalier qu'on venait de remplacer.
+   * Le décor avait changé, le cadrage non.
+   *
+   * Ce qu'il faut ici n'est pas un abri où l'on tient : c'est une casquette qui
+   * dise « entrée » sans occuper le cadre. Quatre-vingt-dix centimètres en
+   * porte-à-faux, et le ciel reste au-dessus de la tête.
+   */
+  const opening = Math.hypot(b.x - a.x, b.y - a.y) / 2;
+  const HAUT = 2.42;
+  slab(0, 0.45, HAUT, [opening * 2 + 0.7, 0.12, 0.9], enduit);
+
+  /*
+   * La façade d'entrée, sur toute sa longueur.
+   *
+   * Le logement n'a pas de peau extérieure : ses murs sont tournés vers le
+   * dedans, ce qui est le bon choix — une visite se passe à l'intérieur, et
+   * doubler chaque mur reviendrait à doubler la géométrie pour trois secondes
+   * d'image. Le palier d'immeuble s'en accommodait en fermant lui-même les deux
+   * mètres qui l'entourent, parce qu'on ne voit rien d'autre d'une cage
+   * d'escalier.
+   *
+   * Devant une maison, on voit tout. La première version fermait de la même
+   * façon trois mètres quarante autour de la porte : au-delà, la caméra voyait
+   * le ciel là où aurait dû se trouver la moitié droite de la maison. Une
+   * maison dont la façade s'arrête à un mètre de la porte n'est pas une maison.
+   *
+   * On construit donc **le pan entier**, d'un bout à l'autre du plan, percé de
+   * ses ouvertures — la porte et les fenêtres qui donnent sur cette rue-là. Le
+   * découpage est une soustraction d'intervalles : on trie les ouvertures le
+   * long du mur, on remplit ce qui reste entre elles, et on ajoute pour chacune
+   * son allège et son imposte. Les fenêtres y gagnent un tableau vu de dehors,
+   * ce qui est exactement ce qui manquait pour qu'elles se lisent comme des
+   * fenêtres et non comme des trous.
+   *
+   * Un seul pan : c'est le seul que la visite regarde du dehors. Les trois
+   * autres ne se voient que de l'intérieur, à travers un vitrage, où c'est le
+   * jardin qu'on regarde et non le mur qu'on traverse.
+   */
+  const FACADE = Math.max(HAUT, room.height);
+  const surLaLigne = (point: PlanPoint) =>
+    Math.abs((point.x - door.x) * out.x + (point.y - door.y) * out.y) < 0.05;
+  const leLong = (point: PlanPoint) =>
+    (point.x - door.x) * Math.cos(angle) + (point.y - door.y) * Math.sin(angle);
+
+  let gauche = -opening;
+  let droite = opening;
+  for (const candidate of rooms) {
+    for (const point of candidate.points) {
+      if (!surLaLigne(point)) continue;
+      const u = leLong(point);
+      if (u < gauche) gauche = u;
+      if (u > droite) droite = u;
+    }
+  }
+
+  const percees = [entrance.door, ...doors.filter((hole) => hole.id !== entrance.door.id)]
+    .filter((hole) => surLaLigne(hole.a) && surLaLigne(hole.b))
+    .map((hole) => {
+      const u = [leLong(hole.a), leLong(hole.b)].sort((one, two) => one - two);
+      return { de: u[0], a: u[1], allege: hole.sill, linteau: Math.min(hole.height, FACADE) };
+    })
+    .sort((one, two) => one.de - two.de);
+
+  const pan = (de: number, a: number, bas: number, haut: number) => {
+    if (a - de < 0.01 || haut - bas < 0.01) return;
+    slab((de + a) / 2, 0.04, (bas + haut) / 2, [a - de, haut - bas, 0.08], enduit);
+  };
+
+  let curseur = gauche;
+  for (const percee of percees) {
+    pan(curseur, percee.de, 0, FACADE);
+    pan(percee.de, percee.a, 0, percee.allege);
+    pan(percee.de, percee.a, percee.linteau, FACADE);
+    curseur = Math.max(curseur, percee.a);
+  }
+  pan(curseur, droite, 0, FACADE);
+
+  /*
+   * Le ciel de la façade d'entrée.
+   *
+   * Le soleil est placé en face de la plus grande ouverture du logement — pour
+   * la maison, la baie du séjour, donc du côté jardin. La façade d'entrée est
+   * par conséquent **à l'ombre de la maison elle-même**, à toute heure. C'est
+   * juste, et c'est le cas de la moitié des maisons ; ce qui ne l'est pas, c'est
+   * l'image qui en sortait : une porte presque noire, alors que dehors, à
+   * l'ombre, un ciel dégagé éclaire encore beaucoup.
+   *
+   * Ce que la scène sous-estimait est cette lumière-là. La carte
+   * d'environnement la porte pour les surfaces intérieures, mais elle est cuite
+   * sur un dôme fermé : dehors, une façade voit la moitié du ciel, ce qui est
+   * bien plus. On ajoute donc la part manquante, de face et sans ombre portée
+   * — une ombre de plus coûterait une seconde carte pour éclairer trois murs.
+   *
+   * Bleutée, parce que c'est ce qu'est la lumière d'ombre ouverte : du ciel
+   * sans soleil. Une fois posée, le contraste entre le perron et l'intérieur
+   * chaud fonctionne dans le bon sens — on entre dans quelque chose de plus
+   * chaud, pas de plus clair.
+   */
+  const ciel = new THREE.DirectionalLight(0xdce9f2, 2.1);
+  ciel.position.copy(at(-1.2, 9, 7));
+  ciel.target.position.copy(at(0, 0, 1.2));
+  group.add(ciel);
+  group.add(ciel.target);
+
+  /* L'applique, à droite de la porte. Elle éclaire peu — il fait jour — mais
+     elle est le seul objet du perron qui dise que quelqu'un habite ici. */
+  const lampe = new THREE.PointLight(0xffd9a8, 3.2, 4.5, 2);
+  lampe.position.copy(at(opening + 0.3, 0.2, 1.95));
+  group.add(lampe);
+
+  const verre = new THREE.MeshBasicMaterial({ color: 0xfff1da });
+  const globe = new THREE.BoxGeometry(0.12, 0.2, 0.1);
+  disposables.push(verre, globe);
+  const source = new THREE.Mesh(globe, verre);
+  source.position.copy(at(opening + 0.3, 0.09, 1.95));
+  source.rotation.y = -angle;
+  group.add(source);
+
+  batch.flush(group, disposables);
   return group;
 }
 

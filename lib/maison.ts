@@ -376,7 +376,7 @@ export const MAISON_MASSING: Massing[] = [
 
 export const MAISON_OPENING: CaptionText = {
   kicker: 'Maison de démonstration · plain-pied',
-  title: 'Cinq pièces, 94 m²',
+  title: 'Deux chambres, 94 m²',
   text: 'Faites défiler. La porte s’ouvre et vous entrez.',
 };
 
@@ -432,4 +432,83 @@ export const MAISON_IDENTITY = {
   /** Bien fictif : à dire, toujours, et sans détour. */
   disclaimer:
     'Maison de démonstration. Les dimensions et la circulation sont cohérentes de bout en bout ; le bien, lui, est fictif — il n’est ni à louer ni à visiter.',
+};
+
+/* ============================================================== l'annonce === */
+
+/**
+ * L'annonce fictive.
+ *
+ * Elle existe parce que le produit ne se juge pas sur une visite seule. Un
+ * propriétaire qui regarde une démonstration se demande une chose : « à quoi
+ * ressemblera **mon annonce** avec ça dedans ». Une visite posée dans le vide
+ * ne répond pas ; une annonce complète — prix à la nuit, capacité, équipements,
+ * règles — avec la visite en tête, y répond d'un coup d'œil.
+ *
+ * Deux précautions, et elles ne sont pas négociables :
+ *
+ *  · **rien ici ne se fait passer pour un vrai bien.** Le nom, l'adresse, le
+ *    prix sont inventés, la page le dit en clair et à plusieurs endroits, et le
+ *    bien n'est ni à louer ni à visiter ;
+ *  · **aucun avis, aucune note, aucun historique de réservation.** Une note en
+ *    étoiles inventée est un faux document, quelle que soit la mention qui
+ *    l'accompagne — et c'est précisément le genre de retouche qu'on reproche
+ *    aux annonces qu'on veut remplacer.
+ *
+ * Le prix à la nuit n'a rien à voir avec le prix de Volume3D. La page les
+ * sépare explicitement : l'un est ce que le voyageur paierait, l'autre ce que
+ * le propriétaire paie une fois.
+ */
+export const MAISON_LISTING = {
+  /** Ce que paierait le voyageur. Fictif, comme le reste. */
+  nightly: 149,
+  cleaning: 70,
+  minimumNights: 2,
+  /** Les cinq chiffres qu'un voyageur lit avant tout le reste. */
+  facts: [
+    { label: 'Voyageurs', value: '4' },
+    { label: 'Chambres', value: '2' },
+    { label: 'Lits', value: '2' },
+    { label: 'Salle de bain', value: '1' },
+    { label: 'Surface', value: '94 m²' },
+  ],
+  equipment: [
+    {
+      group: 'Les pièces',
+      items: [
+        'Séjour de 32,8 m² ouvert sur la cuisine',
+        'Baie vitrée de 3,60 m sur le jardin',
+        'Chambre principale : lit en 160, armoire trois portes',
+        'Deuxième chambre : lit en 140, bureau sous la fenêtre',
+        'Salle de bain de 10,9 m² : baignoire, douche à l’italienne, double vasque, WC',
+        'Entrée fermée avec penderie',
+      ],
+    },
+    {
+      group: 'La cuisine',
+      items: [
+        'Cuisine ouverte, plan de travail de 3,40 m',
+        'Îlot central de 2 m avec deux tabourets',
+        'Plaque, four, lave-vaisselle',
+        'Table de six couverts',
+      ],
+    },
+    {
+      group: 'Le confort',
+      items: [
+        'Plain-pied intégral, aucune marche',
+        'Couloir de 1,02 m de passage',
+        'Lave-linge',
+        'Wi-Fi fibre',
+        'Chauffage dans chaque pièce',
+        'Draps et serviettes fournis',
+      ],
+    },
+  ],
+  rules: [
+    'Arrivée à partir de 16 h, départ avant 11 h',
+    'Deux nuits minimum',
+    'Non-fumeur',
+    'Animaux acceptés sur demande',
+  ],
 };

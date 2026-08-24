@@ -13,7 +13,8 @@ import {
   type CaptionText,
   type Journey,
 } from '@/lib/journey-path';
-import { buildInterior, configure } from '@/components/three/interior';
+import { buildInterior, configure, type Dehors } from '@/components/three/interior';
+import { createAmbience, type Ambience } from '@/lib/ambience';
 import { adaptQuality } from '@/components/three/quality';
 import type { Massing } from '@/lib/showcase';
 import type { PlanDoor, PlanPoint, PlanRoom } from '@/lib/types';
@@ -45,6 +46,12 @@ import styles from './EntranceTour.module.css';
  * progression : tout est écrit directement dans le DOM depuis la boucle de
  * rendu. Un `setState` par frame ferait retomber la page à vingt images par
  * seconde sur un téléphone.
+ *
+ * **Le son est coupé, et il le reste tant qu'on n'a rien demandé.** Il existe —
+ * des pas synthétisés qui suivent les mètres parcourus, une porte qui s'ouvre,
+ * l'acoustique de chaque pièce (`lib/ambience.ts`) — mais rien n'est fabriqué,
+ * pas même l'`AudioContext`, avant le clic sur le bouton. Une page qui se met à
+ * faire du bruit toute seule est une page qu'on ferme.
  */
 
 export interface EntranceTourProps {
@@ -58,6 +65,8 @@ export interface EntranceTourProps {
   skipTo: string;
   /** Mention obligatoire sous la visite : ce bien est une démonstration. */
   disclaimer?: string;
+  /** Ce qu'il y a derrière les fenêtres et la porte. Voir `interior.ts`. */
+  dehors?: Dehors;
 }
 
 export function EntranceTour({
@@ -69,6 +78,7 @@ export function EntranceTour({
   closing,
   skipTo,
   disclaimer,
+  dehors,
 }: EntranceTourProps) {
   const journey = useMemo(
     () => buildJourney(rooms, doors, { opening, captions, closing }),
@@ -98,6 +108,7 @@ export function EntranceTour({
       massing={massing}
       skipTo={skipTo}
       disclaimer={disclaimer}
+      dehors={dehors}
       ready={motion === 'oui'}
     />
   );
@@ -149,6 +160,7 @@ function MovingTour({
   massing,
   skipTo,
   disclaimer,
+  dehors,
   ready,
 }: {
   journey: Journey;
@@ -157,6 +169,7 @@ function MovingTour({
   massing: Massing[];
   skipTo: string;
   disclaimer?: string;
+  dehors?: Dehors;
   ready: boolean;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -166,6 +179,15 @@ function MovingTour({
   const cueRef = useRef<HTMLParagraphElement>(null);
   const captionRefs = useRef<(HTMLElement | null)[]>([]);
   const [failed, setFailed] = useState(false);
+  const [sound, setSound] = useState(false);
+  /* L'`Ambience` survit aux rendus mais ne fabrique rien tant que personne n'a
+     cliqué : elle n'est qu'un objet vide jusqu'à `enable()`. */
+  const ambienceRef = useRef<Ambience | null>(null);
+  if (ambienceRef.current === null) ambienceRef.current = createAmbience();
+  useEffect(() => {
+    const ambience = ambienceRef.current;
+    return () => ambience?.dispose();
+  }, []);
 
   /* La hauteur de défilement suit la longueur réelle du parcours : un studio se
      traverse plus vite qu'un cinq-pièces, et il serait absurde de demander le
@@ -193,7 +215,7 @@ function MovingTour({
       'Vue en trois dimensions du logement, qui avance à mesure que la page défile.',
     );
 
-    const interior = buildInterior({ rooms, doors, massing, entrance: journey.entrance, renderer });
+    const interior = buildInterior({ rooms, doors, massing, entrance: journey.entrance, renderer, dehors });
     const { scene, origin, leaf } = interior;
     const camera = new THREE.PerspectiveCamera(66, 1, 0.04, 300);
 
@@ -232,6 +254,8 @@ function MovingTour({
     };
 
     let cursor = progress();
+    const debut = sample(journey, cursor);
+    let derniere = { x: debut.x, y: debut.y };
     let previous = performance.now();
     let frame = 0;
     /* La résolution suit ce que la machine sait tenir. Voir `quality.ts`. */
@@ -291,7 +315,23 @@ function MovingTour({
       camera.fov = verticalFov(pose.fov, camera.aspect);
       camera.updateProjectionMatrix();
 
-      if (leaf) leaf.group.rotation.y = leaf.closed + leaf.sweep * doorOpening(journey, cursor);
+      const openness = doorOpening(journey, cursor);
+      if (leaf) leaf.group.rotation.y = leaf.closed + leaf.sweep * openness;
+
+      /* Le son suit les mètres, pas le temps : on mesure ce que la caméra vient
+         réellement de parcourir. À l'arrêt devant une légende, la distance est
+         nulle et il ne se passe rien — ce qui est exactement ce qu'on veut
+         entendre pendant qu'on lit. */
+      const ambience = ambienceRef.current;
+      if (ambience) {
+        const marche = Math.hypot(pose.x - derniere.x, pose.y - derniere.y);
+        derniere = { x: pose.x, y: pose.y };
+        /* Le seuil de la porte d'entrée ne compte pas : la caméra y traverse
+           deux mètres quatre-vingt-dix d'un coup, et huit pas d'un coup ne
+           s'entendent pas comme de la marche. */
+        if (cursor > journey.doorOpens.to) ambience.moved(marche, roomAt(journey, cursor));
+        ambience.door(openness);
+      }
 
       // Écriture directe dans le DOM : aucun rendu React pendant le défilement.
       let loudest = 0;
@@ -332,7 +372,7 @@ function MovingTour({
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, [ready, journey, rooms, doors, massing]);
+  }, [ready, journey, rooms, doors, massing, dehors]);
 
   if (failed) return <StillTour journey={journey} skipTo={skipTo} disclaimer={disclaimer} />;
 
@@ -374,6 +414,27 @@ function MovingTour({
           <div className={styles.track} aria-hidden="true">
             <div className={styles.bar} ref={barRef} />
           </div>
+          <button
+            type="button"
+            className={styles.sound}
+            aria-pressed={sound}
+            onClick={() => {
+              const ambience = ambienceRef.current;
+              if (!ambience) return;
+              if (sound) {
+                ambience.disable();
+                setSound(false);
+              } else {
+                /* Le clic **est** le geste qui autorise le son : les navigateurs
+                   refusent tout `AudioContext` réveillé ailleurs, et ils ont
+                   raison. D'où l'appel ici, et nulle part ailleurs. */
+                void ambience.enable().then(() => setSound(true));
+              }
+            }}
+          >
+            <IconSound on={sound} />
+            <span>{sound ? 'Couper le son' : 'Activer le son'}</span>
+          </button>
           <a className={styles.skip} href={skipTo}>
             Passer la visite
           </a>
@@ -383,3 +444,50 @@ function MovingTour({
   );
 }
 
+
+/**
+ * La pièce traversée à cet instant du parcours.
+ *
+ * `journey.rooms` donne l'instant d'arrivée dans chacune ; on prend la dernière
+ * franchie. Ce n'est pas exactement « où se trouve la caméra » — pendant la
+ * traversée d'une porte, les deux pièces se valent — mais l'oreille n'entend
+ * pas la différence, et le calcul coûte une boucle sur six entrées.
+ */
+function roomAt(journey: Journey, cursor: number): string {
+  let current = '';
+  for (const entry of journey.rooms) {
+    if (entry.t > cursor) break;
+    current = entry.roomId;
+  }
+  return current;
+}
+
+/**
+ * Le haut-parleur du bouton de son.
+ *
+ * Barré quand le son est coupé — et **barré**, pas seulement plus pâle : sur la
+ * barre du bas, posée sur une image qui change à chaque instant, une nuance de
+ * gris ne dit rien. Le libellé porte l'information de toute façon ; l'icône ne
+ * fait que la répéter d'un coup d'œil.
+ */
+function IconSound({ on }: { on: boolean }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M3 6h2.2L8.4 3.4v9.2L5.2 10H3V6Z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+      />
+      {on ? (
+        <>
+          <path d="M10.6 5.9a2.9 2.9 0 0 1 0 4.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+          <path d="M12.4 4.2a5.3 5.3 0 0 1 0 7.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        </>
+      ) : (
+        <path d="M10.8 6.2 14 9.4M14 6.2l-3.2 3.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      )}
+    </svg>
+  );
+}

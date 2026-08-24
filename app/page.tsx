@@ -129,6 +129,17 @@ export default async function HomePage() {
               </article>
 
               <article className="after-card">
+                <h3>Une annonce entière</h3>
+                <p>
+                  La même visite, mais posée en tête d’une annonce complète : prix à la nuit,
+                  capacité, équipements. C’est à quoi ressemblera votre page.
+                </p>
+                <a className="after-link" href="/maison">
+                  Voir l’annonce de démonstration →
+                </a>
+              </article>
+
+              <article className="after-card">
                 <h3>Et chez vous&nbsp;?</h3>
                 <p>
                   On relève votre logement sur place en une vingtaine de minutes. Le volume vient de vos

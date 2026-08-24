@@ -871,7 +871,7 @@ export function lookTarget(
   from: PlanPoint,
   depuis?: PlanPoint | null,
 ): PlanPoint {
-  if (isCirculation(room, doors) >= 2) {
+  if (onTraverse(room, doors)) {
     return openDirection(rooms, doors, from, depuis ? heading(depuis, from) : undefined);
   }
   return focusOf(room, doors, photos, from);
@@ -890,15 +890,33 @@ export function lookTarget(
  *
  * Cadré comme une pièce, le dégagement du logement d'essai donnait un mur à
  * quatre-vingt-dix centimètres tenu pendant tout l'arrêt.
+ *
+ * Deux signes, et il en suffit d'un.
+ *
+ * **Elle en dessert au moins deux autres**, ce qui est la définition d'un
+ * couloir.
+ *
+ * **Ou elle n'a pas de jour.** Ce second signe a été ajouté pour l'entrée de la
+ * maison : deux mètres quarante de large, aucune fenêtre, et une seule porte
+ * intérieure — donc pas un couloir au sens du premier critère, et pourtant
+ * cadrée comme une pièce elle donnait la penderie en gros plan sur la moitié du
+ * cadre. Une pièce sans fenêtre n'est pas une pièce qu'on photographie : c'est
+ * un sas, et ce qu'il a à dire est ce qu'il ouvre. Le critère est sûr dans
+ * l'autre sens aussi — un séjour, une chambre, même une salle d'eau ont un
+ * jour, donc aucun d'eux ne bascule par erreur du côté du couloir.
  */
-function isCirculation(room: PlanRoom, doors: PlanDoor[]): number {
+function onTraverse(room: PlanRoom, doors: PlanDoor[]): boolean {
   let served = 0;
+  let jour = false;
   for (const door of doors) {
-    if (door.kind === 'window') continue;
-    if (!door.from || !door.to) continue;
-    if (door.from === room.id || door.to === room.id) served += 1;
+    if (door.from !== room.id && door.to !== room.id) continue;
+    if (door.kind === 'window') {
+      jour = true;
+      continue;
+    }
+    if (door.from && door.to) served += 1;
   }
-  return served;
+  return served >= 2 || (!jour && served >= 1);
 }
 
 

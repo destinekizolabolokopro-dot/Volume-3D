@@ -315,3 +315,68 @@
   color: #7fd4c6;
   font-size: 15px;
 }
+
+/* ------------------------------------------------------------------ son --- */
+
+/*
+   Le bouton du son, dans la barre du bas, à côté de « passer la visite ».
+
+   Il est là et pas ailleurs pour une raison : c'est la seule zone de l'écran
+   qui porte déjà le voile, donc la seule où un libellé clair reste lisible
+   quelle que soit l'image derrière. Posé en haut à droite, comme le font la
+   plupart des sites, il se serait retrouvé sur un mur en plein soleil une fois
+   sur trois.
+
+   Il porte un libellé écrit, et pas seulement un pictogramme : « activer le
+   son » et « couper le son » ne se devinent pas d'un haut-parleur barré, et
+   c'est exactement le genre de bouton qu'on ne veut pas cliquer par erreur.
+*/
+.sound {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(12, 18, 16, 0.42);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.sound:hover,
+.sound:focus-visible {
+  border-color: #fff;
+  color: #fff;
+  background: rgba(12, 18, 16, 0.62);
+}
+
+.sound[aria-pressed='true'] {
+  border-color: #4fb3a6;
+  color: #bfece5;
+}
+
+/* Sur un téléphone, la barre du bas tient trois éléments au maximum, et la
+   mention en occupe déjà un. Le libellé passe alors en lecteur d'écran seul :
+   l'icône reste, et `aria-pressed` continue de dire l'état. */
+@media (max-width: 760px) {
+  .sound span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .sound {
+    padding: 7px 9px;
+  }
+}

@@ -5,6 +5,7 @@ import { LogoMark } from '@/components/Logo';
 
 const LINKS = [
   { href: '/demonstration', label: 'Démonstration' },
+  { href: '/maison', label: 'Annonce type' },
   { href: '#resultats', label: 'Résultats' },
   { href: '#fonctionnement', label: 'Fonctionnement' },
   { href: '#tarifs', label: 'Tarifs' },

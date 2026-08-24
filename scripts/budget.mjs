@@ -24,6 +24,11 @@ import pw from 'playwright';
 
 const { chromium } = pw;
 const BASE = process.env.BASE || 'http://localhost:3000';
+/* La page à mesurer. Il y a deux décors, et le second — la maison, avec son
+   jardin, sa haie et sa ligne d'arbres — coûte plus cher que l'appartement :
+   mesurer l'accueil et en conclure quelque chose sur `/maison` serait mesurer
+   la mauvaise scène. `ROUTE=/maison npm run budget`. */
+const ROUTE = process.env.ROUTE || '/';
 const WIDTH = Number(process.env.W || 1280);
 const HEIGHT = Number(process.env.H || 800);
 /** Images mesurées une fois le régime établi. */
@@ -87,7 +92,7 @@ await page.addInitScript(() => {
   }
 });
 
-await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+await page.goto(BASE + ROUTE, { waitUntil: 'networkidle' });
 await page.waitForSelector('canvas', { timeout: 30000 });
 // De quoi laisser la scène se construire et le premier rendu passer.
 await page.waitForTimeout(5000);
@@ -156,7 +161,7 @@ const relevé = await page.evaluate(async (images) => {
 }, IMAGES);
 
 if (!relevé) {
-  console.error('Aucun canevas trouvé : le serveur tourne-t-il sur ' + BASE + ' ?');
+  console.error('Aucun canevas trouvé : le serveur tourne-t-il sur ' + BASE + ROUTE + ' ?');
   await browser.close();
   process.exit(1);
 }

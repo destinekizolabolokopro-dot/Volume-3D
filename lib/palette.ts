@@ -110,6 +110,28 @@ export const OUTSIDE = {
   /** La façade d'en face, et celle de derrière — plus claire car plus loin. */
   vis_a_vis: 0xb2a898,
   vis_a_vis_loin: 0xc6bfb2,
+
+  /* --- Le dehors d'une maison. Rien de tout cela ne sert à l'appartement. ---
+   *
+   * Les verts sont franchement désaturés, et c'est la seule chose à savoir sur
+   * eux. L'herbe et le feuillage réels le sont : un vert de nuancier, posé
+   * derrière une baie de trois mètres soixante, fait basculer toute la balance
+   * de l'image et le séjour prend une teinte d'aquarium. Ils descendent aussi
+   * en clarté à mesure qu'ils s'éloignent de l'œil — pelouse, haie — puis
+   * remontent au loin, parce que c'est ce que fait l'atmosphère. */
+
+  /** La pelouse, autour de la maison. */
+  pelouse: 0x7d8f63,
+  /** La haie qui borne le jardin : plus sombre, elle pose l'horizon. */
+  haie: 0x5d7050,
+  /** Les masses d'arbres du fond, éclaircies par la distance. */
+  lointain: 0x8fa07f,
+  /** Dalles du perron et de l'allée. */
+  dalle: 0xa8a49a,
+  /** L'enduit de la maison, vu du dehors : auvent, jambages, bandeau. */
+  enduit: 0xd6cfc0,
+  /** L'ardoise du toit. Sombre, mais dans la plage utile du rendu. */
+  toit: 0x5c5f63,
 } as const;
 
 /** Tous les matériaux du logement, à plat. Sert à l'étude et au contrôle. */
