@@ -437,7 +437,18 @@ export const MAISON_CLOSING: CaptionText = {
 export const MAISON_IDENTITY = {
   name: 'Maison des Tilleuls',
   city: 'Maison de démonstration — plain-pied avec jardin',
-  area: 94.1,
+  /*
+   * Quatre-vingt-quatorze, et pas 94,1.
+   *
+   * Le plan en donne 94,08, et `area()` rendait « 94,1 m² » dans le chapeau de
+   * l'annonce pendant que la légende d'ouverture et la rangée de chiffres
+   * disaient « 94 m² ». Deux nombres pour un même logement sur une même page :
+   * c'est exactement ce qu'on reproche aux annonces, et le lecteur qui le
+   * remarque cesse de croire le reste. Le contrôle de surface tolère un dixième
+   * — l'écart est de huit centièmes — et un mètre carré arrondi à l'unité est
+   * ce qu'annonce n'importe quelle agence.
+   */
+  area: 94,
   /* Ni nombre de pièces, ni de chambres, ni de couchages : `MAISON_LISTING`
      les porte déjà, et c'est de là que la page les lit. Deux endroits qui
      décrivent le même logement finissent par diverger, et le second est alors

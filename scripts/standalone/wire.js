@@ -13,6 +13,158 @@
   var A = window.V3D_ASSETS || {};
   var DATA = window.V3D_DATA || {};
 
+  /* ------------------------------------------- les blocs qui apparaissent --- */
+
+  /*
+   * Vingt-quatre blocs invisibles.
+   *
+   * `Reveal` pose `class="reveal"` — opacité zéro, translation de quatorze
+   * pixels — et compte sur un `IntersectionObserver`, monté par React, pour
+   * poser `data-shown="1"` à l'entrée dans le champ. Dans ce fichier il n'y a
+   * pas de React : l'attribut n'arrivait jamais, et la règle CSS restait celle
+   * de l'état initial.
+   *
+   * Le résultat ne se voyait pas comme un défaut, ce qui l'a rendu durable :
+   * la page défilait normalement, avec de grandes zones vides à la place des
+   * cartes, des tarifs et — depuis que l'annonce existe — de tout son contenu.
+   * On ne cherche pas un bloc qui manque quand tout le reste est en place.
+   *
+   * On refait donc ce que fait `Reveal`, à l'identique et en huit lignes :
+   * l'observateur si le navigateur en a un, et sinon l'attribut posé tout de
+   * suite. Dans les deux cas le contenu finit visible, ce qui est le seul point
+   * non négociable — l'animation, elle, n'est qu'un agrément.
+   */
+  (function reveler() {
+    var blocs = els('.reveal');
+    if (!blocs.length) return;
+    var doux = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (doux || typeof IntersectionObserver !== 'function') {
+      blocs.forEach(function (n) { n.setAttribute('data-shown', '1'); });
+      return;
+    }
+    var vu = new IntersectionObserver(function (entrees) {
+      entrees.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.setAttribute('data-shown', '1');
+        vu.unobserve(e.target);
+      });
+    }, { rootMargin: '0px', threshold: 0.01 });
+    blocs.forEach(function (n) { vu.observe(n); });
+  })();
+
+  /* -------------------------------------- la visite au défilement --- */
+
+  /*
+   * Ce fichier n'embarque pas three.js.
+   *
+   * La visite d'accueil est une section de six mille pixels de haut : un
+   * canevas collant que la boucle de rendu redessine à chaque cran de molette,
+   * et des légendes que la même boucle fait apparaître. Le HTML extrait
+   * contient bien le canevas et les légendes — mais un canevas ne se sérialise
+   * pas, et la boucle vivait dans React. Résultat dans le fichier autonome :
+   * **six mille pixels de noir**, en tête de l'écran d'accueil, c'est-à-dire à
+   * l'endroit exact où l'on décide de continuer ou de fermer. Et depuis que
+   * l'annonce de la maison est un écran de plus, il y en a deux.
+   *
+   * Embarquer three.js et le moteur de rendu réglerait le fond du problème et
+   * ferait grossir le fichier de plusieurs mégaoctets, pour une scène qui
+   * mettrait dix secondes à se construire sur la machine d'un prospect.
+   *
+   * Le produit a déjà la bonne réponse, et elle est meilleure : `StillTour`,
+   * ce que voit quelqu'un qui a demandé moins d'animations. Les mêmes textes,
+   * dans le même ordre, lisibles d'un coup. Ses classes voyagent avec la
+   * feuille de style — un module CSS embarque tout ce qu'il déclare — et les
+   * légendes sont dans le DOM extrait. Il n'y a donc rien à inventer : on
+   * recompose le même écran avec les mêmes morceaux.
+   */
+  /*
+   * Le nom réel d'une classe de module CSS.
+   *
+   * `styles.still` devient `EntranceTour_still__3lQA9` à la compilation, et le
+   * suffixe est différent pour chaque classe — on ne peut pas le deviner à
+   * partir d'une autre. Le premier jet cherchait un élément qui la porte déjà,
+   * ce qui marche pour les classes visibles et échoue précisément pour celles
+   * dont on a besoin : `StillTour` n'a jamais été rendu, donc aucune de ses
+   * classes n'est dans le DOM extrait. Résultat, on posait des noms inventés,
+   * aucune règle ne s'appliquait, et la liste sortait en noir sur blanc avec
+   * les numéros de la liste ordonnée — au lieu du blanc sur nuit qu'elle doit
+   * être.
+   *
+   * On lit donc la feuille de style, qui, elle, contient tout ce que le module
+   * déclare, rendu ou non.
+   */
+  var CLASSES = {};
+  function classeDe(prefixe) {
+    if (CLASSES[prefixe]) return CLASSES[prefixe];
+    var motif = new RegExp('\\.(' + prefixe.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[A-Za-z0-9_-]+)');
+    for (var i = 0; i < document.styleSheets.length; i += 1) {
+      var regles;
+      try { regles = document.styleSheets[i].cssRules; } catch (e) { continue; }
+      for (var j = 0; j < regles.length; j += 1) {
+        var sel = regles[j].selectorText;
+        if (!sel) continue;
+        var trouve = sel.match(motif);
+        if (trouve) { CLASSES[prefixe] = trouve[1]; return trouve[1]; }
+      }
+    }
+    return '';
+  }
+
+  els('[class*="EntranceTour_tour"]').forEach(function (section) {
+    var legendes = els('[class*="EntranceTour_caption"]', section);
+    if (!legendes.length) return;
+
+    var still = document.createElement('section');
+    still.className = classeDe('EntranceTour_still__');
+    still.setAttribute('aria-label', 'Visite guidée du logement');
+    /* Une ceinture, parce que la bretelle est une lecture de feuille de style :
+       si elle échoue pour une raison qu'on n'a pas prévue, le pire cas doit
+       rester lisible et non du blanc sur blanc. */
+    if (!still.className) {
+      still.style.cssText = 'background:#101614;color:#fff;padding:64px clamp(20px,5vw,68px)';
+    }
+
+    var liste = document.createElement('ol');
+    liste.className = classeDe('EntranceTour_stillList__');
+    if (!liste.className) {
+      liste.style.cssText = 'list-style:none;margin:0 auto;padding:0;max-width:46rem;display:grid;gap:44px';
+    }
+    legendes.forEach(function (figure) {
+      var kicker = el('[class*="EntranceTour_kicker"]', figure);
+      var titre = el('[class*="EntranceTour_title"]', figure);
+      var texte = el('[class*="EntranceTour_text"]', figure);
+      var item = document.createElement('li');
+      if (kicker) item.appendChild(kicker.cloneNode(true));
+      if (titre) {
+        var h = document.createElement('h2');
+        h.className = classeDe('EntranceTour_stillTitle__');
+        h.textContent = titre.textContent;
+        item.appendChild(h);
+      }
+      if (texte) {
+        var p = document.createElement('p');
+        p.className = classeDe('EntranceTour_stillText__');
+        p.textContent = texte.textContent;
+        item.appendChild(p);
+      }
+      liste.appendChild(item);
+    });
+    still.appendChild(liste);
+
+    // La mention du caractère fictif suit la visite partout ailleurs : elle la
+    // suit ici aussi, et c'est la seule partie qu'on ne peut pas se permettre
+    // de perdre en route.
+    var mention = el('[class*="EntranceTour_mention"]', section);
+    if (mention) {
+      var note = document.createElement('p');
+      note.className = classeDe('EntranceTour_disclaimer__');
+      note.textContent = mention.textContent;
+      still.appendChild(note);
+    }
+
+    section.parentNode.replaceChild(still, section);
+  });
+
   /* ------------------------------------------------------ formulaires --- */
 
   // Aucune écriture ne part nulle part : on empêche les soumissions.

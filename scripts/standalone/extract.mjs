@@ -18,14 +18,38 @@ const db = JSON.parse(fs.readFileSync('.data/db.json', 'utf8'));
 // Le bien de démonstration : le premier publié.
 const pub = db.properties.find((p) => p.status === 'published');
 
+/**
+ * Le navigateur à lancer.
+ *
+ * `V3D_CHROMIUM` reste prioritaire, mais il ne suffisait pas : sans lui,
+ * Playwright cherche une révision précise dans son propre cache et s'arrête sur
+ * « Executable doesn't exist » en conseillant un téléchargement — alors qu'un
+ * Chromium parfaitement utilisable est déjà installé, à une autre version, dans
+ * `PLAYWRIGHT_BROWSERS_PATH`. C'est le cas de la plupart des environnements
+ * d'intégration, et de celui-ci. On le trouve donc tout seul, exactement comme
+ * le font `scripts/contraste.mjs` et `scripts/budget.mjs` — les trois outils
+ * doivent démarrer dans les mêmes conditions, sinon deux d'entre eux mesurent
+ * un site que le troisième ne sait pas ouvrir.
+ */
+function navigateur() {
+  if (process.env.V3D_CHROMIUM) return process.env.V3D_CHROMIUM;
+  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (!racine || !fs.existsSync(racine)) return undefined;
+  const dossier = fs
+    .readdirSync(racine)
+    .filter((name) => name.startsWith('chromium-'))
+    .sort()
+    .pop();
+  if (!dossier) return undefined;
+  const binaire = path.join(racine, dossier, 'chrome-linux', 'chrome');
+  return fs.existsSync(binaire) ? binaire : undefined;
+}
+
 const browser = await chromium.launch({
-  // `V3D_CHROMIUM` sert quand le navigateur est déjà installé ailleurs que là
-  // où Playwright l'attend — c'est le cas de la plupart des environnements
-  // d'intégration continue, qui le fournissent à une autre version.
-  executablePath: process.env.V3D_CHROMIUM || undefined,
+  executablePath: navigateur(),
   // Le rendu WebGL passe par le processeur sur une machine sans carte
   // graphique : le résultat est le même, la vitesse non.
-  args: ['--enable-unsafe-swiftshader'],
+  args: ['--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader', '--no-sandbox'],
 });
 
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });

@@ -286,6 +286,17 @@
 }
 
 .stillTitle {
+  /*
+   * `color: inherit`, et ce n'est pas une précaution de style.
+   *
+   * `globals.css` donne à tous les `h1`, `h2`, `h3` la couleur d'encre du site
+   * — presque noire, faite pour du blanc. Le titre héritait donc du global au
+   * lieu du blanc de `.still`, et se retrouvait **noir sur nuit** : invisible.
+   * Le défaut ne se voyait nulle part, parce que cet écran ne sort que sous
+   * `prefers-reduced-motion` ; il est apparu le jour où le fichier autonome
+   * s'est mis à l'utiliser pour remplacer la visite qu'il ne peut pas jouer.
+   */
+  color: inherit;
   margin: 0 0 10px;
   font-family: var(--serif);
   font-weight: 600;
