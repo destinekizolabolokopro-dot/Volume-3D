@@ -27,7 +27,7 @@
 
   /* ------------------------------------------------------------- écrans -- */
 
-  var SCREENS = ['accueil', 'visite', 'tableau', 'espace'];
+  var SCREENS = ['accueil', 'maison', 'visite', 'tableau', 'espace'];
 
   function show(name, anchor) {
     if (SCREENS.indexOf(name) === -1) name = 'accueil';

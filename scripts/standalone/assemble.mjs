@@ -41,6 +41,7 @@ function rewriteLinks(html) {
   return html
     // liens internes vers un écran
     .replace(/href="\/"/g, 'href="#" data-goto="accueil"')
+    .replace(/href="\/maison"/g, 'href="#" data-goto="maison"')
     .replace(/href="\/v\/[^"]*"/g, 'href="#" data-goto="visite"')
     .replace(/href="\/espace\/biens\/[^"]*"/g, 'href="#" data-goto="espace"')
     .replace(/href="\/espace\/biens"/g, 'href="#" data-goto="tableau"')
@@ -84,6 +85,7 @@ const CSS = inlineAssets(X.css);
 
 const screens = {
   accueil: clean(X.screens.accueil),
+  maison: clean(X.screens.maison),
   visite: clean(X.screens.visite),
   tableau: clean(X.screens.tableau),
   espace: clean(X.screens.espace),
@@ -292,12 +294,14 @@ ${EXTRA_CSS}
 </div>
 
 <div class="v3d-screen" id="ec-accueil">${screens.accueil}</div>
+<div class="v3d-screen" id="ec-maison" hidden>${screens.maison}</div>
 <div class="v3d-screen" id="ec-visite" hidden>${screens.visite}</div>
 <div class="v3d-screen" id="ec-tableau" hidden>${screens.tableau}</div>
 <div class="v3d-screen" id="ec-espace" hidden>${screens.espace}</div>
 
 <nav class="v3d-switch" aria-label="Écrans de la démonstration">
   <button type="button" data-screen="accueil" class="on">Accueil</button>
+  <button type="button" data-screen="maison">L’annonce</button>
   <button type="button" data-screen="visite">La visite</button>
   <button type="button" data-screen="tableau">Tableau de bord</button>
   <button type="button" data-screen="espace">Fiche d’un bien</button>
