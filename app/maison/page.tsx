@@ -88,12 +88,12 @@ export default function MaisonPage() {
                 <p className="kicker">{MAISON_IDENTITY.city}</p>
                 <h1 className="listing-title">{MAISON_IDENTITY.name}</h1>
                 <p className="listing-lede">
-                  Une maison de plain-pied de {area(MAISON_IDENTITY.area)}, ouverte sur un jardin par
+                  Une maison de plain-pied de {MAISON_LISTING.surface}, ouverte sur un jardin par
                   une baie de 3,60 m. Deux chambres, une salle de bain de {area(10.92)}, et un couloir
                   qui dessert tout sans une seule marche. Vous venez de la traverser.
                 </p>
                 <ul className="listing-facts">
-                  {MAISON_LISTING.facts.map((fact) => (
+                  {[...MAISON_LISTING.facts, { label: 'Surface', value: MAISON_LISTING.surface }].map((fact) => (
                     <li key={fact.label}>
                       <strong>{fact.value}</strong>
                       <span>{fact.label}</span>

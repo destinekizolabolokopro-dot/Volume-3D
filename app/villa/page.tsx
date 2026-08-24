@@ -81,13 +81,13 @@ export default function VillaPage() {
                 <p className="kicker">{VILLA_IDENTITY.city}</p>
                 <h1 className="listing-title">{VILLA_IDENTITY.name}</h1>
                 <p className="listing-lede">
-                  {area(VILLA_IDENTITY.area)} de plain-pied autour d’une galerie centrale. Un séjour
+                  {VILLA_LISTING.surface} de plain-pied autour d’une galerie centrale. Un séjour
                   traversant de {area(60.48)} sur 10,80 m, trois chambres dont une suite avec sa
                   salle d’eau, et trois baies qui donnent sur la même terrasse. Vous venez de la
                   traverser.
                 </p>
                 <ul className="listing-facts">
-                  {VILLA_LISTING.facts.map((fact) => (
+                  {[...VILLA_LISTING.facts, { label: 'Surface', value: VILLA_LISTING.surface }].map((fact) => (
                     <li key={fact.label}>
                       <strong>{fact.value}</strong>
                       <span>{fact.label}</span>

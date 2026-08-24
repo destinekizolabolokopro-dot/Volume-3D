@@ -490,12 +490,23 @@ export const MAISON_LISTING = {
   cleaning: 70,
   minimumNights: 2,
   /** Les cinq chiffres qu'un voyageur lit avant tout le reste. */
+  /**
+   * La surface, écrite une fois.
+   *
+   * Elle apparaissait à trois endroits — la légende d'ouverture de la visite,
+   * la rangée de chiffres de l'annonce, et la phrase de présentation — et la
+   * troisième la tirait de `MAISON_IDENTITY.area`, qui porte la valeur exacte au
+   * dixième. On lisait donc « 190,1 m² » dans le texte et « 190 m² » deux
+   * lignes plus bas. Une annonce arrondit, et elle arrondit partout pareil :
+   * la valeur exacte reste dans `area`, où les contrôles la vérifient contre
+   * la somme des polygones, et le tableau pièce par pièce la donne au dixième.
+   */
+  surface: '94 m²',
   facts: [
     { label: 'Voyageurs', value: '4' },
     { label: 'Chambres', value: '2' },
     { label: 'Lits', value: '2' },
     { label: 'Salle de bain', value: '1' },
-    { label: 'Surface', value: '94 m²' },
   ],
   equipment: [
     {

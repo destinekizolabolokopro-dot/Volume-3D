@@ -91,7 +91,13 @@ async function snapshot(url, prepare) {
 const accueil = await snapshot('/');
 console.log('accueil', accueil.length);
 
-/* --- 2. l'annonce de démonstration ---
+/* --- 2. l'annonce de la villa ---
+   Le plus grand des trois décors, et celui que la barre de navigation met en
+   premier. Sans lui, « La villa » ne mènerait nulle part dans ce fichier. */
+const villa = await snapshot('/villa');
+console.log('villa', villa.length);
+
+/* --- 3. l'annonce de la maison ---
    Elle porte la maison : le plan, la visite au défilement, et surtout tout ce
    qu'une annonce affiche autour — prix, capacité, équipements. C'est la page
    que le lien « Annonce type » de la barre de navigation vise, et sans elle ce
@@ -99,11 +105,11 @@ console.log('accueil', accueil.length);
 const maison = await snapshot('/maison');
 console.log('maison', maison.length);
 
-// --- 3. la visite publique ---
+// --- 4. la visite publique ---
 const visite = await snapshot(`/v/${pub.slug}`);
 console.log('visite', visite.length);
 
-// --- 4. l'espace du propriétaire (connexion préalable) ---
+// --- 5. l'espace du propriétaire (connexion préalable) ---
 await page.goto(`${BASE}/espace/connexion`, { waitUntil: 'domcontentloaded' });
 await page.fill('input[type=email]', process.env.V3D_EMAIL || 'marc@example.fr');
 await page.fill('input[type=password]', process.env.V3D_PASSWORD || 'demo1234');
@@ -114,7 +120,7 @@ console.log('espace', espace.length);
 const tableau = await snapshot('/espace');
 console.log('tableau', tableau.length);
 
-// --- 5. les feuilles de style servies, tous écrans confondus ---
+// --- 6. les feuilles de style servies, tous écrans confondus ---
 const hrefs = sheets;
 let css = '';
 for (const href of hrefs) {
@@ -123,7 +129,7 @@ for (const href of hrefs) {
 }
 console.log('css', css.length, 'octets depuis', hrefs.length, 'feuilles');
 
-// --- 6. les fichiers ---
+// --- 7. les fichiers ---
 // On déclenche le chargement des panoramas restants pour les capturer aussi.
 for (const p of ['/demo/salon.jpg', '/demo/chambre.jpg', '/demo/salle-de-bain.jpg', '/demo/poster.jpg', '/demo/visite.webm']) {
   seen.add(p);
@@ -169,7 +175,7 @@ console.log('TOTAL fichiers', Math.round(total / 1024), 'Ko');
 
 fs.writeFileSync(
   `${OUT}/extrait.json`,
-  JSON.stringify({ css, assets, screens: { accueil, maison, visite, espace, tableau }, slug: pub.slug }),
+  JSON.stringify({ css, assets, screens: { accueil, villa, maison, visite, espace, tableau }, slug: pub.slug }),
 );
 console.log('extrait.json', Math.round(fs.statSync(`${OUT}/extrait.json`).size / 1024), 'Ko');
 

@@ -535,12 +535,23 @@ export const VILLA_LISTING = {
   nightly: 480,
   cleaning: 180,
   minimumNights: 3,
+  /**
+   * La surface, écrite une fois.
+   *
+   * Elle apparaissait à trois endroits — la légende d'ouverture de la visite,
+   * la rangée de chiffres de l'annonce, et la phrase de présentation — et la
+   * troisième la tirait de `VILLA_IDENTITY.area`, qui porte la valeur exacte au
+   * dixième. On lisait donc « 190,1 m² » dans le texte et « 190 m² » deux
+   * lignes plus bas. Une annonce arrondit, et elle arrondit partout pareil :
+   * la valeur exacte reste dans `area`, où les contrôles la vérifient contre
+   * la somme des polygones, et le tableau pièce par pièce la donne au dixième.
+   */
+  surface: '190 m²',
   facts: [
     { label: 'Voyageurs', value: '6' },
     { label: 'Chambres', value: '3' },
     { label: 'Lits', value: '3' },
     { label: 'Salles d’eau', value: '2' },
-    { label: 'Surface', value: '190 m²' },
   ],
   equipment: [
     {
