@@ -749,7 +749,11 @@ export function buildInterior({
     /* Le ciel cuit est un ciel dégagé : pris à sa valeur, il éclaire un
        logement comme une véranda. La moitié suffit à faire vivre le spéculaire
        sans effacer le soleil, qui doit rester la source qu'on lit. */
-    scene.environmentIntensity = 1.05;
+    /* Ramenée de 1,05 à 0,55 : la carte d'environnement porte le spéculaire,
+       et le spéculaire est précisément ce dont une maquette se passe. Elle
+       reste, parce qu'elle est directionnelle — un mur tourné vers la fenêtre
+       reçoit le ciel — mais elle éclaire au lieu de faire briller. */
+    scene.environmentIntensity = 0.55;
   }
   lights(
     scene,
@@ -935,9 +939,23 @@ function lights(
    * plafond peint en blanc rend gris sale — physiquement défendable, mais c'est
    * l'inverse de ce qu'on vient montrer.
    */
-  scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 0.6));
+  /*
+   * L'équilibre a basculé du côté du ciel avec le passage en maquette.
+   *
+   * Un soleil à 2,4 contre une hémisphérique à 0,6, c'est un rapport de quatre
+   * — le rapport d'une photographie d'intérieur en plein midi, avec ses
+   * hautes lumières brûlées et ses ombres bouchées. C'est aussi ce qui rendait
+   * les images dures : chaque pièce avait un côté cramé et un côté noir, et
+   * l'œil lisait « rendu 3D » avant de lire « logement ».
+   *
+   * Une maquette est éclairée comme un objet posé sur une table : beaucoup de
+   * ciel, un soleil qui ne fait que dire d'où vient le jour. Le rapport tombe
+   * à un et demi. Les ombres restent — sans elles le décor redevient un patron
+   * découpé — mais elles se lisent au lieu de trancher.
+   */
+  scene.add(new THREE.HemisphereLight(0xfff4e4, 0xd9d2c6, 1.35));
 
-  const sun = new THREE.DirectionalLight(0xfff0d6, 2.4);
+  const sun = new THREE.DirectionalLight(0xfff0d6, 1.45);
   const from = sunDirection(rooms, doors);
   sun.position.copy(from);
   sun.castShadow = true;
@@ -1649,121 +1667,34 @@ function porch(
  * de 0,5 fait tomber le motif exactement sur ses deux mètres.
  */
 /*
- * Le relief, cuit en cartes de normales.
+ * Ce qui a disparu ici, et pourquoi.
  *
- * Une peinture murale n'est pas un plan mathématique : elle porte la trace du
- * rouleau, le grain de l'enduit, les défauts du support. À un mètre, on ne voit
- * aucun de ces accidents séparément — mais on voit qu'ils sont là, parce qu'ils
- * cassent la lumière et empêchent le mur d'être un aplat.
+ * Trois fonctions vivaient à cet endroit : un bruit déterministe, un
+ * fabricant de cartes de normales, et deux cartes bâties dessus — le grain de
+ * l'enduit et le relief des lames. Elles marchaient, elles ne coûtaient pas un
+ * triangle, et elles sont parties entières.
  *
- * Une carte de normales suffit à les rendre : elle ne déplace rien, elle ment
- * seulement sur l'orientation de la surface, et c'est cette orientation qui
- * décide de la lumière reçue. Coût : une texture de 256 pixels de côté,
- * fabriquée au chargement, et pas un triangle de plus.
+ * Une carte de normales ne déplace rien : elle ment sur l'orientation de la
+ * surface pour qu'un aplat reçoive la lumière comme s'il avait du relief. Le
+ * mensonge tient de face et se défait en lumière rasante — c'est-à-dire à
+ * chaque passage de porte, là où le regard traîne. Sur une image qui vise la
+ * photographie, c'est un défaut qu'on accepte pour ce qu'il rapporte ; sur une
+ * maquette, il ne rapporte rien, parce qu'une maquette n'a pas de grain.
  *
- * L'amplitude est volontairement minuscule. Un relief d'enduit visible se lit
- * comme du crépi, et un logement parisien n'est pas crépi — la valeur juste est
- * celle qu'on ne remarque pas et dont l'absence se remarque.
+ * On garde le motif du sol, qui est un dessin et porte une échelle, et on
+ * laisse le volume à ce qui le dit vraiment : l'occlusion cuite dans les
+ * sommets, et la proportion des masses.
+ *
+ * Le bruit déterministe reste : il ne fabrique aucun relief, il sert à teinter
+ * une lame et une pierre au hasard — un hasard qui doit donner le même mur à
+ * chaque chargement, sans quoi le décor changerait de forme d'une visite à
+ * l'autre et on ne pourrait plus le contrôler en image.
  */
 
-/** Bruit de valeur lissé, déterministe : deux exécutions donnent le même mur. */
+/** Bruit de valeur, déterministe : deux exécutions donnent le même mur. */
 function bruit(x: number, y: number, graine: number): number {
   const n = Math.sin(x * 127.1 + y * 311.7 + graine * 74.7) * 43758.5453;
   return n - Math.floor(n);
-}
-
-/**
- * Fabrique une carte de normales à partir d'une fonction de hauteur.
- *
- * On dérive la hauteur en x et en y — la pente locale — et on encode la normale
- * dans le rouge et le vert, le bleu portant la composante verticale. C'est la
- * convention OpenGL, celle que three.js attend.
- */
-function normalMap(
-  size: number,
-  amplitude: number,
-  height: (x: number, y: number) => number,
-  disposables: Bin[],
-): THREE.Texture {
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const context = canvas.getContext('2d')!;
-  const image = context.createImageData(size, size);
-  const at = (x: number, y: number) => height((x + size) % size, (y + size) % size);
-
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      const dx = (at(x + 1, y) - at(x - 1, y)) * amplitude;
-      const dy = (at(x, y + 1) - at(x, y - 1)) * amplitude;
-      // Normale de la surface z = h(x, y) : (-dh/dx, -dh/dy, 1), normalisée.
-      const length = Math.hypot(dx, dy, 1);
-      const index = (y * size + x) * 4;
-      image.data[index] = Math.round(((-dx / length) * 0.5 + 0.5) * 255);
-      image.data[index + 1] = Math.round(((-dy / length) * 0.5 + 0.5) * 255);
-      image.data[index + 2] = Math.round((1 / length) * 255);
-      image.data[index + 3] = 255;
-    }
-  }
-  context.putImageData(image, 0, 0);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.anisotropy = 4;
-  disposables.push(texture);
-  return texture;
-}
-
-/** Le grain d'un enduit peint : deux échelles de bruit, très faibles. */
-function plasterNormal(disposables: Bin[]): THREE.Texture {
-  const size = 256;
-  const cache = new Float32Array(size * size);
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      /* Deux fréquences : le grain fin de l'enduit, et une ondulation lente qui
-         est celle du support. Sans la seconde, le mur a du grain mais reste
-         plan, et cela se voit sur les grandes surfaces en lumière rasante. */
-      const fin = bruit(Math.floor(x / 2), Math.floor(y / 2), 1);
-      const lent =
-        bruit(Math.floor(x / 24), Math.floor(y / 24), 2) * 0.6 +
-        bruit(Math.floor(x / 48), Math.floor(y / 48), 3) * 0.4;
-      cache[y * size + x] = fin * 0.62 + lent * 0.38;
-    }
-  }
-  return normalMap(size, 0.9, (x, y) => cache[y * size + x], disposables);
-}
-
-/** Les rainures entre les lames du point de Hongrie, et leur bombé. */
-function plankNormal(disposables: Bin[]): THREE.Texture {
-  const size = CHEVRON_SIZE;
-  const cache = new Float32Array(size * size);
-
-  /* Une gorge adoucie, et non une marche.
-     Le premier essai faisait tomber la hauteur d'un pixel à l'autre : la pente
-     devenait quasi verticale, la normale basculait à quatre-vingt-dix degrés et
-     le joint ressortait en trait blanc — l'inverse d'un creux. Une gorge en V
-     sur deux pixels et demi donne la pente d'un vrai chanfrein de lame. */
-  const gorge = (distance: number, largeur: number) =>
-    distance >= largeur ? 1 : Math.pow(distance / largeur, 0.8);
-
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      const a = travers(x, y);
-      const rang = Math.floor(a / LAME);
-      const colonne = Math.floor(x / COLONNE);
-      // Distances aux deux familles de joints, ramenées en pixels d'écran.
-      const aRive =
-        Math.min(a - rang * LAME, (rang + 1) * LAME - a) * Math.SQRT2;
-      const aAxe = Math.min(x - colonne * COLONNE, (colonne + 1) * COLONNE - x);
-      /* La lame est très légèrement bombée : c'est ce qui la fait exister entre
-         ses deux joints au lieu d'être un simple ruban plat. */
-      const bombe = Math.sin(((a - rang * LAME) / LAME) * Math.PI) * 0.1;
-      const fil = bruit(Math.floor(a), Math.floor(x / 3), 7) * 0.06;
-      cache[y * size + x] = gorge(aRive, 2.5) * gorge(aAxe, 2) * (0.8 + bombe + fil);
-    }
-  }
-  return normalMap(size, 1.1, (x, y) => cache[y * size + x], disposables);
 }
 
 /* ------------------------------------------------- point de Hongrie --- */
@@ -1903,15 +1834,22 @@ function shell(
   const position = new THREE.Vector3();
   const echelle = new THREE.Vector3(1, 1, 1);
 
-  /* Une seule carte de grain pour l'enduit : murs et plafond la partagent, et
-     comme les UV sont mis à l'échelle du monde, elle ne se répète pas d'un pan
-     à l'autre. */
-  const grain = plasterNormal(disposables);
+  /*
+   * Plus de cartes de normales, nulle part.
+   *
+   * Elles étaient là pour le grain de l'enduit et le relief des lames — un
+   * faux relief, calculé sur l'orientation de la surface, sans un triangle de
+   * plus. Bien faites, et à jeter quand même : une maquette n'a pas de grain.
+   * Le faux relief est exactement ce qui trahit une image de synthèse — il se
+   * comporte bien de face et se défait en lumière rasante, c'est-à-dire à
+   * chaque passage de porte. Un pan de plâtre lisse, lui, ne se défait jamais.
+   *
+   * Ce qui reste pour dire le volume est ce qui le disait déjà vraiment :
+   * l'occlusion cuite dans les sommets, et la proportion des masses.
+   */
   const wall = new THREE.MeshStandardMaterial({
     color: SHELL.mur,
     roughness: ROUGHNESS.mur,
-    normalMap: grain,
-    normalScale: new THREE.Vector2(0.35, 0.35),
     vertexColors: true,
   });
   /* Une seule peinture pour tout ce qui est menuiserie : plinthes, corniches,
@@ -1922,10 +1860,17 @@ function shell(
     roughness: ROUGHNESS.menuiserie,
     vertexColors: true,
   });
+  /*
+   * Le sol garde son dessin, et perd son relief.
+   *
+   * Le motif — le point de Hongrie — est une **information** : il donne une
+   * direction à la pièce et une échelle qu'on peut compter, une lame vaut huit
+   * centimètres et demi. C'est ce qu'un plan de maquette porte aussi, imprimé
+   * à plat. Le relief, lui, était une imitation de matière, et c'est la seule
+   * partie qui tirait vers la fausse photo.
+   */
   const parquet = new THREE.MeshStandardMaterial({
     map: plankTexture(disposables),
-    normalMap: plankNormal(disposables),
-    normalScale: new THREE.Vector2(0.32, 0.32),
     roughness: ROUGHNESS.parquet,
   });
   const carrelage = new THREE.MeshStandardMaterial({
@@ -1935,8 +1880,6 @@ function shell(
   const ceiling = new THREE.MeshStandardMaterial({
     color: SHELL.plafond,
     roughness: ROUGHNESS.plafond,
-    normalMap: grain,
-    normalScale: new THREE.Vector2(0.25, 0.25),
     side: THREE.DoubleSide,
   });
   /* Un rien de verre : de quoi dire qu'il y en a, sans éteindre la vue. Sous un

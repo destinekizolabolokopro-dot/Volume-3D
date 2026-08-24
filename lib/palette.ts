@@ -220,36 +220,71 @@ export const MAX_SUBTLETY = 12;
  * d'une autre couleur — et c'est exactement ce que fait la peinture satinée
  * dans un vrai appartement.
  */
+/*
+ * Tout est mat, et c'est un choix, pas un renoncement.
+ *
+ * Les valeurs précédentes visaient la matière réelle : un parquet vitrifié à
+ * 0,42, un carrelage à 0,26, une menuiserie laquée à 0,55. Physiquement
+ * défendable, et c'est bien le problème — à mi-chemin entre le dessin et la
+ * photographie, une image tombe dans le trou où l'œil sait que ce n'est pas
+ * vrai sans pouvoir dire pourquoi. Un reflet qui glisse sur un plan de travail
+ * ne se lit pas comme du satiné : il se lit comme du plastique.
+ *
+ * Ce projet écrivait déjà la bonne règle dans `lib/showcase.ts`, et le rendu
+ * l'avait perdue en route : « un meuble en boîte bien proportionnée se lit
+ * comme un meuble et n'a pas la prétention d'être une photo ; une fausse
+ * photo, elle, aurait exactement le défaut qu'on reproche aux annonces
+ * retouchées. » On revient donc à une maquette assumée. Ce qui porte le volume
+ * n'est pas le brillant, c'est l'occlusion cuite dans les sommets et la
+ * proportion des masses — les deux choses qu'une maquette d'architecte a, et
+ * qu'aucune photographie retouchée n'a.
+ *
+ * Le laiton garde un reste de brillant. Il est le seul, et il sert de repère
+ * d'échelle : une poignée, une tringle, un col de cygne. Tout mat, on ne les
+ * distinguait plus du meuble qui les porte.
+ */
 export const ROUGHNESS = {
-  mur: 0.93,
-  plafond: 0.95,
-  menuiserie: 0.55,
-  parquet: 0.42,
-  carrelage: 0.26,
-  verre: 0.06,
-  /* Dehors : la pierre et l'enrobé ne renvoient rien de directionnel à cette
-     distance, et un reflet sur un immeuble à trente mètres ne ferait que
-     attirer l'œil hors de la fenêtre. */
-  dehors: 0.95,
+  mur: 0.96,
+  plafond: 0.97,
+  menuiserie: 0.9,
+  parquet: 0.92,
+  carrelage: 0.86,
+  /** Assez lisse pour qu'une vitre reste une vitre, pas assez pour éblouir. */
+  verre: 0.2,
+  dehors: 0.97,
 } as const;
 
 /** Rugosité du mobilier, par teinte du nuancier. */
 export const FURNITURE_ROUGHNESS: Record<keyof typeof FURNITURE, number> = {
-  /* Le plâtre d'une moulure : mat comme le mur, mais pas tout à fait — il est
-     peint avec le plafond, donc un rien plus lisse que l'enduit brut. */
-  platre: 0.9,
-  cabinet: 0.5,
-  bois: 0.55,
-  lin: 0.95,
-  petrole: 0.88,
-  terre: 0.88,
-  sombre: 0.62,
-  tapis: 0.98,
-  laiton: 0.35,
+  platre: 0.94,
+  cabinet: 0.9,
+  bois: 0.9,
+  lin: 0.97,
+  petrole: 0.93,
+  terre: 0.93,
+  sombre: 0.9,
+  tapis: 0.99,
+  /**
+   * Le seul reste de brillant de toute la scène — et il en restait trop.
+   *
+   * À 0,55 et 0,3 de métal, une tringle à rideaux traversait la chambre en
+   * barre d'or et devenait l'objet le plus fort de l'image, devant la fenêtre
+   * qu'elle habille. Une poignée doit se voir ; elle ne doit pas se regarder.
+   * À 0,7 le laiton garde sa chaleur et rend le meuble, au lieu de le voler.
+   */
+  laiton: 0.7,
 };
 
-/** Ce qui est métallique. Le laiton, et rien d'autre : un métal mal placé se
- *  voit immédiatement, parce qu'il devient noir là où rien ne se reflète. */
+/**
+ * Ce qui est métallique. Le laiton, et rien d'autre : un métal mal placé se
+ * voit immédiatement, parce qu'il devient noir là où rien ne se reflète.
+ *
+ * Ramené de 0,85 à 0,12 avec le passage en maquette. Un métal presque pur ne
+ * tire sa couleur que de ce qu'il reflète, et dans une scène devenue mate il
+ * n'y a plus grand-chose à refléter : les poignées viraient au brun sale. À
+ * 0,12 le laiton garde sa teinte propre et prend juste ce qu'il faut de lumière
+ * pour se détacher du meuble.
+ */
 export const FURNITURE_METAL: Partial<Record<keyof typeof FURNITURE, number>> = {
-  laiton: 0.85,
+  laiton: 0.12,
 };
