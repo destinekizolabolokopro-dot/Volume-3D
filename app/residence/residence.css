@@ -170,8 +170,15 @@ body:has(.rz) {
   }
 }
 
+/* `fit-content` n'est pas de la cosmétique : un titre en bloc occupe toute la
+   largeur de la bande, y compris le vide à droite du dernier mot. Ce vide
+   passe sur la façade, et la mesure de contraste — qui lit les pixels sous la
+   boîte du texte — y trouvait le béton en plein soleil et annonçait 1,35:1
+   pour un titre parfaitement lisible. La boîte doit épouser les mots. */
 .rz-titre,
 .rz .rz-titre {
+  width: fit-content;
+  max-width: 100%;
   font-size: clamp(40px, 7.4vw, 96px);
   line-height: 1.02;
   font-weight: 400;
@@ -184,13 +191,14 @@ body:has(.rz) {
 }
 
 .rz .rz-h2 {
+  width: fit-content;
+  max-width: min(100%, 15ch);
   font-size: clamp(28px, 3.6vw, 50px);
   line-height: 1.1;
   font-weight: 400;
   letter-spacing: -0.026em;
   color: var(--rz-encre);
   margin: 0;
-  max-width: 15ch;
 }
 
 .rz .rz-h3 {
@@ -280,6 +288,49 @@ body:has(.rz) {
     linear-gradient(180deg, rgba(10, 13, 17, 0.58) 0%, rgba(10, 13, 17, 0) 26%),
     linear-gradient(0deg, rgba(10, 13, 17, 0.82) 0%, rgba(10, 13, 17, 0) 52%),
     linear-gradient(90deg, rgba(10, 13, 17, 0.6) 0%, rgba(10, 13, 17, 0) 46%);
+}
+
+/*
+   Le fond du titre, et il vient d'une mesure.
+
+   Le contraste de cette page ne se lit pas dans la feuille de style : le fond
+   du texte est un bâtiment qui tourne. On le mesure donc sur les pixels
+   (`npm run residence`), et la première mesure a été sévère — 1,34:1 pour le
+   titre du premier écran, là où il traverse les nez de dalle au soleil. Le
+   blanc sur le béton éclairé, c'est du blanc sur du blanc.
+
+   Il fallait environ cinquante pour cent de voile là où le titre passe. Le
+   dégradé est très étalé — il ne se referme qu'aux quatre cinquièmes de la
+   largeur — précisément pour qu'on ne voie pas un bandeau : ce qui doit se
+   voir, c'est que le coin gauche de l'image est dans l'ombre, pas qu'on y a
+   posé un cache.
+*/
+.rz-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    97deg,
+    rgba(10, 13, 17, 0.78) 0%,
+    rgba(10, 13, 17, 0.7) 45%,
+    rgba(10, 13, 17, 0.52) 66%,
+    rgba(10, 13, 17, 0) 86%
+  );
+}
+
+@media (max-width: 900px) {
+  /* Sur téléphone le bâtiment tient la moitié haute et le texte la moitié
+     basse : le voile doit donc monter du bas, pas venir de la gauche. */
+  .rz-hero::after {
+    background: linear-gradient(
+      0deg,
+      rgba(10, 13, 17, 0.86) 0%,
+      rgba(10, 13, 17, 0.78) 48%,
+      rgba(10, 13, 17, 0.36) 68%,
+      rgba(10, 13, 17, 0) 82%
+    );
+  }
 }
 
 .rz-etiquette {

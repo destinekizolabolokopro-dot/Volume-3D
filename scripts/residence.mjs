@@ -18,6 +18,7 @@
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import pw from 'playwright';
+import sharp from 'sharp';
 
 const { chromium } = pw;
 const BASE = process.env.BASE || 'http://localhost:3000';
@@ -124,6 +125,107 @@ async function poser() {
   await page.waitForTimeout(2500);
 }
 
+/*
+ * Le contraste, mesuré sur les pixels et non sur la feuille de style.
+ *
+ * C'est la seule façon honnête de le faire ici. Ailleurs sur le site, un texte
+ * est posé sur un fond dont la couleur est écrite quelque part et se lit dans
+ * la feuille ; sur cette page-ci, le fond est **un bâtiment qui tourne**. La
+ * même ligne blanche passe au fil du défilement sur du béton au soleil, sur du
+ * vitrage sombre et sur du ciel. Aucune valeur du CSS ne dit ce qui se trouve
+ * réellement derrière elle.
+ *
+ * On procède donc en deux prises : la page telle quelle, puis la même image
+ * avec le texte rendu invisible — invisible, pas retiré, pour que rien ne
+ * bouge dans la mise en page. On lit alors le fond à l'emplacement exact des
+ * mots, et on retient le **pixel le plus clair** : contre un texte clair,
+ * c'est lui le cas défavorable, et c'est celui-là qu'il faut faire passer.
+ */
+const TEXTES = [
+  ['titre du hero', '.rz-titre', '#f4f6f7'],
+  ['chapô du hero', '.rz-chapo', 'rgba(238,242,244,0.84)'],
+  ['légende de galerie', '.rz-plaque .rz-p', 'rgba(238,242,244,0.84)'],
+  ['paragraphe du projet', '.rz-texte .rz-p', 'rgba(238,242,244,0.84)'],
+  ['libellé de chiffre', '.rz-libelle', '#f4f6f7'],
+];
+
+const canal = (v) => {
+  const u = v / 255;
+  return u <= 0.03928 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4);
+};
+const clarte = (r, g, b) => 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b);
+const ecart = (a, b) => {
+  const [x, y] = a > b ? [a, b] : [b, a];
+  return (x + 0.05) / (y + 0.05);
+};
+
+/** L'encre du texte, aplatie sur le fond le plus clair qu'il rencontre. */
+function encre(couleur, fond) {
+  const m = couleur.match(/[\d.]+/g).map(Number);
+  const alpha = couleur.startsWith('rgba') ? m[3] : 1;
+  if (couleur.startsWith('#')) {
+    const n = parseInt(couleur.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  return [0, 1, 2].map((i) => m[i] * alpha + fond[i] * (1 - alpha));
+}
+
+const mesures = [];
+
+async function contraste(nom) {
+  const boites = await page.evaluate(
+    (liste) =>
+      liste
+        .map(([label, selecteur]) => {
+          const n = document.querySelector(selecteur);
+          if (!n) return null;
+          const r = n.getBoundingClientRect();
+          if (r.width < 4 || r.height < 4 || r.bottom <= 0 || r.top >= window.innerHeight) return null;
+          return [
+            label,
+            selecteur,
+            Math.max(0, Math.round(r.left)),
+            Math.max(0, Math.round(r.top)),
+            Math.round(Math.min(r.width, window.innerWidth - r.left)),
+            Math.round(Math.min(r.height, window.innerHeight - r.top)),
+          ];
+        })
+        .filter(Boolean),
+    TEXTES.map(([label, selecteur]) => [label, selecteur]),
+  );
+  if (boites.length === 0) return;
+
+  await page.evaluate(
+    (sels) => sels.forEach((s) => document.querySelectorAll(s).forEach((n) => (n.style.visibility = 'hidden'))),
+    boites.map((b) => b[1]),
+  );
+  const nu = await page.screenshot();
+  await page.evaluate(
+    (sels) => sels.forEach((s) => document.querySelectorAll(s).forEach((n) => (n.style.visibility = ''))),
+    boites.map((b) => b[1]),
+  );
+
+  for (const [label, selecteur, x, y, w, h] of boites) {
+    const brut = await sharp(nu)
+      .extract({ left: x, top: y, width: Math.max(1, w), height: Math.max(1, h) })
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    let pire = -1;
+    let fond = [0, 0, 0];
+    const pas = brut.info.channels;
+    for (let i = 0; i < brut.data.length; i += pas) {
+      const l = clarte(brut.data[i], brut.data[i + 1], brut.data[i + 2]);
+      if (l > pire) {
+        pire = l;
+        fond = [brut.data[i], brut.data[i + 1], brut.data[i + 2]];
+      }
+    }
+    const couleur = TEXTES.find(([nomTexte]) => nomTexte === label)[2];
+    const [r, g, b] = encre(couleur, fond);
+    mesures.push({ vue: nom, label, ratio: ecart(clarte(r, g, b), pire) });
+  }
+}
+
 for (const [nom, ancre, plan] of ARRETS) {
   await page.evaluate(
     ([ancre, plan]) => {
@@ -136,8 +238,29 @@ for (const [nom, ancre, plan] of ARRETS) {
   );
   await poser();
   await page.screenshot({ path: join(SORTIE, `${nom}.png`) });
+  await contraste(nom);
   console.log(`${nom.padEnd(16)} ok`);
 }
+
+/* Le seuil est celui de la WCAG pour le texte courant. Les grands titres
+   s'en tirent à 3:1, mais on ne fait pas cette faveur : un titre illisible
+   sur une façade au soleil l'est pour tout le monde. */
+const SEUIL = 4.5;
+console.log('\nContraste mesuré sur les pixels, au pire fond rencontré :\n');
+const pires = new Map();
+for (const m of mesures) {
+  const connu = pires.get(m.label);
+  if (!connu || m.ratio < connu.ratio) pires.set(m.label, m);
+}
+let recale = 0;
+for (const m of [...pires.values()].sort((a, b) => a.ratio - b.ratio)) {
+  const ok = m.ratio >= SEUIL;
+  if (!ok) recale += 1;
+  console.log(
+    `  ${(ok ? 'ok  ' : 'FAIBLE').padEnd(7)} ${m.label.padEnd(22)} ${m.ratio.toFixed(2)}:1  (${m.vue})`,
+  );
+}
+if (recale > 0) console.log(`\n  ${recale} texte(s) sous ${SEUIL}:1.`);
 
 if (erreurs.length > 0) {
   console.log('\nErreurs de console :');
