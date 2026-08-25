@@ -28,6 +28,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { subdiviser } from '@/components/three/maillage';
 import { poserAppartement, type Palette } from '@/components/three/appartement';
 import {
   ETAGE,
@@ -173,7 +174,18 @@ type Bin = { dispose(): void };
 class Lot {
   private readonly lots = new Map<THREE.Material, THREE.BufferGeometry[]>();
 
-  add(source: THREE.BufferGeometry, material: THREE.Material, matrix: THREE.Matrix4): void {
+  /**
+   * @param maille Longueur d'arête maximale avant cuisson. Sans subdivision,
+   *   une couleur portée par les sommets ne varie qu'aux quatre coins d'un mur.
+   * @param paint Facteur d'éclairement en un point du **monde**, entre 0 et 1.
+   */
+  add(
+    source: THREE.BufferGeometry,
+    material: THREE.Material,
+    matrix: THREE.Matrix4,
+    paint?: (x: number, y: number, z: number) => number,
+    maille = 0.6,
+  ): void {
     let geometry = source;
     geometry.applyMatrix4(matrix);
     if (!geometry.index) {
@@ -181,10 +193,40 @@ class Lot {
       if (indexed !== geometry) geometry.dispose();
       geometry = indexed;
     }
+    if (paint) {
+      const fin = subdiviser(geometry, maille);
+      if (fin !== geometry) geometry.dispose();
+      geometry = fin;
+    }
     if (!geometry.getAttribute('uv')) {
       const count = geometry.getAttribute('position').count;
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2));
     }
+    /*
+     * La couleur des sommets, cuite après la transformation.
+     *
+     * Après, et c'est tout l'intérêt : la fonction reçoit des coordonnées du
+     * monde, donc elle peut dire « ce point est à douze centimètres d'un mur »
+     * sans rien savoir de la géométrie qu'on est en train de poser.
+     *
+     * Et l'attribut est écrit en **blanc** quand rien n'est cuit : une fusion
+     * qui mêle des géométries avec et sans `color` ne peut pas deviner la
+     * valeur manquante, et three la remplit de zéros — c'est-à-dire de noir.
+     */
+    const count = geometry.getAttribute('position').count;
+    const teintes = new Float32Array(count * 3);
+    if (paint) {
+      const position = geometry.getAttribute('position');
+      for (let i = 0; i < count; i += 1) {
+        const k = paint(position.getX(i), position.getY(i), position.getZ(i));
+        teintes[i * 3] = k;
+        teintes[i * 3 + 1] = k;
+        teintes[i * 3 + 2] = k;
+      }
+    } else {
+      teintes.fill(1);
+    }
+    geometry.setAttribute('color', new THREE.BufferAttribute(teintes, 3));
     const lot = this.lots.get(material);
     if (lot) lot.push(geometry);
     else this.lots.set(material, [geometry]);
@@ -434,8 +476,16 @@ export function buildEdifice(
 
   const voute = ciel(bin, leger);
 
+  /* Tous les matériaux acceptent la couleur des sommets. C'est sans effet sur
+     ceux qui ne portent rien — l'attribut y vaut blanc — et cela évite d'avoir
+     deux familles de matériaux qui ne peuvent pas fusionner ensemble. */
   const mat = (color: number, roughness: number, extra: THREE.MeshStandardMaterialParameters = {}) => {
-    const material = new THREE.MeshStandardMaterial({ color, roughness, ...extra });
+    const material = new THREE.MeshStandardMaterial({
+      color,
+      roughness,
+      vertexColors: true,
+      ...extra,
+    });
     bin.push(material);
     return material;
   };
@@ -567,7 +617,9 @@ export function buildEdifice(
     x: number,
     y: number,
     z: number,
-  ) => lot.add(geometry, material, M.makeTranslation(x, y, z));
+    paint?: (px: number, py: number, pz: number) => number,
+    maille?: number,
+  ) => lot.add(geometry, material, M.makeTranslation(x, y, z), paint, maille);
 
   /*
    * Une plaque percée par l'atrium.

@@ -28,7 +28,15 @@ import { BAIE, PIECES, SOL, SOUS_PLAFOND, TERRASSE, type Piece } from '@/lib/res
 
 /** Ce que l'appartement emprunte à la scène qui l'accueille. */
 export interface Atelier {
-  pose(geometry: THREE.BufferGeometry, material: THREE.Material, x: number, y: number, z: number): void;
+  pose(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    x: number,
+    y: number,
+    z: number,
+    paint?: (px: number, py: number, pz: number) => number,
+    maille?: number,
+  ): void;
   materiaux: Palette;
   /** Vrai sur les machines faibles : on baisse la finesse des révolutions. */
   leger: boolean;
@@ -68,6 +76,101 @@ const X1 = Math.max(...Object.values(PIECES).map((p) => p.x1));
 const Z0 = Math.min(...Object.values(PIECES).map((p) => p.z0));
 const Z1 = Math.max(...Object.values(PIECES).map((p) => p.z1));
 
+/* ========================================================== occlusion === */
+
+/**
+ * L'occlusion, cuite dans les sommets.
+ *
+ * C'est le seul défaut qui restait et le plus difficile à nommer : dans cet
+ * appartement, un angle de mur recevait exactement autant de lumière que le
+ * milieu de la pièce. La raison est mécanique — la seule lumière indirecte de
+ * la scène est une carte d'environnement, et une carte d'environnement ne sait
+ * pas qu'il y a un mur à dix centimètres. Aucun réglage d'exposition, aucune
+ * matière, aucun cadrage ne rattrape cela : le rendu paraît « propre » et faux,
+ * et personne ne sait dire pourquoi.
+ *
+ * On la calcule donc à la construction, une fois, et on l'écrit dans la
+ * couleur des sommets. C'est ce que fait déjà `interior.ts` pour les visites
+ * de logements, et c'est la technique la moins chère qui existe : elle ne
+ * coûte rien à l'image, puisque tout est fait avant la première.
+ *
+ * Trois effets seulement, mais ce sont les trois qu'on voit :
+ *
+ *  · **la ligne d'ombre du sol.** Un mur s'assombrit sur ses trente derniers
+ *    centimètres. C'est ce qui pose une pièce ;
+ *  · **les angles verticaux.** Un mur s'assombrit à l'approche de celui qu'il
+ *    rencontre ;
+ *  · **les ombres de contact.** Un meuble noircit le sol autour de son pied.
+ *    Sans elles, tout meuble flotte — et c'est le premier reproche qu'on fait
+ *    à une image de synthèse sans savoir le formuler.
+ */
+
+/** Les lignes de murs, par axe : elles servent à assombrir les angles. */
+const LIGNES_X = [-3.6, 0.6, 10.6];
+const LIGNES_Z = [-1.4, 3.0, 6.6, 10.6];
+
+/**
+ * Les emprises au sol des meubles posés, pour l'ombre de contact.
+ *
+ * Elles sont écrites à la main et non déduites des volumes, et c'est un choix
+ * assumé : tout ce qui est posé ne porte pas d'ombre de contact — un tapis n'en
+ * a pas, un plateau de table sur pieds fins n'en a presque pas — et une
+ * déduction automatique aurait noirci le sol sous chacun des cent quarante
+ * pavés de cet appartement.
+ */
+const CONTACTS: [number, number, number, number, number][] = [
+  [4.0, 4.95, 5.4, 9.3, 0.5],
+  [4.95, 8.6, 5.4, 6.35, 0.5],
+  [0.72, 1.18, 7.2, 10.2, 0.45],
+  [4.6, 8.0, 1.1, 2.2, 0.5],
+  [3.0, 9.2, -1.4, -0.74, 0.5],
+  [0.72, 1.34, 0.2, 2.6, 0.45],
+  [-3.4, -1.28, 7.7, 9.5, 0.5],
+  [-3.4, -0.2, 6.72, 7.32, 0.45],
+  [-3.3, -1.5, -1.2, -0.4, 0.4],
+  [-3.6, -3.05, 0.9, 2.88, 0.4],
+];
+
+/** Assombrissement d'un mur : au ras du sol, sous le plafond, et dans les angles. */
+function occlusionMur(selonZ: boolean, fixe: number) {
+  const perpendiculaires = selonZ ? LIGNES_Z : LIGNES_X;
+  return (x: number, y: number, z: number) => {
+    const bas = 0.4 * Math.exp(-(y - SOL) / 0.3);
+    const haut = 0.17 * Math.exp(-(PLAFOND - y) / 0.24);
+    const le = selonZ ? z : x;
+    let angle = 0;
+    for (const ligne of perpendiculaires) {
+      angle = Math.max(angle, 0.3 * Math.exp(-Math.abs(le - ligne) / 0.26));
+    }
+    void fixe;
+    return Math.max(0.3, 1 - bas - haut - angle);
+  };
+}
+
+/** Assombrissement d'un sol : contre les murs, et sous les meubles. */
+function occlusionSol(x: number, _y: number, z: number): number {
+  let mur = 0;
+  for (const ligne of LIGNES_X) mur = Math.max(mur, 0.34 * Math.exp(-Math.abs(x - ligne) / 0.32));
+  for (const ligne of LIGNES_Z) mur = Math.max(mur, 0.34 * Math.exp(-Math.abs(z - ligne) / 0.32));
+  let pied = 0;
+  for (const [x0, x1, z0, z1, force] of CONTACTS) {
+    const dx = Math.max(x0 - x, 0, x - x1);
+    const dz = Math.max(z0 - z, 0, z - z1);
+    /* On garde le contact le plus fort et on ne les additionne pas : deux
+       meubles voisins creuseraient sinon un trou noir entre eux. */
+    pied = Math.max(pied, force * Math.exp(-Math.hypot(dx, dz) / 0.3));
+  }
+  return Math.max(0.24, 1 - Math.max(mur, pied));
+}
+
+/** Assombrissement d'un plafond : contre les murs, et un peu partout. */
+function occlusionPlafond(x: number, _y: number, z: number): number {
+  let mur = 0;
+  for (const ligne of LIGNES_X) mur = Math.max(mur, 0.26 * Math.exp(-Math.abs(x - ligne) / 0.34));
+  for (const ligne of LIGNES_Z) mur = Math.max(mur, 0.26 * Math.exp(-Math.abs(z - ligne) / 0.34));
+  return Math.max(0.5, 1 - mur);
+}
+
 export function poserAppartement(a: Atelier): THREE.Light[] {
   const { pose, materiaux: M, leger } = a;
   const rond = (r: number) => (leger ? Math.max(6, Math.round(r)) : Math.round(r * 1.6));
@@ -81,6 +184,8 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     y1: number,
     z0: number,
     z1: number,
+    paint?: (px: number, py: number, pz: number) => number,
+    maille = 0.45,
   ) => {
     if (x1 - x0 < 0.004 || y1 - y0 < 0.004 || z1 - z0 < 0.004) return;
     pose(
@@ -89,30 +194,95 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
       (x0 + x1) / 2,
       (y0 + y1) / 2,
       (z0 + z1) / 2,
+      paint,
+      maille,
     );
+  };
+
+  /**
+   * Une nappe : un plan horizontal, et rien d'autre.
+   *
+   * Les sols et le plafond étaient des pavés. Sur une surface qu'on subdivise
+   * pour y cuire l'occlusion, cela revient à raffiner six faces pour n'en
+   * regarder qu'une : la scène est passée de vingt mille à cent trente-trois
+   * mille triangles d'un coup, dont cinq sixièmes pour des sous-faces de
+   * dalles que personne ne verra jamais.
+   */
+  const nappe = (
+    mat: THREE.Material,
+    x0: number,
+    x1: number,
+    y: number,
+    z0: number,
+    z1: number,
+    versLeHaut: boolean,
+    paint: (px: number, py: number, pz: number) => number,
+    maille: number,
+  ) => {
+    const plan = new THREE.PlaneGeometry(x1 - x0, z1 - z0);
+    plan.rotateX(versLeHaut ? -Math.PI / 2 : Math.PI / 2);
+    pose(plan, mat, (x0 + x1) / 2, y, (z0 + z1) / 2, paint, maille);
   };
 
   /* ------------------------------------------------------------- sols --- */
   /* Deux revêtements, et la limite tombe sur une cloison : du parquet là où
      l'on marche pieds nus, de la pierre là où l'on renverse de l'eau. */
-  const dalle = (mat: THREE.Material, p: Piece) => bloc(mat, p.x0, p.x1, SOL - 0.14, SOL, p.z0, p.z1);
+  const dalle = (mat: THREE.Material, p: Piece) =>
+    nappe(mat, p.x0, p.x1, SOL, p.z0, p.z1, true, occlusionSol, 0.42);
   dalle(M.parquet, PIECES.entree);
   dalle(M.parquet, PIECES.sejour);
   dalle(M.parquet, PIECES.chambre);
   dalle(M.pierre, PIECES.cuisine);
   dalle(M.pierre, PIECES.bains);
 
+  /*
+   * Les joints du parquet.
+   *
+   * Le sol est la plus grande surface d'une pièce et la plus regardée : un
+   * aplat brun de soixante-seize mètres carrés est ce qui reste de plus
+   * « image de synthèse » dans cette page. Un joint tous les seize
+   * centimètres, large de huit millimètres, et le parquet redevient du
+   * parquet.
+   *
+   * Ce sont des lattes, pas une texture : le dépôt a retiré ses cartes de
+   * relief une à une, et pour une raison qui vaut ici plus qu'ailleurs — à
+   * deux mètres, une image de bois plaquée sur un plan se voit comme une image
+   * de bois plaquée sur un plan.
+   */
+  const lattes = (p: Piece) => {
+    for (let z = p.z0 + 0.16; z < p.z1 - 0.05; z += 0.16) {
+      bloc(M.tronc, p.x0 + 0.02, p.x1 - 0.02, SOL + 0.002, SOL + 0.006, z - 0.004, z + 0.004);
+    }
+  };
+  lattes(PIECES.entree);
+  lattes(PIECES.sejour);
+  lattes(PIECES.chambre);
+
   // Le plafond, d'un seul tenant.
   /* Le plafond est peint, pas coulé : c'est `enduit` et non `soffite`. Un
      plafond gris de sous-face de dalle assombrit une pièce entière, puisque
      c'est la plus grande surface qu'elle possède et la seule que toutes les
      autres voient. */
-  bloc(M.enduit, X0, X1, PLAFOND, PLAFOND + 0.14, Z0, Z1);
+  nappe(M.enduit, X0, X1, PLAFOND, Z0, Z1, false, occlusionPlafond, 0.7);
+
+  /* Le joint creux du plafond : quatre centimètres d'ombre entre le plafond et
+     les murs. C'est un détail de chantier — un profil de rive — et c'est ce qui
+     détache un plafond au lieu de le coller. Il ne se remarque pas ; son
+     absence, si : sans lui, le plafond fait bloc avec les murs et la pièce perd
+     sa hauteur. */
+  for (const [x0, x1, z0, z1] of [
+    [X0, X1, Z0, Z0 + 0.05],
+    [X0, X1, Z1 - 0.05, Z1],
+    [X0, X0 + 0.05, Z0, Z1],
+    [X1 - 0.05, X1, Z0, Z1],
+  ]) {
+    bloc(M.tronc, x0, x1, PLAFOND - 0.045, PLAFOND, z0, z1);
+  }
 
   /* -------------------------------------------------- murs de refend --- */
   // Les deux murs aveugles, à l'ouest et au sud.
-  bloc(M.enduit, X0 - 0.2, X0, SOL, PLAFOND, Z0 - 0.2, Z1);
-  bloc(M.enduit, X0 - 0.2, X1, SOL, PLAFOND, Z0 - 0.2, Z0);
+  bloc(M.enduit, X0 - 0.2, X0, SOL, PLAFOND, Z0 - 0.2, Z1, occlusionMur(true, X0), 0.45);
+  bloc(M.enduit, X0 - 0.2, X1, SOL, PLAFOND, Z0 - 0.2, Z0, occlusionMur(false, Z0), 0.45);
 
   /**
    * Une cloison percée d'un passage.
@@ -131,8 +301,9 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     for (let i = 0; i < bords.length; i += 2) {
       const c0 = bords[i];
       const c1 = bords[i + 1];
-      if (selonZ) bloc(M.enduit, fixe, fixe + CLOISON, SOL, PLAFOND, c0, c1);
-      else bloc(M.enduit, c0, c1, SOL, PLAFOND, fixe, fixe + CLOISON);
+      const teinte = occlusionMur(selonZ, fixe);
+      if (selonZ) bloc(M.enduit, fixe, fixe + CLOISON, SOL, PLAFOND, c0, c1, teinte, 0.45);
+      else bloc(M.enduit, c0, c1, SOL, PLAFOND, fixe, fixe + CLOISON, teinte, 0.45);
     }
     // Les linteaux, au-dessus de chaque passage.
     for (const [p0, p1, haut] of trous) {
@@ -163,6 +334,34 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   plinthe(true, PIECES.entree.x1 - 0.022, 6.0, Z1);
   plinthe(true, PIECES.entree.x1 + CLOISON, Z0, 4.2);
   plinthe(true, PIECES.entree.x1 + CLOISON, 6.0, Z1);
+
+  /*
+   * Les deux portes, entrouvertes.
+   *
+   * Une baie de quatre-vingt-dix centimètres sans vantail n'est pas une porte,
+   * c'est un trou dans un mur — et une chambre à laquelle on accède par un trou
+   * dans un mur n'est pas un logement. Entrouvertes à trente degrés : fermées,
+   * elles cachent la pièce que la visite s'apprête à montrer ; grandes
+   * ouvertes, elles disparaissent contre le mur.
+   */
+  const porte = (x: number, z: number, angle: number) => {
+    const large = 0.9;
+    const c = Math.cos(angle);
+    const sn = Math.sin(angle);
+    const geo = new THREE.BoxGeometry(large, PORTE - 0.04, 0.042);
+    geo.translate(large / 2, 0, 0);
+    geo.rotateY(angle);
+    pose(geo, M.bois, x, SOL + (PORTE - 0.04) / 2, z);
+    // La poignée, à un mètre cinq.
+    const bec = new THREE.BoxGeometry(0.13, 0.024, 0.024);
+    bec.translate(large - 0.09 + 0.05, 0, 0.05);
+    bec.rotateY(angle);
+    pose(bec, M.metal, x, SOL + 1.05, z);
+    void c;
+    void sn;
+  };
+  porte(-1.9, PIECES.entree.z1 + CLOISON / 2, -0.52);
+  porte(-1.9, PIECES.entree.z0 - CLOISON / 2, 0.52);
 
   /* ------------------------------------------------------- menuiserie --- */
   /*
@@ -219,6 +418,35 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   bloc(M.lueur, X1 - 0.62, X1 - 0.24, PLAFOND - 0.1, PLAFOND - 0.05, Z0 + 0.6, Z1 - 0.6);
   bloc(M.lueur, X0 + 0.6, X1 - 0.8, PLAFOND - 0.1, PLAFOND - 0.05, Z1 - 0.62, Z1 - 0.24);
 
+  /*
+   * Les rideaux, repliés sur les côtés.
+   *
+   * Repliés, et jamais tirés : une voilure en travers de la baie coûterait la
+   * vue, qui est ce qu'on vend, et un panneau translucide plein cadre est en
+   * plus le genre de surface qui fait ramer une machine faible. Rassemblés aux
+   * tableaux, ils font ce qu'ils font dans les photographies d'intérieur —
+   * habiller un vitrage nu et donner une matière souple au milieu de six
+   * matières dures.
+   */
+  const tringle = (selonZ: boolean, fixe: number, de: number, a: number) => {
+    if (selonZ) bloc(M.metal, fixe - 0.26, fixe - 0.22, PLAFOND - 0.17, PLAFOND - 0.13, de, a);
+    else bloc(M.metal, de, a, PLAFOND - 0.17, PLAFOND - 0.13, fixe - 0.26, fixe - 0.22);
+  };
+  const voilage = (selonZ: boolean, fixe: number, centre: number) => {
+    for (let i = 0; i < 4; i += 1) {
+      const c = centre + (i - 1.5) * 0.13;
+      const profond = 0.1 + (i % 2) * 0.06;
+      if (selonZ) bloc(M.lin, fixe - 0.34, fixe - 0.34 + profond, SOL + 0.02, PLAFOND - 0.16, c - 0.06, c + 0.06);
+      else bloc(M.lin, c - 0.06, c + 0.06, SOL + 0.02, PLAFOND - 0.16, fixe - 0.34, fixe - 0.34 + profond);
+    }
+  };
+  tringle(true, X1, Z0 + 0.3, Z1 - 0.3);
+  tringle(false, Z1, X0 + 0.9, X1 - 0.3);
+  voilage(true, X1, 3.5);
+  voilage(true, X1, 10.0);
+  voilage(false, Z1, 1.5);
+  voilage(false, Z1, 10.0);
+
   /* ------------------------------------------------------------ séjour --- */
   const S = PIECES.sejour;
   // Le tapis, puis le canapé en L autour de l'angle vitré.
@@ -264,9 +492,14 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     }
   }
   // Un lampadaire dans l'angle, et une plante devant la baie.
-  pose(new THREE.CylinderGeometry(0.16, 0.16, 0.02, rond(9)), M.metal, 3.5, SOL + 0.01, 9.9);
-  pose(new THREE.CylinderGeometry(0.02, 0.02, 1.5, rond(6)), M.metal, 3.5, SOL + 0.76, 9.9);
-  pose(new THREE.CylinderGeometry(0.2, 0.15, 0.26, rond(10)), M.lin, 3.5, SOL + 1.62, 9.9);
+  /* Le lampadaire a changé de coin. Posé près de l'angle nord-ouest, il tombait
+     à un mètre cinquante du premier arrêt du séjour et son abat-jour occupait
+     un sixième du cadre : un objet de quarante centimètres vu de trop près est
+     un objet énorme, et c'est le genre de faute qu'on ne voit que sur la
+     capture. Au sud du canapé, il est à six mètres des deux points de vue. */
+  pose(new THREE.CylinderGeometry(0.16, 0.16, 0.02, rond(9)), M.metal, 4.0, SOL + 0.01, 4.3);
+  pose(new THREE.CylinderGeometry(0.02, 0.02, 1.5, rond(6)), M.metal, 4.0, SOL + 0.76, 4.3);
+  pose(new THREE.CylinderGeometry(0.2, 0.15, 0.26, rond(10)), M.lin, 4.0, SOL + 1.62, 4.3);
   plante(a, 9.9, 9.9, 0.72, rond);
 
   /* ----------------------------------------------------------- cuisine --- */
@@ -367,7 +600,7 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
    * une par bande de jour, une pour la bande de service, et le reste vient de
    * la carte d'environnement et du soleil.
    */
-  lampe(6.0, SOL + 2.5, 7.0, 26);
+  lampe(5.4, SOL + 2.4, 7.2, 26);
   lampe(6.3, SOL + 2.3, 1.7, 22);
   lampe(-1.8, SOL + 2.4, 5.4, 18);
   return lampes;
