@@ -1,0 +1,61 @@
+/*
+   Le calque de la scène.
+
+   Il porte deux choses et rien d'autre : le canevas, et le flou qui se lève
+   au chargement. Tout le reste — le texte, le voile, la barre — vit dans la
+   page, au-dessus.
+*/
+.scene {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #10161d 0%, #1b2129 55%, #2a2b28 100%);
+}
+
+.scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /*
+     Le flou d'ouverture.
+
+     Dix-huit pixels, et une remontée d'échelle de deux pour cent : un flou
+     seul laisse voir les bords de l'image, et l'œil comprend qu'on floute une
+     photo au lieu de faire le point. La montée d'échelle simule la mise au
+     point d'un objectif, qui recadre toujours un peu.
+
+     Une seconde trois, pas deux et demie. La durée est bornée par autre chose
+     que le goût : pendant la mise au point, la scène est **arrêtée** — voir
+     `Edifice.tsx` — et une image d'accueil qui reste figée plus d'une seconde
+     et demie cesse d'être une mise au point pour devenir une attente.
+  */
+  opacity: 0;
+  filter: blur(18px);
+  transform: scale(1.02);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 1.3s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scene[data-net='1'] canvas {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+
+/* Sans WebGL, ou sur « moins d'animations » : le dégradé reste, et il n'y a
+   rien à excuser — la page se lit entièrement sans la scène. */
+.scene[data-etat='sansGL'] {
+  background:
+    radial-gradient(120% 80% at 68% 18%, rgba(214, 219, 226, 0.16), transparent 60%),
+    linear-gradient(180deg, #10161d 0%, #1b2129 55%, #2a2b28 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene canvas {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition: none;
+  }
+}

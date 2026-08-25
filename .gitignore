@@ -10,3 +10,6 @@ next-env.d.ts
 
 # Dossier de travail du générateur de la version un seul fichier.
 .standalone-build/
+
+# Captures d’écran produites par `npm run vues` et `npm run residence`.
+captures/

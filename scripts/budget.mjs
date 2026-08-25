@@ -108,10 +108,14 @@ await page.waitForTimeout(5000);
  */
 const relevé = await page.evaluate(async (images) => {
   const canvas = document.querySelector('canvas');
+  /* La visite tient dans une section haute ; la page de la résidence, elle,
+     défile d'un bout à l'autre du document. On mesure donc la course de la
+     section quand il y en a une, et celle du document sinon — dans les deux
+     cas, tout le trajet de la caméra. */
   const section = document.querySelector('#visite section') || document.querySelector('#visite');
-  if (!canvas || !section) return null;
-  const haut = section.getBoundingClientRect().top + scrollY;
-  const course = section.offsetHeight - innerHeight;
+  if (!canvas) return null;
+  const haut = section ? section.getBoundingClientRect().top + scrollY : 0;
+  const course = (section ? section.offsetHeight : document.documentElement.scrollHeight) - innerHeight;
 
   const compteur = window.__budget;
   const depart = { appels: compteur.appels, triangles: compteur.triangles };

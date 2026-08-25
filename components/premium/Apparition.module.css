@@ -1,0 +1,68 @@
+/*
+   L'apparition.
+
+   Une seule classe, quatre façons, et surtout : une seule propriété animée
+   par façon en plus de l'opacité. Un bloc qui monte, grandit, se dé-floute et
+   change de couleur à la fois ne paraît pas plus soigné — il paraît occupé.
+*/
+.apparition {
+  opacity: 0;
+  transition:
+    opacity 900ms cubic-bezier(0.22, 1, 0.36, 1) var(--delai, 0ms),
+    transform 1200ms cubic-bezier(0.16, 1, 0.3, 1) var(--delai, 0ms),
+    filter 1100ms cubic-bezier(0.16, 1, 0.3, 1) var(--delai, 0ms);
+  will-change: opacity, transform;
+}
+
+.apparition[data-facon='monte'] {
+  transform: translate3d(0, 28px, 0);
+}
+
+.apparition[data-facon='net'] {
+  filter: blur(14px);
+  /* Deux pour cent, pas dix : au-delà, la mise au point devient un zoom, et
+     un zoom sur du texte se voit comme un effet. */
+  transform: scale(1.02);
+}
+
+/*
+ * `filet` ne clippe rien, et c'est une correction.
+ *
+ * La première version posait `clip-path: inset(0 100% 0 0)` sur l'élément
+ * observé. Elle ne s'est **jamais** déclenchée, sur aucun écran, et le piège
+ * mérite d'être écrit noir sur blanc : Chrome tient compte du `clip-path` de
+ * la cible pour calculer son taux d'intersection. Un élément entièrement
+ * clippé n'intersecte donc jamais rien — il attend d'être vu pour se montrer,
+ * et il ne peut pas être vu tant qu'il ne s'est pas montré.
+ *
+ * L'élément ne fait donc plus que paraître ; c'est **son trait** — un
+ * pseudo-élément, invisible à l'observateur — qui se tire. L'opacité, elle,
+ * n'entre pas dans le calcul d'intersection.
+ */
+.apparition[data-facon='filet'] {
+  opacity: 0;
+}
+
+.apparition[data-vu='1'] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  will-change: auto;
+}
+
+/*
+   Le parallaxe écrit `transform` dans le style en ligne, qui bat cette
+   feuille : un élément à la fois animé et suivi part donc de sa position
+   parallaxée au lieu de monter de vingt-huit pixels. C'est voulu — les deux
+   mouvements se contrarieraient — et c'est pourquoi les blocs suivis se
+   révèlent en `fond` ou en `net`, jamais en `monte`.
+*/
+
+@media (prefers-reduced-motion: reduce) {
+  .apparition {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}

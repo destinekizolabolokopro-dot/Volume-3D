@@ -1,0 +1,224 @@
+/*
+   La barre.
+
+   Le verre est fait de trois couches et il faut les trois : un fond très
+   sombre à peine transparent, un flou d'arrière-plan, et un filet clair en
+   bas. Sans le filet, le verre n'a pas de bord et flotte ; sans le flou, le
+   bâtiment défile en clair derrière les liens ; sans le fond, le flou seul ne
+   suffit jamais à rattraper le contraste sur une façade au soleil.
+*/
+.barre {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  padding: 22px 0;
+  background: rgba(9, 12, 16, 0);
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    backdrop-filter 700ms linear;
+}
+
+.barre[data-pose='1'],
+.barre[data-ouverte='1'] {
+  padding: 14px 0;
+  background: rgba(9, 12, 16, 0.72);
+  border-bottom-color: rgba(233, 237, 240, 0.12);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(130%);
+}
+
+.rang {
+  width: min(1240px, 100% - 48px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+/* ------------------------------------------------------------- marque --- */
+
+.marque {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  color: inherit;
+  margin-right: auto;
+}
+
+.nom {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: #f4f6f7;
+}
+
+.lieu {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  /* 4,9 sur le fond du verre, et davantage sur le ciel du hero. */
+  color: rgba(226, 232, 236, 0.62);
+}
+
+/* -------------------------------------------------------------- liens --- */
+
+.liens {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.lien {
+  position: relative;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  color: rgba(233, 238, 241, 0.78);
+  padding: 6px 0;
+  transition: color 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Le soulignement se tire du bord gauche au lieu de s'allumer d'un coup.
+   C'est la même grammaire que le `filet` des apparitions : la page n'a qu'une
+   façon de faire venir un trait. */
+.lien::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lien:hover,
+.lien[data-ici='1'] {
+  color: #ffffff;
+}
+
+.lien:hover::after,
+.lien[data-ici='1']::after {
+  transform: scaleX(1);
+}
+
+/* ----------------------------------------------------------- explorer --- */
+
+.explorer {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  color: #0d1116;
+  background: rgba(244, 246, 247, 0.92);
+  padding: 9px 18px;
+  border-radius: 999px;
+  transition:
+    background-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.explorer:hover {
+  background: #ffffff;
+  transform: translate3d(2px, 0, 0);
+}
+
+/* ------------------------------------------------------------ bascule --- */
+
+.bascule {
+  display: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.trait {
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: #eef1f3;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.barre[data-ouverte='1'] .trait:first-child {
+  transform: translateY(3.5px) rotate(45deg);
+}
+
+.barre[data-ouverte='1'] .trait:last-child {
+  transform: translateY(-3.5px) rotate(-45deg);
+}
+
+/* ---------------------------------------------------------- l'étroit --- */
+
+@media (max-width: 860px) {
+  .rang {
+    width: calc(100% - 32px);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .bascule {
+    display: flex;
+  }
+
+  .explorer {
+    display: none;
+  }
+
+  /* Fermé, le panneau n'occupe aucune hauteur et ne reçoit aucun clic. Il
+     reste dans l'arbre pour que l'ouverture soit une transition et non une
+     apparition sèche. */
+  .liens {
+    order: 3;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition:
+      max-height 620ms cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 620ms linear;
+  }
+
+  .barre[data-ouverte='1'] .liens {
+    max-height: 260px;
+    visibility: visible;
+    padding-top: 10px;
+  }
+
+  .lien {
+    font-size: 15px;
+    padding: 12px 0;
+  }
+
+  .lien::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barre,
+  .lien,
+  .lien::after,
+  .explorer,
+  .trait,
+  .liens {
+    transition: none;
+  }
+}

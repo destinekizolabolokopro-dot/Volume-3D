@@ -15,7 +15,8 @@
     "contraste": "node scripts/contraste.mjs",
     "budget": "node scripts/budget.mjs",
     "verify": "npm run typecheck && npm test && npm run palette",
-    "vues": "node scripts/vues.mjs"
+    "vues": "node scripts/vues.mjs",
+    "residence": "node scripts/residence.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
