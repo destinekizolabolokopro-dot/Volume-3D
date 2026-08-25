@@ -6,11 +6,10 @@ import { Mots } from '@/components/premium/Mots';
 import { CONTACT_EMAIL } from '@/lib/content';
 import {
   APPEL,
-  ARCHITECTURE,
-  ATRIUM_TEXTE,
+  BAINS,
+  CHAMBRE,
+  CUISINE,
   GALERIE,
-  HALL_TEXTE,
-  PRESENTATION,
   PROJET,
   SEJOUR,
   chiffres,
@@ -22,10 +21,15 @@ import './residence.css';
 /**
  * ORIEL — la page.
  *
- * Neuf écrans au-dessus d'une seule scène. Le bâtiment est **fixe**, en fond
- * de fenêtre ; ce sont les sections qui défilent par-dessus, et la caméra qui
- * avance à mesure. On ne tourne pas autour du projet : on descend dessus, on
- * entre, on monte l'atrium, et on s'arrête dans un séjour du cinquième.
+ * Huit écrans au-dessus d'une seule scène, et **une seule visite : celle d'un
+ * appartement.** La caméra part de son entrée, traverse le séjour, la cuisine,
+ * la chambre, la salle de bains, et sort sur la terrasse au dernier écran.
+ * Elle ne quitte jamais le logement — ce qu'on voit du bâtiment, on le voit
+ * par ses baies.
+ *
+ * C'est un recentrage, pas une réduction. Volume3D ne vend pas des immeubles :
+ * il vend la reconstitution d'un logement, et une démonstration qui fait le
+ * tour d'une tour montre surtout ce qu'on ne livre pas.
  *
  * Le texte se tient **au bord du cadre**, et c'est la règle qui gouverne toute
  * la mise en page. La version précédente posait des paragraphes au milieu de
@@ -93,7 +97,7 @@ export default function ResidencePage() {
 
       {/* Le bâtiment, en fond de fenêtre. Il ne défile pas : on y entre. */}
       <div className="rz-fond">
-        <Edifice nom={PROJET.nom} />
+        <Edifice />
       </div>
 
       <BarreResidence />
@@ -126,35 +130,23 @@ export default function ResidencePage() {
           </Apparition>
         </section>
 
-        {/* -------------------------------------------------- 2. le projet --- */}
-        <section className="rz-section" id="projet">
+        {/* --------------------------------------------------- 2. le séjour --- */}
+        <section className="rz-section" id="sejour">
           <div className="rz-bande rz-plaque-haute">
-            <Titre section={PRESENTATION} />
+            <Titre section={SEJOUR} />
           </div>
           <div className="rz-bande rz-pied-section">
-            <Fiches faits={PRESENTATION.faits} delai={220} />
+            <Fiches faits={SEJOUR.faits} delai={220} />
           </div>
         </section>
 
-        {/* --------------------------------------------- 3. architecture --- */}
-        <section className="rz-section" id="architecture">
+        {/* --------------------------------------------------- 3. la cuisine --- */}
+        <section className="rz-section" id="cuisine">
           <div className="rz-bande rz-plaque-haute">
-            <Apparition facon="filet" className="rz-surtitre">
-              {ARCHITECTURE.surtitre}
-            </Apparition>
-            <Mots as="h2" className="rz-h2" lignes={ARCHITECTURE.titre} />
+            <Titre section={CUISINE} cote="droite" />
           </div>
-
           <div className="rz-bande rz-pied-section">
-            <ul className="rz-traits">
-              {ARCHITECTURE.traits.map((trait, i) => (
-                <Apparition as="li" key={trait.numero} facon="monte" delai={i * 110} className="rz-trait">
-                  <span className="rz-numero">{trait.numero}</span>
-                  <h3 className="rz-h3">{trait.titre}</h3>
-                  <p className="rz-p rz-p-petit">{trait.texte}</p>
-                </Apparition>
-              ))}
-            </ul>
+            <Fiches faits={CUISINE.faits} delai={220} />
           </div>
         </section>
 
@@ -173,33 +165,23 @@ export default function ResidencePage() {
           ))}
         </section>
 
-        {/* ---------------------------------------------------- 5. le hall --- */}
-        <section className="rz-section" id="hall">
+        {/* --------------------------------------------------- 5. la chambre --- */}
+        <section className="rz-section" id="chambre">
           <div className="rz-bande rz-plaque-haute">
-            <Titre section={HALL_TEXTE} />
+            <Titre section={CHAMBRE} />
           </div>
           <div className="rz-bande rz-pied-section">
-            <Fiches faits={HALL_TEXTE.faits} delai={220} />
+            <Fiches faits={CHAMBRE.faits} delai={220} />
           </div>
         </section>
 
-        {/* --------------------------------------------------- 6. l'atrium --- */}
-        <section className="rz-section" id="atrium">
+        {/* ------------------------------------------- 6. la salle de bains --- */}
+        <section className="rz-section" id="bains">
           <div className="rz-bande rz-plaque-haute">
-            <Titre section={ATRIUM_TEXTE} cote="droite" />
+            <Titre section={BAINS} cote="droite" />
           </div>
           <div className="rz-bande rz-pied-section">
-            <Fiches faits={ATRIUM_TEXTE.faits} delai={220} />
-          </div>
-        </section>
-
-        {/* --------------------------------------------------- 7. le séjour --- */}
-        <section className="rz-section" id="sejour">
-          <div className="rz-bande rz-plaque-haute">
-            <Titre section={SEJOUR} />
-          </div>
-          <div className="rz-bande rz-pied-section">
-            <Fiches faits={SEJOUR.faits} delai={220} />
+            <Fiches faits={BAINS.faits} delai={220} />
           </div>
         </section>
 

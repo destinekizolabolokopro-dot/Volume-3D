@@ -186,13 +186,8 @@ function cadrer(foyer: number, aspect: number): { foyer: number; part: number } 
 
 /* ============================================================== composant === */
 
-export function Edifice({ reveal = true, nom = 'ORIEL' }: { reveal?: boolean; nom?: string }) {
+export function Edifice({ reveal = true }: { reveal?: boolean }) {
   const holderRef = useRef<HTMLDivElement>(null);
-  /* Le nom passe par une référence : l'effet ne se remonte pas quand il change,
-     et remonter une scène entière pour cinq lettres coûterait une seconde de
-     reconstruction pour rien. */
-  const nomRef = useRef(nom);
-  nomRef.current = nom;
   const [etat, setEtat] = useState<'attente' | 'vivant' | 'sansGL'>('attente');
   const [net, setNet] = useState(false);
 
@@ -240,16 +235,19 @@ export function Edifice({ reveal = true, nom = 'ORIEL' }: { reveal?: boolean; no
        degrés : à cette hauteur-là, une façade ne reçoit plus qu'une fraction
        de ce qu'elle prenait à vingt-six, et l'image entière glissait vers le
        gris. On ne rattrape pas une lumière rasante en la redressant — on
-       l'expose. */
-    renderer.toneMappingExposure = 1.14;
+       l'expose.
+       Puis à 1,32 le jour où la page est passée à l'intérieur : un séjour au
+       cinquième ne reçoit qu'une part du ciel, et l'exposition d'une façade
+       n'est pas celle d'une pièce. */
+    renderer.toneMappingExposure = 1.12;
     holder.appendChild(renderer.domElement);
     renderer.domElement.setAttribute('role', 'img');
     renderer.domElement.setAttribute(
       'aria-label',
-      'Vue en trois dimensions de la résidence : la caméra s’en approche puis entre dans le hall à mesure que la page défile.',
+      'Vue en trois dimensions de l’appartement : la caméra le traverse pièce par pièce à mesure que la page défile.',
     );
 
-    const edifice = buildEdifice(renderer, { leger, nom: nomRef.current });
+    const edifice = buildEdifice(renderer, { leger });
 
     /*
      * La profondeur de champ.
@@ -373,7 +371,19 @@ export function Edifice({ reveal = true, nom = 'ORIEL' }: { reveal?: boolean; no
          cadreur, et cela évite un second jeu de nombres à tenir en accord avec
          le premier : le vol dit déjà, à chaque étape, ce qui compte dans le
          cadre. */
-      if (bokeh) bokeh.rendre(edifice.scene, camera, oeil.distanceTo(vise));
+      /*
+       * La profondeur de champ s'efface quand la machine peine.
+       *
+       * `adaptQuality` mesure le temps par image et baisse la résolution de
+       * rendu jusqu'à son plancher. Quand elle y est arrivée et qu'elle y
+       * reste, c'est que la machine ne suit plus : deux passes plein écran de
+       * plus n'y changeront rien de bon. On rend alors la scène directement.
+       *
+       * C'est le bon ordre de sacrifice — mesuré : la profondeur de champ ne
+       * pèse que 1 % du temps par image ici, contre 45 % pour la résolution.
+       * On coupe donc d'abord ce qui coûte, et l'effet en dernier.
+       */
+      if (bokeh && quality.scale > 0.6) bokeh.rendre(edifice.scene, camera, oeil.distanceTo(vise));
       else renderer.render(edifice.scene, camera);
     };
 

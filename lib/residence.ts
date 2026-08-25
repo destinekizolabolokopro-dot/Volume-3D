@@ -79,59 +79,84 @@ export const HALL = {
   porte: 4,
 } as const;
 
-/* ============================================================== atrium === */
-
-/**
- * L'atrium.
- *
- * Un puits de huit mètres sur neuf, ouvert du plafond du hall jusqu'à la
- * verrière, avec une coursive de desserte à chaque niveau. Il n'est pas là
- * pour faire joli : c'est **le seul moyen de monter**. Le vol devait conduire
- * jusqu'à un appartement, et une caméra qui traverse onze planchers en ligne
- * droite traverse onze planchers — on le voit, et on ne voit que cela.
- *
- * C'est aussi une typologie qui existe : les résidences de ce standing
- * desservent souvent leurs logements par une galerie sur vide, précisément
- * parce que cela remplace un couloir aveugle par de la lumière du jour.
- *
- * Il coûte sa surface, et ce fichier la déduit : voir `surfacePlancher`.
- */
-export const ATRIUM = {
-  x0: -13,
-  x1: -5,
-  z0: -3.6,
-  z1: 5.4,
-  /** Profondeur des coursives, prises dans le vide sur ses deux longs côtés. */
-  coursive: 1.6,
-} as const;
-
 /* ========================================================= appartement === */
 
 /**
- * Le séjour où le vol se termine, au cinquième niveau.
+ * L'appartement, et pourquoi la page ne montre plus que lui.
  *
- * Cinquième, et pas un autre : c'est là que se produit le premier redan, donc
- * le seul niveau qui dispose d'une terrasse de cinq mètres quarante sur toute
- * sa longueur. Un appartement d'angle sans terrasse aurait été un séjour avec
- * une fenêtre ; celui-ci a un dehors, et le dernier plan de la page le
- * traverse du regard.
+ * La première version faisait le tour du bâtiment puis y entrait : vue
+ * aérienne, parvis, hall, atrium, séjour. C'était une belle promenade et une
+ * mauvaise démonstration. Volume3D ne vend pas des immeubles — il vend la
+ * reconstitution d'un **logement**, et un client qui regarde la page veut y
+ * voir ce qu'on lui livrera : ses pièces, une par une, meublées, à hauteur
+ * d'œil.
+ *
+ * Le bâtiment reste construit autour — c'est ce qu'on voit par les baies, et
+ * c'est ce qui donne au séjour son cinquième étage. Mais la caméra n'en sort
+ * plus, et tout ce qu'elle ne peut plus voir a été retiré de la scène : le
+ * hall, ses silhouettes, l'atrium et ses coursives ne coûtent plus rien
+ * puisqu'on ne les regarde plus. C'est ce budget-là qui est repassé dans le
+ * mobilier, les cloisons et la lumière des pièces.
  */
-export const APPARTEMENT = {
-  niveau: 5,
-  /** Emprise du séjour modélisé, dans le repère du bâtiment. */
-  x0: -1.2,
-  x1: 10.6,
-  z0: -5.6,
-  z1: 5.6,
-  /** Hauteur sous plafond. */
-  haut: 3.0,
-  /** Demi-largeur de l'entrée depuis la coursive. */
-  entree: 1.8,
-} as const;
+
+/** Le niveau où se trouve l'appartement. Le premier redan lui donne sa terrasse. */
+export const NIVEAU_APPARTEMENT = 5;
 
 /** Altitude du plancher brut du niveau `n`, en mètres. */
 export function altitudeNiveau(n: number): number {
   return SOCLE + 0.25 + n * ETAGE;
+}
+
+/** Altitude du sol fini de l'appartement. */
+export const SOL = altitudeNiveau(NIVEAU_APPARTEMENT) + 0.12;
+/** Hauteur sous plafond. */
+export const SOUS_PLAFOND = 3.0;
+
+export interface Piece {
+  nom: string;
+  x0: number;
+  x1: number;
+  z0: number;
+  z1: number;
+}
+
+/**
+ * Le plan.
+ *
+ * Une bande de service à l'ouest — entrée, chambre, salle de bains — et une
+ * bande de jour à l'est, ouverte d'un bout à l'autre, qui prend les deux
+ * façades vitrées. C'est la distribution d'un angle, et c'est la seule qui
+ * tienne ici : sur les quatre côtés de l'étage, deux seulement sont vitrés,
+ * et il n'y a aucune raison de donner le jour à un couloir quand on peut le
+ * donner à un séjour de soixante-seize mètres carrés.
+ *
+ * L'entrée est le pivot : on y arrive, et de là on va à l'est vers le jour, au
+ * nord vers la chambre, au sud vers les bains. Aucune pièce ne se traverse
+ * pour en atteindre une autre, ce qui est la première chose qu'on regarde sur
+ * un plan et la dernière qu'on pardonne.
+ */
+export const PIECES: Record<string, Piece> = {
+  entree: { nom: 'Entrée', x0: -3.6, x1: 0.6, z0: 3.0, z1: 6.6 },
+  sejour: { nom: 'Séjour', x0: 0.6, x1: 10.6, z0: 3.0, z1: 10.6 },
+  cuisine: { nom: 'Cuisine', x0: 0.6, x1: 10.6, z0: -1.4, z1: 3.0 },
+  chambre: { nom: 'Chambre', x0: -3.6, x1: 0.6, z0: 6.6, z1: 10.6 },
+  bains: { nom: 'Salle de bains', x0: -3.6, x1: 0.6, z0: -1.4, z1: 3.0 },
+};
+
+/** L'emprise de la terrasse, dégagée par le premier redan. */
+export const TERRASSE = { x0: 10.8, x1: 16.2, z0: 1.0, z1: 10.6 } as const;
+
+/** La baie coulissante, sur la façade est : c'est par là qu'on sort. */
+export const BAIE = { z0: 6.4, z1: 9.2 } as const;
+
+/** Surface d'une pièce, en mètres carrés. */
+export function surfacePiece(p: Piece): number {
+  return (p.x1 - p.x0) * (p.z1 - p.z0);
+}
+
+/** Surface habitable, cloisons non déduites. */
+export function surfaceAppartement(): number {
+  return Object.values(PIECES).reduce((somme, p) => somme + surfacePiece(p), 0);
 }
 
 /* ================================================================== vol === */
@@ -212,75 +237,66 @@ export interface Etape {
  * galerie, les chiffres et l'appel final.
  */
 export const VOL: Etape[] = [
-  /* Premier écran. Vue aérienne : la brume mange une part du contraste et le
-     bâtiment devient une masse dans la lumière. C'est l'image d'ouverture. */
-  { t: 0.0, ancre: '#top', oeil: [126, 76, 104], vise: [0, 30, 0], foyer: 32, pan: 11 },
-  /* Le projet. On descend et on se rapproche, sans changer d'angle. */
-  { t: 0.11, ancre: '#projet', oeil: [104, 56, 88], vise: [0, 28, 0], foyer: 31, pan: 8 },
-  /* L'architecture. Mi-hauteur : c'est de là que les redans se lisent le
-     mieux, et la section parle d'eux. */
-  { t: 0.22, ancre: '#architecture', oeil: [82, 38, 70], vise: [0, 25, 0], foyer: 30, pan: 6 },
-  /* Galerie I — l'approche. On arrive à hauteur d'arbre au-dessus du parvis. */
-  { t: 0.33, ancre: '#galerie', oeil: [58, 14, 48], vise: [0, 23, 0], foyer: 34, pan: 5 },
-  /* Galerie II — le pied. Contre-plongée au ras du socle, foyer court : les
-     verticales fuient, et c'est le seul endroit de la page où on le veut. */
-  { t: 0.44, ancre: '#galerie', ecran: 1, oeil: [42, 6.5, 23], vise: [4, 19, 0], foyer: 44, pan: 3 },
-  /* Galerie III — le seuil. La marquise passe au-dessus de l'objectif. */
-  { t: 0.55, ancre: '#galerie', ecran: 2, oeil: [26, 2.7, 8], vise: [12, 4.4, 1.5], foyer: 46 },
-  /* Transit : on franchit les portes. Les colonnes défilent de part et
-     d'autre, et c'est ce défilement latéral qui donne sa vitesse au plan. */
-  { t: 0.61, oeil: [11, 2.5, 1.2], vise: [-6, 3.4, 1.0], foyer: 45 },
-  /* Le hall. On s'arrête au milieu de la pièce, sous le vide de l'atrium. */
-  { t: 0.66, ancre: '#hall', oeil: [-1.5, 2.45, 1.0], vise: [-11.5, 3.3, 1.6], foyer: 44 },
-  /* Transit : on gagne le pied du puits et on lève les yeux. */
-  { t: 0.72, oeil: [-10.6, 2.6, -1.8], vise: [-8.4, 12, 1.4], foyer: 52 },
   /*
-   * La montée.
+   * Dix arrêts, tous à hauteur d'œil, tous **depuis un seuil ou un angle**.
    *
-   * C'est le seul plan de la page qui monte, et il demande une précaution que
-   * rien n'annonce : **on ne vise jamais la verticale exacte.** Un regard
-   * parfaitement vertical rend le calcul d'orientation dégénéré — la caméra
-   * n'a plus de haut, et l'image se met à tourner sur elle-même au moindre
-   * centième de degré. On monte donc en regardant devant soi et vers le haut,
-   * ce qui est de toute façon le geste juste : une caméra qui fixe le plafond
-   * ne raconte pas une ascension, elle raconte une chute.
+   * Deux règles, et la seconde a coûté une série de captures pour rien.
    *
-   * On monte aussi **en diagonale**, d'un angle du puits vers l'angle opposé,
-   * et pas dans son axe. Dans l'axe, la caméra a un mur plat devant elle et
-   * les deux volées de coursives hors du cadre, de part et d'autre : c'est
-   * exactement l'image qu'a donnée la première version, et elle ne montrait
-   * rien. En diagonale, les deux volées convergent dans la profondeur.
+   * `SOL + 1,55` partout, sans exception : c'est la hauteur d'où l'on regarde
+   * une pièce quand on la visite, et la seule qui permette de comparer deux
+   * pièces entre elles. Une caméra qui monte à deux mètres pour « mieux
+   * montrer » aplatit le plafond et agrandit la pièce ; c'est le mensonge le
+   * plus courant de l'image immobilière, et le plus vite démasqué à la visite.
+   *
+   * Et **une petite pièce se cadre depuis sa porte, au grand angle**. Placée en
+   * son milieu au foyer du séjour, la chambre rendait un mur gris sur les deux
+   * tiers de l'image : à deux mètres quarante d'une cloison, quarante-six
+   * degrés ne cadrent pas une chambre, ils cadrent une cloison. Soixante
+   * degrés depuis l'angle de la porte la montrent entière — c'est exactement
+   * ce que fait un photographe d'intérieur, et pour la même raison.
    */
-  { t: 0.77, ancre: '#atrium', oeil: [-11.6, 8.5, -1.4], vise: [-6.4, 22, 3.4], foyer: 50 },
-  /* Transit : on sort du puits au cinquième et on passe au-dessus de la
-     coursive. */
-  { t: 0.85, oeil: [-6.4, 24.8, 0.8], vise: [1, 25.1, 0.4], foyer: 44 },
-  /* Le séjour : debout dans la pièce, à hauteur d'œil et **à l'horizontale**.
-     Viser plus bas que soi remplit le cadre de parquet ; dans une pièce de
-     trois mètres sous plafond, une caméra qui pique du nez de deux degrés perd
-     le plafond, et une pièce sans plafond n'est plus une pièce. */
-  { t: 0.9, ancre: '#sejour', oeil: [1.0, 25.4, 2.4], vise: [12.8, 25.2, -1.0], foyer: 42 },
-  /* L'appel final. On a avancé de quatre mètres vers la baie : la terrasse
-     entre dans le cadre et la page se termine sur l'horizon. */
-  { t: 1.0, ancre: '#contact', oeil: [5.4, 25.35, 1.4], vise: [16.4, 25.1, -1.8], foyer: 46 },
+  /* L'entrée, **sur le seuil** et non au fond.
+     Au fond de l'entrée, le cadre est aux trois quarts rempli par la cloison
+     qu'on a devant soi et l'ouverture n'occupe qu'un tiers de la largeur : la
+     première image du logement était celle d'un couloir. Posée dans
+     l'embrasure, la même caméra ne voit plus que le séjour et son angle vitré.
+     C'est l'arrivée telle qu'on la vit — on ne s'arrête pas sur le paillasson
+     pour regarder une porte. */
+  { t: 0.0, ancre: '#top', oeil: [0.3, 25.35, 5.15], vise: [10.4, 25.2, 9.4], foyer: 58 },
+  /* Le séjour, pris de son angle nord-ouest : on longe le canapé, la table à
+     manger vient au fond, et la baie tient toute la droite du cadre. */
+  { t: 0.12, ancre: '#sejour', oeil: [2.0, 25.35, 9.8], vise: [10.4, 25.2, 4.4], foyer: 54 },
+  /* La cuisine, dans l'axe du linéaire : l'îlot au premier plan, la baie au
+     fond. */
+  { t: 0.24, ancre: '#cuisine', oeil: [1.4, 25.35, 2.6], vise: [10.2, 25.15, -0.6], foyer: 54 },
+  /* Galerie I — le coin salon, vu depuis l'angle vitré. On regarde vers
+     l'intérieur : c'est le seul plan qui montre l'appartement de dos. */
+  { t: 0.37, ancre: '#galerie', oeil: [9.8, 25.35, 9.8], vise: [1.6, 25.15, 4.2], foyer: 52 },
+  /* Galerie II — la baie et la terrasse. */
+  { t: 0.47, ancre: '#galerie', ecran: 1, oeil: [5.0, 25.35, 7.0], vise: [16.2, 25.05, 8.0], foyer: 46 },
+  /* Galerie III — la diagonale complète : treize mètres de l'angle est
+     jusqu'au fond de l'entrée, à travers l'ouverture. C'est ce plan-là qui dit
+     la surface, bien mieux qu'un chiffre. */
+  { t: 0.57, ancre: '#galerie', ecran: 2, oeil: [10.0, 25.35, 3.6], vise: [-3.2, 25.2, 5.6], foyer: 50 },
+  /* La chambre, depuis sa porte. */
+  { t: 0.68, ancre: '#chambre', oeil: [0.2, 25.35, 7.1], vise: [-3.4, 25.15, 10.2], foyer: 60 },
+  /* La salle de bains, depuis sa porte également. */
+  { t: 0.79, ancre: '#bains', oeil: [0.2, 25.35, 2.7], vise: [-3.4, 25.1, -1.0], foyer: 60 },
+  /* Transit : on retraverse le séjour et on franchit la baie coulissante. */
+  { t: 0.88, oeil: [7.0, 25.35, 7.9], vise: [14.0, 25.15, 8.2], foyer: 50 },
+  /* La terrasse, face au couchant. Fin de la visite : le dernier plan n'est
+     plus une pièce, c'est ce qu'on achète avec. */
+  { t: 1.0, ancre: '#contact', oeil: [13.4, 25.35, 8.4], vise: [24.0, 25.0, 5.4], foyer: 50 },
 ];
 
 /* =============================================================== mesures === */
 
-/**
- * Surface de plancher, tous niveaux courants confondus, **atrium déduit**.
- *
- * La déduction n'est pas une coquetterie comptable : le puits traverse les
- * douze niveaux, et une page qui annonce six mille six cent quarante-huit
- * mètres carrés au-dessus d'une image où l'on voit le vide de part en part
- * annonce une surface qu'elle montre en train de ne pas exister.
- */
+/** Surface de plancher de l'immeuble, tous niveaux courants confondus. */
 export function surfacePlancher(): number {
-  const vide = (ATRIUM.x1 - ATRIUM.x0) * (ATRIUM.z1 - ATRIUM.z0);
   let total = 0;
   for (let n = 0; n < NIVEAUX; n += 1) {
     const e = empreinte(n);
-    total += e.hx * 2 * (e.hz * 2) - vide;
+    total += e.hx * 2 * (e.hz * 2);
   }
   return total;
 }
@@ -364,58 +380,65 @@ export interface Section {
 
 export const PROJET = {
   nom: 'ORIEL',
-  lieu: 'Rive gauche — îlot 14',
-  /* La coupure est portée par le texte et non par la largeur du bloc : une
-     ligne qui se casse toute seule se casse ailleurs sur chaque écran. */
-  titre: ['Une résidence', 'qui se mesure.'],
+  lieu: 'Rive gauche — îlot 14 · 5ᵉ étage',
+  titre: ['Cent soixante-dix mètres carrés,', 'pièce par pièce.'],
   chapo:
-    'Douze niveaux de béton et de verre, trois fois en retrait, posés sur un jardin d’eau.',
-  action: 'Découvrir',
+    'Un appartement d’angle au cinquième, deux façades vitrées et cinq mètres quarante de terrasse. Faites défiler : vous le traversez.',
+  action: 'Entrer',
 } as const;
 
 export const NAVIGATION: { href: string; label: string }[] = [
-  { href: '#projet', label: 'Le projet' },
-  { href: '#architecture', label: 'Architecture' },
-  { href: '#hall', label: 'Le hall' },
-  { href: '#contact', label: 'Contact' },
+  { href: '#sejour', label: 'Séjour' },
+  { href: '#cuisine', label: 'Cuisine' },
+  { href: '#chambre', label: 'Chambre' },
+  { href: '#contact', label: 'Terrasse' },
 ];
 
-export const PRESENTATION: Section = {
-  surtitre: 'Le projet',
-  titre: ['Un immeuble', 'qui compte ses étages.'],
+export const SEJOUR: Section = {
+  surtitre: 'Le séjour',
+  titre: ['Soixante-seize mètres carrés', 'et deux façades.'],
   chapeau:
-    'Chaque nez de dalle déborde de vingt centimètres sur le vitrage qu’il couronne. Au soleil rasant, chacun porte son ombre sur l’étage du dessous.',
+    'L’angle prend le jour de l’est et du nord. Rien ne coupe la pièce : la cuisine s’y ouvre sans porte, et la baie file d’un mur à l’autre.',
   faits: [
-    { cle: 'Emprise', valeur: '32,4 × 21,6 m' },
-    { cle: 'Trame de façade', valeur: '1,80 m' },
-    { cle: 'Hauteur d’étage', valeur: '3,55 m' },
+    { cle: 'Surface', valeur: '76,0 m²' },
+    { cle: 'Sous plafond', valeur: '3,00 m' },
+    { cle: 'Façades vitrées', valeur: 'deux' },
   ],
 };
 
-export const ARCHITECTURE: { surtitre: string; titre: readonly string[]; traits: Trait[] } = {
-  surtitre: 'Architecture',
-  titre: ['Quatre décisions,', 'le reste en découle.'],
-  traits: [
-    {
-      numero: '01',
-      titre: 'Une trame de 1,80 m',
-      texte: 'Meneaux, travées et redans tombent tous sur le même module.',
-    },
-    {
-      numero: '02',
-      titre: 'Trois redans',
-      texte: 'La masse se retire trois fois du même côté. Chaque retrait laisse une terrasse.',
-    },
-    {
-      numero: '03',
-      titre: 'Vitrage en retrait de 20 cm',
-      texte: 'À fleur, la façade est un aplat. En retrait, chaque étage porte son ombre.',
-    },
-    {
-      numero: '04',
-      titre: 'Un socle, pas un soubassement',
-      texte: 'Deux niveaux plus larges que la tour, et une retombée profonde au-dessus.',
-    },
+export const CUISINE: Section = {
+  surtitre: 'La cuisine',
+  titre: ['Ouverte,', 'mais pas au milieu du salon.'],
+  chapeau:
+    'Elle occupe la moitié sud de la bande de jour : l’îlot regarde la baie, les rangements sont contre le mur aveugle. On cuisine face à la lumière et on range dans l’ombre.',
+  faits: [
+    { cle: 'Surface', valeur: '44,0 m²' },
+    { cle: 'Îlot', valeur: '3,40 × 1,10 m' },
+    { cle: 'Linéaire', valeur: '6,20 m' },
+  ],
+};
+
+export const CHAMBRE: Section = {
+  surtitre: 'La chambre',
+  titre: ['Sur la façade nord,', 'loin de la rue.'],
+  chapeau:
+    'Elle est la seule pièce de la bande de service à toucher une façade vitrée, et c’est délibéré : on donne le jour du matin à la pièce où l’on se réveille.',
+  faits: [
+    { cle: 'Surface', valeur: '16,8 m²' },
+    { cle: 'Lit', valeur: '180 × 200 cm' },
+    { cle: 'Dressing', valeur: '3,20 m de front' },
+  ],
+};
+
+export const BAINS: Section = {
+  surtitre: 'La salle de bains',
+  titre: ['Baignoire, douche,', 'double vasque.'],
+  chapeau:
+    'Dix-huit mètres carrés, en pierre claire. Elle n’a pas de fenêtre — c’est le prix d’un séjour de soixante-seize mètres carrés, et c’est le bon arbitrage.',
+  faits: [
+    { cle: 'Surface', valeur: '18,5 m²' },
+    { cle: 'Baignoire', valeur: '1,80 m' },
+    { cle: 'Douche', valeur: 'à l’italienne' },
   ],
 };
 
@@ -423,61 +446,25 @@ export const GALERIE: { surtitre: string; vues: Vue[] } = {
   surtitre: 'Galerie',
   vues: [
     {
-      titre: 'L’approche',
-      texte: 'On descend sur le parvis, là où la masse se lit encore entière.',
+      titre: 'Le coin salon',
+      texte: 'Vu depuis l’angle vitré, dos à la ville : le seul plan qui montre l’appartement de dos.',
     },
     {
-      titre: 'Le pied',
-      texte: 'Au ras du socle, la hauteur se lit le long des nez de dalle.',
+      titre: 'La baie',
+      texte: 'Toute hauteur, coulissante sur deux mètres quatre-vingts. Derrière, la terrasse.',
     },
     {
-      titre: 'Le seuil',
-      texte: 'Sous la marquise, aux portes. D’ici la caméra ne s’arrête pas : elle entre.',
+      titre: 'La diagonale',
+      texte: 'Onze mètres de l’angle est jusqu’à l’entrée. C’est ce plan qui dit la surface, mieux qu’un chiffre.',
     },
-  ],
-};
-
-export const HALL_TEXTE: Section = {
-  surtitre: 'Le hall',
-  titre: ['Cinq mètres quarante', 'sous plafond.'],
-  chapeau:
-    'Un hall d’immeuble se mesure à sa hauteur libre bien avant sa surface. Celui-ci est traversant, en pierre claire, et ouvert sur le vide de l’atrium.',
-  faits: [
-    { cle: 'Surface', valeur: '303 m²' },
-    { cle: 'Hauteur libre', valeur: '5,43 m' },
-    { cle: 'Portes', valeur: '8,00 m de large' },
-  ],
-};
-
-export const ATRIUM_TEXTE: Section = {
-  surtitre: 'L’atrium',
-  titre: ['Un puits de lumière', 'sur toute la hauteur.'],
-  chapeau:
-    'Huit mètres sur neuf, ouverts du hall à la verrière. Les logements se desservent par coursive : un couloir aveugle en moins, douze niveaux de jour en plus.',
-  faits: [
-    { cle: 'Section du vide', valeur: '8 × 9 m' },
-    { cle: 'Coursives', valeur: '1,60 m de large' },
-    { cle: 'Verrière', valeur: 'au 12ᵉ' },
-  ],
-};
-
-export const SEJOUR: Section = {
-  surtitre: 'Le séjour',
-  titre: ['Cinquième niveau,', 'terrasse plein sud.'],
-  chapeau:
-    'Le premier redan dégage cinq mètres quarante de terrasse sur toute la longueur. C’est là que le vol s’arrête.',
-  faits: [
-    { cle: 'Séjour', valeur: '132 m²' },
-    { cle: 'Terrasse', valeur: '5,40 m de profondeur' },
-    { cle: 'Baie', valeur: 'toute hauteur' },
   ],
 };
 
 export const APPEL = {
-  surtitre: 'Contact',
+  surtitre: 'La terrasse',
   titre: ['Votre bien,', 'reconstruit en volume.'],
   texte:
-    'Envoyez un plan, une surface, ou rien du tout. On modélise le volume, on l’éclaire, et on rend un lien que vos visiteurs traversent.',
+    'Envoyez un plan, une surface, ou rien du tout. On modélise le volume, on l’éclaire, et on rend un lien que vos visiteurs traversent — exactement comme celui-ci.',
   action: 'Nous écrire',
 } as const;
 
@@ -485,19 +472,19 @@ export const APPEL = {
 export function chiffres(): Chiffre[] {
   return [
     {
-      valeur: String(logements()),
-      libelle: 'Logements',
-      precision: `${Math.round(surfacePlancher()).toLocaleString('fr-FR')} m² de plancher`,
+      valeur: surfaceAppartement().toFixed(1).replace('.', ','),
+      libelle: 'm² habitables',
+      precision: `${Object.keys(PIECES).length} pièces, cloisons non déduites`,
     },
     {
-      valeur: String(NIVEAUX),
-      libelle: 'Niveaux',
-      precision: `${hauteurHorsTout().toFixed(1).replace('.', ',')} m à l’acrotère`,
+      valeur: String(NIVEAU_APPARTEMENT),
+      libelle: 'ᵉ étage',
+      precision: `sur ${NIVEAUX}, dans un immeuble de ${hauteurHorsTout().toFixed(1).replace('.', ',')} m`,
     },
     {
-      valeur: '2028',
-      libelle: 'Livraison',
-      precision: `${terrasses()} terrasses, une par redan`,
+      valeur: ((TERRASSE.x1 - TERRASSE.x0) * (TERRASSE.z1 - TERRASSE.z0)).toFixed(0),
+      libelle: 'm² de terrasse',
+      precision: `${(TERRASSE.x1 - TERRASSE.x0).toFixed(2).replace('.', ',')} m de profondeur, plein est`,
     },
   ];
 }

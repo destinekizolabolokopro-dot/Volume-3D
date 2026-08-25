@@ -2,24 +2,31 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import {
-  APPARTEMENT,
   APPEL,
-  ATRIUM,
-  ARCHITECTURE,
+  BAINS,
+  BAIE,
+  CHAMBRE,
+  CUISINE,
   ETAGE,
   GALERIE,
-  HALL,
   NAVIGATION,
   NIVEAUX,
-  PRESENTATION,
+  NIVEAU_APPARTEMENT,
+  PIECES,
   PROJET,
+  SEJOUR,
   SOCLE,
+  SOL,
+  SOUS_PLAFOND,
+  TERRASSE,
   VOL,
   altitudeNiveau,
   chiffres,
   empreinte,
   hauteurHorsTout,
   logements,
+  surfaceAppartement,
+  surfacePiece,
   surfacePlancher,
   terrasses,
 } from '../lib/residence.ts';
@@ -57,20 +64,7 @@ test('la hauteur annoncée est celle de l’empilement', () => {
   assert.equal(hauteurHorsTout(), SOCLE + 0.25 + NIVEAUX * ETAGE + 2.1);
 });
 
-test('la surface de plancher est la somme des niveaux, atrium déduit', () => {
-  const vide = (ATRIUM.x1 - ATRIUM.x0) * (ATRIUM.z1 - ATRIUM.z0);
-  let total = 0;
-  for (let n = 0; n < NIVEAUX; n += 1) {
-    const e = empreinte(n);
-    total += e.hx * 2 * (e.hz * 2) - vide;
-  }
-  assert.equal(surfacePlancher(), total);
-  assert.ok(logements() > 0);
-  /* Le puits coûte huit cent soixante-quatre mètres carrés : la page les
-     retire de ce qu'elle annonce, sans quoi elle vendrait une surface qu'elle
-     montre en train de ne pas exister. */
-  assert.ok(vide * NIVEAUX > 800);
-});
+
 
 /* ================================================================ le texte === */
 
@@ -79,13 +73,106 @@ test('les chiffres de la page sortent tous de la géométrie', () => {
   assert.equal(trois.length, 3);
   /* Le seul qui ne soit pas une mesure est l'année de livraison, qui n'en est
      pas une. Les deux autres doivent suivre le bâtiment. */
-  assert.equal(trois[0].valeur, String(logements()));
-  assert.equal(trois[1].valeur, String(NIVEAUX));
+  assert.equal(trois[0].valeur, surfaceAppartement().toFixed(1).replace('.', ','));
+  assert.equal(trois[1].valeur, String(NIVEAU_APPARTEMENT));
   for (const chiffre of trois) {
     assert.notEqual(chiffre.valeur.trim(), '');
     assert.notEqual(chiffre.libelle.trim(), '');
     assert.notEqual(chiffre.precision.trim(), '');
   }
+});
+
+/* ========================================================= appartement === */
+
+test('les pièces ne se chevauchent pas et forment un rectangle plein', () => {
+  /* Deux pièces qui se recouvrent posent deux sols au même endroit — deux
+     plans coplanaires, donc le moutonnement caractéristique du z-fighting, et
+     il ne se voit qu'à la capture. */
+  const liste = Object.values(PIECES);
+  for (let i = 0; i < liste.length; i += 1) {
+    for (let j = i + 1; j < liste.length; j += 1) {
+      const a = liste[i];
+      const b = liste[j];
+      const croise = a.x0 < b.x1 && b.x0 < a.x1 && a.z0 < b.z1 && b.z0 < a.z1;
+      assert.ok(!croise, `${a.nom} et ${b.nom} se chevauchent`);
+    }
+  }
+  /* Et la somme des pièces doit remplir exactement l'enveloppe : une pièce qui
+     manque laisse un trou dans le plancher, par lequel on voit le vide. */
+  const x0 = Math.min(...liste.map((p) => p.x0));
+  const x1 = Math.max(...liste.map((p) => p.x1));
+  const z0 = Math.min(...liste.map((p) => p.z0));
+  const z1 = Math.max(...liste.map((p) => p.z1));
+  assert.equal(surfaceAppartement().toFixed(2), ((x1 - x0) * (z1 - z0)).toFixed(2));
+});
+
+test('chaque pièce est plus grande que le meuble qu’elle contient', () => {
+  /* Un garde-fou grossier mais utile : aucune pièce sous huit mètres carrés,
+     et aucune dimension sous deux mètres. En dessous, ce n'est plus une pièce,
+     c'est un placard — et la caméra, qui s'y arrête à hauteur d'œil, aurait le
+     nez contre un mur. */
+  for (const p of Object.values(PIECES)) {
+    assert.ok(surfacePiece(p) >= 8, `${p.nom} ne fait que ${surfacePiece(p)} m²`);
+    assert.ok(p.x1 - p.x0 >= 2 && p.z1 - p.z0 >= 2, `${p.nom} est trop étroite`);
+  }
+});
+
+test('la visite ne quitte jamais l’appartement, sauf pour la terrasse', () => {
+  /* C'est la promesse de la page depuis qu'elle ne montre plus qu'un logement.
+     Une étape qui s'échappe dans le plateau voisin — non modélisé — cadrerait
+     le vide. */
+  const liste = Object.values(PIECES);
+  const x0 = Math.min(...liste.map((p) => p.x0));
+  const z0 = Math.min(...liste.map((p) => p.z0));
+  const z1 = Math.max(...liste.map((p) => p.z1));
+  for (const [i, e] of VOL.entries()) {
+    const [x, y, z] = e.oeil;
+    const dehors = x > TERRASSE.x0;
+    if (dehors) {
+      assert.ok(x < TERRASSE.x1 - 0.4, `l’étape ${i} déborde la terrasse (${x})`);
+      assert.ok(z > TERRASSE.z0 && z < TERRASSE.z1, `l’étape ${i} sort de la terrasse en z`);
+    } else {
+      assert.ok(x > x0 + 0.4, `l’étape ${i} traverse le mur ouest (${x})`);
+      assert.ok(z > z0 + 0.4 && z < z1 - 0.4, `l’étape ${i} traverse une façade (${z})`);
+    }
+    assert.equal(y.toFixed(2), (SOL + 1.55).toFixed(2), `l’étape ${i} n’est pas à hauteur d’œil`);
+  }
+});
+
+test('on sort sur la terrasse par la baie coulissante', () => {
+  /* Le franchissement se joue entre la dernière étape dedans et la première
+     dehors. On interpole en droite, ce qui suffit puisque la spline reste dans
+     l'enveloppe de ses points, et on vérifie qu'on passe dans l'ouvrant — pas
+     au travers d'un vitrage fixe. */
+  const k = VOL.findIndex((e) => e.oeil[0] > TERRASSE.x0);
+  assert.ok(k > 0, 'la visite ne sort jamais sur la terrasse');
+  const dedans = VOL[k - 1];
+  const dehors = VOL[k];
+  const facade = PIECES.sejour.x1;
+  const f = (facade - dedans.oeil[0]) / (dehors.oeil[0] - dedans.oeil[0]);
+  const z = dedans.oeil[2] + (dehors.oeil[2] - dedans.oeil[2]) * f;
+  assert.ok(
+    z > BAIE.z0 + 0.3 && z < BAIE.z1 - 0.3,
+    `on franchit la façade à z = ${z.toFixed(2)}, hors de la baie [${BAIE.z0} ; ${BAIE.z1}]`,
+  );
+});
+
+test('chaque pièce du plan a son arrêt de caméra', () => {
+  /* Une pièce sans arrêt est une pièce modélisée et meublée que personne ne
+     verra jamais — le contraire exact de ce que cette page promet. */
+  const dedans = (p: (typeof PIECES)[string], e: (typeof VOL)[number]) =>
+    e.oeil[0] > p.x0 && e.oeil[0] < p.x1 && e.oeil[2] > p.z0 && e.oeil[2] < p.z1;
+  for (const p of Object.values(PIECES)) {
+    assert.ok(
+      VOL.some((e) => dedans(p, e)),
+      `aucun arrêt dans ${p.nom}`,
+    );
+  }
+});
+
+test('la hauteur sous plafond laisse passer une personne debout', () => {
+  assert.ok(SOUS_PLAFOND >= 2.5, 'le plafond est trop bas');
+  assert.equal(SOL, SOCLE + 0.25 + NIVEAU_APPARTEMENT * ETAGE + 0.12);
 });
 
 test('aucune ligne de titre n’est vide', () => {
@@ -94,8 +181,10 @@ test('aucune ligne de titre n’est vide', () => {
      dans le titre, invisible dans le source et bien visible à l'écran. */
   for (const [nom, lignes] of [
     ['le titre du premier écran', PROJET.titre],
-    ['le titre de la présentation', PRESENTATION.titre],
-    ['le titre de la section architecture', ARCHITECTURE.titre],
+    ['le titre du séjour', SEJOUR.titre],
+    ['le titre de la cuisine', CUISINE.titre],
+    ['le titre de la chambre', CHAMBRE.titre],
+    ['le titre de la salle de bains', BAINS.titre],
     ['le titre de l’appel final', APPEL.titre],
   ] as const) {
     assert.ok(lignes.length >= 1, `${nom} n’a aucune ligne`);
@@ -106,13 +195,7 @@ test('aucune ligne de titre n’est vide', () => {
   }
 });
 
-test('les quatre traits d’architecture sont numérotés dans l’ordre', () => {
-  ARCHITECTURE.traits.forEach((trait, i) => {
-    assert.equal(trait.numero, String(i + 1).padStart(2, '0'));
-    assert.notEqual(trait.titre.trim(), '');
-    assert.notEqual(trait.texte.trim(), '');
-  });
-});
+
 
 test('la galerie a autant de légendes que le vol a d’étapes en galerie', () => {
   /* On compte les étapes **ancrées** sur la galerie, et non celles qui tombent
@@ -133,109 +216,15 @@ test('le vol avance toujours, et sur tout le défilement', () => {
   }
 });
 
-/** L'indice de la première étape située à l'intérieur du bâtiment. */
-function seuil(): number {
-  const k = VOL.findIndex((e) => e.oeil[0] < HALL.hx);
-  assert.ok(k > 0, 'le vol n’entre jamais dans le bâtiment');
-  return k;
-}
 
-test('dehors, le vol ne fait que se rapprocher', () => {
-  /* C'est la promesse de la page tant qu'on est dehors : on descend, donc on
-     avance. Une étape qui recule — même de deux mètres, même pour mieux
-     cadrer — se lit à l'écran comme une hésitation.
-     Une fois dedans, la règle n'a plus de sens : le vol traverse le hall,
-     revient vers le fond pour prendre le puits, monte, puis repart vers la
-     baie. Mesurer sa distance à l'axe du bâtiment ne dirait alors plus rien de
-     ce qu'on voit. */
-  const k = seuil();
-  const rayon = (e: (typeof VOL)[number]) => Math.hypot(e.oeil[0], e.oeil[2]);
-  for (let i = 1; i < k; i += 1) {
-    assert.ok(
-      rayon(VOL[i]) < rayon(VOL[i - 1]),
-      `l’étape ${i} est plus loin de l’axe que la précédente`,
-    );
-  }
-});
 
-test('le vol part d’une vue aérienne', () => {
-  const debut = VOL[0];
-  assert.ok(Math.hypot(debut.oeil[0], debut.oeil[2]) > 120, 'le premier plan n’est pas assez loin');
-  assert.ok(debut.oeil[1] > 50, 'le premier plan n’est pas une vue aérienne');
-});
 
-test('la montée reste dans le puits', () => {
-  /* La vérification qui compte, et qui n'existait pas quand la caméra se
-     contentait de tourner autour : entre le pied de l'atrium et la sortie au
-     cinquième, l'œil doit rester **entre les joues**. Une étape qui déborde de
-     vingt centimètres met l'objectif dans l'épaisseur d'un mur, et l'image se
-     remplit de la face arrière d'une paroi. */
-  /* Les étapes qui montent sont celles qui sont **dedans** et entre le
-     plafond du hall et le plancher du séjour. Sans la condition « dedans », le
-     filtre attrapait aussi le plan du parvis, à quatorze mètres d'altitude et
-     cinquante-huit mètres de l'axe — et le test accusait la caméra de sortir
-     d'un puits dans lequel elle n'était jamais entrée. */
-  const montantes = VOL.filter(
-    (e) =>
-      e.oeil[0] < HALL.hx &&
-      e.oeil[1] > HALL.haut &&
-      e.oeil[1] < altitudeNiveau(APPARTEMENT.niveau),
-  );
-  assert.ok(montantes.length >= 1, 'aucune étape ne monte dans le puits');
-  for (const e of montantes) {
-    const [x, , z] = e.oeil;
-    assert.ok(x > ATRIUM.x0 + 0.5 && x < ATRIUM.x1 - 0.5, `la montée sort du puits en x (${x})`);
-    assert.ok(z > ATRIUM.z0 + 0.5 && z < ATRIUM.z1 - 0.5, `la montée sort du puits en z (${z})`);
-  }
-});
 
-test('le vol finit debout dans le séjour', () => {
-  const sol = altitudeNiveau(APPARTEMENT.niveau) + 0.12;
-  const fin = VOL[VOL.length - 1];
-  const [x, y, z] = fin.oeil;
-  assert.ok(x > APPARTEMENT.x0 + 0.8 && x < APPARTEMENT.x1 - 0.8, `l’œil final sort du séjour en x (${x})`);
-  assert.ok(z > APPARTEMENT.z0 + 0.8 && z < APPARTEMENT.z1 - 0.8, `l’œil final sort du séjour en z (${z})`);
-  const oeilSol = y - sol;
-  assert.ok(
-    oeilSol > 1.3 && oeilSol < APPARTEMENT.haut - 0.8,
-    `l’œil final n’est pas à hauteur d’homme (${oeilSol.toFixed(2)} m du sol)`,
-  );
 
-  /* Et l'on regarde à l'horizontale, à un degré près. Dans une pièce de trois
-     mètres sous plafond, une caméra qui pique du nez remplit le cadre de
-     parquet et perd le plafond — et une pièce sans plafond n'est plus une
-     pièce. */
-  const portee = Math.hypot(fin.vise[0] - x, fin.vise[2] - z);
-  const pente = Math.atan2(fin.vise[1] - y, portee) * (180 / Math.PI);
-  assert.ok(Math.abs(pente) < 3, `le dernier plan pique de ${pente.toFixed(1)}°`);
-});
 
-test('on entre par la porte, pas au travers du vitrage', () => {
-  /* Le franchissement se joue entre l'avant-dernière étape, dehors, et celle
-     d'après, dedans. La spline coupe le plan de façade quelque part entre les
-     deux ; on interpole en ligne droite, ce qui est une approximation
-     suffisante puisque la courbe reste dans l'enveloppe de ses points, et on
-     vérifie que le passage se fait dans la largeur de la porte. */
-  /* La **dernière** étape dehors et la première dedans, et non la première
-     de chaque : le test cherchait jusqu'ici la première étape au-delà de la
-     façade, c'est-à-dire la vue aérienne à cent vingt-six mètres, et
-     interpolait une droite du ciel jusqu'à la porte. Il passait par chance —
-     cette droite tombait à deux mètres quatre-vingts de l'axe — et il s'est
-     mis à échouer dès que le vol a gagné une étape. Un test qui mesure la
-     mauvaise chose et qui passe est plus dangereux qu'un test absent. */
-  const k = seuil();
-  const dehors = VOL[k - 1];
-  const dedans = VOL[k];
 
-  const f = (dehors.oeil[0] - HALL.hx) / (dehors.oeil[0] - dedans.oeil[0]);
-  const zSeuil = dehors.oeil[2] + (dedans.oeil[2] - dehors.oeil[2]) * f;
-  const ySeuil = dehors.oeil[1] + (dedans.oeil[1] - dehors.oeil[1]) * f;
-  assert.ok(
-    Math.abs(zSeuil) < HALL.porte - 0.5,
-    `on traverse la façade à ${zSeuil.toFixed(2)} m de l’axe, hors de la porte`,
-  );
-  assert.ok(ySeuil > 0.5 && ySeuil < 3.6, `on franchit le seuil à ${ySeuil.toFixed(2)} m`);
-});
+
+
 
 test('le foyer ne fait pas de bond d’une étape à l’autre', () => {
   /* Le champ s'ouvre en chemin, c'est voulu. Mais un saut brutal se voit comme

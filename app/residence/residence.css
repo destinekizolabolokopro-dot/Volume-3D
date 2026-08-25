@@ -376,11 +376,26 @@ body:has(.rz) {
   pointer-events: none;
   background: linear-gradient(
     97deg,
-    rgba(10, 13, 17, 0.78) 0%,
-    rgba(10, 13, 17, 0.7) 42%,
-    rgba(10, 13, 17, 0.56) 58%,
-    rgba(10, 13, 17, 0) 76%
+    rgba(10, 13, 17, 0.82) 0%,
+    rgba(10, 13, 17, 0.76) 44%,
+    rgba(10, 13, 17, 0.66) 60%,
+    rgba(10, 13, 17, 0) 78%
   );
+}
+
+/*
+   La colonne de texte du premier écran est bornée.
+
+   `width: fit-content` sur le titre ne suffisait pas — la mesure de contraste
+   a relevé une boîte de mille deux cent quarante pixels de large pour trois
+   lignes qui en font sept cents, donc un « pire pixel » cherché à l'autre bout
+   de l'écran, sur un tableau de cloison qu'aucune lettre ne touche. Une
+   largeur maximale sur la colonne règle les deux à la fois : la mesure porte
+   sur ce qu'on lit, et la composition cesse d'étaler un titre sur toute la
+   largeur d'un écran large.
+*/
+.rz-hero .rz-bande > * {
+  max-width: min(100%, 760px);
 }
 
 .rz-etiquette {

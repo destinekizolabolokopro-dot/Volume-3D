@@ -29,16 +29,15 @@ const SORTIE = process.env.SORTIE || 'captures/residence';
 
 /** Les six sections, plus les trois plans de la galerie. */
 const ARRETS = [
-  ['1-hero', '#top', 0],
-  ['2-projet', '#projet', 0],
-  ['3-architecture', '#architecture', 0],
+  ['1-entree', '#top', 0],
+  ['2-sejour', '#sejour', 0],
+  ['3-cuisine', '#cuisine', 0],
   ['4-galerie-i', '#galerie', 0],
   ['4-galerie-ii', '#galerie', 1],
   ['4-galerie-iii', '#galerie', 2],
-  ['5-hall', '#hall', 0],
-  ['6-atrium', '#atrium', 0],
-  ['7-sejour', '#sejour', 0],
-  ['8-appel', '#contact', 0],
+  ['5-chambre', '#chambre', 0],
+  ['6-bains', '#bains', 0],
+  ['7-terrasse', '#contact', 0],
 ];
 
 function navigateur() {
@@ -151,7 +150,6 @@ const TEXTES = [
   ['chapeau de section', '.rz-titraille .rz-p', 'rgba(238,242,244,0.84)'],
   ['valeur de fiche', '.rz-fiche dd', '#f4f6f7'],
   ['clé de fiche', '.rz-fiche dt', 'rgba(226,232,236,0.72)'],
-  ['texte de trait', '.rz-trait .rz-p-petit', 'rgba(238,242,244,0.84)'],
   ['libellé de chiffre', '.rz-libelle', '#f4f6f7'],
 ];
 
@@ -200,6 +198,7 @@ async function contraste(nom) {
     TEXTES.map(([label, selecteur]) => [label, selecteur]),
   );
   if (boites.length === 0) return;
+  if (process.env.BOITES) console.log('   boîtes :', JSON.stringify(boites));
 
   await page.evaluate(
     (sels) => sels.forEach((s) => document.querySelectorAll(s).forEach((n) => (n.style.visibility = 'hidden'))),
@@ -218,17 +217,24 @@ async function contraste(nom) {
       .toBuffer({ resolveWithObject: true });
     let pire = -1;
     let fond = [0, 0, 0];
+    let ou = [0, 0];
     const pas = brut.info.channels;
     for (let i = 0; i < brut.data.length; i += pas) {
       const l = clarte(brut.data[i], brut.data[i + 1], brut.data[i + 2]);
       if (l > pire) {
         pire = l;
         fond = [brut.data[i], brut.data[i + 1], brut.data[i + 2]];
+        /* On note **où**. Un rapport qui annonce « 1,08:1 » sans dire à quel
+           endroit de l'écran envoie chercher la faute dans tout le cadre ; avec
+           les coordonnées, on ouvre la capture et on voit tout de suite si
+           c'est un mur au soleil, un luminaire ou une arête de cloison. */
+        const j = i / pas;
+        ou = [x + (j % brut.info.width), y + Math.floor(j / brut.info.width)];
       }
     }
     const couleur = TEXTES.find(([nomTexte]) => nomTexte === label)[2];
     const [r, g, b] = encre(couleur, fond);
-    mesures.push({ vue: nom, label, ratio: ecart(clarte(r, g, b), pire) });
+    mesures.push({ vue: nom, label, ratio: ecart(clarte(r, g, b), pire), ou, fond });
   }
 }
 
@@ -262,8 +268,9 @@ let recale = 0;
 for (const m of [...pires.values()].sort((a, b) => a.ratio - b.ratio)) {
   const ok = m.ratio >= SEUIL;
   if (!ok) recale += 1;
+  const situe = ok ? '' : `  ← pire pixel en ${m.ou[0]},${m.ou[1]} (#${m.fond.map((v) => v.toString(16).padStart(2, '0')).join('')})`;
   console.log(
-    `  ${(ok ? 'ok  ' : 'FAIBLE').padEnd(7)} ${m.label.padEnd(22)} ${m.ratio.toFixed(2)}:1  (${m.vue})`,
+    `  ${(ok ? 'ok  ' : 'FAIBLE').padEnd(7)} ${m.label.padEnd(22)} ${m.ratio.toFixed(2)}:1  (${m.vue})${situe}`,
   );
 }
 if (recale > 0) console.log(`\n  ${recale} texte(s) sous ${SEUIL}:1.`);
