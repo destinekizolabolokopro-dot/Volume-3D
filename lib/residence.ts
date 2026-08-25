@@ -58,6 +58,113 @@ export function empreinte(niveau: number): Empreinte {
   return { hx: 4.5 * TRAME, hz: 4 * TRAME, dx: -4.5 * TRAME };
 }
 
+/* ================================================================= hall === */
+
+/**
+ * Le hall, en cotes.
+ *
+ * Le rez n'est pas seulement vu du dehors : le vol s'y termine. Ses cotes
+ * servent donc à trois endroits — la géométrie qui le construit, la caméra qui
+ * y entre, et le test qui vérifie que la caméra y est bien. D'où leur place
+ * ici plutôt que dans le fichier de rendu.
+ */
+export const HALL = {
+  /** Demi-largeur dans œuvre, en mètres. */
+  hx: 9 * TRAME - TRAME / 2,
+  /** Demi-profondeur dans œuvre. */
+  hz: 6 * TRAME - TRAME / 2,
+  /** Hauteur libre sous plafond. */
+  haut: ETAGE * 1.6 - 0.25,
+  /** Demi-largeur de la porte, sur la face +x. */
+  porte: 4,
+} as const;
+
+/* ================================================================== vol === */
+
+/**
+ * Une étape du vol : où est l'œil, ce qu'il regarde, et avec quel foyer.
+ *
+ * Les cotes sont en mètres, dans le repère du bâtiment. C'est un changement de
+ * nature par rapport à la première version de cette page, qui décrivait la
+ * caméra en coordonnées sphériques — rayon, azimut, site autour d'un axe. Ce
+ * vocabulaire-là ne sait dire qu'une chose : tourner autour. Il ne peut pas
+ * exprimer « passer sous la marquise », encore moins « entrer ».
+ */
+export interface Etape {
+  /** Position du curseur de défilement où cette étape est atteinte. */
+  t: number;
+  /** L'œil. */
+  oeil: [number, number, number];
+  /** Le point visé. */
+  vise: [number, number, number];
+  /** Champ vertical, en degrés. Un long foyer écrase, un court exagère. */
+  foyer: number;
+  /**
+   * Panoramique, en degrés. Positif pousse le bâtiment vers la droite du cadre.
+   *
+   * C'est le seul réglage de la liste qui ne parle pas du bâtiment mais de la
+   * **page**. Le titre du premier écran tient la moitié gauche du cadre ; sans
+   * panoramique, le vol place la masse en plein dessous. Un cadreur ne recule
+   * pas pour régler cela — il panote, et c'est bien un panoramique et non une
+   * translation : la perspective ne change pas, seulement la place dans
+   * l'image. Il s'annule à l'entrée : dans le hall, ce qu'on regarde est au
+   * centre parce que c'est là qu'est le mur.
+   */
+  pan?: number;
+}
+
+/**
+ * Le vol.
+ *
+ * Huit étapes, et une seule idée : **on avance, on ne tourne pas.** La caméra
+ * part haut et loin, dans la brume de l'heure dorée où le bâtiment n'est
+ * encore qu'une masse ; elle descend en se rapprochant, passe à hauteur
+ * d'homme sur le parvis, s'engage sous la marquise, franchit les portes et
+ * s'arrête dans le hall, devant le nom gravé sur le marbre.
+ *
+ * Deux choses qui ne se voient pas dans les nombres mais qui font tout :
+ *
+ *  · **les étapes se resserrent.** Cinquante mètres entre les deux premières,
+ *    treize entre les deux dernières. Comme le paramètre avance linéairement
+ *    d'une étape à l'autre, la caméra ralentit toute seule à mesure qu'elle
+ *    approche — c'est ce que fait une caméra de publicité, et cela n'a coûté
+ *    aucune courbe d'accélération : c'est la géométrie qui le donne ;
+ *  · **le foyer s'ouvre en chemin,** de trente-deux à quarante-six degrés,
+ *    puis se referme à trente-huit dans le hall. Un champ qui s'élargit pendant
+ *    qu'on avance accentue la fuite des lignes : c'est l'effet Vertigo, dosé au
+ *    quart de ce qu'il faudrait pour qu'on le remarque. Refermé à l'arrivée, il
+ *    rend au hall ses proportions justes.
+ *
+ * Les valeurs de `t` suivent les sections de la page : 0 le premier écran,
+ * 0,14 la présentation, 0,28 l'architecture, puis les trois écrans de la
+ * galerie, les chiffres et l'appel final.
+ */
+export const VOL: Etape[] = [
+  /* Premier écran. Vue aérienne : la brume mange une part du contraste et le
+     bâtiment devient une masse dans la lumière. C'est l'image d'ouverture. */
+  { t: 0.0, oeil: [126, 76, 104], vise: [0, 30, 0], foyer: 32, pan: 11 },
+  /* La présentation. On descend et on se rapproche, sans changer d'angle. */
+  { t: 0.14, oeil: [104, 56, 88], vise: [0, 28, 0], foyer: 31, pan: 8 },
+  /* L'architecture. Mi-hauteur : c'est de là que les redans se lisent le
+     mieux, et la section parle d'eux. */
+  { t: 0.28, oeil: [82, 38, 70], vise: [0, 25, 0], foyer: 30, pan: 6 },
+  /* Galerie I — l'approche. On arrive à hauteur d'arbre au-dessus du parvis. */
+  { t: 0.43, oeil: [58, 14, 48], vise: [0, 23, 0], foyer: 34, pan: 5 },
+  /* Galerie II — le pied. Contre-plongée au ras du socle, foyer court : les
+     verticales fuient, et c'est le seul endroit de la page où on le veut. */
+  { t: 0.57, oeil: [42, 6.5, 23], vise: [4, 19, 0], foyer: 44, pan: 3 },
+  /* Galerie III — le seuil. La marquise passe au-dessus de l'objectif. */
+  { t: 0.71, oeil: [26, 2.7, 8], vise: [12, 4.4, 1.5], foyer: 46 },
+  /* Les chiffres. On franchit les portes ; les colonnes défilent de part et
+     d'autre, et c'est ce défilement latéral qui donne sa vitesse au plan. */
+  { t: 0.85, oeil: [14.2, 2.45, 1.8], vise: [-2, 3.7, 0.4], foyer: 44 },
+  /* L'appel final, dans le hall. En biais, et pas de face : un mur pris
+     d'équerre est un aplat, et on aurait traversé tout un bâtiment pour finir
+     sur un panneau gris. En diagonale, le comptoir, les colonnes et le nom
+     gravé se répartissent en profondeur. */
+  { t: 1.0, oeil: [2.4, 2.3, 3.4], vise: [-15, 3.35, -2.4], foyer: 38 },
+];
+
 /* =============================================================== mesures === */
 
 /** Surface de plancher hors œuvre, tous niveaux courants confondus. */
@@ -181,16 +288,16 @@ export const GALERIE: { surtitre: string; vues: Vue[] } = {
   surtitre: 'Gallery',
   vues: [
     {
-      titre: 'The mass',
-      texte: 'At eye level, from the corner where the base still governs the composition.',
+      titre: 'The approach',
+      texte: 'Coming down over the forecourt, where the mass still reads whole against the evening.',
     },
     {
-      titre: 'The setbacks',
-      texte: 'From above, the three retreats read as one movement and the terraces come into view.',
+      titre: 'The base',
+      texte: 'At the foot of the podium, looking up the full height along the line of the slab edges.',
     },
     {
-      titre: 'From the forecourt',
-      texte: 'At the foot of the base, looking up the full height along the line of the slab edges.',
+      titre: 'The threshold',
+      texte: 'Under the canopy, at the doors. From here the camera does not stop — it goes in.',
     },
   ],
 };

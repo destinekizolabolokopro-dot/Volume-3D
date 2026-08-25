@@ -56,7 +56,7 @@ export default function ResidencePage() {
 
       {/* Le bâtiment, en fond de fenêtre. Il ne défile pas : il tourne. */}
       <div className="rz-fond" aria-hidden={undefined}>
-        <Edifice />
+        <Edifice nom={PROJET.nom} />
       </div>
 
       <BarreResidence />

@@ -102,9 +102,21 @@ body:has(.rz) {
   padding: max(var(--rz-air), 108px) 0 var(--rz-air);
 }
 
-/* Le voile. Un dégradé et non un aplat : un aplat uniforme éteint le bâtiment
-   d'un bloc, un dégradé le laisse respirer par le haut là où il n'y a pas de
-   texte. */
+/*
+   Le voile.
+
+   Un dégradé et non un aplat : un aplat uniforme éteint le bâtiment d'un bloc,
+   un dégradé le laisse respirer par le haut là où il n'y a pas de texte.
+
+   Il est **plus léger dans les deux dernières sections**, et c'est le vol qui
+   l'exige : là, la caméra n'est plus à cent mètres devant une façade, elle est
+   dans le hall, à deux mètres d'une colonne. Un voile réglé pour éteindre une
+   masse lointaine éteint aussi bien un intérieur qu'on vient de construire —
+   la première mesure donnait un hall entier noyé sous quatre-vingt-six pour
+   cent de noir, avec le nom gravé au mur réduit à une ombre. On rend donc la
+   pièce visible et on remplace le voile par la matière : un verre local sous
+   les blocs de texte, là et seulement là où il y a du texte.
+*/
 .rz-section::before {
   content: '';
   position: absolute;
@@ -313,9 +325,9 @@ body:has(.rz) {
   background: linear-gradient(
     97deg,
     rgba(10, 13, 17, 0.78) 0%,
-    rgba(10, 13, 17, 0.7) 45%,
-    rgba(10, 13, 17, 0.52) 66%,
-    rgba(10, 13, 17, 0) 86%
+    rgba(10, 13, 17, 0.7) 42%,
+    rgba(10, 13, 17, 0.56) 58%,
+    rgba(10, 13, 17, 0) 76%
   );
 }
 
@@ -534,9 +546,51 @@ body:has(.rz) {
 .rz-appel::before {
   background: linear-gradient(
     180deg,
-    rgba(10, 13, 17, 0.4) 0%,
-    rgba(10, 13, 17, 0.88) 40%,
-    rgba(10, 13, 17, 0.96) 100%
+    rgba(10, 13, 17, 0.34) 0%,
+    rgba(10, 13, 17, 0.62) 42%,
+    rgba(10, 13, 17, 0.72) 100%
+  );
+}
+
+/* Sous le bloc central de l'appel, un halo sombre et très étalé. Il donne au
+   titre son fond sans fermer la pièce : le hall reste lisible tout autour, ce
+   qui est le sujet du dernier écran. */
+.rz-appel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    72% 58% at 50% 46%,
+    rgba(10, 13, 17, 0.82) 0%,
+    rgba(10, 13, 17, 0.52) 46%,
+    rgba(10, 13, 17, 0) 78%
+  );
+}
+
+/* Les chiffres sont dans le hall eux aussi : même traitement, mais le halo
+   suit la colonne de texte, à gauche. */
+.rz-chiffres::before {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 13, 17, 0.3) 0%,
+    rgba(10, 13, 17, 0.58) 34%,
+    rgba(10, 13, 17, 0.58) 70%,
+    rgba(10, 13, 17, 0.32) 100%
+  );
+}
+
+.rz-chiffres::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(10, 13, 17, 0.7) 0%,
+    rgba(10, 13, 17, 0.6) 52%,
+    rgba(10, 13, 17, 0.2) 78%,
+    rgba(10, 13, 17, 0) 94%
   );
 }
 

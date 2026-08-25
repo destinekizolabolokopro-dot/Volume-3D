@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { buildEdifice } from '@/components/three/edifice';
+import { creerProfondeur } from '@/components/three/profondeur';
 import { adaptQuality } from '@/components/three/quality';
+import { VOL } from '@/lib/residence';
 import styles from './Edifice.module.css';
 
 /**
@@ -30,89 +32,81 @@ import styles from './Edifice.module.css';
  * le poids d'une caméra.
  */
 
-/* ================================================================= plans === */
-
-interface Plan {
-  /** Position du curseur de défilement où ce plan est atteint. */
-  t: number;
-  /** Distance à l'axe du bâtiment, en mètres. */
-  rayon: number;
-  /** Azimut, en degrés. */
-  azimut: number;
-  /** Site, en degrés. Négatif = on regarde depuis le bas. */
-  site: number;
-  /** Hauteur visée sur le bâtiment, en fraction de sa hauteur totale. */
-  cible: number;
-  /** Champ vertical, en degrés. Un long foyer écrase, un court exagère. */
-  foyer: number;
-  /**
-   * Décentrement horizontal du point visé, en mètres. Positif pousse le
-   * bâtiment vers la droite du cadre.
-   *
-   * C'est le seul réglage de la liste qui ne parle pas du bâtiment mais de la
-   * **page**. Le titre du premier écran tient la moitié gauche du cadre ; sans
-   * décentrement, il se pose en travers de la façade la plus travaillée de la
-   * scène. Un cadreur ne recule pas pour régler cela, il panote.
-   */
-  ecart?: number;
-}
-
-/**
- * Le découpage en plans.
- *
- * C'est un découpage de film, pas une liste de positions. Chaque plan répond
- * à la section qu'il accompagne, et le passage de l'un à l'autre est une
- * **coupe adoucie**, jamais un mouvement libre : une caméra qui erre autour
- * d'un objet donne le tournis, une caméra qui va d'un cadre à un autre raconte.
- *
- * L'ordre suit le regard : on découvre la masse de loin et d'en bas, on monte
- * pour comprendre les redans, on descend au ras du parvis pour la hauteur, on
- * recule pour finir. C'est l'ordre dans lequel un architecte montre son projet.
- */
-const PLANS: Plan[] = [
-  /* Le premier écran. De trois quarts, de loin, à hauteur d'homme : le seul
-     cadrage qui donne à la fois la masse et le sol sur lequel elle pose. */
-  { t: 0.0, rayon: 134, azimut: 42, site: 6, cible: 0.47, foyer: 30, ecart: 20 },
-  /* La présentation. On avance de vingt mètres, à peine — la section parle du
-     nez de dalle, il faut commencer à le voir. */
-  { t: 0.2, rayon: 112, azimut: 28, site: 10, cible: 0.5, foyer: 28, ecart: 11 },
-  /* Galerie, plan I — « The mass ». On passe de l'autre côté de l'angle : même
-     hauteur d'œil, mais la lumière est désormais rasante sur le grand côté et
-     le petit côté part à l'ombre. C'est le contraste qui fait la masse. */
-  { t: 0.43, rayon: 96, azimut: -34, site: 4, cible: 0.4, foyer: 31, ecart: 9 },
-  /* Galerie, plan II — « The setbacks ». Vu d'en haut, les trois redans se
-     lisent d'un seul mouvement et les terrasses apparaissent. C'est le seul
-     plan presque frontal de la série, et il peut se le permettre : à trente
-     degrés de site, ce sont les toitures qui donnent le volume. */
-  { t: 0.57, rayon: 86, azimut: -6, site: 30, cible: 0.74, foyer: 27, ecart: 8 },
-  /* Galerie, plan III — « From the forecourt ». Au pied du socle, en
-     contre-plongée. Le foyer court est volontaire : c'est le seul plan de la
-     page où l'on veut la déformation, celle qui fait fuir les verticales. */
-  { t: 0.72, rayon: 46, azimut: -44, site: -11, cible: 0.3, foyer: 44, ecart: 7 },
-  /* Les chiffres. On recule pour rendre le bâtiment entier à qui le compte. */
-  { t: 0.88, rayon: 112, azimut: -22, site: 12, cible: 0.55, foyer: 29, ecart: 0 },
-  /* L'appel final : le plus large de tous, et un retour à l'angle d'ouverture.
-     La page se referme sur le cadrage qui l'a ouverte, en plus lointain. */
-  { t: 1.0, rayon: 142, azimut: 34, site: 7, cible: 0.46, foyer: 27, ecart: 0 },
-];
+/* ================================================================== vol === */
 
 /*
- * Une contrainte tenue sur toute la liste : **aucun arrêt ne passe du côté de
- * l'ombre.**
+ * Le vol lui-même vit dans `lib/residence.ts`, avec les cotes du bâtiment.
  *
- * Le soleil est à dix-huit degrés d'azimut (`components/three/edifice.ts`).
- * Au-delà d'une soixantaine de degrés de part et d'autre, la caméra ne voit
- * plus que des faces à contre-jour : le bâtiment redevient une silhouette et
- * tout le travail sur le béton est perdu. Les sept arrêts tiennent donc dans
- * l'intervalle [−44°, +42°], et la variété vient d'ailleurs — de la distance,
- * de la hauteur et du foyer, qui sont d'ailleurs les trois vrais outils d'un
- * cadreur. Le grand tour d'horizon, lui, est une idée de logiciel.
+ * Ce n'est pas un rangement de confort : une trajectoire qui se termine dans
+ * le hall est **liée aux dimensions du hall**. La dernière étape doit se
+ * trouver entre ses murs et au-dessus de son sol, et cela se vérifie par
+ * test — ce qui suppose que les deux soient lisibles depuis le même endroit,
+ * sans monter un contexte WebGL pour y arriver.
  */
 
 const lisse = (u: number) => {
   const c = u < 0 ? 0 : u > 1 ? 1 : u;
   return c * c * (3 - 2 * c);
 };
+
+/*
+ * Deux courbes, pas huit segments.
+ *
+ * Relier les étapes par des droites donnerait un vol qui casse à chaque
+ * étape : la direction change d'un coup, et l'œil voit très bien une caméra
+ * qui pivote instantanément, même de trois degrés. Une spline de Catmull-Rom
+ * passe par tous les points **et** garde une tangente continue, donc une
+ * vitesse et une direction continues.
+ *
+ * En version « centripète », précisément, et pas en version uniforme : la
+ * variante uniforme fait des boucles quand deux points sont proches et un
+ * troisième loin, ce qui est exactement la forme de ce vol — soixante mètres
+ * puis treize. La caméra serait sortie de la trajectoire juste avant la porte,
+ * c'est-à-dire au pire endroit.
+ */
+const COURBE_OEIL = new THREE.CatmullRomCurve3(
+  VOL.map((e) => new THREE.Vector3(...e.oeil)),
+  false,
+  'centripetal',
+  0.5,
+);
+/** L'axe vertical, gardé au chaud : la dérive tourne autour de lui à chaque image. */
+const HAUT = new THREE.Vector3(0, 1, 0);
+
+const COURBE_VISE = new THREE.CatmullRomCurve3(
+  VOL.map((e) => new THREE.Vector3(...e.vise)),
+  false,
+  'centripetal',
+  0.5,
+);
+
+/**
+ * Du curseur de défilement au paramètre de la courbe.
+ *
+ * Linéaire à l'intérieur de chaque segment, et c'est **délibéré**. Une
+ * accélération douce par segment — la solution évidente — ferait ralentir la
+ * caméra jusqu'à l'arrêt à chaque étape, puis repartir : huit petits
+ * démarrages au lieu d'un travelling. La continuité de vitesse est déjà
+ * assurée par la spline ; l'adoucissement, lui, est réservé aux deux bouts du
+ * vol, là où il n'y a rien avant et rien après.
+ */
+function parametre(t: number): { u: number; foyer: number; pan: number } {
+  const c = t < 0 ? 0 : t > 1 ? 1 : t;
+  let i = 0;
+  while (i < VOL.length - 2 && VOL[i + 1].t < c) i += 1;
+  const a = VOL[i];
+  const b = VOL[i + 1];
+  let f = (c - a.t) / Math.max(1e-6, b.t - a.t);
+  /* Les deux bouts, et eux seuls : on démarre en douceur et on se pose en
+     douceur. Au milieu, la vitesse reste continue d'un segment à l'autre. */
+  if (i === 0) f = lisse(f);
+  else if (i === VOL.length - 2) f = lisse(f);
+  return {
+    u: (i + f) / (VOL.length - 1),
+    foyer: a.foyer + (b.foyer - a.foyer) * f,
+    pan: (a.pan ?? 0) + ((b.pan ?? 0) - (a.pan ?? 0)) * f,
+  };
+}
 
 /**
  * Le cadrage se rattrape sur les écrans étroits.
@@ -126,60 +120,25 @@ const lisse = (u: number) => {
  * complètement**. Compenser à cent pour cent demanderait quatre-vingt-dix
  * degrés de champ vertical sur un téléphone, et un champ pareil déforme les
  * verticales d'un immeuble au point de le faire tomber en arrière. Un facteur
- * borné à deux, et un plafond à cinquante-cinq degrés : on récupère
- * l'essentiel du cadre sans basculer dans le fisheye.
- *
- * Le décentrement, lui, s'efface : il existait pour dégager la colonne de
- * texte, et sur un écran étroit le texte occupe toute la largeur. Le pousser
- * de côté n'aurait plus dégagé personne, seulement coupé le bâtiment.
+ * borné, et un plafond à cinquante-huit degrés : on récupère l'essentiel du
+ * cadre sans basculer dans le fisheye.
  */
-function cadrer(p: Plan, aspect: number): { foyer: number; rayon: number; cible: number; ecart: number } {
-  /* `part` vaut 1 sur un écran large et 0 sur un téléphone tenu debout ; tout
-     le reste s'y accroche, ce qui évite trois seuils indépendants qui se
-     contrediraient au premier changement d'orientation. */
+function cadrer(foyer: number, aspect: number): { foyer: number; part: number } {
   const part = Math.min(1, Math.max(0, (aspect - 0.62) / 0.9));
   const k = Math.min(1.62, Math.max(1, 1.55 / Math.max(0.2, aspect)));
-  const large = 2 * Math.atan(Math.tan((p.foyer * Math.PI) / 360) * k);
-  return {
-    foyer: Math.min(55, (large * 180) / Math.PI),
-    /* On se rapproche de dix pour cent : élargir le champ éloigne le sujet, et
-       un immeuble minuscule au milieu d'un écran de téléphone n'impressionne
-       personne. */
-    rayon: p.rayon * (1 - 0.1 * (1 - part)),
-    /* Et l'on vise plus bas. Le portrait empile le bâtiment et le texte au
-       lieu de les mettre côte à côte : viser un tiers plus bas fait monter la
-       masse dans la moitié haute du cadre, et rend la moitié basse au titre.
-       C'est le même geste que le décentrement horizontal, tourné de
-       quatre-vingt-dix degrés. */
-    cible: p.cible * (1 - 0.36 * (1 - part)),
-    ecart: (p.ecart ?? 0) * part,
-  };
-}
-
-/** La pose au curseur `t`, interpolée entre les deux plans qui l'encadrent. */
-function poseA(t: number): Plan {
-  const c = t < 0 ? 0 : t > 1 ? 1 : t;
-  let i = 0;
-  while (i < PLANS.length - 2 && PLANS[i + 1].t < c) i += 1;
-  const a = PLANS[i];
-  const b = PLANS[i + 1];
-  const u = lisse((c - a.t) / Math.max(1e-6, b.t - a.t));
-  const entre = (x: number, y: number) => x + (y - x) * u;
-  return {
-    t: c,
-    rayon: entre(a.rayon, b.rayon),
-    azimut: entre(a.azimut, b.azimut),
-    site: entre(a.site, b.site),
-    cible: entre(a.cible, b.cible),
-    foyer: entre(a.foyer, b.foyer),
-    ecart: entre(a.ecart ?? 0, b.ecart ?? 0),
-  };
+  const large = 2 * Math.atan(Math.tan((foyer * Math.PI) / 360) * k);
+  return { foyer: Math.min(58, (large * 180) / Math.PI), part };
 }
 
 /* ============================================================== composant === */
 
-export function Edifice({ reveal = true }: { reveal?: boolean }) {
+export function Edifice({ reveal = true, nom = 'ORIEL' }: { reveal?: boolean; nom?: string }) {
   const holderRef = useRef<HTMLDivElement>(null);
+  /* Le nom passe par une référence : l'effet ne se remonte pas quand il change,
+     et remonter une scène entière pour cinq lettres coûterait une seconde de
+     reconstruction pour rien. */
+  const nomRef = useRef(nom);
+  nomRef.current = nom;
   const [etat, setEtat] = useState<'attente' | 'vivant' | 'sansGL'>('attente');
   const [net, setNet] = useState(false);
 
@@ -223,17 +182,36 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, leger ? 1.5 : 2));
     renderer.setClearColor(0x0d1014, 1);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.02;
+    /* L'exposition monte à 1,14 depuis que le soleil est descendu à quinze
+       degrés : à cette hauteur-là, une façade ne reçoit plus qu'une fraction
+       de ce qu'elle prenait à vingt-six, et l'image entière glissait vers le
+       gris. On ne rattrape pas une lumière rasante en la redressant — on
+       l'expose. */
+    renderer.toneMappingExposure = 1.14;
     holder.appendChild(renderer.domElement);
     renderer.domElement.setAttribute('role', 'img');
     renderer.domElement.setAttribute(
       'aria-label',
-      'Vue en trois dimensions de la résidence, qui tourne à mesure que la page défile.',
+      'Vue en trois dimensions de la résidence : la caméra s’en approche puis entre dans le hall à mesure que la page défile.',
     );
 
-    const edifice = buildEdifice(renderer, { leger });
-    const camera = new THREE.PerspectiveCamera(30, 1, 1, 900);
-    const cible = new THREE.Vector3();
+    const edifice = buildEdifice(renderer, { leger, nom: nomRef.current });
+
+    /*
+     * La profondeur de champ.
+     *
+     * Elle coûte deux passes plein écran ; on ne l'accorde donc pas aux
+     * petites machines, qui ont mieux à faire de leur temps d'image — et à qui
+     * elle manquera moins qu'à personne, un flou d'arrière-plan sur un écran
+     * de six pouces se voyant à peine. Sur les autres, c'est le réglage qui
+     * distingue le plus nettement une image d'objectif d'une image de calcul :
+     * plus que les matières, plus que la lumière.
+     */
+    const bokeh = leger ? null : creerProfondeur(renderer, 0.85);
+    /* Le plan rapproché descend à vingt centimètres : la caméra frôle un
+       montant de porte en entrant, et un plan avant à un mètre l'aurait
+       tranché en deux au moment précis où l'on veut sentir qu'on passe. */
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.2, 1200);
     setEtat('vivant');
 
     let dirty = true;
@@ -241,6 +219,8 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       const { clientWidth, clientHeight } = holder;
       if (!clientWidth || !clientHeight) return;
       renderer.setSize(clientWidth, clientHeight, false);
+      const pixels = renderer.getDrawingBufferSize(new THREE.Vector2());
+      bokeh?.setSize(pixels.x, pixels.y);
       camera.aspect = clientWidth / clientHeight;
       camera.updateProjectionMatrix();
       dirty = true;
@@ -277,26 +257,62 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
     const quality = adaptQuality(renderer, Math.min(window.devicePixelRatio, leger ? 1.5 : 2));
 
     /** Écrit la pose du curseur `t` dans la caméra, dérive comprise, et rend. */
+    const oeil = new THREE.Vector3();
+    const vise = new THREE.Vector3();
+
+    /** Écrit la pose du curseur `t` dans la caméra, dérive comprise, et rend. */
     const rendre = (t: number, derive: number) => {
-      const p = poseA(t);
-      const cadre = cadrer(p, camera.aspect);
-      const az = ((p.azimut + derive) * Math.PI) / 180;
-      const si = (p.site * Math.PI) / 180;
-      const h = edifice.hauteur * cadre.cible;
-      camera.position.set(
-        Math.cos(az) * Math.cos(si) * cadre.rayon,
-        h + Math.sin(si) * cadre.rayon,
-        Math.sin(az) * Math.cos(si) * cadre.rayon,
-      );
-      /* Le décentrement s'applique au point visé, perpendiculairement à l'axe
-         de vue : la caméra panote, elle ne se translate pas. Une translation
-         latérale changerait la perspective du bâtiment ; un panoramique ne
-         change que sa place dans le cadre, ce qui est exactement la demande. */
-      cible.set(-Math.sin(az) * cadre.ecart, h, Math.cos(az) * cadre.ecart);
-      camera.lookAt(cible);
+      const { u, foyer, pan } = parametre(t);
+      COURBE_OEIL.getPoint(u, oeil);
+      COURBE_VISE.getPoint(u, vise);
+      const cadre = cadrer(foyer, camera.aspect);
+
+      /*
+       * La dérive : le vol tourne très légèrement autour de ce qu'il regarde.
+       *
+       * Elle est appliquée comme une **rotation de l'œil autour du point
+       * visé**, et non comme une translation. La différence compte : une
+       * translation de deux mètres n'est rien à deux cents mètres et beaucoup
+       * dans un hall, alors qu'un degré et demi reste un degré et demi partout.
+       * C'est le mouvement qui empêche l'image d'être fixe quand on s'arrête
+       * de faire défiler, sans jamais devenir un économiseur d'écran.
+       */
+      oeil.sub(vise).applyAxisAngle(HAUT, (derive * Math.PI) / 180).add(vise);
+
+      /*
+       * Sur un écran étroit, on vise plus bas.
+       *
+       * Le portrait empile le bâtiment et le texte au lieu de les mettre côte
+       * à côte. Abaisser le point visé fait monter la masse dans la moitié
+       * haute du cadre et rend la moitié basse au titre. Le décalage est
+       * proportionnel à la distance — un mètre de plus ou de moins ne veut pas
+       * dire la même chose à deux cents mètres et à deux — et il s'efface à
+       * mesure qu'on entre : dans le hall, viser un mètre plus bas reviendrait
+       * à regarder le sol.
+       */
+      if (cadre.part < 1) {
+        const loin = oeil.distanceTo(vise);
+        vise.y -= Math.min(14, loin * 0.075) * (1 - cadre.part);
+      }
+
+      camera.position.copy(oeil);
+      /* Le panoramique fait tourner la **direction de visée** autour de l'œil,
+         et s'efface avec le portrait : sur un écran étroit le texte occupe
+         toute la largeur, et pousser le bâtiment de côté ne dégagerait plus
+         personne — cela le couperait. */
+      if (pan && cadre.part > 0) {
+        vise.sub(oeil).applyAxisAngle(HAUT, (pan * cadre.part * Math.PI) / 180).add(oeil);
+      }
+      camera.lookAt(vise);
       camera.fov = cadre.foyer;
       camera.updateProjectionMatrix();
-      renderer.render(edifice.scene, camera);
+
+      /* Le point de netteté est ce que la caméra regarde. C'est le geste d'un
+         cadreur, et cela évite un second jeu de nombres à tenir en accord avec
+         le premier : le vol dit déjà, à chaque étape, ce qui compte dans le
+         cadre. */
+      if (bokeh) bokeh.rendre(edifice.scene, camera, oeil.distanceTo(vise));
+      else renderer.render(edifice.scene, camera);
     };
 
     const draw = (now: number) => {
@@ -326,7 +342,7 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
        * quitte le film d'architecture pour l'économiseur d'écran, et la
        * personne qui lit un paragraphe se met à suivre le bâtiment des yeux.
        */
-      const derive = Math.sin((now - depuis) / 6400) * 2.1;
+      const derive = Math.sin((now - depuis) / 6400) * 1.5;
       dirty = true;
 
       if (!dirty) return;
@@ -397,6 +413,7 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       window.clearTimeout(depart);
       window.removeEventListener('scroll', demarrer);
       quality.dispose();
+      bokeh?.dispose();
       observer.disconnect();
       watcher.disconnect();
       edifice.dispose();

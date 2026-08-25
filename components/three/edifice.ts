@@ -28,7 +28,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { ETAGE, NEZ, NIVEAUX, RETRAIT, SOCLE, TRAME, empreinte } from '@/lib/residence';
+import { ETAGE, HALL as COTES, NEZ, NIVEAUX, RETRAIT, SOCLE, TRAME, empreinte } from '@/lib/residence';
 
 /* La trame, les étages et l'empreinte vivent dans `lib/residence.ts` : la page
    affiche des chiffres qui doivent être ceux du bâtiment, et deux fichiers qui
@@ -71,7 +71,40 @@ const TON = {
   /** L'horizon, qui sert au ciel et à la brume. Les deux doivent être le
       même ton, sinon le sol se détache du fond par une ligne. */
   horizon: 0xdcd7cb,
+  /** Le halo autour du soleil, à l'horizon. */
+  halo: 0xffe0b4,
+
+  /* ------------------------------------------------------------ le hall ---
+     La caméra finit **dedans**. Le rez cesse donc d'être une boîte de verre
+     vue du dehors et devient une pièce : un sol qu'on voit de près, un
+     plafond au-dessus de la tête, et des matières qu'on regarde à deux
+     mètres. C'est le seul endroit de la scène où le nuancier se réchauffe —
+     un hall d'immeuble est un intérieur, et un intérieur gris est un parking. */
+  /** Le sol du hall : pierre claire polie. */
+  pierre: 0xb8b3aa,
+  /** Le marbre du comptoir et du mur de fond. */
+  marbre: 0xd2ccc0,
+  /** Le bois du comptoir et des banquettes. */
+  bois: 0x7c6851,
+  /** Les fûts des colonnes. */
+  fut: 0x8e8b85,
+  /** Les corniches lumineuses du plafond. Volontairement en deçà du blanc :
+      un matériau basique traverse quand même la courbe de tonalité, et un
+      0xfff3e0 y ressort en blanc pur — c'est-à-dire en trou dans l'image. */
+  lueur: 0xcbbda6,
 } as const;
+
+/* =============================================================== soleil === */
+
+/**
+ * La direction du soleil, en un seul endroit.
+ *
+ * Elle sert deux fois : à poser la lumière, et à peindre son halo dans le
+ * ciel. Les deux doivent tomber au même degré près — un halo qui ne coïncide
+ * pas avec l'ombre portée est le genre de faute qu'on ne sait pas nommer mais
+ * qu'on voit tout de suite.
+ */
+const SOLEIL = { azimut: 18, site: 15 } as const;
 
 /* ================================================================== lots === */
 
@@ -143,6 +176,8 @@ export interface OptionsEdifice {
    * rendu vingt pour cent de plus et donné un autre bâtiment.
    */
   leger?: boolean;
+  /** Le nom gravé sur le mur du hall. */
+  nom?: string;
 }
 
 export interface Edifice {
@@ -169,7 +204,28 @@ function ciel(disposables: Bin[], leger: boolean): THREE.Mesh {
   const haut = new THREE.Color(0x38536f);
   const horizon = new THREE.Color(TON.horizon);
   const bas = new THREE.Color(0x76736d);
+  const halo = new THREE.Color(TON.halo);
   const teinte = new THREE.Color();
+
+  /*
+   * Le halo du soleil.
+   *
+   * Un dégradé purement vertical donne un ciel de studio : la lumière vient de
+   * partout et de nulle part. Il manque **l'endroit d'où elle vient**. On
+   * ajoute donc une tache chaude autour de la direction du soleil, qui décroît
+   * sur une quarantaine de degrés — c'est elle qu'on voit à droite du bâtiment
+   * dans les rendus d'heure dorée, et c'est aussi elle que le verre reflète,
+   * puisque la carte d'environnement est fabriquée à partir de cette voûte.
+   */
+  const az = (SOLEIL.azimut * Math.PI) / 180;
+  const si = (SOLEIL.site * Math.PI) / 180;
+  const vers = new THREE.Vector3(
+    Math.cos(az) * Math.cos(si),
+    Math.sin(si),
+    Math.sin(az) * Math.cos(si),
+  );
+  const dir = new THREE.Vector3();
+
   for (let i = 0; i < position.count; i += 1) {
     const u = position.getY(i) / 600;
     /* L'exposant décide de la hauteur à laquelle le ciel devient bleu. À
@@ -179,6 +235,15 @@ function ciel(disposables: Bin[], leger: boolean): THREE.Mesh {
        dans le cadre. */
     if (u >= 0) teinte.copy(horizon).lerp(haut, Math.pow(u, 0.34));
     else teinte.copy(horizon).lerp(bas, Math.pow(-u, 0.8));
+
+    dir.set(position.getX(i), position.getY(i), position.getZ(i)).normalize();
+    const proche = Math.max(0, dir.dot(vers));
+    /* La puissance seize donne un halo d'environ quarante degrés : assez large
+       pour éclairer un quart de ciel, assez serré pour qu'on sache où est le
+       soleil. Plafonné à 0,85 — un halo qui sature à blanc pur devient une
+       lampe, et une lampe dans un ciel se voit comme un défaut. */
+    teinte.lerp(halo, Math.min(0.85, Math.pow(proche, 16)));
+
     couleur[i * 3] = teinte.r;
     couleur[i * 3 + 1] = teinte.g;
     couleur[i * 3 + 2] = teinte.b;
@@ -197,6 +262,73 @@ function ciel(disposables: Bin[], leger: boolean): THREE.Mesh {
   });
   disposables.push(geometry, material);
   return new THREE.Mesh(geometry, material);
+}
+
+/* ============================================================== enseigne === */
+
+/**
+ * Le nom du projet, sur le mur du hall.
+ *
+ * C'est la seule texture de toute la scène, et elle mérite qu'on dise
+ * pourquoi. Le dépôt a retiré ses cartes de relief l'une après l'autre :
+ * simuler du crépi ou des lames de parquet avec une image, c'est faire passer
+ * une photographie pour de la géométrie, et cela se voit. Un logotype ne pose
+ * pas la même question — **c'est déjà du dessin**. Le graver en volume
+ * demanderait une police vectorielle et une extrusion par lettre pour un
+ * résultat qu'on ne distingue pas, à trois mètres, d'un lettrage peint.
+ *
+ * La police n'est pas forcément chargée quand on dessine : on peint une
+ * première fois avec ce qui est disponible, puis on repeint quand
+ * `document.fonts` a fini. Un canevas de mille vingt-quatre pixels de large
+ * pour un panneau de neuf mètres soixante, soit un peu plus de cent points par
+ * mètre — largement au-dessus de ce que la caméra approche.
+ */
+function enseigne(disposables: Bin[], nom: string): THREE.MeshBasicMaterial | null {
+  if (typeof document === 'undefined') return null;
+  const toile = document.createElement('canvas');
+  toile.width = 1024;
+  toile.height = 256;
+  const ctx = toile.getContext('2d');
+  if (!ctx) return null;
+
+  const peindre = () => {
+    ctx.clearRect(0, 0, toile.width, toile.height);
+    ctx.fillStyle = '#f4f1ea';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '600 128px Inter, system-ui, sans-serif';
+    /* L'interlettrage large est ce qui fait la différence entre un mot et une
+       enseigne. Le canevas n'a pas de `letter-spacing` : on pose les lettres
+       une par une. */
+    const lettres = [...nom];
+    const chasse = lettres.map((l) => ctx.measureText(l).width);
+    const jeu = 46;
+    const total = chasse.reduce((a, b) => a + b, 0) + jeu * (lettres.length - 1);
+    let x = toile.width / 2 - total / 2;
+    for (let i = 0; i < lettres.length; i += 1) {
+      ctx.fillText(lettres[i], x + chasse[i] / 2, toile.height / 2);
+      x += chasse[i] + jeu;
+    }
+  };
+  peindre();
+
+  const texture = new THREE.CanvasTexture(toile);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  document.fonts?.ready?.then(() => {
+    peindre();
+    texture.needsUpdate = true;
+  });
+
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    fog: false,
+  });
+  material.userData = { sansOmbre: true };
+  disposables.push(texture, material);
+  return material;
 }
 
 /* ============================================================= construction === */
@@ -270,6 +402,29 @@ export function buildEdifice(
      loin, qui est la seule façon dont on le voit ici. */
   const eau = mat(TON.eau, 0.03, { metalness: 0 });
 
+  /* ---------------------------------------------------- matières du hall ---
+     Le vitrage du rez est le seul de la scène à être **traversé** par la
+     caméra, et le seul qu'on voie des deux côtés. Il est donc transparent
+     pour de bon — on doit deviner le hall éclairé depuis le parvis — et il ne
+     porte pas d'ombre : un mur-rideau qui projette une ombre pleine à
+     l'intérieur du hall le plongerait dans le noir. */
+  const vitrine = mat(0x8fa2ad, 0.06, {
+    metalness: 0.2,
+    opacity: 0.3,
+    transparent: true,
+    userData: { sansOmbre: true },
+  });
+  const pierre = mat(TON.pierre, 0.2, { metalness: 0.04 });
+  const marbre = mat(TON.marbre, 0.24, { metalness: 0.03 });
+  const bois = mat(TON.bois, 0.62);
+  const fut = mat(TON.fut, 0.55, { metalness: 0.05 });
+  /* Les corniches lumineuses sont un matériau **basique** : elles ne
+     reçoivent pas la lumière, elles la donnent. Une source lumineuse rendue
+     avec un matériau qui s'assombrit dans l'ombre n'est pas une source. */
+  const lueur = new THREE.MeshBasicMaterial({ color: TON.lueur, fog: false });
+  lueur.userData = { sansOmbre: true };
+  bin.push(lueur);
+
   const lot = new Lot();
   const groupe = new THREE.Group();
   const M = new THREE.Matrix4();
@@ -304,14 +459,154 @@ export function buildEdifice(
   ] as const) {
     pose(new THREE.BoxGeometry(TRAME * 0.7, SOCLE - 0.25, TRAME * 0.7), refend, x, (SOCLE - 0.25) / 2, z);
   }
-  // Le vitrage du rez, en retrait derrière les refends.
-  pose(
-    new THREE.BoxGeometry(s0.hx * 2 - TRAME, SOCLE - 0.9, s0.hz * 2 - TRAME),
-    verre,
-    0,
-    (SOCLE - 0.9) / 2 + 0.2,
-    0,
-  );
+  /* ------------------------------------------------------------- hall --- */
+  /*
+   * Le rez n'est plus une boîte, c'est une pièce.
+   *
+   * Tant que la caméra restait dehors, une seule boîte de verre suffisait :
+   * on n'en voyait jamais que la face avant, et ce qu'il y avait derrière
+   * n'existait pas. Le vol se termine maintenant **dedans**, et tout change —
+   * il faut un sol qu'on regarde à deux mètres, un plafond au-dessus de la
+   * tête, une porte par laquelle passer, et de la lumière qui vienne de
+   * l'intérieur.
+   *
+   * Les cotes tiennent en trois nombres : 30,60 m sur 19,80 m dans œuvre, et
+   * 5,43 m sous plafond. C'est grand, et c'est le sujet — un hall d'immeuble
+   * de standing se mesure à sa hauteur libre bien plus qu'à sa surface.
+   */
+  /* Les cotes du hall viennent de `lib/residence.ts`, comme la trame : la
+     caméra doit s'arrêter entre ces murs-là, et c'est vérifié par test. */
+  const IX = COTES.hx;
+  const IZ = COTES.hz;
+  /** Hauteur libre sous le plafond du hall. */
+  const HALL = COTES.haut;
+  /** Hauteur du vitrage ; au-dessus, une retombée pleine. */
+  const VITRE = 4.9;
+  /** Demi-largeur de la porte, sur la face +x. C'est par là qu'on entre. */
+  const PORTE = COTES.porte;
+  /** Hauteur du linteau de la porte. */
+  const LINTEAU = 3.9;
+
+  // Le sol, débordant légèrement pour couvrir le seuil.
+  pose(new THREE.BoxGeometry(IX * 2 + 0.6, 0.44, IZ * 2 + 0.6), pierre, 0, 0, 0);
+  // Le plafond, et la retombée périphérique au-dessus du vitrage.
+  pose(new THREE.BoxGeometry(IX * 2, 0.14, IZ * 2), soffite, 0, HALL - 0.07, 0);
+
+  /* Le mur du fond, en marbre. Il ferme la perspective du vol : la caméra
+     s'arrête devant lui, et c'est lui qui porte le nom du projet. Sans mur, le
+     hall serait traversant et le dernier plan donnerait sur le parvis d'en
+     face, c'est-à-dire sur rien.
+     Il est cannelé — un refend tous les quatre-vingt-dix centimètres, saillant
+     de six. C'est peu, et c'est tout ce qu'il faut : un mur plein rendu sans
+     relief reçoit la lumière d'un bloc et redevient un aplat gris, quelle que
+     soit sa matière. Les cannelures lui donnent une trame d'ombres, donc une
+     échelle, donc une matière. */
+  pose(new THREE.BoxGeometry(0.32, HALL, IZ * 2), marbre, -IX + 0.16, HALL / 2, 0);
+  for (let i = -10; i <= 10; i += 1) {
+    pose(new THREE.BoxGeometry(0.06, HALL - 0.3, 0.1), marbre, -IX + 0.35, (HALL - 0.3) / 2, i * 0.92);
+  }
+
+  /* Les vitrages, panneau par panneau. La face +x est percée : deux jouées,
+     une imposte au-dessus de la porte. Les faces ±z sont pleine hauteur. */
+  const glace = (w: number, h: number, x: number, y: number, z: number, selonZ: boolean) =>
+    pose(
+      selonZ ? new THREE.BoxGeometry(0.08, h, w) : new THREE.BoxGeometry(w, h, 0.08),
+      vitrine,
+      x,
+      y,
+      z,
+    );
+  for (const z of [-IZ, IZ]) glace(IX * 2, VITRE, 0, VITRE / 2, z, false);
+  for (const cote of [-1, 1]) {
+    const large = IZ - PORTE;
+    glace(large, VITRE, IX, VITRE / 2, cote * (PORTE + large / 2), true);
+  }
+  glace(PORTE * 2, VITRE - LINTEAU, IX, (VITRE + LINTEAU) / 2, 0, true);
+
+  /* Les meneaux du rez : un tous les 1,80 m, comme partout ailleurs. C'est ce
+     qui raccroche le socle à la trame de la tour ; sans eux, le rez est une
+     vitrine et la tour un immeuble. */
+  /* Un meneau toutes les **deux** trames, et non toutes les trames comme en
+     façade courante. La caméra passe à deux mètres de ce vitrage-là : au pas
+     de 1,80 m, la première version donnait une palissade de montants dans
+     laquelle le hall disparaissait. À 3,60 m, on lit encore la trame et on
+     voit à travers. */
+  for (let i = -4; i <= 4; i += 1) {
+    const x = i * TRAME * 2;
+    if (Math.abs(x) > IX - 0.2) continue;
+    for (const z of [-IZ, IZ]) {
+      pose(new THREE.BoxGeometry(0.1, VITRE, 0.18), meneau, x, VITRE / 2, z);
+    }
+  }
+  for (let i = -2; i <= 2; i += 1) {
+    const z = i * TRAME * 2;
+    if (Math.abs(z) > IZ - 0.2 || Math.abs(z) < PORTE - 0.2) continue;
+    pose(new THREE.BoxGeometry(0.18, VITRE, 0.1), meneau, IX, VITRE / 2, z);
+  }
+  // Les deux montants de la porte, plus épais : ce sont eux qui la dessinent.
+  for (const cote of [-1, 1]) {
+    pose(new THREE.BoxGeometry(0.3, LINTEAU, 0.3), meneau, IX, LINTEAU / 2, cote * PORTE);
+  }
+  pose(new THREE.BoxGeometry(0.3, 0.18, PORTE * 2), meneau, IX, LINTEAU, 0);
+
+  /* La marquise. Elle sort de quatre mètres au-dessus du seuil, et sa
+     sous-face porte une ligne de lumière : c'est le premier détail que la
+     caméra traverse, à un mètre au-dessus de l'objectif. */
+  pose(new THREE.BoxGeometry(4.4, 0.34, PORTE * 2 + 3.4), beton, IX + 2.2, LINTEAU + 0.6, 0);
+  pose(new THREE.BoxGeometry(4.0, 0.1, PORTE * 2 + 3.0), soffite, IX + 2.2, LINTEAU + 0.38, 0);
+  pose(new THREE.BoxGeometry(2.6, 0.06, PORTE * 2 + 1.2), lueur, IX + 2.2, LINTEAU + 0.33, 0);
+  // Le seuil : un tapis de pierre plus sombre, qui marque l'entrée au sol.
+  pose(new THREE.BoxGeometry(5.0, 0.06, PORTE * 2 + 2.0), refend, IX + 2.4, 0.23, 0);
+
+  /* Les colonnes. Quatre fûts qui rythment la profondeur du hall — c'est ce
+     qui empêche la pièce d'être un hangar, et c'est surtout ce qui donne à la
+     caméra quelque chose à dépasser en entrant. Sans premier plan qui défile,
+     un travelling n'a pas de vitesse. */
+  for (const x of [-7.2, 3.6]) {
+    for (const z of [-4.6, 4.6]) {
+      pose(new THREE.CylinderGeometry(0.44, 0.44, HALL, leger ? 10 : 18), fut, x, HALL / 2, z);
+      pose(new THREE.BoxGeometry(1.3, 0.14, 1.3), marbre, x, 0.29, z);
+    }
+  }
+
+  /* Les corniches lumineuses : quatre lignes continues dans le plafond. Elles
+     ne portent pas la lumière du hall — ce sont les lampes qui s'en chargent —
+     mais elles disent d'où elle vient, et une lumière dont on ne voit pas la
+     source paraît toujours fausse. */
+  for (const z of [-7.4, -2.6, 2.6, 7.4]) {
+    pose(new THREE.BoxGeometry(IX * 2 - 3, 0.05, 0.44), lueur, 0, HALL - 0.16, z);
+    pose(new THREE.BoxGeometry(IX * 2 - 2.6, 0.22, 0.9), soffite, 0, HALL - 0.24, z);
+  }
+
+  /* Le comptoir, décalé de l'axe. Posé au milieu, il barre la perspective et
+     la caméra lui rentre dedans ; décalé, il devient ce devant quoi on passe. */
+  pose(new THREE.BoxGeometry(1.15, 1.12, 7.2), bois, -8.6, 0.79, -4.2);
+  pose(new THREE.BoxGeometry(1.45, 0.09, 7.5), marbre, -8.6, 1.39, -4.2);
+  pose(new THREE.BoxGeometry(0.9, 0.05, 6.6), lueur, -8.6, 0.28, -4.2);
+
+  // Deux banquettes basses, du côté opposé au comptoir.
+  for (const z of [3.2, 6.4]) {
+    pose(new THREE.BoxGeometry(2.2, 0.42, 0.9), bois, -6.4, 0.44, z);
+    pose(new THREE.BoxGeometry(2.0, 0.12, 0.76), marbre, -6.4, 0.71, z);
+  }
+
+  /* Le nom, sur le mur du fond. C'est la seule image de toute la page — une
+     signalétique, dessinée dans un canevas au chargement. Elle est ici à sa
+     place et nulle part ailleurs : un logotype est du texte gravé sur un mur,
+     pas une matière qu'on simule. */
+  const signe = enseigne(bin, options.nom ?? 'ORIEL');
+  if (signe) {
+    /* Décalé du milieu du mur, et pas par goût : le dernier plan du vol est
+       une diagonale, et un logotype centré sur le mur tombait pile derrière le
+       titre de la page. Posé à trois mètres soixante de l'axe, il vient se
+       placer dans le tiers gauche du cadre, là où la page ne met rien. */
+    const plaque = new THREE.PlaneGeometry(8.4, 2.1);
+    bin.push(plaque);
+    const mesh = new THREE.Mesh(plaque, signe);
+    mesh.position.set(-IX + 0.42, 3.0, 3.6);
+    mesh.rotation.y = Math.PI / 2;
+    groupe.add(mesh);
+  }
 
   /* ------------------------------------------------------------ étages --- */
   let sommet = SOCLE + 0.25;
@@ -497,9 +792,16 @@ export function buildEdifice(
    * irrégulière**. Le feuillage n'a pas besoin d'être détaillé, il a besoin de
    * ne pas être une primitive reconnaissable.
    */
+  /* Deux arbres ont été déplacés après coup, et pour la même raison. Avec la
+     profondeur de champ, un feuillage situé à quinze mètres de l'objectif et
+     bien derrière le point de netteté devient une masse verte de six cents
+     pixels ; l'un d'eux s'étalait exactement derrière la plaque de légende du
+     deuxième écran de galerie. Un premier plan flou est un bon outil tant
+     qu'il ne s'assoit pas sur le texte — et l'endroit où il s'assoit ne se
+     devine pas depuis le code, il se voit sur la capture. */
   for (const [x, z, r] of [
-    [-s0.hx - 9, s0.hz + 6, 2.6],
-    [s0.hx + 11, s0.hz + 9, 3.1],
+    [-s0.hx - 16, s0.hz + 13, 2.6],
+    [-s0.hx - 6, -s0.hz - 16, 3.1],
     [s0.hx + 7, -s0.hz - 11, 2.2],
     [-s0.hx - 13, -s0.hz - 7, 2.8],
     [-s0.hx - 24, s0.hz + 21, 3.4],
@@ -550,8 +852,8 @@ export function buildEdifice(
    * le contraste qui modèle le volume. Les derniers plans, eux, tournent vers
    * l'ombre — et c'est bien ainsi, la page s'y assombrit aussi.
    */
-  const azimut = (18 * Math.PI) / 180;
-  const site = (26 * Math.PI) / 180;
+  const azimut = (SOLEIL.azimut * Math.PI) / 180;
+  const site = (SOLEIL.site * Math.PI) / 180;
   const portee = 140;
   soleil.position.set(
     Math.cos(azimut) * Math.cos(site) * portee,
@@ -581,6 +883,33 @@ export function buildEdifice(
   const renvoi = new THREE.DirectionalLight(0xc9d8e6, 0.55);
   renvoi.position.set(-90, 30, 70);
   scene.add(renvoi);
+
+  /*
+   * Les lampes du hall.
+   *
+   * Le hall est sous vingt-six mille mètres cubes de béton : le soleil n'y
+   * entre que par la façade est, et la carte d'ombre — gelée après la première
+   * image — l'y laisse dans le noir. Il lui faut donc son propre éclairage,
+   * et c'est une bonne nouvelle : un hall éclairé de l'intérieur, vu du
+   * parvis à travers son vitrage, est exactement l'image que vend un immeuble
+   * de standing à la tombée du jour.
+   *
+   * Trois lampes ponctuelles, chaudes, **sans ombre**. Sans ombre parce qu'une
+   * carte d'ombre par lampe ponctuelle est un cube de six faces à redessiner,
+   * soit dix-huit rendus supplémentaires par image pour un gain que personne
+   * ne remarque dans une pièce à quatre murs clairs. Et une portée bornée à
+   * trente-quatre mètres, sans quoi elles éclaireraient le parvis au travers
+   * des murs.
+   */
+  for (const [x, z] of [
+    [-9.5, 0],
+    [0, -5],
+    [4, 5],
+  ] as const) {
+    const lampe = new THREE.PointLight(0xffe6c2, 135, 34, 2);
+    lampe.position.set(x, HALL - 0.6, z);
+    scene.add(lampe);
+  }
 
   /*
    * Le ciel sert deux fois : on le regarde, et on s'y reflète.
