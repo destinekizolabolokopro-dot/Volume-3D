@@ -1,46 +1,45 @@
 /* =========================================================================
-   ORIEL — la feuille de la page premium.
+   ORIEL — la feuille de la page.
 
    Elle est **globale mais préfixée** : tout est sous `.rz`, comme
-   `app/landing.css` l'est sous ses propres classes. Les composants de la page
-   gardent leurs modules ; ce fichier ne tient que la composition — la trame,
-   les voiles, l'échelle typographique.
+   `app/landing.css` l'est sous ses propres classes. Les composants gardent
+   leurs modules ; ce fichier ne tient que la composition.
 
-   Trois partis pris valent d'être écrits, parce qu'ils expliquent le reste :
+   Trois partis pris, et le premier commande les deux autres :
 
-   1. **Un fond fixe, des sections transparentes.** Le bâtiment est peint une
-      fois derrière la page. Chaque section pose son propre voile par-dessus,
-      d'où le `::before` répété : c'est ce réglage local qui permet à la
-      galerie d'être presque nue là où la présentation est presque opaque.
+   1. **Le texte se tient au bord du cadre.** La version précédente posait des
+      paragraphes au milieu de l'écran sur un voile presque opaque. Elle
+      informait très bien et cachait le bâtiment, ce qui est à peu près le
+      contraire du travail : on vend la vue, et on l'avait bouchée. Chaque
+      section a donc un titre en haut et une bande de fiches en bas, et rien
+      au milieu.
 
-   2. **La blancheur n'est pas de l'espace vide.** Les marges de section
-      montent à seize pour cent de la hauteur d'écran. C'est beaucoup, et
-      c'est la moitié de l'effet « premium » : un titre qui a de l'air autour
-      de lui paraît important, le même titre serré paraît pressé.
+   2. **Les voiles ne travaillent plus qu'aux deux bords.** Un dégradé qui
+      descend du haut, un autre qui monte du bas, et un centre parfaitement
+      clair. Le bâtiment reste visible sur les deux tiers de la hauteur à
+      chaque écran.
 
-   3. **Une seule fonte, très peu de graisses.** Inter est la fonte du site et
-      elle reste la fonte de cette page. Le luxe ne vient pas d'une seconde
-      famille, il vient de l'échelle — 12 px pour les surtitres, 96 px pour le
-      titre — et d'un interlettrage négatif tenu sur les grandes tailles.
+   3. **L'information est en fiches, pas en phrases.** Une clé, une valeur.
+      Trois par section. C'est ce qu'on lit sur une plaquette de programme, et
+      c'est ce qui tient en trois lignes au lieu de six.
    ========================================================================= */
 
 .rz {
   --rz-encre: #f4f6f7;
-  --rz-encre-douce: rgba(238, 242, 244, 0.84); /* le corps de texte, sur le voile des sections */
-  --rz-encre-faible: rgba(226, 232, 236, 0.56); /* 5,4 — surtitres et mentions */
+  --rz-encre-douce: rgba(238, 242, 244, 0.84);
+  --rz-encre-faible: rgba(226, 232, 236, 0.72);
   --rz-nuit: #0a0d11;
-  --rz-filet: rgba(238, 242, 244, 0.14);
+  --rz-filet: rgba(238, 242, 244, 0.16);
   --rz-bande: min(1240px, 100% - 48px);
-  --rz-air: clamp(96px, 16vh, 190px);
+  --rz-air: clamp(84px, 12vh, 150px);
   --rz-lent: cubic-bezier(0.16, 1, 0.3, 1);
 
   position: relative;
   min-height: 100vh;
   color: var(--rz-encre);
   background: var(--rz-nuit);
-  /* La page arrive en fondu. C'est la première marche de la séquence
-     d'ouverture, et elle est en CSS pur : rien à attendre, pas de script, pas
-     d'écran blanc si le JavaScript tarde. */
+  /* La page arrive en fondu : première marche de la séquence d'ouverture, en
+     CSS pur — rien à attendre, pas d'écran blanc si le script tarde. */
   animation: rz-entree 900ms ease-out both;
 }
 
@@ -53,8 +52,8 @@
   }
 }
 
-/* Le fond de la page derrière la zone de rebond : sans lui, un défilement
-   élastique découvre le blanc du site sous une page nocturne. */
+/* Le fond derrière la zone de rebond : sans lui, un défilement élastique
+   découvre le blanc du site sous une page nocturne. */
 body:has(.rz) {
   background: #0a0d11;
 }
@@ -65,7 +64,6 @@ body:has(.rz) {
   position: fixed;
   inset: 0;
   z-index: 0;
-  /* Le canevas ne reçoit rien : tous les clics vont au texte au-dessus. */
   pointer-events: none;
 }
 
@@ -77,57 +75,75 @@ body:has(.rz) {
 /* ------------------------------------------------------------ sections --- */
 
 /*
-   Une section, un écran.
-   
-   Sans hauteur minimale, la présentation tenait en six cents pixels et son
-   titre partageait le cadre avec celui de la section suivante : deux grands
-   titres visibles à la fois, et le rythme « on défile, une idée arrive »
-   s'effondre. La hauteur d'écran n'est pas ici une coquetterie de plein
-   format, c'est ce qui garantit qu'on ne lit qu'une chose à la fois — et
-   c'est aussi ce qui donne à la caméra le temps d'atteindre son plan avant
-   qu'on lise le texte qui va avec.
+   Une section, un écran, et le contenu réparti aux deux bords.
+
+   `space-between` fait tout le travail : le bloc de titre monte, la bande de
+   fiches descend, et le milieu reste vide. C'est le vide qui est le sujet —
+   c'est par là qu'on voit le bâtiment.
 */
 .rz-section {
   position: relative;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  /* `safe` change tout dès qu'une section est plus haute que l'écran — ce qui
-     arrive sur téléphone à la première section un peu dense. Un centrage
-     ordinaire déborde alors des deux côtés, et le surtitre part se cacher
-     sous la barre de navigation ; le centrage sûr bascule sur un alignement
-     en début de bloc et respecte à nouveau la marge haute. */
-  justify-content: safe center;
-  padding: max(var(--rz-air), 108px) 0 var(--rz-air);
+  justify-content: space-between;
+  gap: 32px;
+  padding: max(var(--rz-air), 116px) 0 clamp(40px, 6vh, 76px);
 }
 
 /*
-   Le voile.
+   Le voile, aux deux bords seulement.
 
-   Un dégradé et non un aplat : un aplat uniforme éteint le bâtiment d'un bloc,
-   un dégradé le laisse respirer par le haut là où il n'y a pas de texte.
-
-   Il est **plus léger dans les deux dernières sections**, et c'est le vol qui
-   l'exige : là, la caméra n'est plus à cent mètres devant une façade, elle est
-   dans le hall, à deux mètres d'une colonne. Un voile réglé pour éteindre une
-   masse lointaine éteint aussi bien un intérieur qu'on vient de construire —
-   la première mesure donnait un hall entier noyé sous quatre-vingt-six pour
-   cent de noir, avec le nom gravé au mur réduit à une ombre. On rend donc la
-   pièce visible et on remplace le voile par la matière : un verre local sous
-   les blocs de texte, là et seulement là où il y a du texte.
+   En haut il rattrape la barre de navigation et le bloc de titre ; en bas la
+   bande de fiches. Entre les deux, rien du tout : c'est ce vide-là qui
+   distingue cette page de sa version précédente, où un aplat à 86 % éteignait
+   le bâtiment sur toute la hauteur.
 */
 .rz-section::before {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(10, 13, 17, 0.86) 0%, rgba(10, 13, 17, 0) 34%),
+    linear-gradient(0deg, rgba(10, 13, 17, 0.88) 0%, rgba(10, 13, 17, 0.62) 16%, rgba(10, 13, 17, 0) 34%);
+}
+
+/*
+   Le voile latéral, sous la titraille.
+
+   Le voile des deux bords ne suffisait pas : le titre d'une section descend
+   plus bas que le dégradé du haut, et la mesure sur les pixels l'a dit sans
+   ménagement — 1,53:1 pour « Un immeuble qui compte ses étages », posé sur une
+   ville dans la brume. Ce dégradé-ci part du côté où se tient le texte et
+   s'éteint aux deux tiers de la largeur, donc il assombrit une colonne et
+   laisse le bâtiment.
+
+   Il est en `::after` et non fondu dans le `::before` parce que sa direction
+   change avec le côté du titre — voir la règle en `:has()` juste après.
+*/
+.rz-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   background: linear-gradient(
-    180deg,
-    rgba(10, 13, 17, 0.32) 0%,
-    rgba(10, 13, 17, 0.86) 34%,
-    rgba(10, 13, 17, 0.86) 66%,
-    rgba(10, 13, 17, 0.32) 100%
+    100deg,
+    rgba(10, 13, 17, 0.84) 0%,
+    rgba(10, 13, 17, 0.72) 30%,
+    rgba(10, 13, 17, 0.38) 48%,
+    rgba(10, 13, 17, 0) 64%
+  );
+}
+
+/* Une section sur trois cadre par la droite : son voile part de la droite. */
+.rz-section:has(.rz-titraille[data-cote='droite'])::after {
+  background: linear-gradient(
+    260deg,
+    rgba(10, 13, 17, 0.84) 0%,
+    rgba(10, 13, 17, 0.72) 30%,
+    rgba(10, 13, 17, 0.38) 48%,
+    rgba(10, 13, 17, 0) 64%
   );
 }
 
@@ -145,6 +161,22 @@ body:has(.rz) {
   align-items: center;
 }
 
+.rz-titraille {
+  max-width: 46ch;
+}
+
+/* Une section sur trois cadre par la droite. Ce n'est pas de la variété pour
+   la variété : l'atrium est un vide vertical au centre de l'image, et un titre
+   posé à gauche s'y appuierait. */
+.rz-titraille[data-cote='droite'] {
+  margin-left: auto;
+  text-align: right;
+}
+
+.rz-titraille[data-cote='droite'] .rz-surtitre {
+  margin-left: auto;
+}
+
 /* ------------------------------------------------------- typographie --- */
 
 .rz-surtitre {
@@ -154,7 +186,7 @@ body:has(.rz) {
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--rz-encre-faible);
-  margin-bottom: 44px;
+  margin-bottom: 32px;
 }
 
 /* Le trait sous le surtitre se tire de la gauche. Il est porté par un
@@ -164,7 +196,7 @@ body:has(.rz) {
   content: '';
   display: block;
   height: 1px;
-  margin-top: 14px;
+  margin-top: 12px;
   background: var(--rz-filet);
   transform: scaleX(0);
   transform-origin: left;
@@ -175,28 +207,14 @@ body:has(.rz) {
   transform: scaleX(1);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .rz-surtitre::after {
-    transform: none;
-    transition: none;
-  }
-}
-
-/* `fit-content` n'est pas de la cosmétique : un titre en bloc occupe toute la
-   largeur de la bande, y compris le vide à droite du dernier mot. Ce vide
-   passe sur la façade, et la mesure de contraste — qui lit les pixels sous la
-   boîte du texte — y trouvait le béton en plein soleil et annonçait 1,35:1
-   pour un titre parfaitement lisible. La boîte doit épouser les mots. */
+/* L'interlettrage négatif est ce qui sépare un grand titre d'un gros texte. */
 .rz-titre,
 .rz .rz-titre {
   width: fit-content;
   max-width: 100%;
-  font-size: clamp(40px, 7.4vw, 96px);
+  font-size: clamp(38px, 7vw, 92px);
   line-height: 1.02;
   font-weight: 400;
-  /* L'interlettrage négatif est ce qui sépare un grand titre d'un gros texte.
-     Il se resserre avec la taille : à 96 px, −0,03 em ; à 40 px il serait
-     illisible, d'où la valeur relative. */
   letter-spacing: -0.032em;
   color: var(--rz-encre);
   margin: 0;
@@ -204,8 +222,8 @@ body:has(.rz) {
 
 .rz .rz-h2 {
   width: fit-content;
-  max-width: min(100%, 15ch);
-  font-size: clamp(28px, 3.6vw, 50px);
+  max-width: 100%;
+  font-size: clamp(26px, 3.3vw, 46px);
   line-height: 1.1;
   font-weight: 400;
   letter-spacing: -0.026em;
@@ -213,34 +231,78 @@ body:has(.rz) {
   margin: 0;
 }
 
+.rz-titraille[data-cote='droite'] .rz-h2 {
+  margin-left: auto;
+}
+
 .rz .rz-h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--rz-encre);
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 }
 
 .rz-p {
-  font-size: 17px;
-  line-height: 1.68;
+  font-size: 16px;
+  line-height: 1.62;
   color: var(--rz-encre-douce);
-  margin: 0 0 22px;
-  max-width: 58ch;
+  margin: 22px 0 0;
+  max-width: 52ch;
+}
+
+.rz-titraille[data-cote='droite'] .rz-p {
+  margin-left: auto;
 }
 
 .rz-p-petit {
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.55;
   margin: 0;
 }
 
 .rz-chapo {
   font-size: clamp(16px, 1.5vw, 19px);
-  line-height: 1.62;
+  line-height: 1.6;
   color: var(--rz-encre-douce);
-  max-width: 46ch;
-  margin: 30px 0 42px;
+  max-width: 44ch;
+  margin: 28px 0 40px;
+}
+
+/* ------------------------------------------------------------- fiches --- */
+
+/*
+   La bande de fiches.
+
+   Trois colonnes, un filet au-dessus de chacune, la clé en petites capitales
+   et la valeur en grand. C'est la plaquette d'un programme immobilier, et
+   c'est exactement le registre : on ne raconte pas le bâtiment, on le cote.
+*/
+.rz-fiches {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(24px, 4vw, 64px);
+  margin: 0;
+}
+
+.rz-fiche {
+  border-top: 1px solid var(--rz-filet);
+  padding-top: 16px;
+}
+
+.rz-fiche dt {
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--rz-encre-faible);
+}
+
+.rz-fiche dd {
+  margin: 8px 0 0;
+  font-size: clamp(17px, 1.7vw, 22px);
+  letter-spacing: -0.015em;
+  color: var(--rz-encre);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 /* ----------------------------------------------------------- bouton --- */
@@ -285,37 +347,27 @@ body:has(.rz) {
 /* ============================================================== hero === */
 
 .rz-hero {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
   justify-content: flex-end;
-  padding-bottom: clamp(56px, 9vh, 110px);
+  padding-bottom: clamp(48px, 8vh, 96px);
 }
 
 /* Le voile du hero descend d'un côté seulement : le bâtiment occupe le haut
-   et la droite du cadre, le texte tient le bas et la gauche. C'est la
-   composition qui décide où le voile appuie, pas l'inverse. */
+   et la droite du cadre, le texte tient le bas et la gauche. */
 .rz-hero::before {
   background:
-    linear-gradient(180deg, rgba(10, 13, 17, 0.58) 0%, rgba(10, 13, 17, 0) 26%),
-    linear-gradient(0deg, rgba(10, 13, 17, 0.82) 0%, rgba(10, 13, 17, 0) 52%),
-    linear-gradient(90deg, rgba(10, 13, 17, 0.6) 0%, rgba(10, 13, 17, 0) 46%);
+    linear-gradient(180deg, rgba(10, 13, 17, 0.56) 0%, rgba(10, 13, 17, 0) 24%),
+    linear-gradient(0deg, rgba(10, 13, 17, 0.84) 0%, rgba(10, 13, 17, 0) 54%);
 }
 
 /*
    Le fond du titre, et il vient d'une mesure.
 
    Le contraste de cette page ne se lit pas dans la feuille de style : le fond
-   du texte est un bâtiment qui tourne. On le mesure donc sur les pixels
-   (`npm run residence`), et la première mesure a été sévère — 1,34:1 pour le
-   titre du premier écran, là où il traverse les nez de dalle au soleil. Le
-   blanc sur le béton éclairé, c'est du blanc sur du blanc.
-
-   Il fallait environ cinquante pour cent de voile là où le titre passe. Le
-   dégradé est très étalé — il ne se referme qu'aux quatre cinquièmes de la
-   largeur — précisément pour qu'on ne voie pas un bandeau : ce qui doit se
-   voir, c'est que le coin gauche de l'image est dans l'ombre, pas qu'on y a
-   posé un cache.
+   du texte est un bâtiment. On le mesure sur les pixels (`npm run residence`),
+   et la première mesure était sévère — 1,34:1 pour le titre du premier écran,
+   là où il traverse les nez de dalle au soleil. Le blanc sur le béton éclairé,
+   c'est du blanc sur du blanc. Le dégradé est très étalé, précisément pour
+   qu'on ne voie pas un bandeau.
 */
 .rz-hero::after {
   content: '';
@@ -331,20 +383,6 @@ body:has(.rz) {
   );
 }
 
-@media (max-width: 900px) {
-  /* Sur téléphone le bâtiment tient la moitié haute et le texte la moitié
-     basse : le voile doit donc monter du bas, pas venir de la gauche. */
-  .rz-hero::after {
-    background: linear-gradient(
-      0deg,
-      rgba(10, 13, 17, 0.86) 0%,
-      rgba(10, 13, 17, 0.78) 48%,
-      rgba(10, 13, 17, 0.36) 68%,
-      rgba(10, 13, 17, 0) 82%
-    );
-  }
-}
-
 .rz-etiquette {
   display: inline-flex;
   align-items: center;
@@ -353,7 +391,7 @@ body:has(.rz) {
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--rz-encre-faible);
-  margin-bottom: 34px;
+  margin-bottom: 30px;
 }
 
 .rz-pastille {
@@ -367,7 +405,7 @@ body:has(.rz) {
   position: relative;
   z-index: 1;
   width: var(--rz-bande);
-  margin: clamp(48px, 7vh, 90px) auto 0;
+  margin: clamp(40px, 6vh, 76px) auto 0;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -384,61 +422,35 @@ body:has(.rz) {
   background: linear-gradient(90deg, rgba(238, 242, 244, 0.7), rgba(238, 242, 244, 0));
 }
 
-/* ======================================================== présentation === */
-
-.rz-deux {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(40px, 6vw, 96px);
-  align-items: start;
-}
-
-/*
-   La colonne de texte prend un verre.
-   
-   Elle est la seule de la page à se poser franchement sur la façade, dans une
-   zone où le voile de section est encore faible. Le verre — un fond sombre à
-   quarante pour cent et un flou d'arrière-plan — lui rend son fond sans
-   éteindre le bâtiment autour. Pas de bord fermé, un seul filet à gauche : un
-   cadre complet en ferait une carte, et une carte posée sur une image est
-   exactement ce que le brief appelle un template.
-*/
-.rz-texte {
-  padding: 30px 34px;
-  border-left: 1px solid var(--rz-filet);
-  background: rgba(10, 13, 17, 0.4);
-  -webkit-backdrop-filter: blur(14px) saturate(115%);
-  backdrop-filter: blur(14px) saturate(115%);
-}
-
 /* ======================================================== architecture === */
 
+/*
+   Les quatre décisions, en une seule ligne en pied d'écran.
+
+   Elles occupaient un panneau de deux colonnes sur deux au milieu de la page,
+   qui remplissait la moitié de l'image. Alignées en pied, elles disent la même
+   chose et ne cachent plus rien.
+*/
 .rz-traits {
   list-style: none;
-  margin: clamp(56px, 8vh, 96px) 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
-  /* Les cases sont séparées par le fond qui passe entre elles : un filet d'un
-     pixel obtenu sans bordure, donc sans double trait aux jonctions. */
-  background: var(--rz-filet);
-  border: 1px solid var(--rz-filet);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 44px);
 }
 
 .rz-trait {
-  background: rgba(10, 13, 17, 0.5);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  padding: clamp(28px, 3.4vw, 46px);
+  border-top: 1px solid var(--rz-filet);
+  padding-top: 16px;
 }
 
 .rz-numero {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.24em;
   color: var(--rz-encre-faible);
-  margin-bottom: 26px;
+  margin-bottom: 14px;
 }
 
 /* ============================================================= galerie === */
@@ -455,7 +467,7 @@ body:has(.rz) {
   min-height: 100svh;
   display: flex;
   align-items: flex-end;
-  padding: 0 0 clamp(56px, 9vh, 110px);
+  padding: 0 0 clamp(48px, 8vh, 96px);
 }
 
 .rz-plan::before {
@@ -463,16 +475,16 @@ body:has(.rz) {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(0deg, rgba(10, 13, 17, 0.72) 0%, rgba(10, 13, 17, 0) 44%);
+  background: linear-gradient(0deg, rgba(10, 13, 17, 0.72) 0%, rgba(10, 13, 17, 0) 42%);
 }
 
 .rz-plaque {
   position: relative;
   z-index: 1;
-  width: min(430px, calc(100% - 48px));
+  width: min(400px, calc(100% - 48px));
   margin-left: max(24px, calc((100% - 1240px) / 2));
-  padding: 28px 30px 30px;
-  background: rgba(10, 13, 17, 0.52);
+  padding: 24px 26px 26px;
+  background: rgba(10, 13, 17, 0.5);
   border: 1px solid var(--rz-filet);
   -webkit-backdrop-filter: blur(18px) saturate(120%);
   backdrop-filter: blur(18px) saturate(120%);
@@ -480,40 +492,78 @@ body:has(.rz) {
 
 .rz-plaque-rang {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.24em;
   color: var(--rz-encre-faible);
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+}
+
+/* =============================================================== appel === */
+
+.rz-appel {
+  justify-content: center;
+  gap: clamp(48px, 8vh, 96px);
+}
+
+.rz-appel::before {
+  background:
+    linear-gradient(180deg, rgba(10, 13, 17, 0.5) 0%, rgba(10, 13, 17, 0) 30%),
+    linear-gradient(0deg, rgba(10, 13, 17, 0.78) 0%, rgba(10, 13, 17, 0) 40%);
+}
+
+/* Sous le bloc central, un halo sombre et très étalé : il donne au titre son
+   fond sans fermer la pièce, ce qui est le sujet du dernier écran. */
+.rz-appel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    68% 52% at 50% 42%,
+    rgba(10, 13, 17, 0.8) 0%,
+    rgba(10, 13, 17, 0.5) 46%,
+    rgba(10, 13, 17, 0) 78%
+  );
+}
+
+.rz-titre-fin {
+  font-size: clamp(32px, 5.2vw, 72px);
+  max-width: 18ch;
+}
+
+.rz-appel .rz-chapo {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* ============================================================ chiffres === */
 
 .rz-tableau {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(32px, 5vw, 80px);
-  margin: clamp(48px, 7vh, 88px) 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(24px, 4vw, 64px);
+  margin: 0;
 }
 
 .rz-case {
   border-top: 1px solid var(--rz-filet);
-  padding-top: 26px;
+  padding-top: 18px;
 }
 
 .rz-valeur {
-  font-size: clamp(52px, 7vw, 104px);
+  font-size: clamp(40px, 5vw, 68px);
   line-height: 1;
   font-weight: 400;
   letter-spacing: -0.04em;
-  /* Les chiffres alignés en colonnes : sans chasse fixe, « 12 » et « 2028 »
-     ne commencent pas au même endroit et le tableau se met de travers. */
+  /* Sans chasse fixe, « 12 » et « 2028 » ne commencent pas au même endroit et
+     la bande se met de travers. */
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--rz-encre);
 }
 
 .rz-libelle {
-  margin: 18px 0 0;
-  font-size: 13px;
+  margin: 12px 0 0;
+  font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--rz-encre);
@@ -521,87 +571,11 @@ body:has(.rz) {
 
 .rz-precision {
   display: block;
-  margin-top: 10px;
+  margin-top: 8px;
   font-size: 13px;
   letter-spacing: 0;
   text-transform: none;
   color: var(--rz-encre-faible);
-}
-
-.rz-note {
-  margin: clamp(44px, 6vh, 72px) 0 0;
-  font-size: 14px;
-  color: var(--rz-encre-faible);
-  max-width: 62ch;
-}
-
-/* =============================================================== appel === */
-
-.rz-appel {
-  min-height: 92svh;
-  display: flex;
-  align-items: center;
-}
-
-.rz-appel::before {
-  background: linear-gradient(
-    180deg,
-    rgba(10, 13, 17, 0.34) 0%,
-    rgba(10, 13, 17, 0.62) 42%,
-    rgba(10, 13, 17, 0.72) 100%
-  );
-}
-
-/* Sous le bloc central de l'appel, un halo sombre et très étalé. Il donne au
-   titre son fond sans fermer la pièce : le hall reste lisible tout autour, ce
-   qui est le sujet du dernier écran. */
-.rz-appel::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    72% 58% at 50% 46%,
-    rgba(10, 13, 17, 0.82) 0%,
-    rgba(10, 13, 17, 0.52) 46%,
-    rgba(10, 13, 17, 0) 78%
-  );
-}
-
-/* Les chiffres sont dans le hall eux aussi : même traitement, mais le halo
-   suit la colonne de texte, à gauche. */
-.rz-chiffres::before {
-  background: linear-gradient(
-    180deg,
-    rgba(10, 13, 17, 0.3) 0%,
-    rgba(10, 13, 17, 0.58) 34%,
-    rgba(10, 13, 17, 0.58) 70%,
-    rgba(10, 13, 17, 0.32) 100%
-  );
-}
-
-.rz-chiffres::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    100deg,
-    rgba(10, 13, 17, 0.7) 0%,
-    rgba(10, 13, 17, 0.6) 52%,
-    rgba(10, 13, 17, 0.2) 78%,
-    rgba(10, 13, 17, 0) 94%
-  );
-}
-
-.rz-titre-fin {
-  font-size: clamp(34px, 5.6vw, 78px);
-  max-width: 18ch;
-}
-
-.rz-appel .rz-chapo {
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* ================================================================ pied === */
@@ -611,7 +585,7 @@ body:has(.rz) {
   z-index: 1;
   background: var(--rz-nuit);
   border-top: 1px solid var(--rz-filet);
-  padding: 34px 0 44px;
+  padding: 30px 0 40px;
 }
 
 .rz-pied-rang {
@@ -625,7 +599,7 @@ body:has(.rz) {
 
 .rz-pied-rang p {
   margin: 0;
-  max-width: 68ch;
+  max-width: 74ch;
 }
 
 .rz-pied-rang a {
@@ -643,17 +617,34 @@ body:has(.rz) {
 @media (max-width: 900px) {
   .rz {
     --rz-bande: calc(100% - 32px);
-    --rz-air: clamp(72px, 11vh, 120px);
+    --rz-air: clamp(64px, 10vh, 110px);
   }
 
-  .rz-deux,
-  .rz-traits,
-  .rz-tableau {
-    grid-template-columns: 1fr;
+  .rz-titraille[data-cote='droite'] {
+    text-align: left;
   }
 
+  .rz-titraille[data-cote='droite'] .rz-surtitre,
+  .rz-titraille[data-cote='droite'] .rz-h2,
+  .rz-titraille[data-cote='droite'] .rz-p {
+    margin-left: 0;
+  }
+
+  /* Trois fiches en colonne prendraient la moitié de l'écran ; deux par ligne
+     tiennent en deux rangs et laissent le bâtiment au-dessus. */
+  .rz-fiches,
   .rz-tableau {
-    gap: 34px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+  }
+
+  .rz-traits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+  }
+
+  .rz-trait .rz-p-petit {
+    display: none;
   }
 
   .rz-plaque {
@@ -661,12 +652,45 @@ body:has(.rz) {
     width: calc(100% - 32px);
   }
 
+  /*
+     Sur téléphone, les voiles changent d'axe.
+
+     Le voile latéral des sections n'a plus de sens dès que le texte occupe
+     toute la largeur : il assombrit une colonne que le texte déborde, et la
+     mesure l'a dit sèchement — 1,23:1 pour le chapeau du projet, contre 5,19
+     sur écran large. En portrait, le titre est en haut et le bâtiment au
+     milieu : le voile descend donc du haut, et il s'arrête avant le bâtiment.
+
+     Les fiches, elles, passent sur deux rangs et remontent d'autant : le voile
+     du bas monte avec elles.
+  */
+  .rz-section::after,
+  .rz-section:has(.rz-titraille[data-cote='droite'])::after {
+    background: linear-gradient(
+      180deg,
+      rgba(10, 13, 17, 0.92) 0%,
+      rgba(10, 13, 17, 0.84) 38%,
+      rgba(10, 13, 17, 0.54) 52%,
+      rgba(10, 13, 17, 0) 68%
+    );
+  }
+
+  .rz-section::before {
+    background:
+      linear-gradient(180deg, rgba(10, 13, 17, 0.86) 0%, rgba(10, 13, 17, 0) 34%),
+      linear-gradient(0deg, rgba(10, 13, 17, 0.92) 0%, rgba(10, 13, 17, 0.74) 24%, rgba(10, 13, 17, 0) 44%);
+  }
+
   /* Sur téléphone, le voile du hero appuie par le bas seulement : un dégradé
      latéral sur une colonne pleine largeur assombrit tout l'écran. */
-  .rz-hero::before {
-    background:
-      linear-gradient(180deg, rgba(10, 13, 17, 0.6) 0%, rgba(10, 13, 17, 0) 30%),
-      linear-gradient(0deg, rgba(10, 13, 17, 0.88) 0%, rgba(10, 13, 17, 0) 62%);
+  .rz-hero::after {
+    background: linear-gradient(
+      0deg,
+      rgba(10, 13, 17, 0.86) 0%,
+      rgba(10, 13, 17, 0.78) 48%,
+      rgba(10, 13, 17, 0.36) 68%,
+      rgba(10, 13, 17, 0) 82%
+    );
   }
 
   .rz-pied-rang {
@@ -680,7 +704,7 @@ body:has(.rz) {
    360 px : on rend l'air au texte plutôt qu'au vide. */
 @media (max-height: 560px) {
   .rz-hero {
-    padding-bottom: 32px;
+    padding-bottom: 28px;
   }
 
   .rz-cue {

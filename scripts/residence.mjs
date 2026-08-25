@@ -30,13 +30,15 @@ const SORTIE = process.env.SORTIE || 'captures/residence';
 /** Les six sections, plus les trois plans de la galerie. */
 const ARRETS = [
   ['1-hero', '#top', 0],
-  ['2-projet', '#project', 0],
+  ['2-projet', '#projet', 0],
   ['3-architecture', '#architecture', 0],
-  ['4-galerie-i', '#gallery', 0],
-  ['4-galerie-ii', '#gallery', 1],
-  ['4-galerie-iii', '#gallery', 2],
-  ['5-chiffres', '#about', 0],
-  ['6-appel', '#contact', 0],
+  ['4-galerie-i', '#galerie', 0],
+  ['4-galerie-ii', '#galerie', 1],
+  ['4-galerie-iii', '#galerie', 2],
+  ['5-hall', '#hall', 0],
+  ['6-atrium', '#atrium', 0],
+  ['7-sejour', '#sejour', 0],
+  ['8-appel', '#contact', 0],
 ];
 
 function navigateur() {
@@ -145,7 +147,11 @@ const TEXTES = [
   ['titre du hero', '.rz-titre', '#f4f6f7'],
   ['chapô du hero', '.rz-chapo', 'rgba(238,242,244,0.84)'],
   ['légende de galerie', '.rz-plaque .rz-p', 'rgba(238,242,244,0.84)'],
-  ['paragraphe du projet', '.rz-texte .rz-p', 'rgba(238,242,244,0.84)'],
+  ['titre de section', '.rz-titraille .rz-h2', '#f4f6f7'],
+  ['chapeau de section', '.rz-titraille .rz-p', 'rgba(238,242,244,0.84)'],
+  ['valeur de fiche', '.rz-fiche dd', '#f4f6f7'],
+  ['clé de fiche', '.rz-fiche dt', 'rgba(226,232,236,0.72)'],
+  ['texte de trait', '.rz-trait .rz-p-petit', 'rgba(238,242,244,0.84)'],
   ['libellé de chiffre', '.rz-libelle', '#f4f6f7'],
 ];
 

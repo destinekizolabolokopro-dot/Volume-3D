@@ -28,7 +28,19 @@
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { ETAGE, HALL as COTES, NEZ, NIVEAUX, RETRAIT, SOCLE, TRAME, empreinte } from '@/lib/residence';
+import {
+  APPARTEMENT,
+  ATRIUM,
+  ETAGE,
+  HALL as COTES,
+  NEZ,
+  NIVEAUX,
+  RETRAIT,
+  SOCLE,
+  TRAME,
+  altitudeNiveau,
+  empreinte,
+} from '@/lib/residence';
 
 /* La trame, les étages et l'empreinte vivent dans `lib/residence.ts` : la page
    affiche des chiffres qui doivent être ceux du bâtiment, et deux fichiers qui
@@ -88,6 +100,28 @@ const TON = {
   bois: 0x7c6851,
   /** Les fûts des colonnes. */
   fut: 0x8e8b85,
+  /** Le parquet du séjour. */
+  parquet: 0x9a7f5f,
+  /** Les textiles clairs : assises, tapis, rideaux. */
+  lin: 0xc4bcae,
+  /** Les masses bâties du lointain. */
+  lointain: 0x8e8c88,
+  /** Les silhouettes du hall. */
+  gens: 0x3b3f44,
+  /**
+   * La pierre sombre des joues de l'atrium.
+   *
+   * Sombre, et c'est le point. Le puits n'a ni soleil ni ombre portée — la
+   * carte d'ombre est gelée et la lumière du dehors n'y entre pas. Tout y est
+   * éclairé par la carte d'environnement, c'est-à-dire de partout à la fois et
+   * presque également : le relief ne peut donc **pas** venir de l'éclairage.
+   * Il ne reste que la matière. Des joues claires donnaient quarante-trois
+   * mètres de blanc uniforme où l'on ne distinguait ni les nervures, ni les
+   * bandeaux, ni les coursives ; on a cherché la faute dans la géométrie et
+   * dans la profondeur de champ avant de comprendre qu'elle était dans le
+   * nuancier.
+   */
+  puits: 0x5c5e5d,
   /** Les corniches lumineuses du plafond. Volontairement en deçà du blanc :
       un matériau basique traverse quand même la courbe de tonalité, et un
       0xfff3e0 y ressort en blanc pur — c'est-à-dire en trou dans l'image. */
@@ -381,6 +415,10 @@ export function buildEdifice(
      voulu : dans une façade toute mate, c'est lui qui dit où est le ciel, et
      sans lui l'immeuble redevient une maquette de carton. */
   const verre = mat(TON.verre, 0.1, { metalness: 0.55 });
+  /* Deux voisines du verre principal, à quelques points près. C'est assez pour
+     que la façade cesse d'être régulière, trop peu pour qu'on voie un damier. */
+  const verreClair = mat(0x76838d, 0.12, { metalness: 0.45 });
+  const verreSombre = mat(0x47535c, 0.09, { metalness: 0.6 });
   /* L'allège est le panneau plein qui masque la dalle et le faux plafond, sur
      un mètre de haut au bas de chaque vitrage. Sans elle, un mur-rideau est un
      aquarium : la façade n'a plus qu'une seule matière du sol au plafond, et
@@ -415,6 +453,17 @@ export function buildEdifice(
     userData: { sansOmbre: true },
   });
   const pierre = mat(TON.pierre, 0.2, { metalness: 0.04 });
+  const parquet = mat(TON.parquet, 0.66);
+  const lin = mat(TON.lin, 0.86);
+  const lointain = mat(TON.lointain, 0.95);
+  /* Les silhouettes du hall sont mates et sombres, et c'est un choix, pas un
+     raccourci. Le dépôt a déjà appris cette leçon sur les intérieurs : une
+     figure humaine à laquelle on essaie de donner un visage tombe dans la
+     vallée dérangeante à la première image. Une silhouette d'à-plat, elle, est
+     la convention de tous les rendus d'architecture depuis cinquante ans — on
+     y lit une personne, une échelle, une vie, et rien de faux. */
+  const gens = mat(TON.gens, 0.88);
+  const puits = mat(TON.puits, 0.72, { metalness: 0.03 });
   const marbre = mat(TON.marbre, 0.24, { metalness: 0.03 });
   const bois = mat(TON.bois, 0.62);
   const fut = mat(TON.fut, 0.55, { metalness: 0.05 });
@@ -424,6 +473,11 @@ export function buildEdifice(
   const lueur = new THREE.MeshBasicMaterial({ color: TON.lueur, fog: false });
   lueur.userData = { sansOmbre: true };
   bin.push(lueur);
+  /* Le jour vu depuis le fond d'un puits de quarante-trois mètres : clair,
+     froid, et bien en deçà du blanc. */
+  const ciel_haut = new THREE.MeshBasicMaterial({ color: 0x9aa6ad, fog: false });
+  ciel_haut.userData = { sansOmbre: true };
+  bin.push(ciel_haut);
 
   const lot = new Lot();
   const groupe = new THREE.Group();
@@ -435,6 +489,56 @@ export function buildEdifice(
     y: number,
     z: number,
   ) => lot.add(geometry, material, M.makeTranslation(x, y, z));
+
+  /*
+   * Une plaque percée par l'atrium.
+   *
+   * C'est la fonction qui a coûté le plus cher à trouver, et elle tient en
+   * quinze lignes. Le puits était monté — murs, nervures, coursives, verrière,
+   * vingt mille triangles au compteur — et la caméra, placée en plein milieu,
+   * ne voyait qu'un aplat gris. On a soupçonné la profondeur de champ, puis le
+   * nuancier, puis la puissance des lampes ; le tir de rayon a fini par
+   * répondre : sous-face de dalle, **à un mètre soixante-dix**.
+   *
+   * Chaque niveau pose en effet deux plaques pleines aux dimensions du
+   * plancher — le nez de dalle et sa sous-face — et douze plaques pleines
+   * referment un vide aussi sûrement que douze planchers. Percer les murs
+   * autour d'un vide ne suffit pas : il faut percer **tout ce qui le
+   * traverse**, et une plaque qui le traverse ne se voit pas dans le code, elle
+   * se voit dans l'image.
+   *
+   * D'où cette fonction, qui remplace une plaque par les quatre morceaux qui
+   * l'entourent dès qu'elle recouvre l'emprise du puits.
+   */
+  const percee = (
+    materiau: THREE.Material,
+    largeur: number,
+    epaisseur: number,
+    profondeur: number,
+    cx: number,
+    cy: number,
+    cz: number,
+  ) => {
+    const x0 = cx - largeur / 2;
+    const x1 = cx + largeur / 2;
+    const z0 = cz - profondeur / 2;
+    const z1 = cz + profondeur / 2;
+    const dehors = x1 <= ATRIUM.x0 || x0 >= ATRIUM.x1 || z1 <= ATRIUM.z0 || z0 >= ATRIUM.z1;
+    if (dehors) {
+      pose(new THREE.BoxGeometry(largeur, epaisseur, profondeur), materiau, cx, cy, cz);
+      return;
+    }
+    const morceau = (a: number, b: number, c: number, d: number) => {
+      if (b - a < 0.01 || d - c < 0.01) return;
+      pose(new THREE.BoxGeometry(b - a, epaisseur, d - c), materiau, (a + b) / 2, cy, (c + d) / 2);
+    };
+    const mx0 = Math.max(x0, ATRIUM.x0);
+    const mx1 = Math.min(x1, ATRIUM.x1);
+    morceau(x0, mx0, z0, z1);
+    morceau(mx1, x1, z0, z1);
+    morceau(mx0, mx1, z0, Math.max(z0, ATRIUM.z0));
+    morceau(mx0, mx1, Math.min(z1, ATRIUM.z1), z1);
+  };
 
   /* ------------------------------------------------------------- socle --- */
   /*
@@ -489,8 +593,11 @@ export function buildEdifice(
 
   // Le sol, débordant légèrement pour couvrir le seuil.
   pose(new THREE.BoxGeometry(IX * 2 + 0.6, 0.44, IZ * 2 + 0.6), pierre, 0, 0, 0);
-  // Le plafond, et la retombée périphérique au-dessus du vitrage.
-  pose(new THREE.BoxGeometry(IX * 2, 0.14, IZ * 2), soffite, 0, HALL - 0.07, 0);
+  /* Le plafond, **percé**. Le vide de l'atrium le traverse, et c'est par là
+     que le vol quitte le hall : on ne peut pas monter à travers une dalle.
+     Quatre morceaux autour du trou plutôt qu'un panneau entier. */
+  const trou = { x0: ATRIUM.x0, x1: ATRIUM.x1, z0: ATRIUM.z0, z1: ATRIUM.z1 };
+  percee(soffite, IX * 2, 0.14, IZ * 2, 0, HALL - 0.07, 0);
 
   /* Le mur du fond, en marbre. Il ferme la perspective du vol : la caméra
      s'arrête devant lui, et c'est lui qui porte le nom du projet. Sans mur, le
@@ -562,7 +669,7 @@ export function buildEdifice(
      qui empêche la pièce d'être un hangar, et c'est surtout ce qui donne à la
      caméra quelque chose à dépasser en entrant. Sans premier plan qui défile,
      un travelling n'a pas de vitesse. */
-  for (const x of [-7.2, 3.6]) {
+  for (const x of [-3.0, 5.4]) {
     for (const z of [-4.6, 4.6]) {
       pose(new THREE.CylinderGeometry(0.44, 0.44, HALL, leger ? 10 : 18), fut, x, HALL / 2, z);
       pose(new THREE.BoxGeometry(1.3, 0.14, 1.3), marbre, x, 0.29, z);
@@ -573,9 +680,14 @@ export function buildEdifice(
      ne portent pas la lumière du hall — ce sont les lampes qui s'en chargent —
      mais elles disent d'où elle vient, et une lumière dont on ne voit pas la
      source paraît toujours fausse. */
+  /* Les corniches ne courent plus d'un bout à l'autre : elles s'arrêtent au
+     bord du vide, sinon elles le traversaient en flottant dans l'air. */
   for (const z of [-7.4, -2.6, 2.6, 7.4]) {
-    pose(new THREE.BoxGeometry(IX * 2 - 3, 0.05, 0.44), lueur, 0, HALL - 0.16, z);
-    pose(new THREE.BoxGeometry(IX * 2 - 2.6, 0.22, 0.9), soffite, 0, HALL - 0.24, z);
+    const coupe = z > trou.z0 && z < trou.z1;
+    const x0 = coupe ? trou.x1 : -IX + 1.5;
+    const x1 = IX - 1.5;
+    pose(new THREE.BoxGeometry(x1 - x0, 0.05, 0.44), lueur, (x0 + x1) / 2, HALL - 0.16, z);
+    pose(new THREE.BoxGeometry(x1 - x0 + 0.4, 0.22, 0.9), soffite, (x0 + x1) / 2, HALL - 0.24, z);
   }
 
   /* Le comptoir, décalé de l'axe. Posé au milieu, il barre la perspective et
@@ -588,6 +700,60 @@ export function buildEdifice(
   for (const z of [3.2, 6.4]) {
     pose(new THREE.BoxGeometry(2.2, 0.42, 0.9), bois, -6.4, 0.44, z);
     pose(new THREE.BoxGeometry(2.0, 0.12, 0.76), marbre, -6.4, 0.71, z);
+  }
+
+  /*
+   * Les silhouettes.
+   *
+   * Un hall vide est un hall qui n'a pas ouvert. Six personnes suffisent à
+   * changer ce qu'on lit dans l'image : elles donnent l'échelle — cinq mètres
+   * quarante sous plafond ne veulent rien dire tant que rien de connu ne se
+   * tient dessous — et elles disent que le bâtiment est habité, ce qui est
+   * exactement ce qu'un programme immobilier vend.
+   *
+   * Quatre volumes chacune, pas un de plus : deux jambes, un buste, une tête.
+   * On ne cherche pas la ressemblance, on la fuit : la seule chose pire qu'un
+   * hall vide serait un hall peuplé de mannequins au visage approximatif. La
+   * silhouette d'à-plat est la convention du rendu d'architecture depuis
+   * cinquante ans, et elle est juste — on y lit une personne sans y lire
+   * personne en particulier.
+   */
+  const personne = (x: number, z: number, cap: number, taille: number) => {
+    const T = taille;
+    const cos = Math.cos(cap);
+    const sin = Math.sin(cap);
+    /* L'écart des jambes se prend dans l'axe des épaules, donc perpendiculaire
+       au cap : une personne de profil a les jambes l'une derrière l'autre, et
+       les écarter en x lui en ferait pousser une troisième de face. */
+    for (const cote of [-1, 1]) {
+      const dx = -sin * cote * 0.11;
+      const dz = cos * cote * 0.11;
+      pose(
+        new THREE.CylinderGeometry(0.075, 0.055, T * 0.48, 6),
+        gens,
+        x + dx,
+        0.24 + T * 0.24,
+        z + dz,
+      );
+    }
+    pose(
+      new THREE.CylinderGeometry(0.2, 0.16, T * 0.36, 8),
+      gens,
+      x,
+      0.24 + T * 0.48 + T * 0.18,
+      z,
+    );
+    pose(new THREE.SphereGeometry(T * 0.072, 8, 6), gens, x, 0.24 + T * 0.9, z);
+  };
+  for (const [x, z, cap, taille] of [
+    [-6.4, -5.6, 2.1, 1.74],
+    [-5.2, -6.4, -1.0, 1.62],
+    [1.2, 2.6, 3.0, 1.79],
+    [3.4, -3.2, 1.4, 1.68],
+    [8.6, 4.4, 2.6, 1.71],
+    [-11.4, 6.2, 0.4, 1.66],
+  ] as const) {
+    personne(x, z, cap, taille);
   }
 
   /* Le nom, sur le mur du fond. C'est la seule image de toute la page — une
@@ -615,17 +781,53 @@ export function buildEdifice(
     const bas = sommet;
     const dalle = bas + ETAGE - NEZ;
 
-    /* Le bandeau vitré, en retrait de vingt centimètres derrière le nez de
-       dalle. Ce retrait est tout : à fleur, la façade est un aplat ; en
-       retrait, chaque étage porte sa propre ligne d'ombre, et c'est cette
-       ligne qui donne l'échelle du bâtiment à cent mètres. */
-    pose(
-      new THREE.BoxGeometry(e.hx * 2 - 0.4, ETAGE - NEZ, e.hz * 2 - 0.4),
-      verre,
-      e.dx,
-      bas + (ETAGE - NEZ) / 2,
-      0,
-    );
+    /*
+     * Le bandeau vitré, en retrait de vingt centimètres derrière le nez de
+     * dalle. Ce retrait est tout : à fleur, la façade est un aplat ; en
+     * retrait, chaque étage porte sa propre ligne d'ombre, et c'est cette
+     * ligne qui donne l'échelle du bâtiment à cent mètres.
+     *
+     * Il est monté en **quatre faces creuses** et non plus en un seul volume
+     * plein. Tant que la caméra restait dehors, un bloc suffisait : on n'en
+     * voyait jamais que l'extérieur. Le vol se termine maintenant dans un
+     * séjour du cinquième — à l'intérieur du bloc, donc, où l'on ne voyait
+     * rien du tout, les faces étant tournées vers le dehors.
+     *
+     * Et les teintes varient d'une face à l'autre. Trois nuances, choisies par
+     * une fonction du niveau et de la face : c'est la seule irrégularité de
+     * toute la façade, et elle est indispensable. Un mur-rideau dont les cent
+     * vingt panneaux ont exactement le même ton n'est pas un immeuble, c'est
+     * un tableur — il n'y a derrière ces vitres ni rideau tiré, ni store
+     * baissé, ni pièce éclairée.
+     */
+    const EP = 0.16;
+    const teinte = (face: number) => {
+      const h = (niveau * 7 + face * 13) % 11;
+      return h < 2 ? verreClair : h < 4 ? verreSombre : verre;
+    };
+    const baie = niveau === APPARTEMENT.niveau;
+    for (const [i, z] of [-(e.hz - 0.2), e.hz - 0.2].entries()) {
+      pose(
+        new THREE.BoxGeometry(e.hx * 2 - 0.4, ETAGE - NEZ, EP),
+        teinte(i),
+        e.dx,
+        bas + (ETAGE - NEZ) / 2,
+        z,
+      );
+    }
+    for (const [i, x] of [e.dx - (e.hx - 0.2), e.dx + (e.hx - 0.2)].entries()) {
+      /* La face qui donne sur la terrasse du séjour est transparente : c'est
+         la seule vitre de tout le bâtiment que l'on regarde du dedans, et le
+         dernier plan de la page la traverse. */
+      const quoi = baie && i === 1 ? vitrine : teinte(i + 2);
+      pose(
+        new THREE.BoxGeometry(EP, ETAGE - NEZ, e.hz * 2 - 0.4 - EP * 2),
+        quoi,
+        x,
+        bas + (ETAGE - NEZ) / 2,
+        0,
+      );
+    }
 
     /* Les allèges, plaquées devant le bas du vitrage, trois centimètres en
        avant pour ne pas se battre avec lui en profondeur. Quatre plaques par
@@ -639,15 +841,10 @@ export function buildEdifice(
       pose(new THREE.BoxGeometry(0.06, ALLEGE, e.hz * 2 - 0.4), allege, x, bas + ALLEGE / 2, 0);
     }
 
-    // Le nez de dalle, qui déborde de vingt centimètres.
-    pose(new THREE.BoxGeometry(e.hx * 2 + 0.4, NEZ, e.hz * 2 + 0.4), beton, e.dx, dalle + NEZ / 2, 0);
-    pose(
-      new THREE.BoxGeometry(e.hx * 2 + 0.1, 0.16, e.hz * 2 + 0.1),
-      soffite,
-      e.dx,
-      dalle - 0.08,
-      0,
-    );
+    /* Le nez de dalle, qui déborde de vingt centimètres — et sa sous-face.
+       Les deux sont **percés** par l'atrium : ce sont eux qui le refermaient. */
+    percee(beton, e.hx * 2 + 0.4, NEZ, e.hz * 2 + 0.4, e.dx, dalle + NEZ / 2, 0);
+    percee(soffite, e.hx * 2 + 0.1, 0.16, e.hz * 2 + 0.1, e.dx, dalle - 0.08, 0);
 
     /* La résille : un meneau toutes les trames sur les deux longs côtés.
        C'est la seule répétition assumée de la façade, et elle est
@@ -716,6 +913,182 @@ export function buildEdifice(
     sommet = dalle + NEZ;
   }
 
+  /* ------------------------------------------------------------ atrium --- */
+  /*
+   * Le puits, ses coursives et sa verrière.
+   *
+   * C'est la pièce qui a rendu le reste possible. Le vol devait conduire
+   * jusqu'à un appartement ; une caméra qui monte en ligne droite traverse
+   * onze planchers, et on ne voit que cela. Il fallait un vide, et un vide
+   * dans un immeuble d'habitation porte un nom : c'est un atrium, desservi par
+   * coursives, et cela remplace onze couloirs aveugles par onze niveaux de
+   * lumière du jour.
+   *
+   * Sa surface est déduite du plancher annoncé — voir `surfacePlancher` dans
+   * `lib/residence.ts`. Un puits qu'on voit de part en part et une surface qui
+   * l'ignore ne peuvent pas coexister sur la même page.
+   */
+  const AX = (ATRIUM.x0 + ATRIUM.x1) / 2;
+  const AZ = (ATRIUM.z0 + ATRIUM.z1) / 2;
+  const AL = ATRIUM.x1 - ATRIUM.x0;
+  const AP = ATRIUM.z1 - ATRIUM.z0;
+  const CIME = altitudeNiveau(NIVEAUX - 1) + ETAGE - NEZ;
+  const CORPS = CIME - HALL;
+
+  /*
+   * Les quatre joues du puits, en marbre clair : c'est ce qui renvoie le jour.
+   *
+   * Cannelées, et bandées à chaque niveau — deux ajouts faits après coup, sur
+   * capture. La première version n'avait que les quatre murs nus, et le plan
+   * de la montée ne montrait **rien** : quarante-trois mètres de marbre lisse
+   * éclairés par une source lointaine donnent un dégradé, pas une image. Sans
+   * arête, l'œil n'a ni échelle, ni hauteur, ni matière — et il ne sait même
+   * pas qu'il regarde un puits.
+   */
+  for (const z of [ATRIUM.z0 - 0.12, ATRIUM.z1 + 0.12]) {
+    pose(new THREE.BoxGeometry(AL + 0.48, CORPS, 0.24), puits, AX, HALL + CORPS / 2, z);
+  }
+  for (const x of [ATRIUM.x0 - 0.12, ATRIUM.x1 + 0.12]) {
+    pose(new THREE.BoxGeometry(0.24, CORPS, AP), puits, x, HALL + CORPS / 2, AZ);
+  }
+  /* Les nervures, **claires sur fond sombre**. Une nervure de la couleur de
+     son mur ne se voit pas dans un volume sans ombre : c'est le contraste
+     d'albédo qui la dessine, pas son relief. */
+  for (let i = -4; i <= 4; i += 1) {
+    for (const z of [ATRIUM.z0 + 0.07, ATRIUM.z1 - 0.07]) {
+      pose(new THREE.BoxGeometry(0.14, CORPS, 0.14), marbre, AX + i * 0.9, HALL + CORPS / 2, z);
+    }
+    for (const x of [ATRIUM.x0 + 0.07, ATRIUM.x1 - 0.07]) {
+      pose(new THREE.BoxGeometry(0.14, CORPS, 0.14), marbre, x, HALL + CORPS / 2, AZ + i * 0.9);
+    }
+  }
+  /* Et un bandeau à chaque plancher, sur les deux joues sans coursive : c'est
+     ce qui compte les étages quand on lève les yeux. */
+  for (let n = 1; n < NIVEAUX; n += 1) {
+    const sol = altitudeNiveau(n);
+    for (const x of [ATRIUM.x0 + 0.16, ATRIUM.x1 - 0.16]) {
+      pose(new THREE.BoxGeometry(0.3, 0.44, AP - 0.5), marbre, x, sol - 0.22, AZ);
+    }
+  }
+
+  /* Les coursives, une paire par niveau. Ce sont elles qui donnent l'échelle
+     du puits : sans elles, un vide de quarante-trois mètres n'a pas de
+     graduation et pourrait aussi bien en faire dix. */
+  for (let n = 0; n < NIVEAUX; n += 1) {
+    const sol = altitudeNiveau(n);
+    if (sol < HALL + 1) continue;
+    for (const sens of [-1, 1]) {
+      const bord = sens < 0 ? ATRIUM.z0 : ATRIUM.z1;
+      const centre = bord - sens * (ATRIUM.coursive / 2);
+      const nez = bord - sens * ATRIUM.coursive;
+      pose(new THREE.BoxGeometry(AL, 0.24, ATRIUM.coursive), pierre, AX, sol - 0.12, centre);
+      pose(new THREE.BoxGeometry(AL, 0.2, 0.14), soffite, AX, sol - 0.3, nez);
+      // Garde-corps de verre et main courante : la même grammaire qu'en terrasse.
+      pose(new THREE.BoxGeometry(AL, 1.02, 0.06), garde, AX, sol + 0.51, nez);
+      pose(new THREE.BoxGeometry(AL, 0.07, 0.12), meneau, AX, sol + 1.05, nez);
+    }
+  }
+
+  /* La verrière, et la lueur juste au-dessus. Le vitrage seul ne se voit pas
+     par en dessous : ce qu'on regarde, dans un puits, c'est la lumière, et il
+     faut donc quelque chose qui en émette. */
+  pose(new THREE.BoxGeometry(AL + 0.4, 0.1, AP + 0.4), vitrine, AX, CIME, AZ);
+  /* Le ciel vu par en dessous, et pas une lampe. La première version posait
+     ici le même matériau lumineux que les corniches du hall : soixante-douze
+     mètres carrés de blanc au-dessus de la caméra, que la profondeur de champ
+     étalait ensuite sur la moitié de l'écran. Un ton nettement plus bas, et
+     une surface réduite au vrai vitrage. */
+  pose(new THREE.BoxGeometry(AL - 0.6, 0.06, AP - 0.6), ciel_haut, AX, CIME + 0.2, AZ);
+  for (let i = -2; i <= 2; i += 1) {
+    pose(new THREE.BoxGeometry(0.16, 0.34, AP + 0.4), meneau, AX + i * (AL / 5), CIME + 0.1, AZ);
+  }
+
+  /* ------------------------------------------------------- appartement --- */
+  /*
+   * Le séjour du cinquième, et la fin du vol.
+   *
+   * Cinquième niveau parce que c'est là que se produit le premier redan : le
+   * seul étage qui dispose de cinq mètres quarante de terrasse sur toute sa
+   * longueur. Un appartement sans dehors aurait fait un séjour avec fenêtre ;
+   * celui-ci a une terrasse, et le dernier plan la traverse du regard pour
+   * finir sur l'horizon.
+   *
+   * Le mobilier est réduit à ce que la caméra voit depuis un seul point de
+   * vue, et disposé pour ce point de vue : un canapé de dos au premier plan,
+   * l'îlot et la table à mi-distance, la baie au fond. Meubler une pièce
+   * entière qu'on ne verra que d'un endroit est du travail perdu — et surtout
+   * du travail qui finit dans le cadre là où on ne l'attend pas.
+   */
+  const SOL = altitudeNiveau(APPARTEMENT.niveau);
+  const DALLAGE = SOL + 0.12;
+  const PX0 = APPARTEMENT.x0;
+  const PX1 = APPARTEMENT.x1;
+  const PZ0 = APPARTEMENT.z0;
+  const PZ1 = APPARTEMENT.z1;
+  const PL = PX1 - PX0;
+  const PP = PZ1 - PZ0;
+  const PCX = (PX0 + PX1) / 2;
+  const PCZ = (PZ0 + PZ1) / 2;
+
+  pose(new THREE.BoxGeometry(PL, 0.12, PP), parquet, PCX, SOL + 0.06, PCZ);
+  pose(new THREE.BoxGeometry(PL, 0.12, PP), soffite, PCX, DALLAGE + APPARTEMENT.haut, PCZ);
+  // Les deux joues, et la cloison d'entrée percée d'un passage de 3,60 m.
+  for (const z of [PZ0 - 0.09, PZ1 + 0.09]) {
+    pose(new THREE.BoxGeometry(PL, APPARTEMENT.haut, 0.18), marbre, PCX, DALLAGE + APPARTEMENT.haut / 2, z);
+  }
+  for (const sens of [-1, 1]) {
+    const large = PP / 2 - APPARTEMENT.entree;
+    pose(
+      new THREE.BoxGeometry(0.18, APPARTEMENT.haut, large),
+      marbre,
+      PX0,
+      DALLAGE + APPARTEMENT.haut / 2,
+      PCZ + sens * (APPARTEMENT.entree + large / 2),
+    );
+  }
+  // Une corniche lumineuse le long de la baie : le soir, c'est elle qu'on voit.
+  pose(new THREE.BoxGeometry(0.4, 0.05, PP - 1.2), lueur, PX1 - 0.5, DALLAGE + APPARTEMENT.haut - 0.12, PCZ);
+
+  // Le tapis, puis le canapé en L, de dos.
+  pose(new THREE.BoxGeometry(5.2, 0.03, 4.0), lin, PCX + 1.2, DALLAGE + 0.02, PCZ - 0.6);
+  pose(new THREE.BoxGeometry(0.9, 0.72, 3.6), lin, PCX - 1.0, DALLAGE + 0.36, PCZ - 0.6);
+  pose(new THREE.BoxGeometry(2.6, 0.72, 0.9), lin, PCX + 0.4, DALLAGE + 0.36, PCZ - 2.4);
+  pose(new THREE.BoxGeometry(0.9, 0.26, 3.6), bois, PCX - 1.0, DALLAGE + 0.85, PCZ - 0.6);
+  // La table basse, en marbre.
+  pose(new THREE.BoxGeometry(1.5, 0.06, 1.0), marbre, PCX + 1.6, DALLAGE + 0.38, PCZ - 0.6);
+  pose(new THREE.BoxGeometry(0.9, 0.36, 0.6), fut, PCX + 1.6, DALLAGE + 0.18, PCZ - 0.6);
+
+  // L'îlot de la cuisine, contre la joue nord.
+  pose(new THREE.BoxGeometry(3.4, 0.92, 1.0), bois, PCX - 1.6, DALLAGE + 0.46, PZ1 - 1.6);
+  pose(new THREE.BoxGeometry(3.6, 0.06, 1.2), marbre, PCX - 1.6, DALLAGE + 0.95, PZ1 - 1.6);
+  // La table et ses quatre chaises, entre l'îlot et la baie.
+  pose(new THREE.BoxGeometry(2.2, 0.06, 1.0), bois, PCX + 2.4, DALLAGE + 0.74, PZ1 - 1.8);
+  for (const dx of [-0.9, 0.9]) {
+    pose(new THREE.BoxGeometry(0.12, 0.72, 0.9), fut, PCX + 2.4 + dx, DALLAGE + 0.36, PZ1 - 1.8);
+  }
+  for (const dx of [-0.7, 0.7]) {
+    for (const dz of [-0.75, 0.75]) {
+      pose(new THREE.BoxGeometry(0.44, 0.44, 0.44), lin, PCX + 2.4 + dx, DALLAGE + 0.22, PZ1 - 1.8 + dz);
+      pose(new THREE.BoxGeometry(0.44, 0.5, 0.08), bois, PCX + 2.4 + dx, DALLAGE + 0.69, PZ1 - 1.8 + dz * 1.18);
+    }
+  }
+  // Un arbre en pot près de la baie : la seule verticale de la pièce.
+  pose(new THREE.CylinderGeometry(0.34, 0.28, 0.6, 10), marbre, PX1 - 1.3, DALLAGE + 0.3, PZ0 + 1.4);
+  pose(new THREE.CylinderGeometry(0.05, 0.07, 1.3, 6), tronc, PX1 - 1.3, DALLAGE + 1.25, PZ0 + 1.4);
+  for (const [dx, dy, dz, r] of [
+    [0, 0.5, 0, 0.62],
+    [0.34, 0.28, 0.2, 0.44],
+    [-0.3, 0.34, -0.24, 0.4],
+  ] as const) {
+    pose(
+      new THREE.SphereGeometry(r, leger ? 7 : 10, leger ? 6 : 8),
+      vegetal,
+      PX1 - 1.3 + dx,
+      DALLAGE + 1.9 + dy,
+      PZ0 + 1.4 + dz,
+    );
+  }
+
   /* ------------------------------------------------------ couronnement --- */
   /* Une retombée pleine au sommet, plus haute qu'un simple acrotère : elle
      ferme la silhouette. Un bâtiment qui s'arrête sur son dernier plancher a
@@ -753,17 +1126,21 @@ export function buildEdifice(
     );
   }
   // La couverture, en creux de quarante centimètres derrière l'acrotère.
-  pose(
-    new THREE.BoxGeometry(haut.hx * 2 + 0.5 - EPAIS * 2, 0.22, haut.hz * 2 + 0.5 - EPAIS * 2),
+  percee(
     soffite,
+    haut.hx * 2 + 0.5 - EPAIS * 2,
+    0.22,
+    haut.hz * 2 + 0.5 - EPAIS * 2,
     haut.dx,
     sommet + 0.11,
     0,
   );
   // Les édicules techniques, décalés vers l'arrière : une toiture parfaitement
   // nue est aussi fausse qu'un couvercle.
-  pose(new THREE.BoxGeometry(TRAME * 2.4, 1.5, TRAME * 1.8), soffite, haut.dx - TRAME * 1.6, sommet + 0.97, -TRAME);
-  pose(new THREE.BoxGeometry(TRAME * 1.2, 0.9, TRAME * 1.2), refend, haut.dx + TRAME, sommet + 0.67, TRAME * 1.2);
+  /* Décalés hors de l'emprise du puits : un local technique posé sur une
+     verrière, c'est une verrière en moins. */
+  pose(new THREE.BoxGeometry(TRAME * 2.4, 1.5, TRAME * 1.8), soffite, -2.2, sommet + 0.97, -5.2);
+  pose(new THREE.BoxGeometry(TRAME * 1.2, 0.9, TRAME * 1.2), refend, -3.4, sommet + 0.67, 4.6);
   /* La hauteur est mesurée ici sur la géométrie effectivement montée, et non
      reprise du calcul de `lib/residence.ts` : c'est elle qui cadre la caméra,
      et une caméra cadrée sur un chiffre théorique déborde le jour où la
@@ -799,6 +1176,41 @@ export function buildEdifice(
      deuxième écran de galerie. Un premier plan flou est un bon outil tant
      qu'il ne s'assoit pas sur le texte — et l'endroit où il s'assoit ne se
      devine pas depuis le code, il se voit sur la capture. */
+  /*
+   * Le lointain.
+   *
+   * C'est la correction qui a le plus changé l'image pour le moins de
+   * géométrie. Le bâtiment se dressait sur une dalle vide de neuf cents
+   * mètres : quelle que soit la qualité de sa façade, il ressemblait à une
+   * maquette posée sur une table, parce qu'une maquette est précisément un
+   * bâtiment sans voisins. Quarante-deux masses bâties entre cent quatre-vingts
+   * et quatre cent vingt mètres, dans la brume, et il est dans une ville.
+   *
+   * Elles sont posées par une suite déterministe et non par un tirage : une
+   * ville qui change à chaque rechargement n'est pas un lieu. La règle laisse
+   * un vide devant la façade d'entrée — on ne bâtit pas devant son propre
+   * parvis — et fait monter les hauteurs vers le fond, ce qui creuse la
+   * perspective au lieu de la barrer.
+   */
+  let graine = 7;
+  const tirage = () => {
+    graine = (graine * 1103515245 + 12345) % 2147483648;
+    return graine / 2147483648;
+  };
+  for (let i = 0; i < 42; i += 1) {
+    const angle = (i / 42) * Math.PI * 2 + tirage() * 0.14;
+    const loin = 180 + tirage() * 240;
+    const x = Math.cos(angle) * loin;
+    const z = Math.sin(angle) * loin;
+    // Le parvis d'entrée reste dégagé : rien dans le cône du vol.
+    if (x > 60 && Math.abs(z) < loin * 0.42) continue;
+    const haut = 18 + tirage() * 46 + (loin - 180) * 0.09;
+    const large = 16 + tirage() * 26;
+    const profond = 16 + tirage() * 26;
+    pose(new THREE.BoxGeometry(large, haut, profond), lointain, x, haut / 2, z);
+    pose(new THREE.BoxGeometry(large + 1, 0.8, profond + 1), soffite, x, haut + 0.4, z);
+  }
+
   for (const [x, z, r] of [
     [-s0.hx - 16, s0.hz + 13, 2.6],
     [-s0.hx - 6, -s0.hz - 16, 3.1],
@@ -906,10 +1318,45 @@ export function buildEdifice(
     [0, -5],
     [4, 5],
   ] as const) {
-    const lampe = new THREE.PointLight(0xffe6c2, 135, 34, 2);
+    /*
+     * Quarante-cinq, et pas cent cinq.
+     *
+     * L'intensité d'une source ponctuelle est une **luminance à un mètre** :
+     * avec une décroissance en carré, ce que reçoit une surface à `d` mètres
+     * vaut `I / d²`. Les lampes du hall sont à quatre mètres quatre-vingts du
+     * sol : à 105, elles y déversaient 4,6 — soit près du double du soleil de
+     * la scène, qui est à 2,6. Tout saturait en haut de la courbe de tonalité,
+     * et c'est ce qui a rendu le puits illisible : on pouvait y changer la
+     * couleur des murs sans que l'image bouge d'un pixel, puisqu'ils étaient
+     * déjà à blanc. Le nuancier ne peut rien quand l'exposition est fausse.
+     */
+    const lampe = new THREE.PointLight(0xffe6c2, 45, 34, 2);
     lampe.position.set(x, HALL - 0.6, z);
     scene.add(lampe);
   }
+
+  /*
+   * Le jour qui descend dans le puits.
+   *
+   * La verrière est au douzième ; la carte d'environnement éclaire tout de la
+   * même façon, sans savoir qu'il y a quarante mètres de gaine entre elle et
+   * le hall. Deux sources froides, échelonnées dans la hauteur, refont ce que
+   * l'occlusion ne sait pas faire : un puits plus clair en haut qu'en bas.
+   * C'est un mensonge d'éclairagiste, et c'est le mensonge qui rend l'image
+   * vraie.
+   */
+  for (const y of [CIME - 6, HALL + CORPS * 0.42]) {
+    /* Même règle : les joues du puits sont à quatre mètres de l'axe, on vise
+       autour de 1,5 — donc vingt-six, et non soixante-dix-huit. */
+    const jour = new THREE.PointLight(0xdfe8f2, 26, 46, 2);
+    jour.position.set(AX, y, AZ);
+    scene.add(jour);
+  }
+
+  /* Et une lampe dans le séjour, chaude, pour que la pièce existe le soir. */
+  const salon = new THREE.PointLight(0xffe3ba, 24, 26, 2);
+  salon.position.set(PCX + 1, DALLAGE + APPARTEMENT.haut - 0.5, PCZ - 0.4);
+  scene.add(salon);
 
   /*
    * Le ciel sert deux fois : on le regarde, et on s'y reflète.

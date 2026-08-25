@@ -44,6 +44,59 @@ import styles from './Edifice.module.css';
  * sans monter un contexte WebGL pour y arriver.
  */
 
+/*
+ * Les positions réelles des étapes, relevées dans le document.
+ *
+ * Les `t` écrits dans `VOL` sont un repli : la position d'une section dépend
+ * de la longueur de son texte, de la largeur de l'écran et de la taille de la
+ * fonte. Aucun nombre écrit à la main ne peut la connaître, et la première
+ * version l'a payé — deux sections ajoutées, et l'arrêt de l'atrium tombait
+ * quinze pour cent trop loin : on arrivait dans la verrière au lieu du puits.
+ *
+ * On relève donc, au montage et à chaque changement de forme de la page. Les
+ * étapes de transit, qui n'ont pas d'ancre, sont réparties entre leurs voisines
+ * ancrées au prorata de leurs `t` d'origine : c'est ce qui garde le rythme du
+ * découpage quand la page s'allonge.
+ */
+const TS: number[] = VOL.map((e) => e.t);
+
+function caler(): void {
+  if (typeof document === 'undefined') return;
+  const course = document.documentElement.scrollHeight - window.innerHeight;
+  if (course <= 0) return;
+
+  const ancres = new Map<number, number>();
+  VOL.forEach((etape, i) => {
+    if (!etape.ancre) return;
+    const node = document.querySelector(etape.ancre);
+    if (!node) return;
+    const haut =
+      node.getBoundingClientRect().top + window.scrollY + (etape.ecran ?? 0) * window.innerHeight;
+    ancres.set(i, Math.min(1, Math.max(0, haut / course)));
+  });
+  if (ancres.size < 2) return;
+
+  const index = [...ancres.keys()].sort((a, b) => a - b);
+  for (const i of index) TS[i] = ancres.get(i) as number;
+
+  /* Entre deux ancres, on répartit au prorata des `t` d'origine plutôt qu'à
+     intervalles égaux : le découpage écrit à la main dit, par exemple, que le
+     transit du seuil au hall est court et celui du hall au puits plus long.
+     Répartir uniformément effacerait cette intention. */
+  for (let k = 0; k + 1 < index.length; k += 1) {
+    const a = index[k];
+    const b = index[k + 1];
+    const etendue = VOL[b].t - VOL[a].t;
+    for (let i = a + 1; i < b; i += 1) {
+      const part = etendue > 1e-6 ? (VOL[i].t - VOL[a].t) / etendue : (i - a) / (b - a);
+      TS[i] = TS[a] + (TS[b] - TS[a]) * part;
+    }
+  }
+  // Avant la première ancre et après la dernière : on garde les bornes.
+  for (let i = 0; i < index[0]; i += 1) TS[i] = TS[index[0]];
+  for (let i = index[index.length - 1] + 1; i < TS.length; i += 1) TS[i] = 1;
+}
+
 const lisse = (u: number) => {
   const c = u < 0 ? 0 : u > 1 ? 1 : u;
   return c * c * (3 - 2 * c);
@@ -93,10 +146,11 @@ const COURBE_VISE = new THREE.CatmullRomCurve3(
 function parametre(t: number): { u: number; foyer: number; pan: number } {
   const c = t < 0 ? 0 : t > 1 ? 1 : t;
   let i = 0;
-  while (i < VOL.length - 2 && VOL[i + 1].t < c) i += 1;
+  while (i < VOL.length - 2 && TS[i + 1] < c) i += 1;
   const a = VOL[i];
   const b = VOL[i + 1];
-  let f = (c - a.t) / Math.max(1e-6, b.t - a.t);
+  let f = (c - TS[i]) / Math.max(1e-6, TS[i + 1] - TS[i]);
+  f = f < 0 ? 0 : f > 1 ? 1 : f;
   /* Les deux bouts, et eux seuls : on démarre en douceur et on se pose en
      douceur. Au milieu, la vitesse reste continue d'un segment à l'autre. */
   if (i === 0) f = lisse(f);
@@ -228,6 +282,14 @@ export function Edifice({ reveal = true, nom = 'ORIEL' }: { reveal?: boolean; no
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(holder);
+
+    /* Le vol se recale sur les sections dès que la page change de forme : une
+       fonte qui arrive, un bloc qui se révèle, une rotation d'écran. Sans
+       cela, un relevé pris avant que la page ait sa hauteur définitive fige
+       une répartition fausse d'un bout à l'autre du défilement. */
+    caler();
+    const arpenteur = new ResizeObserver(caler);
+    arpenteur.observe(document.documentElement);
 
     /* La scène ne se dessine que si elle est à l'écran. Le dernier tampon
        reste affiché — on ne perd rien, et le téléphone ne chauffe pas pendant
@@ -415,6 +477,7 @@ export function Edifice({ reveal = true, nom = 'ORIEL' }: { reveal?: boolean; no
       quality.dispose();
       bokeh?.dispose();
       observer.disconnect();
+      arpenteur.disconnect();
       watcher.disconnect();
       edifice.dispose();
       renderer.dispose();

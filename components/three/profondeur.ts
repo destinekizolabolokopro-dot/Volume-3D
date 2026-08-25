@@ -109,11 +109,23 @@ const MELANGE = /* glsl */ `
     float d = texture2D(tProfondeur, vUv).x;
     float metres = distanceVue(d);
 
-    /* Le fondu commence juste derrière le point de netteté et sature à trois
-       fois cette distance. Un fondu court fabrique une ligne de démarcation
-       nette au milieu du sol, qui est précisément ce qu'on cherchait à
-       éviter. */
-    float part = smoothstep(uMise * 1.15, uMise * 3.2, metres) * uForce;
+    /*
+     * Le fondu commence à un tiers derrière le point de netteté et sature à
+     * quatre fois cette distance.
+     *
+     * Il était deux fois plus serré, et cela marchait dehors : à cent trente
+     * mètres du bâtiment, tout ce qui est plus loin est du paysage. Dedans,
+     * c'était intenable — dans un puits de quarante-trois mètres pris en
+     * diagonale, la surface la plus proche est déjà à dix-sept mètres, donc
+     * *tout* tombait au-delà du seuil. Le plan de la montée ne montrait qu'un
+     * dégradé, et j'ai cherché la faute dans la géométrie avant de la trouver
+     * ici.
+     *
+     * La leçon est générale : une profondeur de champ réglée en fractions du
+     * point de netteté doit l'être sur la scène la plus **profonde**, pas sur
+     * la plus lointaine.
+     */
+    float part = smoothstep(uMise * 1.35, uMise * 4.2, metres) * uForce;
     vec3 couleur = mix(net, flou, part);
 
     // L'encodage d'affichage, une seule fois, ici.

@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import {
+  APPARTEMENT,
   APPEL,
+  ATRIUM,
   ARCHITECTURE,
   ETAGE,
   GALERIE,
@@ -13,6 +15,7 @@ import {
   PROJET,
   SOCLE,
   VOL,
+  altitudeNiveau,
   chiffres,
   empreinte,
   hauteurHorsTout,
@@ -54,14 +57,19 @@ test('la hauteur annoncée est celle de l’empilement', () => {
   assert.equal(hauteurHorsTout(), SOCLE + 0.25 + NIVEAUX * ETAGE + 2.1);
 });
 
-test('la surface de plancher est la somme des niveaux', () => {
+test('la surface de plancher est la somme des niveaux, atrium déduit', () => {
+  const vide = (ATRIUM.x1 - ATRIUM.x0) * (ATRIUM.z1 - ATRIUM.z0);
   let total = 0;
   for (let n = 0; n < NIVEAUX; n += 1) {
     const e = empreinte(n);
-    total += e.hx * 2 * (e.hz * 2);
+    total += e.hx * 2 * (e.hz * 2) - vide;
   }
   assert.equal(surfacePlancher(), total);
   assert.ok(logements() > 0);
+  /* Le puits coûte huit cent soixante-quatre mètres carrés : la page les
+     retire de ce qu'elle annonce, sans quoi elle vendrait une surface qu'elle
+     montre en train de ne pas exister. */
+  assert.ok(vide * NIVEAUX > 800);
 });
 
 /* ================================================================ le texte === */
@@ -107,10 +115,11 @@ test('les quatre traits d’architecture sont numérotés dans l’ordre', () =>
 });
 
 test('la galerie a autant de légendes que le vol a d’étapes en galerie', () => {
-  /* Les trois écrans de la galerie occupent le curseur de 0,43 à 0,84, et le
-     vol y pose une étape par écran. Ajouter une vue sans ajouter son étape
-     donnerait un écran de plus sur la même image. */
-  const dedans = VOL.filter((e) => e.t >= 0.43 && e.t < 0.85);
+  /* On compte les étapes **ancrées** sur la galerie, et non celles qui tombent
+     dans une plage de curseur : les fractions bougent dès qu'une section
+     change de longueur, l'ancrage non. La première version comptait par
+     plage, et ajouter deux sections a suffi pour qu'elle mente. */
+  const dedans = VOL.filter((e) => e.ancre === '#galerie');
   assert.equal(GALERIE.vues.length, dedans.length);
 });
 
@@ -124,15 +133,24 @@ test('le vol avance toujours, et sur tout le défilement', () => {
   }
 });
 
-test('le vol ne fait que se rapprocher', () => {
-  /* C'est la promesse de la page : on descend, donc on avance. Une étape qui
-     recule — même de deux mètres, même pour mieux cadrer — se lit à l'écran
-     comme une hésitation, et c'est le seul défaut qu'un travelling ne pardonne
-     pas. Le dernier plan est le seul qui recule un peu du mur qu'il vise, et
-     c'est un recul par rapport à sa **cible**, pas par rapport au bâtiment :
-     on mesure donc la distance à l'axe. */
+/** L'indice de la première étape située à l'intérieur du bâtiment. */
+function seuil(): number {
+  const k = VOL.findIndex((e) => e.oeil[0] < HALL.hx);
+  assert.ok(k > 0, 'le vol n’entre jamais dans le bâtiment');
+  return k;
+}
+
+test('dehors, le vol ne fait que se rapprocher', () => {
+  /* C'est la promesse de la page tant qu'on est dehors : on descend, donc on
+     avance. Une étape qui recule — même de deux mètres, même pour mieux
+     cadrer — se lit à l'écran comme une hésitation.
+     Une fois dedans, la règle n'a plus de sens : le vol traverse le hall,
+     revient vers le fond pour prendre le puits, monte, puis repart vers la
+     baie. Mesurer sa distance à l'axe du bâtiment ne dirait alors plus rien de
+     ce qu'on voit. */
+  const k = seuil();
   const rayon = (e: (typeof VOL)[number]) => Math.hypot(e.oeil[0], e.oeil[2]);
-  for (let i = 1; i < VOL.length; i += 1) {
+  for (let i = 1; i < k; i += 1) {
     assert.ok(
       rayon(VOL[i]) < rayon(VOL[i - 1]),
       `l’étape ${i} est plus loin de l’axe que la précédente`,
@@ -140,21 +158,56 @@ test('le vol ne fait que se rapprocher', () => {
   }
 });
 
-test('le vol part dehors et finit dans le hall', () => {
+test('le vol part d’une vue aérienne', () => {
   const debut = VOL[0];
   assert.ok(Math.hypot(debut.oeil[0], debut.oeil[2]) > 120, 'le premier plan n’est pas assez loin');
   assert.ok(debut.oeil[1] > 50, 'le premier plan n’est pas une vue aérienne');
+});
 
+test('la montée reste dans le puits', () => {
   /* La vérification qui compte, et qui n'existait pas quand la caméra se
-     contentait de tourner autour : la dernière étape doit être **entre les
-     murs**, au-dessus du sol et sous le plafond. Une étape qui déborde de
-     vingt centimètres met l'œil dans l'épaisseur d'une paroi, et l'image se
-     remplit de la face arrière d'un mur. */
+     contentait de tourner autour : entre le pied de l'atrium et la sortie au
+     cinquième, l'œil doit rester **entre les joues**. Une étape qui déborde de
+     vingt centimètres met l'objectif dans l'épaisseur d'un mur, et l'image se
+     remplit de la face arrière d'une paroi. */
+  /* Les étapes qui montent sont celles qui sont **dedans** et entre le
+     plafond du hall et le plancher du séjour. Sans la condition « dedans », le
+     filtre attrapait aussi le plan du parvis, à quatorze mètres d'altitude et
+     cinquante-huit mètres de l'axe — et le test accusait la caméra de sortir
+     d'un puits dans lequel elle n'était jamais entrée. */
+  const montantes = VOL.filter(
+    (e) =>
+      e.oeil[0] < HALL.hx &&
+      e.oeil[1] > HALL.haut &&
+      e.oeil[1] < altitudeNiveau(APPARTEMENT.niveau),
+  );
+  assert.ok(montantes.length >= 1, 'aucune étape ne monte dans le puits');
+  for (const e of montantes) {
+    const [x, , z] = e.oeil;
+    assert.ok(x > ATRIUM.x0 + 0.5 && x < ATRIUM.x1 - 0.5, `la montée sort du puits en x (${x})`);
+    assert.ok(z > ATRIUM.z0 + 0.5 && z < ATRIUM.z1 - 0.5, `la montée sort du puits en z (${z})`);
+  }
+});
+
+test('le vol finit debout dans le séjour', () => {
+  const sol = altitudeNiveau(APPARTEMENT.niveau) + 0.12;
   const fin = VOL[VOL.length - 1];
   const [x, y, z] = fin.oeil;
-  assert.ok(Math.abs(x) < HALL.hx - 0.6, `l’œil final sort du hall en x (${x})`);
-  assert.ok(Math.abs(z) < HALL.hz - 0.6, `l’œil final sort du hall en z (${z})`);
-  assert.ok(y > 1.4 && y < HALL.haut - 0.8, `l’œil final n’est pas à hauteur d’homme (${y})`);
+  assert.ok(x > APPARTEMENT.x0 + 0.8 && x < APPARTEMENT.x1 - 0.8, `l’œil final sort du séjour en x (${x})`);
+  assert.ok(z > APPARTEMENT.z0 + 0.8 && z < APPARTEMENT.z1 - 0.8, `l’œil final sort du séjour en z (${z})`);
+  const oeilSol = y - sol;
+  assert.ok(
+    oeilSol > 1.3 && oeilSol < APPARTEMENT.haut - 0.8,
+    `l’œil final n’est pas à hauteur d’homme (${oeilSol.toFixed(2)} m du sol)`,
+  );
+
+  /* Et l'on regarde à l'horizontale, à un degré près. Dans une pièce de trois
+     mètres sous plafond, une caméra qui pique du nez remplit le cadre de
+     parquet et perd le plafond — et une pièce sans plafond n'est plus une
+     pièce. */
+  const portee = Math.hypot(fin.vise[0] - x, fin.vise[2] - z);
+  const pente = Math.atan2(fin.vise[1] - y, portee) * (180 / Math.PI);
+  assert.ok(Math.abs(pente) < 3, `le dernier plan pique de ${pente.toFixed(1)}°`);
 });
 
 test('on entre par la porte, pas au travers du vitrage', () => {
@@ -163,9 +216,16 @@ test('on entre par la porte, pas au travers du vitrage', () => {
      deux ; on interpole en ligne droite, ce qui est une approximation
      suffisante puisque la courbe reste dans l'enveloppe de ses points, et on
      vérifie que le passage se fait dans la largeur de la porte. */
-  const dehors = VOL.find((e) => e.oeil[0] > HALL.hx);
-  const dedans = VOL.find((e) => e.t > (dehors?.t ?? 0) && e.oeil[0] < HALL.hx);
-  assert.ok(dehors && dedans, 'aucune étape ne franchit la façade');
+  /* La **dernière** étape dehors et la première dedans, et non la première
+     de chaque : le test cherchait jusqu'ici la première étape au-delà de la
+     façade, c'est-à-dire la vue aérienne à cent vingt-six mètres, et
+     interpolait une droite du ciel jusqu'à la porte. Il passait par chance —
+     cette droite tombait à deux mètres quatre-vingts de l'axe — et il s'est
+     mis à échouer dès que le vol a gagné une étape. Un test qui mesure la
+     mauvaise chose et qui passe est plus dangereux qu'un test absent. */
+  const k = seuil();
+  const dehors = VOL[k - 1];
+  const dedans = VOL[k];
 
   const f = (dehors.oeil[0] - HALL.hx) / (dehors.oeil[0] - dedans.oeil[0]);
   const zSeuil = dehors.oeil[2] + (dedans.oeil[2] - dehors.oeil[2]) * f;
