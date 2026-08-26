@@ -371,7 +371,25 @@ export const VOL: Etape[] = [
      prend la gauche du cadre, la baignoire le fond, la douche la droite. Visée
      dans l'axe de la pièce, on ne cadrait qu'un mur — dix-huit mètres carrés
      de pierre claire résumés à un aplat et à une baignoire vue de dessus. */
-  { t: 0.79, ancre: '#bains', oeil: [-2.3, 25.35, 2.25], vise: [-2.4, 24.98, -1.0], foyer: 60 },
+  /*
+   * On cadre la vasque, pas la baignoire.
+   *
+   * Quatre réglages de lumière n'y ont rien fait, et c'est le signe qu'on
+   * réglait la mauvaise chose. Dans l'axe de la pièce, ce plan montrait une
+   * baignoire vue de flanc — une grande boîte claire — devant un grand mur
+   * clair : quatre-vingts pour cent de l'image en surfaces lisses de même
+   * valeur. Aucune source ne sauve un cadrage qui n'a rien à montrer.
+   *
+   * De trois quarts sur l'angle de la vasque, le même mètre carré contient la
+   * réglette, le miroir, la crédence de pierre, les deux robinets, la pile de
+   * serviettes et le retour de la baignoire. Ce sont des objets, ils ont des
+   * tailles différentes et des matières différentes, et c'est exactement ce
+   * que photographie quelqu'un dont le métier est de vendre une salle de
+   * bains. Le point à un mètre quarante laisse le reste de la pièce partir
+   * dans le flou, ce qui est la façon la plus simple de dire dix-huit mètres
+   * carrés sans avoir à les cadrer.
+   */
+  { t: 0.79, ancre: '#bains', oeil: [-2.3, 25.35, 2.25], vise: [-3.4, 25.0, 1.55], foyer: 54 },
   /* Et le chemin inverse : la porte, l'entrée, le passage, le séjour. */
   { t: 0.82, oeil: [-2.5, 25.35, 3.7], vise: [-1.0, 25.2, 5.6], foyer: 58 },
   { t: 0.85, oeil: [0.9, 25.35, 5.1], vise: [6.0, 25.2, 6.6], foyer: 54 },

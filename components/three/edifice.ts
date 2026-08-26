@@ -28,7 +28,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { subdiviser } from '@/components/three/maillage';
+import { masseFeuillue, subdiviser } from '@/components/three/maillage';
 import { creerMatieres, type Matiere } from '@/components/three/matieres';
 import { poserAppartement, type Palette } from '@/components/three/appartement';
 import {
@@ -832,6 +832,18 @@ export function buildEdifice(
    */
   const enduit = mat(0xc9c5bd, 0.94, {}, matieres.enduit);
   const metal = mat(0x6f7377, 0.24, { metalness: 0.72 }, matieres.metal);
+  /*
+   * Le miroir, et pourquoi ce n'est pas du métal.
+   *
+   * Il était fait du même matériau que la robinetterie : métal à 0,72, rugueux
+   * à 0,24. Cela donne un panneau gris — un vrai miroir renvoie **tout** ce
+   * qu'il reçoit, sans rien absorber et sans rien diffuser. Métal pur, rugosité
+   * quasi nulle, couleur presque blanche : il ne reflète ici que la carte
+   * d'environnement, faute d'un rendu des réflexions de la pièce, mais cela
+   * suffit à le distinguer d'une plaque de tôle — il attrape le ciel par la
+   * porte, et la réglette qui est juste au-dessus de lui.
+   */
+  const miroir = mat(0xf2f2f0, 0.03, { metalness: 1, envMapIntensity: 1.4 });
   /* Le marbre était descendu à 0,12 — un miroir. Un plateau de table basse
      posé devant une baie y renvoyait le ciel en aplat blanc et se lisait comme
      une source lumineuse, pas comme une pierre. Un marbre poli réel rend
@@ -872,6 +884,7 @@ export function buildEdifice(
     vitrine,
     garde,
     lueur,
+    miroir,
     fut,
     vegetal,
     tronc,
@@ -1765,12 +1778,14 @@ export function buildEdifice(
     const z = long ? t : c;
     if (Math.hypot(x, z) < 46) continue;
     pose(new THREE.CylinderGeometry(0.14, 0.2, 3.4, 6), tronc, x, 1.7, z);
-    for (const [dx, dy, dz, r] of [
+    for (const [j, [dx, dy, dz, r]] of ([
       [0, 0, 0, 2.2],
       [0.9, 0.6, 0.5, 1.5],
       [-0.7, 0.5, -0.8, 1.3],
-    ] as const) {
-      pose(new THREE.SphereGeometry(r, leger ? 6 : 8, leger ? 5 : 6), vegetal, x + dx, 4.4 + dy, z + dz);
+    ] as const).entries()) {
+      /* Une seule subdivision suffit à trente mètres : ce qu'on lit là-bas est
+         le contour, pas les paquets. Quatre-vingts faces par masse. */
+      pose(masseFeuillue(r, leger ? 0 : 1, i * 91 + j * 13, 0.8), vegetal, x + dx, 4.4 + dy, z + dz);
     }
   }
 
@@ -1784,13 +1799,21 @@ export function buildEdifice(
   ] as const) {
     pose(new THREE.CylinderGeometry(0.17, 0.26, 4.6, 7), tronc, x, 2.3, z);
     const pied = 4.6 + r * 0.55;
-    for (const [dx, dy, dz, k] of [
+    for (const [j, [dx, dy, dz, k]] of ([
       [0, 0, 0, 1],
       [r * 0.52, r * 0.34, -r * 0.28, 0.72],
       [-r * 0.46, r * 0.2, r * 0.4, 0.66],
       [r * 0.16, -r * 0.32, r * 0.5, 0.58],
-    ] as const) {
-      pose(new THREE.SphereGeometry(r * k, leger ? 7 : 10, leger ? 6 : 8), vegetal, x + dx, pied + dy, z + dz);
+    ] as const).entries()) {
+      /* Ceux-là sont au pied de l'immeuble, donc dans le cadre du dernier
+         écran : ils ont droit à une subdivision de plus. */
+      pose(
+        masseFeuillue(r * k, leger ? 1 : 2, Math.round(x * 7 + z * 3) + j * 17, 0.76),
+        vegetal,
+        x + dx,
+        pied + dy,
+        z + dz,
+      );
     }
   }
 

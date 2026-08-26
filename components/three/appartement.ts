@@ -24,7 +24,7 @@
  */
 
 import * as THREE from 'three';
-import { coussinGonfle, paveChanfreine } from '@/components/three/maillage';
+import { coussinGonfle, masseFeuillue, paveChanfreine } from '@/components/three/maillage';
 import {
   BAIE,
   CLOISON,
@@ -66,6 +66,7 @@ export interface Palette {
   vitrine: THREE.Material;
   garde: THREE.Material;
   lueur: THREE.Material;
+  miroir: THREE.Material;
   fut: THREE.Material;
   vegetal: THREE.Material;
   tronc: THREE.Material;
@@ -1043,7 +1044,23 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
    */
   // La crédence de pierre derrière la vasque, puis le miroir jusqu'au plafond.
   bloc(M.pierre, B.x0, B.x0 + 0.04, SOL + 0.9, SOL + 1.28, 0.85, 3.05 - CLOISON);
-  bloc(M.metal, B.x0 + 0.02, B.x0 + 0.05, SOL + 1.28, SOL + 2.42, 0.95, 2.95 - CLOISON);
+  bloc(M.miroir, B.x0 + 0.02, B.x0 + 0.05, SOL + 1.28, SOL + 2.42, 0.95, 2.95 - CLOISON);
+  /*
+   * La réglette lumineuse au-dessus du miroir.
+   *
+   * C'est ce qui manquait le plus à cette pièce, et il a fallu trois passes
+   * pour le voir. Une salle de bains aveugle éclairée par une seule source
+   * ponctuelle au plafond ne donne pas une pièce sombre — elle donne un
+   * **dégradé**, sans direction, sans reflet, sans rien à quoi accrocher le
+   * regard. Ce qui fait lire une salle de bains sur une photographie, c'est
+   * presque toujours la ligne de lumière au-dessus de la vasque : elle est
+   * dans le cadre, elle se reflète dans le miroir, elle donne un axe.
+   *
+   * Elle est en matériau non éclairé — elle ne reçoit pas la lumière, elle
+   * l'est — et elle est doublée d'une source ponctuelle faible, posée devant
+   * elle. La barre seule ne serait qu'un rectangle blanc peint sur un mur.
+   */
+  bloc(M.lueur, B.x0 + 0.05, B.x0 + 0.11, SOL + 2.02, SOL + 2.08, 1.05, 2.85 - CLOISON);
   // Le bandeau de pierre derrière la baignoire, sur le mur sud.
   bloc(M.pierre, B.x0 + 0.2, B.x0 + 2.4, SOL, SOL + 1.35, B.z0, B.z0 + 0.05);
   // Deux robinets muraux et une patère à serviettes.
@@ -1174,13 +1191,31 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
      n'est qu'un accent posé sur un jour qui existe déjà ; ici, elle **est** le
      jour. Descendue à un mètre soixante-quinze, elle n'écrase plus le plafond
      et éclaire ce qu'on regarde, qui est à hauteur de vasque. */
-  if (!leger) lampe(-1.6, SOL + 1.75, 0.9, 12);
+  /*
+   * Deux sources dans la salle de bains, et non une.
+   *
+   * Une pièce aveugle avec une seule source n'a pas d'ombre : tout y décroît
+   * en rond autour d'un point, et l'image n'a plus qu'un dégradé. Deux
+   * sources, même faibles, suffisent à créer un côté et un autre côté — c'est
+   * le minimum pour qu'un volume se lise. La première est la réglette du
+   * miroir, posée devant lui ; la seconde est au plafond, au-dessus de la
+   * baignoire, plus faible et plus chaude.
+   */
+  if (!leger) {
+    /* La source de la réglette est posée **à un mètre du mur**, pas devant
+       elle. À trente-cinq centimètres, l'éclairement au mur valait cinquante-
+       huit — huit fois le plafond du séjour — et la réglette sortait en tache
+       ronde brûlée, exactement la faute déjà commise deux fois au plafond. La
+       barre lumineuse reste où elle est ; c'est ce qu'elle émet qui recule. */
+    lampe(PIECES.bains.x0 + 1.0, SOL + 1.95, 1.9, 6, 0xfff2e0);
+    lampe(-2.2, SOL + 1.9, -0.6, 5);
+  }
   return lampes;
 }
 
 /** Une plante en pot : tronc et masses irrégulières, jamais une sphère seule. */
 function plante(a: Atelier, x: number, z: number, taille: number, rond: (r: number) => number): void {
-  const { pose, materiaux: M } = a;
+  const { pose, materiaux: M, leger } = a;
   pose(new THREE.CylinderGeometry(taille * 0.46, taille * 0.38, taille * 0.8, rond(10)), M.marbre, x, SOL + taille * 0.4, z);
   pose(new THREE.CylinderGeometry(0.045, 0.06, taille * 1.5, rond(6)), M.tronc, x, SOL + taille * 1.5, z);
   /*
@@ -1200,28 +1235,34 @@ function plante(a: Atelier, x: number, z: number, taille: number, rond: (r: numb
    * qu'elle est dessous ou sur le dessus — c'est ce que fait la lumière dans
    * un vrai feuillage, et c'est ce qui sépare deux masses qui se recoupent.
    */
-  for (const [dx, dy, dz, k, ton] of [
+  for (const [i, [dx, dy, dz, k, ton]] of ([
     [0, 0.58, 0, 1, 1.06],
     [0.44, 0.3, 0.26, 0.68, 0.9],
     [-0.38, 0.4, -0.3, 0.62, 0.78],
     [0.16, 0.12, -0.46, 0.54, 0.7],
     [-0.3, 0.16, 0.42, 0.5, 0.74],
     [0.2, 0.72, -0.16, 0.56, 1.14],
-  ] as const) {
-    const masse = new THREE.SphereGeometry(taille * k * 0.74, rond(9), rond(7));
-    masse.scale(1, 0.72, 1);
+  ] as const).entries()) {
+    /* Une masse feuillue et non une sphère : c'est le contour déchiqueté qui
+       fait lire « feuillage », bien avant la couleur. Voir `masseFeuillue`
+       dans `maillage.ts`. */
+    const masse = masseFeuillue(taille * k * 0.78, leger ? 1 : 2, i * 37 + 5, 0.74);
     pose(
       masse,
       M.vegetal,
       x + dx * taille,
       SOL + taille * (2.0 + dy),
       z + dz * taille,
-      () => ton,
-      /* Aucune subdivision : la valeur est constante sur la masse, donc les
-         sommets de la sphère suffisent à la porter. Un pas de trop ici coûte
-         quatre fois plus de triangles pour exactement la même image — et une
-         maille nulle en coûterait mille fois plus, la boucle ne s'arrêtant
-         qu'au bout de ses cinq passes. */
+      /* La valeur varie **dans** la masse et non seulement d'une masse à
+         l'autre : plus clair sur le dessus, plus sombre dessous, comme dans
+         n'importe quelle couronne éclairée par le haut. */
+      (px, py, pz) => {
+        const haut = SOL + taille * (2.0 + dy);
+        const dessus = Math.max(0, Math.min(1, (py - haut) / (taille * k * 0.8) + 0.5));
+        void px;
+        void pz;
+        return ton * (0.74 + 0.4 * dessus);
+      },
       99,
     );
   }

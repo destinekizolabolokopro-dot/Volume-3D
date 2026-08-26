@@ -311,3 +311,69 @@ export function coussinGonfle(
   geometry.computeVertexNormals();
   return geometry;
 }
+
+
+/**
+ * Une masse feuillue.
+ *
+ * Un arbre modélisé en sphères se reconnaît de très loin, et il y en a un au
+ * premier plan du séjour qui occupe un sixième du cadre. Le problème n'est pas
+ * la sphère elle-même — une couronne d'arbre **est** grossièrement sphérique —
+ * c'est qu'elle est *lisse*. Un feuillage n'a pas de silhouette continue : il
+ * a des paquets, des trouées, des bords déchiquetés, et c'est ce contour
+ * irrégulier que l'œil identifie, bien avant la couleur.
+ *
+ * On part donc d'un icosaèdre subdivisé — dont les sommets sont, eux,
+ * régulièrement répartis, ce qu'une sphère de révolution n'est pas : elle
+ * entasse ses sommets aux pôles et les étire à l'équateur, et le bruit qu'on
+ * y applique se voit alors comme un motif en fuseaux. Chaque sommet est
+ * repoussé d'un facteur tiré d'un hachage de sa direction, donc stable, donc
+ * identique d'un rechargement à l'autre.
+ *
+ * Les normales sont **facettées**, et c'est le point. Une masse bruitée en
+ * ombrage lissé redevient un galet ; facettée, chaque triangle prend sa propre
+ * valeur et l'ensemble se lit comme des paquets de feuilles au soleil.
+ */
+export function masseFeuillue(
+  rayon: number,
+  /** 0 pour vingt faces, 1 pour quatre-vingts, 2 pour trois cent vingt. */
+  finesse: number,
+  graine: number,
+  /** Aplatissement vertical : une couronne est plus large que haute. */
+  ecrase = 0.78,
+): THREE.BufferGeometry {
+  const geometry = new THREE.IcosahedronGeometry(rayon, finesse);
+  const position = geometry.getAttribute('position') as THREE.BufferAttribute;
+
+  /* Un hachage sur la direction, et non sur l'indice du sommet : deux sommets
+     confondus après subdivision doivent recevoir exactement le même
+     déplacement, sans quoi la surface se déchire. */
+  const bruit = (x: number, y: number, z: number) => {
+    const v = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719 + graine) * 43758.5453;
+    return v - Math.floor(v);
+  };
+
+  for (let i = 0; i < position.count; i += 1) {
+    const x = position.getX(i);
+    const y = position.getY(i);
+    const z = position.getZ(i);
+    const n = Math.hypot(x, y, z) || 1;
+    const ux = x / n;
+    const uy = y / n;
+    const uz = z / n;
+    /* Deux échelles de bruit : les grands paquets, puis leur découpe. Une
+       seule échelle donne une patate, pas un feuillage. */
+    const gros = bruit(ux * 2.1, uy * 2.1, uz * 2.1);
+    const fin = bruit(ux * 7.3 + 11, uy * 7.3 + 11, uz * 7.3 + 11);
+    const k = rayon * (0.74 + 0.34 * gros + 0.14 * fin);
+    position.setXYZ(i, ux * k, uy * k * ecrase, uz * k);
+  }
+
+  position.needsUpdate = true;
+  /* Non indexé d'abord : c'est ce qui donne une normale par face au lieu d'une
+     normale par sommet, donc des facettes et non un galet. */
+  const facette = geometry.toNonIndexed();
+  geometry.dispose();
+  facette.computeVertexNormals();
+  return facette;
+}
