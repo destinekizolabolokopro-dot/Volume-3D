@@ -447,8 +447,56 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
       if (haut >= PLAFOND - SOL) continue;
       if (selonZ) bloc(M.enduit, fixe, fixe + CLOISON, SOL + haut, PLAFOND, p0, p1);
       else bloc(M.enduit, p0, p1, SOL + haut, PLAFOND, fixe, fixe + CLOISON);
+      chambranle(selonZ, fixe, p0, p1, haut);
     }
   };
+
+  /**
+   * Le chambranle d'un passage : le bandeau de bois qui l'encadre, sur ses deux
+   * faces.
+   *
+   * Sans lui, une porte est un trou aux arêtes d'enduit — et c'est le défaut
+   * que l'œil met le plus vite sur le compte de la synthèse, parce qu'aucune
+   * porte réelle n'est posée ainsi. Un vantail se ferme **contre** quelque
+   * chose ; ici il se fermait contre rien. La caméra franchit les deux
+   * passages de l'appartement à quelques centimètres de leurs montants : c'est
+   * exactement le moment où le détail se voit.
+   *
+   * Il est dessiné à partir du percement lui-même, donc du plan
+   * (`CLOISONS` dans `lib/residence.ts`) : déplacer une porte déplace son
+   * encadrement, et l'oubli n'est pas possible.
+   *
+   * Il déborde **vers l'extérieur** du percement, jamais vers l'intérieur —
+   * les baies du plan font exactement la largeur de leur vantail, et un
+   * bandeau qui mordrait dessus ferait passer la porte à travers son propre
+   * cadre.
+   */
+  function chambranle(selonZ: boolean, fixe: number, p0: number, p1: number, haut: number) {
+    /* Six centimètres de large, dix-huit millimètres d'épaisseur : les cotes
+       d'un chambranle plat courant. Un profil mouluré serait plus riche et
+       vingt fois plus cher en triangles, pour un détail qu'on ne voit qu'en
+       silhouette contre l'enduit. */
+    const LARGE = 0.06;
+    const SAILLIE = 0.018;
+    const y1 = SOL + haut + LARGE;
+
+    /** Un cadre en U sur une face, à `depuis`, saillant de `vers`. */
+    const face = (depuis: number, vers: number) => {
+      const a = Math.min(depuis, depuis + vers);
+      const b = Math.max(depuis, depuis + vers);
+      if (selonZ) {
+        bloc(M.bois, a, b, SOL, y1, p0 - LARGE, p0);
+        bloc(M.bois, a, b, SOL, y1, p1, p1 + LARGE);
+        bloc(M.bois, a, b, SOL + haut, y1, p0 - LARGE, p1 + LARGE);
+      } else {
+        bloc(M.bois, p0 - LARGE, p0, SOL, y1, a, b);
+        bloc(M.bois, p1, p1 + LARGE, SOL, y1, a, b);
+        bloc(M.bois, p0 - LARGE, p1 + LARGE, SOL + haut, y1, a, b);
+      }
+    };
+    face(fixe, -SAILLIE);
+    face(fixe + CLOISON, SAILLIE);
+  }
 
   /* Les cloisons et leurs passages viennent du plan, pas d'ici : voir
      `CLOISONS` dans `lib/residence.ts`. C'est ce qui permet au test de
@@ -813,7 +861,26 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
      capture. Au sud du canapé, il est à six mètres des deux points de vue. */
   pose(new THREE.CylinderGeometry(0.16, 0.16, 0.02, rond(9)), M.metal, 4.0, SOL + 0.01, 4.3);
   pose(new THREE.CylinderGeometry(0.02, 0.02, 1.5, rond(6)), M.metal, 4.0, SOL + 0.76, 4.3);
-  pose(new THREE.CylinderGeometry(0.2, 0.15, 0.26, rond(10)), M.lin, 4.0, SOL + 1.62, 4.3);
+  /*
+   * L'abat-jour est une surface **lumineuse**, pas une surface éclairée.
+   *
+   * Il était en `lin`, comme le canapé, et la source de la lampe se trouvait à
+   * dix centimètres de sa paroi extérieure : neuf candelas à dix centimètres
+   * font neuf cents lux. Mesuré sur la capture, il sortait à 255, 255, 248 —
+   * blanc écrêté, sans une trace de sa couleur — quand le mur le mieux éclairé
+   * de la pièce était à 116, 106, 93. Le voile d'éclat par-dessus en faisait
+   * une boule blanche qui mangeait la porte derrière elle.
+   *
+   * C'est la quatrième fois que la même faute se paie dans ce fichier, et
+   * c'est toujours la même : **une source ponctuelle placée près d'une
+   * surface**. Cette fois la correction n'est pas de baisser l'intensité — un
+   * abat-jour allumé *est* clair, l'éteindre serait une autre erreur — mais de
+   * cesser de l'éclairer. Un abat-jour dont l'ampoule est allumée émet ; il ne
+   * reçoit pas. `lueur` est un matériau non éclairé, exactement comme les
+   * pastilles des encastrés du plafond, et il rend un beige chaud constant :
+   * 0,60 en linéaire, donc sous le seuil de l'éclat, donc sans halo.
+   */
+  pose(new THREE.CylinderGeometry(0.2, 0.15, 0.26, rond(10)), M.lueur, 4.0, SOL + 1.62, 4.3);
   plante(a, 9.9, 9.9, 0.72, rond);
 
   /*
@@ -912,6 +979,25 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   bloc(M.bois, 4.64, 7.96, SOL, SOL + 0.09, 1.14, 2.16);
   facade(4.6, 8.0, SOL + 0.12, SOL + 0.86, 1.081, 0.66, 'haut');
   bloc(M.marbre, 4.5, 8.1, SOL + 0.86, SOL + 0.94, 1.0, 2.32);
+
+  /*
+   * Trois suspensions au-dessus de l'îlot — parce qu'il y avait une lumière et
+   * aucun luminaire.
+   *
+   * `lampe(6.3, …, 1.7, 8)` posait huit candelas à un mètre soixante-dix-huit
+   * au-dessus du plan de travail, et rien ne pendait au plafond pour les
+   * justifier. Une lumière sans source visible n'est pas une erreur de calcul,
+   * c'est une erreur de récit : le plan de marbre s'allume, l'œil cherche
+   * d'où, ne trouve rien, et met la scène au compte de la synthèse.
+   *
+   * Trois cônes alignés sur les trois tabourets, chacun pendu à sa tige. La
+   * coupole est en `lueur` pour la même raison que l'abat-jour : ce qui est
+   * allumé émet.
+   */
+  for (const x of [5.3, 6.3, 7.3]) {
+    pose(new THREE.CylinderGeometry(0.006, 0.006, 0.86, rond(5)), M.metal, x, SOL + 2.57, 1.7);
+    pose(new THREE.CylinderGeometry(0.03, 0.13, 0.17, rond(12)), M.lueur, x, SOL + 2.055, 1.7);
+  }
   /* Un tabouret de bar, c'est quatre pièces et pas deux : l'assise, la
      colonne, **le repose-pied** et **la base**. Sans les deux dernières, le
      rendu donne trois champignons posés sur le parquet — et c'est exactement
@@ -1250,7 +1336,9 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
    * la flaque chaude sur un mur, le contre-jour sur un dossier. C'est le rôle
    * qu'elles auraient dû avoir depuis le début.
    */
-  lampe(4.2, SOL + 1.62, 4.5, 9);
+  /* Sur l'axe du lampadaire, et non vingt-huit centimètres à côté : la flaque
+     chaude tombe au pied du lampadaire, là où l'œil l'attend. */
+  lampe(4.0, SOL + 1.5, 4.3, 9);
   lampe(6.3, SOL + 1.78, 1.7, 8);
   lampe(-1.8, SOL + 1.92, 5.4, 7);
   /*
