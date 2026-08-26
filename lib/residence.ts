@@ -443,7 +443,31 @@ export const VOL: Etape[] = [
      l'œil, le platelage n'entre dans le cadre qu'au prix d'un acrotère qui
      mange le tiers bas de l'image, et on échange une terrasse qu'on ne voit
      pas contre un muret qu'on voit trop. */
-  { t: 0.93, ancre: '#terrasse', oeil: [11.6, 25.35, 7.4], vise: [128.8, 14.0, -24.3], foyer: 50 },
+  /*
+   * Troisième essai, et le premier qui montre la terrasse : on la regarde
+   * **en long**.
+   *
+   * Les deux essais racontés ci-dessus partent du même point de vue — debout
+   * au milieu, tourné vers le dehors — et ne discutent que de l'inclinaison.
+   * De là, le platelage est sous les pieds : aucun angle ne le fait entrer
+   * dans le cadre sans faire entrer d'abord l'acrotère. Le sondage a chiffré
+   * ce que cela donnait : `CADRE=1 ARRETS=7-terrasse npm run residence`
+   * comptait **3,3 % de bois** dans le plan d'une section intitulée
+   * « cinquante-deux mètres carrés de plus, dehors », contre 34 % de ciel.
+   *
+   * Depuis l'extrémité nord, la terrasse n'est plus sous les pieds : elle est
+   * devant, sur neuf mètres soixante, avec ses trois usages alignés — le salon
+   * bas, la table de six, les bains de soleil — et la ville par-dessus le
+   * garde-corps, à gauche. C'est le plan que fait n'importe qui dont le métier
+   * est de vendre une terrasse, et il n'avait pas été essayé.
+   *
+   * La netteté descend de cent vingt mètres à sept, et c'est le sujet qui
+   * change, pas un réglage : le chapô et les trois chiffres de cette section
+   * parlent tous de la terrasse et aucun de la ville. La ville reste dans le
+   * cadre, derrière, adoucie — ce qu'elle doit être quand le sujet est au
+   * premier plan.
+   */
+  { t: 0.93, ancre: '#terrasse', oeil: [12.5, 25.35, 9.3], vise: [12.9, 24.55, 2.6], foyer: 52 },
   /*
    * Le dernier plan : on sort, et on se retourne.
    *

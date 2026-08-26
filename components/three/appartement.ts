@@ -60,6 +60,8 @@ export interface Palette {
   enduit: THREE.Material;
   soffite: THREE.Material;
   bois: THREE.Material;
+  /** Le bois du platelage : dehors, donc sous le ciel et non sous la sonde. */
+  platelage: THREE.Material;
   lin: THREE.Material;
   accent: THREE.Material;
   meneau: THREE.Material;
@@ -1327,23 +1329,124 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   /* ---------------------------------------------------------- terrasse --- */
   /* Un salon d'extérieur, et rien de plus : la terrasse porte déjà sa
      jardinière filante et son garde-corps, posés avec le redan. */
-  /* Le platelage. La terrasse est au premier plan du dernier écran de la page :
-     une dalle de béton lisse y occupait tout le bas du cadre. Une lame tous les
-     quatorze centimètres, et le sol de la terrasse a une direction, une échelle
-     et une matière — pour trois cents pavés plats fusionnés en un seul. */
+  /*
+   * Le platelage — qui, jusqu'ici, n'avait jamais été visible.
+   *
+   * Une lame tous les quatorze centimètres, trois cents pavés plats fusionnés
+   * en un seul : le raisonnement était bon, la cote était fausse. Les lames
+   * étaient posées entre `SOL − 0,09` et `SOL − 0,055`, or **la dalle du redan
+   * monte de 23,680 à 23,800**, et `SOL` vaut exactement 23,800. Le platelage
+   * était donc noyé dans le béton sur toute son épaisseur : trois cents
+   * caissons dessinés à chaque image, invisibles depuis le premier jour.
+   *
+   * On ne l'a pas vu à l'œil — un sol de terrasse gris se lit comme un sol de
+   * terrasse — mais en tirant un rayon dessus : il répondait « béton, à 23,80 »
+   * là où on attendait du bois à 23,74. La leçon est celle qu'on connaît
+   * déjà : une cote qu'on n'a pas mesurée n'est pas une cote, c'est une
+   * intention.
+   *
+   * Les lames reposent maintenant **sur** la dalle, sur trente-huit
+   * millimètres, comme un platelage sur plots. Le mobilier, dont les pieds
+   * partent de `SOL − 0,05`, s'y enfonce de quelques millimètres et paraît
+   * donc posé dessus.
+   */
   for (let z = TERRASSE.z0; z < TERRASSE.z1 - 0.05; z += 0.14) {
-    bloc(M.bois, TERRASSE.x0, TERRASSE.x1 - 1.2, SOL - 0.09, SOL - 0.055, z + 0.012, z + 0.128);
+    bloc(M.platelage, TERRASSE.x0, TERRASSE.x1 - 1.2, SOL, SOL + 0.038, z + 0.012, z + 0.128);
   }
 
   bloc(M.bois, TERRASSE.x0 + 0.5, TERRASSE.x0 + 1.4, SOL - 0.06, SOL + 0.34, 6.6, 9.4);
   bloc(M.lin, TERRASSE.x0 + 0.56, TERRASSE.x0 + 1.34, SOL + 0.34, SOL + 0.46, 6.66, 9.34);
   bloc(M.lin, TERRASSE.x0 + 0.5, TERRASSE.x0 + 0.66, SOL + 0.34, SOL + 0.8, 6.6, 9.4);
   bloc(M.marbre, TERRASSE.x0 + 1.9, TERRASSE.x0 + 2.7, SOL + 0.3, SOL + 0.36, 7.4, 8.6);
-  for (const z of [3.0, 4.4]) {
+  /*
+   * Les bains de soleil descendent au sud, pour faire place à la table.
+   *
+   * La profondeur utile de la terrasse n'est pas celle qu'on croit : sur les
+   * cinq mètres quarante annoncés, la **jardinière filante** en prend un mètre
+   * quatre-vingt-dix — elle court de x = 13,52 à x = 15,54 sur toute la
+   * longueur, et rien dans ce fichier ne le disait. Il reste deux mètres
+   * soixante-cinq de platelage libre, sur neuf mètres cinquante.
+   *
+   * On l'a appris en y posant une table : ses trois chaises du fond se sont
+   * retrouvées **plantées dans le massif**, et sur la capture elles avaient
+   * l'air de flotter au-dessus du parc. Un lancer de rayon sous l'une d'elles
+   * a répondu « végétal, à soixante-trois centimètres du sol ».
+   *
+   * Les trois usages tiennent donc en longueur et non en largeur : les bains
+   * de soleil au sud, la table au milieu, le salon bas au nord. C'est ce que
+   * le chapô affirme — « sans que rien ne se touche » — et c'est maintenant
+   * vérifiable sur les cotes.
+   */
+  for (const z of [1.3, 2.4]) {
     bloc(M.bois, TERRASSE.x0 + 0.6, TERRASSE.x0 + 2.5, SOL - 0.06, SOL + 0.3, z, z + 0.7);
     bloc(M.lin, TERRASSE.x0 + 0.66, TERRASSE.x0 + 1.3, SOL + 0.3, SOL + 0.74, z + 0.05, z + 0.65);
   }
   plante(a, TERRASSE.x0 + 0.8, 10.0, 0.6, rond);
+
+  /*
+   * La table de six, parce que le texte la promet.
+   *
+   * Le chapô de la section dit : « on y met une table de six et deux bains de
+   * soleil sans que rien ne se touche ». Les bains de soleil y étaient, la
+   * table non — la terrasse n'avait qu'un canapé bas et un plateau de café. La
+   * phrase servait à prouver que cinq mètres quarante de profondeur font une
+   * pièce et pas un balcon ; elle le prouvait sur un meuble absent.
+   *
+   * Elle est posée sur la bande extérieure, entre les bains de soleil et le
+   * salon bas, et c'est là qu'elle rend le mieux la démonstration : les trois
+   * usages coexistent sans se toucher, ce qui est exactement ce que la phrase
+   * affirme. Deux mètres vingt sur un mètre — trois couverts par grand côté.
+   */
+  const TX = TERRASSE.x0 + 1.6;
+  /* Au milieu de la longueur : les chaises tiennent entre le dernier bain de
+     soleil, qui finit à 3,10, et le canapé bas, qui commence à 6,60. Une
+     phrase qui dit « sans que rien ne se touche » se vérifie sur les cotes
+     avant de se vérifier à l'œil. */
+  const TZ = 4.9;
+  // Le plateau, et deux piètements en tréteau plutôt que quatre pieds isolés.
+  bloc(M.bois, TX - 0.5, TX + 0.5, SOL + 0.7, SOL + 0.74, TZ - 1.1, TZ + 1.1);
+  for (const dz of [-0.82, 0.82]) {
+    bloc(M.metal, TX - 0.44, TX + 0.44, SOL - 0.05, SOL + 0.02, TZ + dz - 0.03, TZ + dz + 0.03);
+    bloc(M.metal, TX - 0.44, TX + 0.44, SOL + 0.66, SOL + 0.7, TZ + dz - 0.03, TZ + dz + 0.03);
+    for (const dx of [-0.4, 0.4]) {
+      bloc(M.metal, TX + dx - 0.025, TX + dx + 0.025, SOL - 0.05, SOL + 0.7, TZ + dz - 0.025, TZ + dz + 0.025);
+    }
+  }
+  /* Six chaises, trois par grand côté. Assise, dossier, quatre pieds : c'est
+     le minimum pour qu'une chaise se lise comme une chaise et non comme un
+     cube, et la leçon a déjà été payée sur les tabourets de bar. */
+  for (const dx of [-0.78, 0.78]) {
+    for (const dz of [-0.72, 0, 0.72]) {
+      const cx = TX + dx;
+      const cz = TZ + dz;
+      bloc(M.bois, cx - 0.22, cx + 0.22, SOL + 0.42, SOL + 0.47, cz - 0.21, cz + 0.21);
+      /* Une ceinture sous l'assise. Sans elle, l'assise est une planche posée
+         sur quatre baguettes et le regard cherche ce qui la tient — c'est le
+         même défaut que les tabourets de bar avant qu'on leur donne base et
+         repose-pied. */
+      bloc(M.bois, cx - 0.2, cx + 0.2, SOL + 0.36, SOL + 0.42, cz - 0.19, cz - 0.15);
+      bloc(M.bois, cx - 0.2, cx + 0.2, SOL + 0.36, SOL + 0.42, cz + 0.15, cz + 0.19);
+      // Le dossier, du côté opposé à la table, à l'aplomb de l'assise.
+      const ds = dx < 0 ? -0.185 : 0.185;
+      bloc(M.bois, cx + ds - 0.035, cx + ds + 0.035, SOL + 0.47, SOL + 0.85, cz - 0.21, cz + 0.21);
+      /* Des pieds de quarante-cinq millimètres et non de trente-deux : à trois
+         mètres, trente-deux millimètres font un pixel et demi sur un platelage
+         sombre, donc rien — et six chaises sans pieds visibles flottent. */
+      for (const px of [-0.175, 0.175]) {
+        for (const pz of [-0.165, 0.165]) {
+          bloc(
+            M.metal,
+            cx + px - 0.0225,
+            cx + px + 0.0225,
+            SOL - 0.05,
+            SOL + 0.42,
+            cz + pz - 0.0225,
+            cz + pz + 0.0225,
+          );
+        }
+      }
+    }
+  }
 
   /* ----------------------------------------------------------- lumière --- */
   /*

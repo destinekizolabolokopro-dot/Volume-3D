@@ -913,6 +913,32 @@ export function buildEdifice(
     clearcoatRoughness: 0.1,
   });
   const bois = mat(TON.bois, 0.44, {}, matieres.bois);
+  /*
+   * Le platelage de la terrasse, et pourquoi il quitte le bois d'intérieur.
+   *
+   * Le commentaire des sondes d'environnement avait posé la limite et annoncé
+   * la suite : « le platelage partage son matériau avec le mobilier intérieur,
+   * il reçoit donc la sonde alors qu'il est dehors ; à 0,44 de rugosité, sa
+   * réflexion est si diffuse que l'écart n'est pas lisible — le jour où il le
+   * deviendrait, il faudra lui donner son propre matériau. »
+   *
+   * Ce jour est arrivé quand le plan de la terrasse a cessé de la regarder
+   * par-dessus et l'a regardée en long : vue en fuite, une surface renvoie
+   * bien plus qu'elle n'en renvoie de face, et le platelage s'est mis à
+   * réfléchir un séjour qui est derrière la caméra. Il a donc sa matière :
+   * même dessin de lame, mais la voûte du ciel pour environnement — puisqu'il
+   * est dehors — et soixante-douze pour cent de rugosité, qui est ce que vaut
+   * un bois d'extérieur grisé par la pluie.
+   *
+   * Une intensité d'environnement réduite a été essayée — l'argument était
+   * qu'une terrasse ne voit pas toute la voûte, ayant un bâtiment de sept
+   * étages d'un côté. Elle est **retirée** : balayée de 0,4 à 1,2, elle ne
+   * déplace le platelage rendu que de quelques niveaux sur deux cent
+   * cinquante-cinq, parce que ce plan-là est à l'ombre et que ce n'est pas la
+   * voûte qui l'éclaire. Un réglage qui ne change rien de mesurable n'a pas sa
+   * place dans un fichier : il donne l'illusion qu'on tient une variable.
+   */
+  const platelage = mat(TON.bois, 0.72, {}, matieres.parquet);
   const fut = mat(TON.fut, 0.55, { metalness: 0.05 });
   /* Les corniches lumineuses sont un matériau **basique** : elles ne
      reçoivent pas la lumière, elles la donnent. Une source lumineuse rendue
@@ -932,6 +958,7 @@ export function buildEdifice(
      dessin par pièce. */
   const palette: Palette = {
     parquet,
+    platelage,
     pierre,
     marbre,
     enduit,
@@ -2260,6 +2287,9 @@ export function buildEdifice(
          la scène qu'on regarde **du dedans**, et une vitre vue du dedans renvoie
          la pièce — le montant du canapé sur le bas du panneau, le plafond sur le
          haut. Avec le ciel pour seul reflet, elle restait un trou. */
+      /* `platelage` n'y est pas, et c'est délibéré : il est dehors, il garde
+         le ciel. L'y ajouter par réflexe lui rendrait le reflet du séjour
+         qu'on vient de lui retirer. */
       for (const materiau of [parquet, lin, accent, bois, marbre, enduit, metal, vitrine]) {
         materiau.envMap = piece.texture;
         materiau.needsUpdate = true;
