@@ -675,8 +675,23 @@ export function buildEdifice(
      */
     const enPhysique = physique && !leger;
     const Classe = enPhysique ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    /*
+     * La couleur est **relevée** de la moitié de l'amplitude de la carte.
+     *
+     * La carte de couleur ne sait qu'assombrir — un octet ne dépasse pas un —
+     * donc elle va de `1 − teinte` à `1`, de moyenne `1 − teinte / 2`. Posée
+     * telle quelle, elle rendrait chaque matière systématiquement plus sombre
+     * que la couleur mesurée par `npm run palette`, d'un pour cent pour un
+     * enduit et de dix pour un parquet. On remonte donc la couleur de base
+     * d'exactement ce facteur : ce qui est rendu en moyenne redevient ce qui a
+     * été mesuré, et le nuancier reste vrai.
+     *
+     * C'est le même geste que pour la rugosité, quelques lignes plus bas, et
+     * pour la même raison : une carte huit bits ne module que d'un côté.
+     */
+    const releve = matiere ? 1 / (1 - matiere.teinte / 2) : 1;
     const material = new Classe({
-      color,
+      color: new THREE.Color(color).multiplyScalar(releve),
       /*
        * La rugosité est **relevée** quand une carte l'accompagne.
        *
