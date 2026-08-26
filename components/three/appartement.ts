@@ -553,6 +553,55 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   bloc(M.lueur, X0 + 0.6, X1 - 0.8, PLAFOND - 0.1, PLAFOND - 0.05, Z1 - 0.62, Z1 - 0.24);
 
   /*
+   * Les spots encastrés.
+   *
+   * Le plafond occupe le tiers haut de presque toutes les prises, et il était
+   * parfaitement nu — trois mètres de plâtre sans un accident. Une pièce
+   * d'aujourd'hui a des encastrés, et ils font trois choses à la fois : ils
+   * donnent une rythmique à la plus grande surface du cadre, ils disent
+   * l'échelle de la pièce mieux qu'un meuble, et ils alignent le regard sur
+   * l'axe de la pièce.
+   *
+   * Ils sont **allumés**, en matériau non éclairé : à l'heure dorée, dans un
+   * appartement dont les lampes sont déjà posées, des spots éteints seraient
+   * une incohérence. Ils n'éclairent rien — ce serait quinze sources de plus,
+   * ce qu'aucune machine ne paierait — ils se voient, ce qui est leur rôle
+   * ici. La lumière du lieu, elle, vient du soleil, du ciel cuit dans les
+   * sommets et des quatre lampes ponctuelles.
+   *
+   * Six centimètres de diamètre : c'est petit, et il le faut. À trois mètres,
+   * un encastré de douze centimètres est une lune.
+   */
+  const encastre = (x: number, z: number) => {
+    pose(
+      new THREE.CylinderGeometry(0.075, 0.075, 0.012, rond(12)),
+      M.metal,
+      x,
+      PLAFOND - 0.006,
+      z,
+      undefined,
+      99,
+    );
+    pose(
+      new THREE.CylinderGeometry(0.055, 0.055, 0.008, rond(12)),
+      M.lueur,
+      x,
+      PLAFOND - 0.016,
+      z,
+      undefined,
+      99,
+    );
+  };
+  // Deux lignes dans la bande de jour, parallèles aux deux façades vitrées.
+  for (const x of [2.4, 4.4, 6.4, 8.4]) encastre(x, 9.6);
+  for (const x of [2.4, 4.4, 6.4, 8.4]) encastre(x, 0.0);
+  for (const z of [3.2, 5.4, 7.6]) encastre(9.7, z);
+  // Et une par pièce de la bande de service, dans l'axe.
+  encastre(-1.6, 8.6);
+  encastre(-1.6, 4.8);
+  encastre(-2.0, 0.8);
+
+  /*
    * Les rideaux, repliés sur les côtés.
    *
    * Repliés, et jamais tirés : une voilure en travers de la baie coûterait la
@@ -878,10 +927,46 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     pose(new THREE.CylinderGeometry(0.19, 0.21, 0.025, rond(12)), M.metal, x, SOL + 0.012, 2.86);
   }
 
+  /*
+   * L'évier et la plaque : ce qui fait qu'une cuisine est une cuisine.
+   *
+   * Il n'y en avait aucun des deux. Six mètres vingt de plan de travail, des
+   * portes, une hotte — et rien pour laver ni rien pour cuire. C'est le genre
+   * d'absence qu'on ne voit pas en modélisant, parce qu'on regarde ce qu'on a
+   * posé, et qu'on voit tout de suite en regardant une photographie de
+   * cuisine : l'œil y cherche l'évier avant le reste.
+   *
+   * L'évier est dans l'îlot, tourné vers la baie — on lave face à la lumière,
+   * c'est ce que dit déjà le chapô de la section. La plaque est sur le
+   * linéaire, sous la hotte, qui était jusqu'ici suspendue au-dessus de rien.
+   */
+  // La cuve, encastrée : un fond sombre et un rebord affleurant.
+  bloc(M.metal, 5.36, 6.34, SOL + 0.9, SOL + 0.945, 1.31, 1.99);
+  bloc(M.tronc, 5.4, 6.3, SOL + 0.78, SOL + 0.935, 1.35, 1.95);
+  // Le mitigeur : une colonne et un bec, derrière la cuve.
+  pose(new THREE.CylinderGeometry(0.022, 0.026, 0.3, rond(10)), M.metal, 5.85, SOL + 1.09, 1.16);
+  bloc(M.metal, 5.83, 5.87, SOL + 1.21, SOL + 1.25, 1.16, 1.46);
+  pose(new THREE.CylinderGeometry(0.012, 0.012, 0.05, rond(8)), M.metal, 5.85, SOL + 1.185, 1.45);
+
+  /* La plaque à induction : une dalle de verre noir affleurante et quatre
+     foyers sérigraphiés. Sous la hotte, au centimètre près — une hotte
+     décalée de sa plaque est une faute qu'on remarque sans la chercher. */
+  bloc(M.tronc, 5.86, 6.94, SOL + 0.94, SOL + 0.952, C.z0 + 0.06, C.z0 + 0.56);
+  for (const [dx, dz] of [
+    [-0.24, -0.11],
+    [0.24, -0.11],
+    [-0.24, 0.11],
+    [0.24, 0.11],
+  ] as const) {
+    const foyer = new THREE.TorusGeometry(0.085, 0.004, rond(4), rond(14));
+    foyer.rotateX(Math.PI / 2);
+    pose(foyer, M.metal, 6.4 + dx, SOL + 0.955, C.z0 + 0.31 + dz, undefined, 99);
+  }
+
   // Le plateau et deux bols, sur l'îlot.
-  bloc(M.bois, 6.9, 7.7, SOL + 0.94, SOL + 0.965, 1.35, 1.95);
+  bloc(M.bois, 6.9, 7.7, SOL + 0.94, SOL + 0.965, 2.02, 2.26);
   for (const x of [7.06, 7.44]) {
-    pose(new THREE.CylinderGeometry(0.09, 0.06, 0.07, rond(12)), M.marbre, x, SOL + 1.0, 1.65);
+    pose(new THREE.CylinderGeometry(0.09, 0.06, 0.07, rond(12)), M.marbre, x, SOL + 1.0, 2.14);
   }
   // Une planche et deux pots contre la crédence.
   bloc(M.bois, 3.4, 3.46, SOL + 0.94, SOL + 1.32, PIECES.cuisine.z0 + 0.1, PIECES.cuisine.z0 + 0.44);

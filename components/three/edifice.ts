@@ -28,7 +28,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { masseFeuillue, subdiviser } from '@/components/three/maillage';
+import { masseFeuillue, paveChanfreine, subdiviser } from '@/components/three/maillage';
 import { creerMatieres, type Matiere } from '@/components/three/matieres';
 import { poserAppartement, type Palette } from '@/components/three/appartement';
 import {
@@ -1781,6 +1781,60 @@ export function buildEdifice(
       haut / 2,
       z,
     );
+  }
+
+  /*
+   * Des voitures dans les rues.
+   *
+   * C'est le meilleur rapport entre ce que ça coûte et ce que ça donne de tout
+   * le dehors, et il tient en un mot : **l'échelle**. Une ville d'immeubles
+   * nus peut faire six mètres ou soixante — rien dans le cadre ne le dit. Les
+   * arbres aident déjà ; les voitures tranchent, parce que tout le monde
+   * connaît la taille d'une voiture au centimètre près. Le dernier écran
+   * recule à quatre-vingt-quinze mètres du bâtiment : à cette distance, une
+   * voiture fait une trentaine de pixels, et c'est exactement ce qu'il faut —
+   * assez pour être reconnue, trop peu pour qu'on lui demande des détails.
+   *
+   * Cinq volumes chacune : la caisse, l'habitacle en retrait, quatre roues.
+   * Pas de phares, pas de vitres, pas de calandre — à trente pixels, ce serait
+   * du bruit. Ce qui se lit à cette taille, c'est la silhouette : un corps bas
+   * et long, une cabine plus étroite posée en arrière, et l'ombre portée qui
+   * la colle à la chaussée.
+   */
+  const carrosserie = [mat(0x2f3338, 0.42, { metalness: 0.6 }), mat(0xb9bcc0, 0.4, { metalness: 0.55 }), mat(0x5c6470, 0.44, { metalness: 0.6 }), mat(0x8a3f36, 0.45, { metalness: 0.5 })];
+  const pneu = mat(0x1d1f21, 0.94);
+  for (let i = 0; i < (leger ? 8 : 18); i += 1) {
+    /* Le long d'une rue, garée contre le trottoir : la position transversale
+       est celle du bord de chaussée, pas le milieu. Une file de voitures au
+       milieu d'une rue vide se lit comme un embouteillage figé. */
+    const long = tirage() < 0.5;
+    const rue = (Math.floor(tirage() * 3) - 1) * (ILOT + RUE) + (ILOT + RUE) / 2;
+    const cote = tirage() < 0.5 ? -1 : 1;
+    const bord = rue + cote * (RUE / 2 - 2.1);
+    const t = (tirage() - 0.5) * 230;
+    const x = long ? bord : t;
+    const z = long ? t : bord;
+    if (Math.hypot(x, z) < 44) continue;
+
+    const teinte = carrosserie[Math.floor(tirage() * carrosserie.length)];
+    const tourner = (g: THREE.BufferGeometry) => {
+      if (!long) g.rotateY(Math.PI / 2);
+      return g;
+    };
+    // La caisse, l'habitacle en retrait, et quatre roues.
+    pose(tourner(paveChanfreine(1.86, 0.72, 4.36, 0.06)), teinte, x, 0.72, z, undefined, 99);
+    pose(tourner(paveChanfreine(1.66, 0.56, 2.24, 0.06)), teinte, x, 1.34, z + (long ? -0.28 : 0), undefined, 99);
+    for (const [dl, dt] of [
+      [1.42, 0.86],
+      [1.42, -0.86],
+      [-1.42, 0.86],
+      [-1.42, -0.86],
+    ] as const) {
+      const roue = new THREE.CylinderGeometry(0.33, 0.33, 0.2, leger ? 6 : 10);
+      roue.rotateZ(Math.PI / 2);
+      if (!long) roue.rotateY(Math.PI / 2);
+      pose(roue, pneu, x + (long ? dt : dl), 0.33, z + (long ? dl : dt), undefined, 99);
+    }
   }
 
   /* Les arbres d'alignement, le long des rues les plus proches. Ils donnent au
