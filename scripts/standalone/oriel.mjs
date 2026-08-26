@@ -134,16 +134,16 @@ const corps = `<div id="racine"></div>
 
 const html =
   FORME === 'fragment'
-    ? `<title>ORIEL Riverside</title>
+    ? `<title>ORIEL Rive Gauche</title>
 <style>${fontes}${style}</style>
 ${corps}`
     : `<!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ORIEL — Architecture that defines the future</title>
-<meta name="description" content="A twelve-storey residence of concrete and glass, modelled and rendered live in the browser by Volume3D.">
+<title>ORIEL — une résidence qui se mesure</title>
+<meta name="description" content="Un appartement d’angle de 170 m² au cinquième étage, modélisé et rendu en direct dans le navigateur par Volume3D.">
 <meta name="robots" content="noindex">
 <style>${fontes}${style}</style>
 </head>
