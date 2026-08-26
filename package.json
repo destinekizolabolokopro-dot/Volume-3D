@@ -19,7 +19,8 @@
     "residence": "node scripts/residence.mjs",
     "oriel": "node scripts/standalone/oriel.mjs",
     "sonde": "node scripts/sonde.mjs",
-    "resistance": "node scripts/resistance.mjs"
+    "resistance": "node scripts/resistance.mjs",
+    "autonome": "node scripts/autonome.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

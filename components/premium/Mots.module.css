@@ -24,9 +24,10 @@
 
 .mot {
   display: inline-block;
-  /* Chaque mot est suivi d'une espace insécable de composition : sans elle,
-     des `inline-block` collés perdent l'espace entre les mots. */
-  margin-right: 0.26em;
+  /* Pas de marge de séparation : l'espace entre les mots est une vraie espace,
+     posée dans le balisage. La marge donnait la même image et un texte dont
+     les mots étaient collés dès qu'on le copiait ou qu'on le lisait à voix
+     haute — voir `Mots.tsx`. */
   transform: translate3d(0, 108%, 0);
   opacity: 0;
   transition:

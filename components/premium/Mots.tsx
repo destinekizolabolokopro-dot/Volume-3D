@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import styles from './Mots.module.css';
 
 /**
@@ -23,8 +23,11 @@ import styles from './Mots.module.css';
  *    deux fenêtres. D'où un tableau de lignes en entrée, et un repli sans
  *    masque quand la ligne déborde malgré tout ;
  *  · **le texte reste du texte.** Les mots sont des `span` dans un flux
- *    normal, séparés par de vraies espaces : la phrase se sélectionne, se
- *    cherche, se traduit et se lit à voix haute comme n'importe quelle autre.
+ *    normal, séparés par de vraies espaces — de vrais nœuds de texte, pas des
+ *    marges : la phrase se sélectionne, se cherche, se traduit et se lit à
+ *    voix haute comme n'importe quelle autre. Ce point-ci a été faux pendant
+ *    plusieurs versions, sans que rien ne le montre à l'écran ; c'est un test
+ *    du fichier autonome, qui relevait `innerText`, qui l'a découvert.
  */
 export function Mots({
   lignes,
@@ -73,13 +76,24 @@ export function Mots({
             const n = rang;
             rang += 1;
             return (
-              <span
-                className={styles.mot}
-                key={j}
-                style={{ '--rang': n, '--delai': `${delai}ms` } as React.CSSProperties}
-              >
-                {mot}
-              </span>
+              <Fragment key={j}>
+                {/* Une vraie espace, et non une marge.
+                    Elle était une marge, et le commentaire d'à côté affirmait
+                    le contraire — « séparés par de vraies espaces ». Le rendu
+                    était juste et le texte était faux : `innerText` donnait
+                    « Centsoixante-dixmètrescarrés », c'est-à-dire ce que
+                    copie un visiteur, ce que lit un lecteur d'écran, ce
+                    qu'indexe un moteur et ce que reçoit un traducteur. Un
+                    titre dont la mise en forme tient à des marges n'est plus
+                    une phrase. */}
+                {j > 0 ? ' ' : null}
+                <span
+                  className={styles.mot}
+                  style={{ '--rang': n, '--delai': `${delai}ms` } as React.CSSProperties}
+                >
+                  {mot}
+                </span>
+              </Fragment>
             );
           })}
         </span>
