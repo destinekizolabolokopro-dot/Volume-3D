@@ -94,6 +94,10 @@ await page.addInitScript(() => {
 
 await page.goto(BASE + ROUTE, { waitUntil: 'networkidle' });
 await page.waitForSelector('canvas', { timeout: 30000 });
+/* La file de construction est vidée avant de mesurer : un budget par image
+   relevé pendant que les matières se calculent mesure le calcul, pas le rendu. */
+await page.evaluate(() => (window.oriel)?.finir?.());
+
 // De quoi laisser la scène se construire et le premier rendu passer.
 await page.waitForTimeout(5000);
 

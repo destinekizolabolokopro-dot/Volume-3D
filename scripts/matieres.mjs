@@ -42,6 +42,9 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
 await page.goto(BASE + ROUTE, { waitUntil: 'networkidle', timeout: 120000 });
 await page.waitForSelector('.rz-fond canvas', { timeout: 60000 });
+/* La planche contact ne vaut que sur des cartes finies : depuis que la
+   construction est étalée sur les images, elles arrivent en deux secondes. */
+await page.evaluate(() => window.oriel?.finir?.());
 await page.waitForTimeout(Number(process.env.POSE || 12000));
 
 const resultat = await page.evaluate(() => {

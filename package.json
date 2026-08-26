@@ -21,7 +21,8 @@
     "sonde": "node scripts/sonde.mjs",
     "resistance": "node scripts/resistance.mjs",
     "autonome": "node scripts/autonome.mjs",
-    "matieres": "node scripts/matieres.mjs"
+    "matieres": "node scripts/matieres.mjs",
+    "demarrage": "node scripts/demarrage.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

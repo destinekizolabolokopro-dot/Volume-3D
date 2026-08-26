@@ -9,8 +9,9 @@
  * taches. L'œil ne sait pas nommer ces choses, mais il sait immédiatement
  * qu'elles manquent — et il appelle cela « de la synthèse ».
  *
- * Rien n'est chargé depuis le réseau. Tout est calculé dans un canevas au
- * démarrage, pour trois raisons :
+ * Rien n'est chargé depuis le réseau. Tout est calculé dans un canevas, étalé
+ * sur les premières images de la page — voir `Chantier` plus bas pour le
+ * pourquoi de l'étalement. Trois raisons à ce calcul :
  *
  *  - **Le poids.** Huit matières en trois cartes chacune feraient plusieurs
  *    mégaoctets de fichiers. Ici, c'est un fichier de code.
@@ -141,21 +142,102 @@ const crete = (n: number) => 1 - Math.abs(2 * n - 1);
 
 /* =============================================================== cartes === */
 
-function texture(taille: number, remplir: (data: Uint8ClampedArray) => void): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = taille;
-  canvas.height = taille;
-  const ctx = canvas.getContext('2d')!;
-  const image = ctx.createImageData(taille, taille);
-  remplir(image.data);
-  ctx.putImageData(image, 0, 0);
-  const carte = new THREE.CanvasTexture(canvas);
-  carte.wrapS = THREE.RepeatWrapping;
-  carte.wrapT = THREE.RepeatWrapping;
-  /* Les coordonnées viennent d'une projection du monde et peuvent valoir des
-     dizaines : sans anisotropie, un sol vu en fuite se réduit à un moiré. */
-  carte.anisotropy = 4;
-  return carte;
+/**
+ * Une carte vivante : le canevas existe tout de suite, son contenu arrive plus tard.
+ *
+ * `moyenne` est la valeur que la carte aurait **en moyenne** une fois
+ * calculée. Le canevas en est rempli d'emblée, si bien que la scène est juste
+ * dès la première image — simplement uniforme — et se détaille ensuite sans
+ * qu'aucune couleur ne bouge. Un blanc franc aurait éclairci toutes les
+ * surfaces le temps du calcul, puis les aurait vues s'assombrir d'un coup :
+ * un défaut visible, là où celui-ci ne l'est pas.
+ */
+class Carte {
+  readonly texture: THREE.CanvasTexture;
+  private readonly ctx: CanvasRenderingContext2D;
+  private readonly image: ImageData;
+  readonly data: Uint8ClampedArray;
+
+  constructor(taille: number, moyenne: [number, number, number]) {
+    const canvas = document.createElement('canvas');
+    canvas.width = taille;
+    canvas.height = taille;
+    this.ctx = canvas.getContext('2d')!;
+    this.image = this.ctx.createImageData(taille, taille);
+    this.data = this.image.data;
+    for (let i = 0; i < this.data.length; i += 4) {
+      this.data[i] = moyenne[0];
+      this.data[i + 1] = moyenne[1];
+      this.data[i + 2] = moyenne[2];
+      this.data[i + 3] = 255;
+    }
+    this.ctx.putImageData(this.image, 0, 0);
+    this.texture = new THREE.CanvasTexture(canvas);
+    this.texture.wrapS = THREE.RepeatWrapping;
+    this.texture.wrapT = THREE.RepeatWrapping;
+    /* Les coordonnées viennent d'une projection du monde et peuvent valoir des
+       dizaines : sans anisotropie, un sol vu en fuite se réduit à un moiré. */
+    this.texture.anisotropy = 4;
+  }
+
+  /** Publie ce qui a été écrit depuis le dernier appel. */
+  publier() {
+    this.ctx.putImageData(this.image, 0, 0);
+    this.texture.needsUpdate = true;
+  }
+}
+
+/* ============================================================= chantier === */
+
+/**
+ * La file des travaux, et pourquoi elle existe.
+ *
+ * Les huit familles en trois cartes coûtaient **onze cent soixante-huit
+ * millisecondes** en un seul bloc, mesurées par `npm run demarrage`. Pendant ce
+ * temps le fil principal ne rend pas la main : la page ne défile pas, le
+ * curseur ne répond pas, l'écran d'ouverture ne s'anime pas. C'est très
+ * exactement ce que le visiteur appelle « ça bugue », et aucune optimisation du
+ * calcul lui-même n'y changeait rien — un travail de plus d'une seconde fige
+ * une page, qu'il soit efficace ou non.
+ *
+ * Le travail est donc découpé en tranches de quelques lignes, rangées dans une
+ * file, et la boucle de rendu en consomme **ce qu'un budget par image lui
+ * permet**. Le total ne baisse pas ; il cesse d'être un blocage.
+ */
+type Tache = () => void;
+
+class Chantier {
+  private file: Tache[] = [];
+  private tete = 0;
+
+  tache(t: Tache) {
+    this.file.push(t);
+  }
+
+  /** Découpe une passe par pixel en bandes de lignes. */
+  bandes(taille: number, lignesParTache: number, passe: (y0: number, y1: number) => void) {
+    for (let y = 0; y < taille; y += lignesParTache) {
+      const debut = y;
+      const fin = Math.min(taille, y + lignesParTache);
+      this.file.push(() => passe(debut, fin));
+    }
+  }
+
+  get fini() {
+    return this.tete >= this.file.length;
+  }
+
+  /** Consomme la file tant que le budget tient. Rend `true` quand tout est fait. */
+  avancer(budget: number): boolean {
+    const limite = performance.now() + budget;
+    while (this.tete < this.file.length) {
+      this.file[this.tete]();
+      this.tete += 1;
+      if (performance.now() >= limite) break;
+    }
+    if (this.fini) this.file = [];
+    return this.fini;
+  }
 }
 
 export interface Matiere {
@@ -185,39 +267,51 @@ export interface Matiere {
  */
 function famille(
   taille: number,
-  champ: Float32Array,
+  source: Champ,
   teinte: number,
   mat: number,
   relief: number,
   tuile: number,
+  chantier: Chantier,
 ): Matiere {
-  const map = texture(taille, (data) => {
-    for (let i = 0; i < champ.length; i += 1) {
+  /* Le champ d'abord, puis les trois cartes qui le lisent. L'ordre est celui
+     de la file, donc celui de l'exécution : aucune carte ne lit du vide. */
+  for (const tranche of source.tranches) chantier.tache(tranche);
+  const champ = source.data;
+  /* Seize lignes par tranche : à cinq cent douze de côté cela fait trente-deux
+     tranches par passe, de l'ordre de deux millisecondes chacune. Assez court
+     pour qu'une tranche ne se voie jamais, assez long pour que l'appel de
+     fonction ne pèse rien devant. */
+  const TRANCHE = 16;
+
+  const map = new Carte(taille, [255 * (1 - teinte / 2), 255 * (1 - teinte / 2), 255 * (1 - teinte / 2)]);
+  chantier.bandes(taille, TRANCHE, (y0, y1) => {
+    for (let i = y0 * taille; i < y1 * taille; i += 1) {
       const k = 255 * (1 - teinte + teinte * champ[i]);
-      data[i * 4] = k;
-      data[i * 4 + 1] = k;
-      data[i * 4 + 2] = k;
-      data[i * 4 + 3] = 255;
+      map.data[i * 4] = k;
+      map.data[i * 4 + 1] = k;
+      map.data[i * 4 + 2] = k;
     }
   });
+  chantier.tache(() => map.publier());
 
-  const roughnessMap = texture(taille, (data) => {
-    for (let i = 0; i < champ.length; i += 1) {
+  const roughnessMap = new Carte(taille, [255, 255 * (1 - mat / 2), 255]);
+  chantier.bandes(taille, TRANCHE, (y0, y1) => {
+    for (let i = y0 * taille; i < y1 * taille; i += 1) {
       /* Le creux est **plus mat** que la crête : c'est là que la poussière se
          dépose et que le vernis s'use le moins. L'inverse donne des surfaces
          qui brillent dans leurs rayures, ce qui se lit comme du plastique. */
-      const g = 255 * (1 - mat + mat * champ[i]);
-      data[i * 4] = 255;
-      data[i * 4 + 1] = g;
-      data[i * 4 + 2] = 255;
-      data[i * 4 + 3] = 255;
+      roughnessMap.data[i * 4 + 1] = 255 * (1 - mat + mat * champ[i]);
     }
   });
+  chantier.tache(() => roughnessMap.publier());
 
-  const normalMap = texture(taille, (data) => {
+  /* Une carte de relief neutre est le bleu franc : normale droite. */
+  const normalMap = new Carte(taille, [127.5, 127.5, 255]);
+  chantier.bandes(taille, TRANCHE, (y0, y1) => {
     const g = (px: number, py: number) =>
       champ[(((py % taille) + taille) % taille) * taille + (((px % taille) + taille) % taille)];
-    for (let y = 0; y < taille; y += 1) {
+    for (let y = y0; y < y1; y += 1) {
       for (let x = 0; x < taille; x += 1) {
         /* Différences centrées, en bouclant sur les bords : une carte de relief
            dont les bords ne bouclent pas dessine une grille de rainures à
@@ -226,37 +320,59 @@ function famille(
         const dy = (g(x, y + 1) - g(x, y - 1)) * relief;
         const norme = Math.sqrt(dx * dx + dy * dy + 1);
         const i = y * taille + x;
-        data[i * 4] = ((-dx / norme) * 0.5 + 0.5) * 255;
-        data[i * 4 + 1] = ((-dy / norme) * 0.5 + 0.5) * 255;
-        data[i * 4 + 2] = (1 / norme) * 0.5 * 255 + 127.5;
-        data[i * 4 + 3] = 255;
+        normalMap.data[i * 4] = ((-dx / norme) * 0.5 + 0.5) * 255;
+        normalMap.data[i * 4 + 1] = ((-dy / norme) * 0.5 + 0.5) * 255;
+        normalMap.data[i * 4 + 2] = (1 / norme) * 0.5 * 255 + 127.5;
       }
     }
   });
+  chantier.tache(() => normalMap.publier());
 
   return {
-    map,
-    roughnessMap,
-    normalMap,
+    map: map.texture,
+    roughnessMap: roughnessMap.texture,
+    normalMap: normalMap.texture,
     tuile,
     teinte,
     dispose() {
-      map.dispose();
-      roughnessMap.dispose();
-      normalMap.dispose();
+      map.texture.dispose();
+      roughnessMap.texture.dispose();
+      normalMap.texture.dispose();
     },
   };
 }
 
-/** Remplit un champ pixel par pixel, en coordonnées de texture (0 à 1). */
-function champ(taille: number, f: (u: number, v: number) => number): Float32Array {
-  const sortie = new Float32Array(taille * taille);
-  for (let y = 0; y < taille; y += 1) {
-    for (let x = 0; x < taille; x += 1) {
-      sortie[y * taille + x] = Math.max(0, Math.min(1, f(x / taille, y / taille)));
-    }
+/**
+ * Un champ de hauteur, réservé mais pas encore calculé.
+ *
+ * Le tableau existe tout de suite, vide ; son calcul est découpé en tranches
+ * que `famille` enfilera **juste avant** ses propres passes. C'est ce qui
+ * donne l'ordre : chaque matière est finie avant que la suivante ne commence,
+ * au lieu que les huit champs se calculent d'abord et que les vingt-quatre
+ * cartes n'arrivent qu'ensuite. Quelqu'un qui fait défiler tout de suite voit
+ * alors le parquet prendre son grain, puis le lin, puis l'enduit — et non huit
+ * surfaces uniformes pendant deux secondes suivies de tout d'un coup.
+ */
+interface Champ {
+  data: Float32Array;
+  tranches: (() => void)[];
+}
+
+function champ(taille: number, f: (u: number, v: number) => number): Champ {
+  const data = new Float32Array(taille * taille);
+  const tranches: (() => void)[] = [];
+  for (let y = 0; y < taille; y += 16) {
+    const debut = y;
+    const fin = Math.min(taille, y + 16);
+    tranches.push(() => {
+      for (let ligne = debut; ligne < fin; ligne += 1) {
+        for (let x = 0; x < taille; x += 1) {
+          data[ligne * taille + x] = Math.max(0, Math.min(1, f(x / taille, ligne / taille)));
+        }
+      }
+    });
   }
-  return sortie;
+  return { data, tranches };
 }
 
 /* ============================================================ familles === */
@@ -270,6 +386,16 @@ export interface Matieres {
   pierre: Matiere;
   marbre: Matiere;
   metal: Matiere;
+  /**
+   * Fabrique les cartes, `budget` millisecondes à la fois.
+   *
+   * À appeler une fois par image tant qu'elle rend `false`. Les cartes sont
+   * déjà branchées sur les matériaux avant le premier appel — elles y sont
+   * simplement uniformes, à la bonne moyenne — donc rien n'attend rien.
+   */
+  avancer(budget: number): boolean;
+  /** Vrai quand la file est vide. */
+  readonly pret: boolean;
   dispose(): void;
 }
 
@@ -302,6 +428,7 @@ export function creerMatieres(leger: boolean): Matieres {
   /* Deux cent cinquante-six pixels sur les petites machines, cinq cent douze
      ailleurs. Le coût est au démarrage et il est mesurable. */
   const T = leger ? 256 : 512;
+  const chantier = new Chantier();
 
   /* ---------------------------------------------------------- parquet --- */
   /*
@@ -408,10 +535,7 @@ export function creerMatieres(leger: boolean): Matieres {
      fin. Rien de spectaculaire — c'est une pierre, pas un marbre. */
   const litage = fractal(3, 14, 3, 606);
   const piquetage = fractal(70, 70, 1, 808);
-  const pierre = champ(
-    T,
-    (u, v) => 0.32 + 0.42 * litage(u, v) + 0.26 * piquetage(u, v),
-  );
+  const pierre = champ(T, (u, v) => 0.32 + 0.42 * litage(u, v) + 0.26 * piquetage(u, v));
 
   /* ----------------------------------------------------------- marbre --- */
   /*
@@ -463,20 +587,24 @@ export function creerMatieres(leger: boolean): Matieres {
      * qu'on distingue à peine sur un échantillon de vingt centimètres est
      * exactement ce qu'il faut sur un plateau de trois mètres.
      */
-    parquet: famille(T, parquet, 0.2, 0.3, 3.2, 0.5),
-    bois: famille(T, bois, 0.14, 0.24, 1.0, 0.8),
+    parquet: famille(T, parquet, 0.2, 0.3, 3.2, 0.5, chantier),
+    bois: famille(T, bois, 0.14, 0.24, 1.0, 0.8, chantier),
     /* Le lin : peu de teinte, beaucoup de relief. Un tissu ne change pas de
        couleur, il change d'orientation — c'est ce qui lui donne son velouté. */
-    lin: famille(T, lin, 0.1, 0.16, 2.4, 5),
-    enduit: famille(T, enduit, 0.05, 0.1, 1.2, 0.32),
-    beton: famille(T, beton, 0.11, 0.2, 1.6, 0.22),
-    pierre: famille(T, pierre, 0.11, 0.18, 1.4, 0.4),
-    marbre: famille(T, marbre, 0.16, 0.1, 0.4, 0.3),
-    metal: famille(T, metal, 0.06, 0.34, 0.8, 1.6),
+    lin: famille(T, lin, 0.1, 0.16, 2.4, 5, chantier),
+    enduit: famille(T, enduit, 0.05, 0.1, 1.2, 0.32, chantier),
+    beton: famille(T, beton, 0.11, 0.2, 1.6, 0.22, chantier),
+    pierre: famille(T, pierre, 0.11, 0.18, 1.4, 0.4, chantier),
+    marbre: famille(T, marbre, 0.16, 0.1, 0.4, 0.3, chantier),
+    metal: famille(T, metal, 0.06, 0.34, 0.8, 1.6, chantier),
   };
 
   return {
     ...familles,
+    avancer: (budget: number) => chantier.avancer(budget),
+    get pret() {
+      return chantier.fini;
+    },
     dispose() {
       for (const m of Object.values(familles)) m.dispose();
     },

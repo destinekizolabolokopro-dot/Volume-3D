@@ -59,6 +59,17 @@ page.on('console', (m) => {
 
 await page.goto(BASE + ROUTE, { waitUntil: 'networkidle', timeout: 120000 });
 await page.waitForSelector('.rz-fond canvas', { timeout: 60000 });
+/*
+ * La scène finit sa construction d'un coup.
+ *
+ * Depuis que les matières et les sondes sont étalées sur les images pour ne
+ * plus figer la page, une capture prise « quand le canevas est là » photographie
+ * une scène encore uniforme — et sous rendu logiciel, où une image coûte des
+ * secondes, la file ne se viderait jamais. `finir()` la vide en une fois.
+ */
+await page.evaluate(() => (window.oriel)?.finir?.());
+await page.waitForSelector('.rz-fond [data-pret="1"]', { timeout: 60000 }).catch(() => {});
+
 /* Le premier rendu est lancé par le défilement ou au bout d'une seconde et
    demie ; sous rendu logiciel il faut compter large. */
 await page.waitForTimeout(Number(process.env.POSE || 14000));

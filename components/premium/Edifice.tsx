@@ -195,6 +195,10 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
   const holderRef = useRef<HTMLDivElement>(null);
   const [etat, setEtat] = useState<'attente' | 'vivant' | 'sansGL'>('attente');
   const [net, setNet] = useState(false);
+  /* « La construction est finie » : les matières ont leur grain, les sondes
+     sont posées. Sert aux scripts de capture, qui doivent photographier une
+     scène achevée et non une scène en train de se détailler. */
+  const [pret, setPret] = useState(false);
   /*
    * Le compteur de reconstruction.
    *
@@ -344,7 +348,22 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
          sur une machine trop lente — donc jamais ici. */
       forcerPalier(palier: number) {
         quality.forcer(palier);
-        dirty = true;
+        urgent = true;
+      },
+      /*
+       * Vide la file de construction d'un coup, pour les prises de vue.
+       *
+       * Une capture doit photographier la scène **finie**. Étalée sur les
+       * images, la file met deux secondes à se vider sur une machine normale
+       * et plusieurs minutes sous rendu logiciel — un script de capture y
+       * photographierait des surfaces encore uniformes et croirait à une
+       * régression des matières. Il appelle donc ceci, une fois, et attend.
+       */
+      finir() {
+        while (!edifice.avancer(Infinity));
+        acheve = true;
+        setPret(true);
+        urgent = true;
       },
       sonder(x: number, y: number) {
         rayon.setFromCamera(new THREE.Vector2(x, y), camera);
@@ -361,7 +380,17 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       },
     };
 
-    let dirty = true;
+    /**
+     * « Redessine à la prochaine image, sans attendre la cadence de repos. »
+     *
+     * Quatre choses le demandent : un changement de taille, un changement de
+     * palier, la sortie et l'entrée dans le champ de vision, et le diagnostic
+     * qui force un palier. Toutes changent l'image alors que rien ne défile —
+     * et laisser un redimensionnement attendre trente-trois millisecondes
+     * derrière la cadence de repos donnerait une image étirée le temps d'un
+     * battement de paupières.
+     */
+    let urgent = true;
     const resize = () => {
       const { clientWidth, clientHeight } = holder;
       if (!clientWidth || !clientHeight) return;
@@ -370,7 +399,7 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       bokeh?.setSize(pixels.x, pixels.y);
       camera.aspect = clientWidth / clientHeight;
       camera.updateProjectionMatrix();
-      dirty = true;
+      urgent = true;
     };
     resize();
     const observer = new ResizeObserver(resize);
@@ -391,7 +420,7 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
     const watcher = new IntersectionObserver(
       ([entry]) => {
         onScreen = entry.isIntersecting;
-        dirty = true;
+        urgent = true;
       },
       { rootMargin: '160px' },
     );
@@ -445,7 +474,7 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
           if (!materiau) return;
           for (const m of Array.isArray(materiau) ? materiau : [materiau]) m.needsUpdate = true;
         });
-        dirty = true;
+        urgent = true;
       },
     );
 
@@ -528,6 +557,24 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       }
     };
 
+    /*
+     * La fin de la construction, étalée.
+     *
+     * `edifice.avancer` rend `true` quand il ne reste rien. Tant qu'il rend
+     * `false`, la scène est complète mais pas encore détaillée : les matières
+     * y sont uniformes, à leur bonne moyenne, et les reflets locaux manquent.
+     * Rien n'attend, rien n'est faux — c'est simplement moins fin pendant
+     * deux secondes. Voir `matieres.ts` pour ce que cette file remplace : un
+     * blocage unique de trois secondes et demie, mesuré par
+     * `npm run demarrage`, pendant lequel la page ne répondait à rien.
+     */
+    let acheve = false;
+    setPret(false);
+    /** Intervalle minimal entre deux images quand rien ne défile. */
+    const REPOS = 1000 / 30;
+    let dernier = -1e9;
+    let saute = false;
+
     const draw = (now: number) => {
       if (!vivant) return;
       frame = requestAnimationFrame(draw);
@@ -535,17 +582,58 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
         precedent = now;
         return;
       }
-      quality.tick(now);
+      /*
+       * La cadence de repos, et pourquoi elle manquait.
+       *
+       * Quelqu'un qui lit un paragraphe ne fait rien défiler. La caméra est
+       * alors immobile sur sa cible et seule l'orbite lente subsiste : un
+       * degré et demi de part et d'autre, sur quarante secondes — quatre
+       * millièmes de degré par image à soixante hertz, au plus vite de son
+       * balancement. Pour cela, la page redessinait **la scène entière et
+       * ses huit passes de post-traitement soixante fois par seconde**, en
+       * continu, tant que l'onglet restait ouvert. Sur une machine confortable
+       * cela ne se voit pas ; sur un portable à carte intégrée, c'est un
+       * ventilateur qui monte et une page qui répond mal — et le visiteur ne
+       * dit pas « la scène 3D consomme », il dit « ça bugue ».
+       *
+       * Au repos, donc, trente images par seconde. L'orbite y avance de huit
+       * millièmes de degré par image au lieu de quatre : personne ne peut voir
+       * la différence, et la charge est divisée par deux. Dès que le
+       * défilement reprend, la pleine cadence revient — c'est là, et là
+       * seulement, que l'œil compte les images.
+       */
+      const vise = progres();
+      const bouge = Math.abs(vise - curseur) >= 0.00002;
+      if (!bouge && acheve && !urgent && now - dernier < REPOS) {
+        precedent = now;
+        saute = true;
+        return;
+      }
+      urgent = false;
+
+      /* Cinq millisecondes une fois la visite lancée : le défilement passe
+         avant le grain du parquet. */
+      if (!acheve && (acheve = edifice.avancer(5))) setPret(true);
+
+      /*
+       * La mesure ne compte que les images enchaînées.
+       *
+       * Le palier se règle sur l'intervalle entre deux images. Après une image
+       * sautée pour cause de repos, cet intervalle mesure l'attente qu'on a
+       * décidée, pas ce que la machine sait faire — le prendre en compte
+       * ferait descendre la qualité d'une machine rapide qui ne fait que se
+       * reposer. On saute donc la première mesure qui suit une pause.
+       */
+      if (saute) saute = false;
+      else quality.tick(now);
+
       const ecoule = Math.min(0.25, (now - precedent) / 1000);
       precedent = now;
+      dernier = now;
 
-      const vise = progres();
       const tire = 1 - Math.pow(0.0022, ecoule);
-      if (Math.abs(vise - curseur) < 0.00002) curseur = vise;
-      else {
-        curseur += (vise - curseur) * tire;
-        dirty = true;
-      }
+      if (!bouge) curseur = vise;
+      else curseur += (vise - curseur) * tire;
 
       /*
        * L'orbite lente, par-dessus le défilement.
@@ -557,10 +645,6 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
        * personne qui lit un paragraphe se met à suivre le bâtiment des yeux.
        */
       const derive = Math.sin((now - depuis) / 6400) * 1.5;
-      dirty = true;
-
-      if (!dirty) return;
-      dirty = false;
       rendre(curseur, derive);
     };
 
@@ -606,7 +690,35 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
 
     const leve = window.setTimeout(() => setNet(true), 60);
 
+    /*
+     * La mise au point sert à quelque chose.
+     *
+     * Pendant la seconde et demie où le flou se lève, la boucle ne tourne pas
+     * encore — et c'est justement le moment de finir la construction. On
+     * avance donc la file par tranches de huit millisecondes, **sans
+     * redessiner** : redessiner sous un flou CSS plein écran est exactement ce
+     * que le commentaire ci-dessus interdit, et de toute façon personne ne
+     * verrait la différence à travers dix-huit pixels de flou. Une seule image
+     * est retracée, à la fin, avec tout en place.
+     */
     let lancee = false;
+    let chantier = 0;
+    const pousser = () => {
+      if (!vivant || lancee) {
+        chantier = 0;
+        return;
+      }
+      if (edifice.avancer(10)) {
+        acheve = true;
+        setPret(true);
+        chantier = 0;
+        rendre(curseur, 0);
+        return;
+      }
+      chantier = requestAnimationFrame(pousser);
+    };
+    chantier = requestAnimationFrame(pousser);
+
     const demarrer = () => {
       if (lancee) return;
       lancee = true;
@@ -623,6 +735,7 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
 
     return () => {
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(chantier);
       vivant = false;
       renderer.domElement.removeEventListener('webglcontextlost', perdu);
       renderer.domElement.removeEventListener('webglcontextrestored', repris);
@@ -647,6 +760,7 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       className={styles.scene}
       data-etat={etat}
       data-net={net || !reveal ? '1' : undefined}
+      data-pret={pret ? '1' : undefined}
       ref={holderRef}
       aria-hidden={etat === 'sansGL' ? 'true' : undefined}
     />

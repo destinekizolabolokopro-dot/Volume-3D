@@ -46,6 +46,17 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
 await page.goto(BASE + ROUTE, { waitUntil: 'networkidle', timeout: 120000 });
 await page.waitForSelector('.rz-fond canvas', { timeout: 60000 });
+/*
+ * La scène finit sa construction d'un coup.
+ *
+ * Depuis que les matières et les sondes sont étalées sur les images pour ne
+ * plus figer la page, une capture prise « quand le canevas est là » photographie
+ * une scène encore uniforme — et sous rendu logiciel, où une image coûte des
+ * secondes, la file ne se viderait jamais. `finir()` la vide en une fois.
+ */
+await page.evaluate(() => (window.oriel)?.finir?.());
+await page.waitForSelector('.rz-fond [data-pret="1"]', { timeout: 60000 }).catch(() => {});
+
 await page.evaluate(
   ([sel, ecran]) => {
     const n = document.querySelector(sel);

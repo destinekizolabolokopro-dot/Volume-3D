@@ -364,6 +364,15 @@ export interface Edifice {
   scene: THREE.Scene;
   /** Hauteur totale hors tout, en mètres. Sert à cadrer la caméra. */
   hauteur: number;
+  /**
+   * Termine la construction, `budget` millisecondes à la fois.
+   *
+   * À appeler une fois par image tant qu'elle rend `false`. La scène est
+   * complète et juste avant le premier appel : ce qui reste en file l'affine —
+   * le grain des matières, les reflets locaux — et rien n'attend qu'il soit
+   * fait. Voir `matieres.ts` pour le pourquoi du découpage.
+   */
+  avancer(budget: number): boolean;
   dispose(): void;
 }
 
@@ -595,6 +604,8 @@ export function buildEdifice(
   const leger = options.leger === true;
   const avecHall = options.hall === true;
   const bin: Bin[] = [];
+  /** Ce qui se fait après la première image, une entrée par appel à `avancer`. */
+  const apres: (() => void)[] = [];
   const scene = new THREE.Scene();
 
   /*
@@ -629,6 +640,7 @@ export function buildEdifice(
    * pourquoi de chaque réglage.
    */
   const matieres = creerMatieres(leger);
+  let matieresPretes = false;
   bin.push(matieres);
 
   /*
@@ -2150,69 +2162,107 @@ export function buildEdifice(
    * l'écart n'est pas lisible ; le jour où il le deviendrait, il faudra lui
    * donner son propre matériau.
    */
+  /*
+   * Les sondes sont **différées**, et c'est une mesure qui l'a décidé.
+   *
+   * `npm run demarrage` a chiffré la première prise à mille soixante-quatre
+   * millisecondes, contre quarante-quatre pour la seconde — même résolution,
+   * même scène, même nombre de faces. L'écart n'est pas le rendu : c'est la
+   * compilation des programmes de tous les matériaux, que la première prise
+   * déclenche parce qu'elle est le premier tracé de la scène. Elle avait lieu
+   * **avant** la première image, donc devant une page vide.
+   *
+   * Rangée dans la file, elle a lieu après. La première image paye la
+   * compilation — elle la payait de toute façon, il faut bien tracer — mais
+   * elle arrive tout de suite, et l'écran d'ouverture s'anime pendant que le
+   * reste se met en place. Le total ne bouge pas ; ce que le visiteur voit,
+   * si.
+   */
   if (renderer) {
-    /*
-     * Deux sondes, et non une, parce qu'une sonde ne vaut qu'autour d'elle.
-     *
-     * La première version en posait une seule, au milieu du séjour. Le miroir
-     * de la salle de bains y a gagné un reflet — celui du **séjour**, avec sa
-     * baie et sa ville. C'est mieux qu'un ciel, et c'est faux autrement : un
-     * miroir qui montre une fenêtre inexistante dans la pièce où il est
-     * accroché est un mensonge qu'un visiteur repère sans savoir le nommer.
-     *
-     * La bande de service a donc la sienne. Deux sondes, douze rendus à la
-     * construction, zéro par image ensuite.
-     *
-     * Le partage se fait par **matériau** et non par pièce — c'est la limite
-     * du procédé, puisque la scène est fusionnée par matériau. Elle tombe
-     * bien : `miroir` et `pierre` ne servent que dans la salle de bains, et ce
-     * sont précisément les deux matières assez polies pour que l'erreur se
-     * voie.
-     */
-    const prendre = (x: number, y: number, z: number) => {
-      const cube = new THREE.WebGLCubeRenderTarget(leger ? 128 : 256, {
-        type: THREE.HalfFloatType,
-      });
-      const sonde = new THREE.CubeCamera(0.3, 400, cube);
-      sonde.position.set(x, y, z);
-      scene.add(sonde);
-      const avant = renderer.getRenderTarget();
-      sonde.update(renderer, scene);
-      renderer.setRenderTarget(avant);
-      scene.remove(sonde);
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      const carte = pmrem.fromCubemap(cube.texture);
-      pmrem.dispose();
-      cube.dispose();
-      return carte;
-    };
+    apres.push(() => {
+      /*
+       * Deux sondes, et non une, parce qu'une sonde ne vaut qu'autour d'elle.
+       *
+       * La première version en posait une seule, au milieu du séjour. Le miroir
+       * de la salle de bains y a gagné un reflet — celui du **séjour**, avec sa
+       * baie et sa ville. C'est mieux qu'un ciel, et c'est faux autrement : un
+       * miroir qui montre une fenêtre inexistante dans la pièce où il est
+       * accroché est un mensonge qu'un visiteur repère sans savoir le nommer.
+       *
+       * La bande de service a donc la sienne. Deux sondes, douze rendus à la
+       * construction, zéro par image ensuite.
+       *
+       * Le partage se fait par **matériau** et non par pièce — c'est la limite
+       * du procédé, puisque la scène est fusionnée par matériau. Elle tombe
+       * bien : `miroir` et `pierre` ne servent que dans la salle de bains, et ce
+       * sont précisément les deux matières assez polies pour que l'erreur se
+       * voie.
+       */
+      const prendre = (x: number, y: number, z: number) => {
+        const cube = new THREE.WebGLCubeRenderTarget(leger ? 128 : 256, {
+          type: THREE.HalfFloatType,
+        });
+        const sonde = new THREE.CubeCamera(0.3, 400, cube);
+        sonde.position.set(x, y, z);
+        scene.add(sonde);
+        const avant = renderer.getRenderTarget();
+        sonde.update(renderer, scene);
+        renderer.setRenderTarget(avant);
+        scene.remove(sonde);
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        const carte = pmrem.fromCubemap(cube.texture);
+        pmrem.dispose();
+        cube.dispose();
+        return carte;
+      };
 
-    /* Les deux prises se font **avant** toute affectation : sans quoi la
-       seconde photographierait des surfaces qui reflètent déjà la première, et
-       l'on empilerait un reflet de reflet. */
-    piece = prendre(5.0, SOL + 1.5, 6.0);
-    service = prendre(-2.0, SOL + 1.5, 1.2);
+      /* Les deux prises se font **avant** toute affectation : sans quoi la
+         seconde photographierait des surfaces qui reflètent déjà la première, et
+         l'on empilerait un reflet de reflet. */
+      piece = prendre(5.0, SOL + 1.5, 6.0);
+      service = prendre(-2.0, SOL + 1.5, 1.2);
 
-    /* Le béton, le verre de la tour, les allèges et les voisins gardent le
-       ciel : ils sont dehors, et leur donner l'intérieur d'un appartement
-       serait la même faute à l'envers. */
-    /* Le vitrage de l'appartement est de la partie : c'est la seule vitre de
-       la scène qu'on regarde **du dedans**, et une vitre vue du dedans renvoie
-       la pièce — le montant du canapé sur le bas du panneau, le plafond sur le
-       haut. Avec le ciel pour seul reflet, elle restait un trou. */
-    for (const materiau of [parquet, lin, accent, bois, marbre, enduit, metal, vitrine]) {
-      materiau.envMap = piece.texture;
-      materiau.needsUpdate = true;
-    }
-    for (const materiau of [miroir, pierre]) {
-      materiau.envMap = service.texture;
-      materiau.needsUpdate = true;
-    }
+      /* Le béton, le verre de la tour, les allèges et les voisins gardent le
+         ciel : ils sont dehors, et leur donner l'intérieur d'un appartement
+         serait la même faute à l'envers. */
+      /* Le vitrage de l'appartement est de la partie : c'est la seule vitre de
+         la scène qu'on regarde **du dedans**, et une vitre vue du dedans renvoie
+         la pièce — le montant du canapé sur le bas du panneau, le plafond sur le
+         haut. Avec le ciel pour seul reflet, elle restait un trou. */
+      for (const materiau of [parquet, lin, accent, bois, marbre, enduit, metal, vitrine]) {
+        materiau.envMap = piece.texture;
+        materiau.needsUpdate = true;
+      }
+      for (const materiau of [miroir, pierre]) {
+        materiau.envMap = service!.texture;
+        materiau.needsUpdate = true;
+      }
+    });
   }
 
   return {
     scene,
     hauteur,
+    /*
+     * Ce qui reste à faire, `budget` millisecondes par image.
+     *
+     * Les matières d'abord — elles se voient partout — puis les sondes, qui ne
+     * corrigent que des reflets. L'ordre compte : une sonde prise avant les
+     * matières photographierait des aplats, et le reflet du parquet dans la
+     * vitre resterait uni pour toute la visite.
+     */
+    avancer(budget: number) {
+      /* Une seule entrée par appel, jamais deux : l'image qui finit les
+         matières ne doit pas enchaîner sur une sonde, sinon on reconstitue en
+         une fois le blocage qu'on vient de découper. */
+      if (!matieresPretes) {
+        matieresPretes = matieres.avancer(budget);
+        return false;
+      }
+      const suite = apres.shift();
+      if (suite) suite();
+      return apres.length === 0;
+    },
     dispose() {
       for (const item of bin) item.dispose();
       cible?.dispose();
