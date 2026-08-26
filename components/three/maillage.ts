@@ -111,3 +111,133 @@ export function subdiviser(
   }
   return courant;
 }
+
+
+/* ============================================================== pavés === */
+
+/**
+ * Un pavé dont les arêtes sont cassées.
+ *
+ * C'est le dernier grand signe distinctif d'une image calculée, et le plus
+ * têtu : **une arête vive n'existe pas.** Un plateau de table, un caisson, un
+ * bras de canapé, un mur — tout, dans le monde, a un congé ou un chanfrein de
+ * quelques millimètres, et ce chanfrein attrape une ligne de lumière que la
+ * face voisine n'a pas. C'est cette ligne, et non la matière, qui dit à l'œil
+ * qu'un objet est un objet. Une boîte à arêtes parfaites ne la donne jamais,
+ * quelle que soit la finesse de ses textures.
+ *
+ * Un centimètre suffit largement : à trois mètres, sous un cadrage de
+ * cinquante degrés sur quatorze cent quarante pixels, il couvre quatre pixels.
+ * On ne le voit pas — on voit qu'il est là.
+ *
+ * La construction est celle d'un solide convexe : six faces rentrées de `r`,
+ * douze bandes d'arête, huit triangles de coin. Quarante-quatre triangles au
+ * lieu de douze.
+ *
+ * **L'orientation n'est pas écrite à la main.** Vingt-six facettes font vingt-
+ * six ordres de sommets à ne pas se tromper, et une seule erreur donne un trou
+ * noir dans le meuble qu'on ne retrouve qu'à la capture. Le solide étant
+ * convexe et centré sur l'origine, la direction du dehors en un point est ce
+ * point lui-même : on calcule la normale de chaque triangle et on échange deux
+ * sommets si elle regarde vers l'intérieur. C'est plus court à écrire, et
+ * c'est juste par construction.
+ */
+export function paveChanfreine(
+  largeur: number,
+  hauteur: number,
+  profondeur: number,
+  rayon: number,
+): THREE.BufferGeometry {
+  const hx = largeur / 2;
+  const hy = hauteur / 2;
+  const hz = profondeur / 2;
+  const r = Math.max(0, Math.min(rayon, hx / 2, hy / 2, hz / 2));
+  const a = hx - r;
+  const b = hy - r;
+  const c = hz - r;
+
+  /** Les trois sommets du coin de signes donnés, un par face qui s'y rejoint. */
+  const coin = (sx: number, sy: number, sz: number) => ({
+    x: [sx * hx, sy * b, sz * c] as [number, number, number],
+    y: [sx * a, sy * hy, sz * c] as [number, number, number],
+    z: [sx * a, sy * b, sz * hz] as [number, number, number],
+  });
+
+  const sommets: number[] = [];
+  const triangle = (
+    p: [number, number, number],
+    q: [number, number, number],
+    s: [number, number, number],
+  ) => {
+    const ux = q[0] - p[0];
+    const uy = q[1] - p[1];
+    const uz = q[2] - p[2];
+    const vx = s[0] - p[0];
+    const vy = s[1] - p[1];
+    const vz = s[2] - p[2];
+    const nx = uy * vz - uz * vy;
+    const ny = uz * vx - ux * vz;
+    const nz = ux * vy - uy * vx;
+    const cx = (p[0] + q[0] + s[0]) / 3;
+    const cy = (p[1] + q[1] + s[1]) / 3;
+    const cz = (p[2] + q[2] + s[2]) / 3;
+    const dehors = nx * cx + ny * cy + nz * cz >= 0;
+    const ordre = dehors ? [p, q, s] : [p, s, q];
+    for (const v of ordre) sommets.push(v[0], v[1], v[2]);
+  };
+  const quad = (
+    p: [number, number, number],
+    q: [number, number, number],
+    s: [number, number, number],
+    t: [number, number, number],
+  ) => {
+    triangle(p, q, s);
+    triangle(p, s, t);
+  };
+
+  const signes = [-1, 1];
+  const C: Record<string, ReturnType<typeof coin>> = {};
+  for (const sx of signes) {
+    for (const sy of signes) {
+      for (const sz of signes) C[`${sx},${sy},${sz}`] = coin(sx, sy, sz);
+    }
+  }
+  const g = (sx: number, sy: number, sz: number) => C[`${sx},${sy},${sz}`];
+
+  // Les six faces, rentrées de `r` sur leurs deux axes de plan.
+  for (const s of signes) {
+    quad(g(s, -1, -1).x, g(s, 1, -1).x, g(s, 1, 1).x, g(s, -1, 1).x);
+    quad(g(-1, s, -1).y, g(1, s, -1).y, g(1, s, 1).y, g(-1, s, 1).y);
+    quad(g(-1, -1, s).z, g(1, -1, s).z, g(1, 1, s).z, g(-1, 1, s).z);
+  }
+
+  // Les douze bandes d'arête, une par couple de faces adjacentes.
+  for (const s1 of signes) {
+    for (const s2 of signes) {
+      // Arêtes parallèles à z : entre une face x et une face y.
+      quad(g(s1, s2, -1).x, g(s1, s2, 1).x, g(s1, s2, 1).y, g(s1, s2, -1).y);
+      // Arêtes parallèles à y : entre une face x et une face z.
+      quad(g(s1, -1, s2).x, g(s1, 1, s2).x, g(s1, 1, s2).z, g(s1, -1, s2).z);
+      // Arêtes parallèles à x : entre une face y et une face z.
+      quad(g(-1, s1, s2).y, g(1, s1, s2).y, g(1, s1, s2).z, g(-1, s1, s2).z);
+    }
+  }
+
+  // Les huit coins.
+  for (const sx of signes) {
+    for (const sy of signes) {
+      for (const sz of signes) {
+        const k = g(sx, sy, sz);
+        triangle(k.x, k.y, k.z);
+      }
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(sommets), 3));
+  /* Sur une géométrie non indexée, `computeVertexNormals` donne une normale par
+     face — ce qu'on veut : un chanfrein lissé avec ses voisines n'attrape plus
+     de ligne de lumière, et l'exercice perd tout son objet. */
+  geometry.computeVertexNormals();
+  return geometry;
+}

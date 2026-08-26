@@ -630,13 +630,51 @@ export function buildEdifice(
   const matieres = creerMatieres(leger);
   bin.push(matieres);
 
+  /*
+   * Le matériau physique, réservé à deux comportements que le standard ne sait
+   * pas rendre.
+   *
+   * `MeshPhysicalMaterial` coûte plus cher par pixel que `MeshStandardMaterial`
+   * — il déroule des lobes de réflexion supplémentaires — et on ne le donne
+   * donc qu'aux matières dont l'aplat trahit vraiment la synthèse :
+   *
+   * **Le lustre des tissus.** Un tissu n'est pas un plastique mat : ses fibres
+   * renvoient la lumière en rasant, et c'est ce liseré clair sur le bord des
+   * coussins qui fait « du lin » plutôt que « du plâtre peint ». Sans lui, le
+   * canapé — le plus gros objet de la page — se lisait comme un bloc de mousse
+   * sculptée, et aucune texture ne le rattrapait : le défaut n'est pas dans la
+   * couleur, il est dans la façon dont la matière renvoie.
+   *
+   * **Le vernis du parquet et le poli du marbre.** Une couche transparente
+   * par-dessus la matière, avec sa propre rugosité : c'est exactement ce
+   * qu'est un vernis. Elle donne au sol le reflet allongé de la baie que la
+   * seule rugosité ne sait pas produire — baisser la rugosité aurait rendu le
+   * bois lui-même brillant, ce qui est un autre matériau.
+   */
   const mat = (
     color: number,
     roughness: number,
     extra: THREE.MeshStandardMaterialParameters = {},
     matiere?: Matiere,
+    physique?: THREE.MeshPhysicalMaterialParameters,
   ) => {
-    const material = new THREE.MeshStandardMaterial({
+    /*
+     * Le matériau physique est réservé aux machines qui peuvent le payer.
+     *
+     * Mesuré : lustre et vernis ensemble coûtent près de vingt pour cent de
+     * temps par image sous rendu logiciel, parce qu'ils ajoutent des lobes de
+     * réflexion évalués **à chaque pixel** couvert par ces matières — et le
+     * canapé, le sol et les plans de travail en couvrent beaucoup.
+     *
+     * Sur un téléphone, ils sont donc remplacés par le matériau standard, qui
+     * garde la couleur, la texture et la rugosité. On y perd le liseré des
+     * tissus et le reflet allongé du parquet ; on n'y perd ni la matière, ni
+     * la lumière, ni le plan. C'est le même arbitrage que pour la carte de
+     * relief : ce qui se voit le moins sur six pouces part en premier.
+     */
+    const enPhysique = physique && !leger;
+    const Classe = enPhysique ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    const material = new Classe({
       color,
       /*
        * La rugosité est **relevée** quand une carte l'accompagne.
@@ -681,6 +719,7 @@ export function buildEdifice(
          deux fois se voyant — mais les deux chemins doivent être couverts. */
       dithering: true,
       ...extra,
+      ...(enPhysique ? physique : {}),
     });
     if (matiere) material.userData.tuile = matiere.tuile;
     bin.push(material);
@@ -743,13 +782,31 @@ export function buildEdifice(
      ce reflet allongé sur les lames qui distingue une photographie d'intérieur
      d'un rendu. Toutes les matières de l'appartement ont été relevées d'un
      cran pour la même raison — un intérieur entièrement mat n'existe pas. */
-  const parquet = mat(TON.parquet, 0.42, {}, matieres.parquet);
-  const lin = mat(TON.lin, 0.76, {}, matieres.lin);
+  /* Le parquet est verni : une couche claire par-dessus, assez mate pour
+     rester un sol qu'on habite. À 0,25 de rugosité de vernis, la baie s'y
+     reflète en une bande allongée ; en dessous, on obtient un miroir de hall
+     d'hôtel. */
+  const parquet = mat(TON.parquet, 0.42, {}, matieres.parquet, {
+    clearcoat: 0.34,
+    clearcoatRoughness: 0.25,
+  });
+  const lin = mat(TON.lin, 0.76, {}, matieres.lin, {
+    sheen: 1,
+    /* Le lustre est **plus clair** que le tissu, pas de sa couleur : les
+       fibres qui l'accrochent sont celles qui reçoivent le jour de biais, et
+       elles renvoient la lumière de la pièce, pas leur propre teinte. */
+    sheenColor: new THREE.Color(0xe8e2d6),
+    sheenRoughness: 0.7,
+  });
   /* L'unique accent de l'appartement : un olive profond, sur trois coussins et
      rien d'autre. Le nuancier du dépôt est neutre par principe, et il a raison
      — mais un séjour entièrement beige n'est pas neutre, il est éteint. Une
      seule couleur, à une seule place, réchauffe la pièce sans la décorer. */
-  const accent = mat(0x4d5340, 0.72, {}, matieres.lin);
+  const accent = mat(0x4d5340, 0.72, {}, matieres.lin, {
+    sheen: 1,
+    sheenColor: new THREE.Color(0x9aa08c),
+    sheenRoughness: 0.62,
+  });
   const lointain = mat(TON.lointain, 0.95);
   /* Les silhouettes du hall sont mates et sombres, et c'est un choix, pas un
      raccourci. Le dépôt a déjà appris cette leçon sur les intérieurs : une
@@ -780,7 +837,10 @@ export function buildEdifice(
      une source lumineuse, pas comme une pierre. Un marbre poli réel rend
      autour de 0,25 : assez pour attraper un reflet allongé, pas assez pour
      recopier la fenêtre. */
-  const marbre = mat(TON.marbre, 0.24, { metalness: 0.04 }, matieres.marbre);
+  const marbre = mat(TON.marbre, 0.24, { metalness: 0.04 }, matieres.marbre, {
+    clearcoat: 0.55,
+    clearcoatRoughness: 0.1,
+  });
   const bois = mat(TON.bois, 0.44, {}, matieres.bois);
   const fut = mat(TON.fut, 0.55, { metalness: 0.05 });
   /* Les corniches lumineuses sont un matériau **basique** : elles ne

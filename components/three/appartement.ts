@@ -24,6 +24,7 @@
  */
 
 import * as THREE from 'three';
+import { paveChanfreine } from '@/components/three/maillage';
 import {
   BAIE,
   CLOISON,
@@ -303,14 +304,34 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     maille?: number,
   ) => {
     if (x1 - x0 < 0.004 || y1 - y0 < 0.004 || z1 - z0 < 0.004) return;
+    const m = maille ?? (paint ? 0.45 : 99);
+    const petit = Math.min(x1 - x0, y1 - y0, z1 - z0);
+    /*
+     * Les arêtes sont cassées, sauf deux cas.
+     *
+     * **Sauf si l'on subdivise.** Un pavé chanfreiné a quarante-quatre
+     * triangles au lieu de douze ; subdivisé quatre fois pour y cuire
+     * l'occlusion d'un mur, cela ferait onze mille triangles par cloison au
+     * lieu de trois mille. Les parois gardent donc leurs arêtes vives — on ne
+     * les regarde jamais de près, et le prix serait absurde.
+     *
+     * **Sauf si la pièce est plus mince que six centimètres.** Une lame de
+     * terrasse de trois centimètres et demi, une page de livre, un joint : le
+     * chanfrein y mangerait la moitié de l'épaisseur, et il ne se verrait pas
+     * de toute façon.
+     */
+    const geometrie =
+      m > 50 && petit >= 0.06
+        ? paveChanfreine(x1 - x0, y1 - y0, z1 - z0, 0.01)
+        : new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0);
     pose(
-      new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0),
+      geometrie,
       mat,
       (x0 + x1) / 2,
       (y0 + y1) / 2,
       (z0 + z1) / 2,
       paint ?? occlusionMeuble,
-      maille ?? (paint ? 0.45 : 99),
+      m,
     );
   };
 
@@ -723,18 +744,68 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
 
   /* ----------------------------------------------------------- cuisine --- */
   const C = PIECES.cuisine;
+  /*
+   * Le linéaire, porte par porte.
+   *
+   * Il était **un seul pavé** de six mètres vingt : la capture montrait un
+   * bandeau de bois continu du mur au mur, ce qu'aucune cuisine n'est. Une
+   * cuisine se lit à ses divisions — un joint tous les soixante centimètres,
+   * une prise de main horizontale, un socle en retrait — et ces divisions
+   * coûtent trois blocs par porte.
+   *
+   * Le pas n'est pas rond : on prend la largeur totale et on la divise en un
+   * nombre entier de portes d'environ soixante centimètres. Un pas fixe
+   * laisserait une porte tronquée au bout, qui est précisément le détail qui
+   * dit « modélisé à la main sans regarder ».
+   */
+  const facade = (
+    x0: number,
+    x1: number,
+    y0: number,
+    y1: number,
+    z: number,
+    large: number,
+    prise: 'haut' | 'bas',
+  ) => {
+    const portes = Math.max(1, Math.round((x1 - x0) / large));
+    const pas = (x1 - x0) / portes;
+    for (let i = 0; i < portes; i += 1) {
+      const a = x0 + i * pas;
+      bloc(M.bois, a + 0.004, a + pas - 0.004, y0, y1, z, z + 0.019);
+      /* La prise de main : une gorge d'ombre en haut d'un caisson bas, en bas
+         d'un caisson haut. C'est la poignée des cuisines sans poignée, et
+         c'est la ligne qui donne son horizontale au meuble. */
+      const y = prise === 'haut' ? y1 - 0.05 : y0 + 0.015;
+      bloc(M.tronc, a + 0.05, a + pas - 0.05, y, y + 0.035, z + 0.012, z + 0.019);
+    }
+  };
+
   // Le linéaire contre le mur aveugle : caissons, plan, crédence, hotte.
-  bloc(M.bois, 3.0, 9.2, SOL, SOL + 0.86, C.z0, C.z0 + 0.66);
+  bloc(M.bois, 3.0, 9.2, SOL + 0.09, SOL + 0.86, C.z0, C.z0 + 0.64);
+  // Le socle, en retrait de quatre centimètres : le meuble ne touche pas le sol.
+  bloc(M.bois, 3.04, 9.16, SOL, SOL + 0.09, C.z0, C.z0 + 0.6);
+  facade(3.0, 9.2, SOL + 0.12, SOL + 0.86, C.z0 + 0.64, 0.62, 'haut');
   bloc(M.marbre, 2.94, 9.26, SOL + 0.86, SOL + 0.94, C.z0 - 0.02, C.z0 + 0.7);
   bloc(M.marbre, 3.0, 9.2, SOL + 0.94, SOL + 1.44, C.z0, C.z0 + 0.03);
-  bloc(M.bois, 3.0, 5.4, SOL + 1.44, SOL + 2.24, C.z0, C.z0 + 0.36);
-  bloc(M.bois, 7.4, 9.2, SOL + 1.44, SOL + 2.24, C.z0, C.z0 + 0.36);
+  bloc(M.bois, 3.0, 5.4, SOL + 1.44, SOL + 2.24, C.z0, C.z0 + 0.34);
+  facade(3.0, 5.4, SOL + 1.46, SOL + 2.22, C.z0 + 0.34, 0.6, 'bas');
+  bloc(M.bois, 7.4, 9.2, SOL + 1.44, SOL + 2.24, C.z0, C.z0 + 0.34);
+  facade(7.4, 9.2, SOL + 1.46, SOL + 2.22, C.z0 + 0.34, 0.6, 'bas');
   bloc(M.metal, 5.7, 7.1, SOL + 1.5, SOL + 1.62, C.z0, C.z0 + 0.5);
   bloc(M.metal, 6.15, 6.65, SOL + 1.62, SOL + 2.34, C.z0 + 0.1, C.z0 + 0.4);
-  // Les colonnes, à l'extrémité ouest.
-  bloc(M.bois, C.x0 + CLOISON, C.x0 + CLOISON + 0.62, SOL, SOL + 2.34, 0.2, 2.6);
-  // L'îlot, tourné vers la baie, et trois tabourets.
-  bloc(M.bois, 4.6, 8.0, SOL, SOL + 0.86, 1.1, 2.2);
+  // Les colonnes, à l'extrémité ouest, et leurs trois portes toute hauteur.
+  bloc(M.bois, C.x0 + CLOISON, C.x0 + CLOISON + 0.6, SOL, SOL + 2.34, 0.2, 2.6);
+  for (let i = 0; i < 3; i += 1) {
+    const z0 = 0.2 + i * 0.8;
+    bloc(M.bois, C.x0 + CLOISON + 0.6, C.x0 + CLOISON + 0.619, SOL + 0.02, SOL + 2.32, z0 + 0.006, z0 + 0.794);
+    bloc(M.tronc, C.x0 + CLOISON + 0.612, C.x0 + CLOISON + 0.619, SOL + 1.0, SOL + 1.035, z0 + 0.06, z0 + 0.74);
+  }
+  /* L'îlot, tourné vers la baie. Sa face avant est nue — c'est un dosseret,
+     pas un rangement — mais son plan déborde de dix centimètres, et ce
+     débordement est ce qui distingue un îlot d'un cube posé. */
+  bloc(M.bois, 4.6, 8.0, SOL + 0.09, SOL + 0.86, 1.1, 2.2);
+  bloc(M.bois, 4.64, 7.96, SOL, SOL + 0.09, 1.14, 2.16);
+  facade(4.6, 8.0, SOL + 0.12, SOL + 0.86, 1.081, 0.66, 'haut');
   bloc(M.marbre, 4.5, 8.1, SOL + 0.86, SOL + 0.94, 1.0, 2.32);
   /* Un tabouret de bar, c'est quatre pièces et pas deux : l'assise, la
      colonne, **le repose-pied** et **la base**. Sans les deux dernières, le
