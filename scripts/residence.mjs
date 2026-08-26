@@ -211,7 +211,12 @@ async function contraste(nom) {
     (sels) => sels.forEach((s) => document.querySelectorAll(s).forEach((n) => (n.style.visibility = 'hidden'))),
     boites.map((b) => b[1]),
   );
-  const nu = await page.screenshot();
+  /* Une minute et non trente secondes. Sous rendu logiciel, une image de cette
+     scène coûte deux secondes et demie, et la capture attend une image propre :
+     le délai par défaut de playwright a fini par être dépassé le jour où les
+     matières et un soleil plus fort ont alourdi le rendu. Le script échouait
+     alors sur un décompte, pas sur un défaut de la page. */
+  const nu = await page.screenshot({ timeout: 90000 });
   await page.evaluate(
     (sels) => sels.forEach((s) => document.querySelectorAll(s).forEach((n) => (n.style.visibility = ''))),
     boites.map((b) => b[1]),
@@ -256,7 +261,7 @@ for (const [nom, ancre, plan] of A_FAIRE) {
     [ancre, plan],
   );
   await poser();
-  await page.screenshot({ path: join(SORTIE, `${nom}.png`) });
+  await page.screenshot({ path: join(SORTIE, `${nom}.png`), timeout: 90000 });
   await contraste(nom);
   console.log(`${nom.padEnd(16)} ok`);
 }

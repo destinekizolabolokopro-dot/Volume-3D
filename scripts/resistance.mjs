@@ -83,7 +83,7 @@ const dire = (ok, texte) => {
  * réellement affiché.
  */
 async function vivante() {
-  const image = await page.locator('.rz-fond').screenshot({ type: 'png' });
+  const image = await page.locator('.rz-fond').screenshot({ type: 'png', timeout: 90000 });
   const { data, info } = await sharp(image)
     .resize(160, 100, { fit: 'fill' })
     .removeAlpha()

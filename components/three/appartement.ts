@@ -197,7 +197,14 @@ function jourEn(x: number, _y: number, z: number): number {
      reçoit ce que les murs se renvoient. Quarante-huit pour cent, et l'écart
      avec le séjour reste d'un facteur deux — ce qui est déjà ce que mesure un
      posemètre entre une salle de bains et un salon d'angle. */
-  return 0.48 + 0.52 * Math.min(1, expose);
+  /* Le fond remonte de quarante-huit à cinquante-six pour cent le jour où la
+     lumière est passée de l'ambiance au soleil. Ce n'est pas un réglage
+     d'humeur : le soleil n'entre que par les baies, donc tout ce qui ne les
+     voit pas a perdu d'un coup ce que l'ambiance lui donnait. Le rapport entre
+     le séjour et la salle de bains passe de deux à un et demi — ce qui reste
+     l'écart que mesure un posemètre entre une pièce d'angle et une pièce
+     aveugle allumée. */
+  return 0.56 + 0.44 * Math.min(1, expose);
 }
 
 /** Assombrissement d'un mur : au ras du sol, sous le plafond, et dans les angles. */
@@ -240,11 +247,50 @@ function occlusionPlafond(x: number, _y: number, z: number): number {
   return Math.max(0.5, 1 - mur) * jourEn(x, _y, z);
 }
 
+/**
+ * L'assombrissement d'un meuble.
+ *
+ * C'était le trou le plus large de l'éclairage, et le plus facile à ne pas
+ * voir : les murs, les sols et le plafond recevaient une occlusion cuite dans
+ * leurs sommets, et **le mobilier n'en recevait aucune**. Un caisson de
+ * cuisine était donc éclairé exactement pareil sur son dessus, sur son flanc
+ * et à dix centimètres du sol ; et une chaise de la salle de bains aveugle
+ * était aussi claire que la même chaise dans le séjour d'angle.
+ *
+ * Deux termes, et le second compte autant que le premier :
+ *
+ *  - **le contact au sol**, qui donne à chaque meuble le dégradé sombre de son
+ *    pied. C'est le signe le plus élémentaire qu'un objet est posé et non
+ *    flottant, et aucune ombre portée de carte ne le rend à cette échelle ;
+ *  - **le jour de la pièce**, le même `jourEn` que pour les parois. Sans lui,
+ *    les meubles étaient les seuls objets de l'appartement à ignorer dans
+ *    quelle pièce ils se trouvaient.
+ *
+ * Elle ne coûte **aucun triangle**. C'est le point qui la rend possible : on
+ * ne subdivise pas, on laisse la valeur varier entre les huit sommets du pavé,
+ * et cela suffit — un dégradé vertical sur chaque face latérale est exactement
+ * ce qu'on cherchait à obtenir. Subdiviser aurait donné la même image pour
+ * soixante-quatre fois plus de géométrie.
+ */
+function occlusionMeuble(x: number, y: number, z: number): number {
+  const sol = 0.4 * Math.exp(-(y - SOL) / 0.3);
+  let mur = 0;
+  for (const ligne of LIGNES_X) mur = Math.max(mur, 0.2 * Math.exp(-Math.abs(x - ligne) / 0.28));
+  for (const ligne of LIGNES_Z) mur = Math.max(mur, 0.2 * Math.exp(-Math.abs(z - ligne) / 0.28));
+  return Math.max(0.3, 1 - sol - mur) * jourEn(x, y, z);
+}
+
 export function poserAppartement(a: Atelier): THREE.Light[] {
   const { pose, materiaux: M, leger } = a;
   const rond = (r: number) => (leger ? Math.max(6, Math.round(r)) : Math.round(r * 1.6));
 
-  /** Un pavé posé par ses deux coins : on raisonne en cotes de plan. */
+  /**
+   * Un pavé posé par ses deux coins : on raisonne en cotes de plan.
+   *
+   * Sans peinture explicite, il reçoit `occlusionMeuble` et **aucune
+   * subdivision** : la valeur varie entre ses huit sommets, ce qui donne le
+   * dégradé de pied recherché sans un triangle de plus.
+   */
   const bloc = (
     mat: THREE.Material,
     x0: number,
@@ -254,7 +300,7 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     z0: number,
     z1: number,
     paint?: (px: number, py: number, pz: number) => number,
-    maille = 0.45,
+    maille?: number,
   ) => {
     if (x1 - x0 < 0.004 || y1 - y0 < 0.004 || z1 - z0 < 0.004) return;
     pose(
@@ -263,8 +309,8 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
       (x0 + x1) / 2,
       (y0 + y1) / 2,
       (z0 + z1) / 2,
-      paint,
-      maille,
+      paint ?? occlusionMeuble,
+      maille ?? (paint ? 0.45 : 99),
     );
   };
 
@@ -907,14 +953,35 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
    * une par bande de jour, une pour la bande de service, et le reste vient de
    * la carte d'environnement et du soleil.
    */
-  /* Elles descendent à deux mètres cinq : une source à soixante centimètres
-     d'un plafond y imprime une flaque serrée — l'ovale qu'on prenait pour un
-     reflet — et n'éclaire presque rien de ce qui se regarde, qui est à hauteur
-     de meuble. Descendue à un mètre du plafond, la même lampe étale sa flaque
-     et modèle le mobilier au lieu du plâtre. */
-  lampe(5.4, SOL + 2.05, 7.2, 24);
-  lampe(6.3, SOL + 2.05, 1.7, 20);
-  lampe(-1.8, SOL + 2.15, 5.4, 17);
+  /*
+   * Elles descendent à hauteur de luminaire, et elles perdent les deux tiers
+   * de leur intensité.
+   *
+   * C'est la troisième fois que ces lampes sont trop fortes, et la première
+   * fois qu'on comprend pourquoi. L'erreur n'est pas dans le nombre, elle est
+   * dans le **modèle** : une source ponctuelle donne un éclairement en `I/d²`,
+   * donc son voisinage immédiat reçoit tout. À vingt-quatre candelas et à
+   * quatre-vingt-quinze centimètres d'une dalle, le plafond recevait
+   * vingt-six — dix fois le soleil. Aucune valeur d'exposition ne rattrape
+   * cela : le plafond était blanc pur avant que la pièce ne soit exposée.
+   *
+   * Un luminaire réel n'a pas ce défaut pour deux raisons qu'on imite ici,
+   * faute de pouvoir les modéliser : il a une **surface** — donc son
+   * éclairement ne diverge pas de près — et il a un **abat-jour**, qui coupe
+   * la moitié haute. On le remplace par la seule chose qu'un moteur temps réel
+   * sait faire à ce prix : baisser l'intensité et **descendre la source à la
+   * hauteur où pend vraiment un luminaire**. Un mètre soixante pour un
+   * lampadaire, un mètre soixante-quinze pour une suspension d'îlot.
+   *
+   * Le reste de la lumière ne vient pas de là et n'en est jamais venu : il
+   * vient du jour cuit dans les sommets et de la carte d'environnement. Les
+   * lampes ne sont pas l'éclairage de la pièce, elles en sont l'**accent** —
+   * la flaque chaude sur un mur, le contre-jour sur un dossier. C'est le rôle
+   * qu'elles auraient dû avoir depuis le début.
+   */
+  lampe(4.2, SOL + 1.62, 4.5, 9);
+  lampe(6.3, SOL + 1.78, 1.7, 8);
+  lampe(-1.8, SOL + 1.92, 5.4, 7);
   /*
    * La quatrième, et pourquoi elle vaut son prix.
    *
@@ -933,7 +1000,12 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
    * fond cuit, qui ne coûte rien : la salle de bains y sera un peu plate,
    * elle ne sera pas noire.
    */
-  if (!leger) lampe(-1.6, SOL + 2.25, 0.9, 17);
+  /* La salle de bains garde une intensité plus forte que les autres, et c'est
+     le seul écart assumé du lot : elle est aveugle. Partout ailleurs la lampe
+     n'est qu'un accent posé sur un jour qui existe déjà ; ici, elle **est** le
+     jour. Descendue à un mètre soixante-quinze, elle n'écrase plus le plafond
+     et éclaire ce qu'on regarde, qui est à hauteur de vasque. */
+  if (!leger) lampe(-1.6, SOL + 1.75, 0.9, 12);
   return lampes;
 }
 

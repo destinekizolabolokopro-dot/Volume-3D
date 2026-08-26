@@ -29,6 +29,7 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { subdiviser } from '@/components/three/maillage';
+import { creerMatieres, type Matiere } from '@/components/three/matieres';
 import { poserAppartement, type Palette } from '@/components/three/appartement';
 import {
   ETAGE,
@@ -164,6 +165,17 @@ const PUITS = { x0: -13, x1: -5, z0: -3.6, z1: 5.4, coursive: 1.6 } as const;
  */
 const SOLEIL = { azimut: 18, site: 15 } as const;
 
+/*
+ * L'amplitude moyenne des cartes de rugosité, pour la compensation.
+ *
+ * Elle n'est pas déduite des cartes — elle est leur moyenne à la main, et
+ * c'est assumé : les amplitudes réelles vont de 0,07 pour le marbre à 0,30
+ * pour le métal brossé, et compenser chacune exactement ferait dépendre le
+ * nuancier de neuf nombres au lieu d'un. Ce qui compte est que la rugosité
+ * moyenne ne dérive pas d'un facteur, pas qu'elle soit juste au centième.
+ */
+const MAT_MOYEN = 0.075;
+
 /* ================================================================== lots === */
 
 type Bin = { dispose(): void };
@@ -202,7 +214,66 @@ class Lot {
       if (fin !== geometry) geometry.dispose();
       geometry = fin;
     }
-    if (!geometry.getAttribute('uv')) {
+    /*
+     * Les coordonnées de texture, projetées depuis le monde.
+     *
+     * C'est la condition d'existence de toute matière ici, et elle n'est pas
+     * évidente. Les géométries arrivent avec les coordonnées que three leur a
+     * données : zéro à un sur chaque face, quelle que soit sa taille. Une
+     * texture posée dessus se répète donc **une fois par face** — un pavage de
+     * parquet identique sur une lame de dix centimètres et sur un îlot de
+     * soixante mètres. Aucun réglage ne rattrape cela : le défaut est dans les
+     * coordonnées, pas dans l'image.
+     *
+     * On les recalcule donc à partir de la position dans le monde, en
+     * projetant sur le plan que la normale désigne — la projection triplanaire,
+     * dans sa forme la plus économe : décidée par sommet, une seule fois, à la
+     * construction. Rien à payer au rendu.
+     *
+     * Elle est sûre ici pour une raison précise : `mergeVertices` compare tous
+     * les attributs, normale comprise, donc les coins d'un pavé gardent trois
+     * sommets distincts — un par face. Chacun reçoit la projection de sa
+     * propre face, et il n'y a pas de couture. Sur une géométrie lissée, où
+     * les sommets sont partagés entre orientations, il faudrait projeter dans
+     * le nuanceur.
+     *
+     * `tuile` est en **répétitions par mètre** et vit dans le matériau : c'est
+     * lui qui sait s'il est un parquet à lames de vingt centimètres ou un
+     * enduit dont le grain se compte en mètres.
+     */
+    const tuile = (material.userData?.tuile as number | undefined) ?? 0;
+    if (tuile > 0) {
+      const position = geometry.getAttribute('position');
+      const normale = geometry.getAttribute('normal');
+      const n = position.count;
+      const uv = new Float32Array(n * 2);
+      for (let i = 0; i < n; i += 1) {
+        const px = position.getX(i);
+        const py = position.getY(i);
+        const pz = position.getZ(i);
+        const nx = Math.abs(normale ? normale.getX(i) : 0);
+        const ny = Math.abs(normale ? normale.getY(i) : 1);
+        const nz = Math.abs(normale ? normale.getZ(i) : 0);
+        let u: number;
+        let v: number;
+        if (ny >= nx && ny >= nz) {
+          // Une face horizontale — sol, plafond, dessus de meuble : plan xz.
+          u = px;
+          v = pz;
+        } else if (nx >= nz) {
+          // Une face tournée vers l'est ou l'ouest : plan zy.
+          u = pz;
+          v = py;
+        } else {
+          // Une face tournée vers le nord ou le sud : plan xy.
+          u = px;
+          v = py;
+        }
+        uv[i * 2] = u * tuile;
+        uv[i * 2 + 1] = v * tuile;
+      }
+      geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    } else if (!geometry.getAttribute('uv')) {
       const count = geometry.getAttribute('position').count;
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2));
     }
@@ -549,10 +620,57 @@ export function buildEdifice(
   /* Tous les matériaux acceptent la couleur des sommets. C'est sans effet sur
      ceux qui ne portent rien — l'attribut y vaut blanc — et cela évite d'avoir
      deux familles de matériaux qui ne peuvent pas fusionner ensemble. */
-  const mat = (color: number, roughness: number, extra: THREE.MeshStandardMaterialParameters = {}) => {
+  /*
+   * Les matières, calculées une fois au démarrage.
+   *
+   * Elles sont montées avant les matériaux parce que chaque matériau en reçoit
+   * trois cartes et sa densité de répétition. Voir `matieres.ts` pour le
+   * pourquoi de chaque réglage.
+   */
+  const matieres = creerMatieres(leger);
+  bin.push(matieres);
+
+  const mat = (
+    color: number,
+    roughness: number,
+    extra: THREE.MeshStandardMaterialParameters = {},
+    matiere?: Matiere,
+  ) => {
     const material = new THREE.MeshStandardMaterial({
       color,
-      roughness,
+      /*
+       * La rugosité est **relevée** quand une carte l'accompagne.
+       *
+       * three multiplie la rugosité du matériau par le canal vert de la carte,
+       * et une carte huit bits ne dépasse pas un : elle ne sait donc que
+       * baisser. Posée telle quelle sur un parquet à 0,42, elle l'aurait rendu
+       * uniformément plus brillant — pas plus varié, plus brillant, ce qui est
+       * exactement le contraire du but. On relève donc la valeur de base de la
+       * moitié de l'amplitude de la carte, pour que la **moyenne** reste celle
+       * qui a été mesurée et validée par `npm run palette`.
+       */
+      roughness: matiere ? Math.min(1, roughness / (1 - MAT_MOYEN)) : roughness,
+      ...(matiere
+        ? {
+            map: matiere.map,
+            roughnessMap: matiere.roughnessMap,
+            /*
+             * La carte de relief saute sur les petites machines.
+             *
+             * C'est la plus chère des trois, et de loin : elle ajoute un
+             * échantillonnage, mais surtout elle oblige le nuanceur à
+             * reconstruire un repère tangent par dérivées d'écran. Mesuré, les
+             * trois cartes ensemble coûtent dix-huit pour cent de temps par
+             * image sous rendu logiciel ; la carte de relief en est les deux
+             * tiers.
+             *
+             * Un téléphone garde donc la couleur et la brillance — le parquet
+             * y a ses lames, le lin sa trame — et perd le relief, qui est
+             * précisément ce qui se voit le moins sur six pouces.
+             */
+            ...(leger ? {} : { normalMap: matiere.normalMap, normalScale: new THREE.Vector2(1, 1) }),
+          }
+        : {}),
       vertexColors: true,
       /* Le grain de quantification, pour le chemin sans profondeur de champ.
          Les petites machines rendent en direct, sans passe de composition :
@@ -564,14 +682,15 @@ export function buildEdifice(
       dithering: true,
       ...extra,
     });
+    if (matiere) material.userData.tuile = matiere.tuile;
     bin.push(material);
     return material;
   };
-  const beton = mat(TON.beton, 0.92);
-  const soffite = mat(TON.soffite, 0.94);
-  const refend = mat(TON.refend, 0.93);
+  const beton = mat(TON.beton, 0.92, {}, matieres.beton);
+  const soffite = mat(TON.soffite, 0.94, {}, matieres.beton);
+  const refend = mat(TON.refend, 0.93, {}, matieres.beton);
   const meneau = mat(TON.meneau, 0.62, { metalness: 0.25 });
-  const parvis = mat(TON.parvis, 0.95);
+  const parvis = mat(TON.parvis, 0.95, {}, matieres.beton);
   const vegetal = mat(TON.vegetal, 0.96);
   /* Le verre est le seul matériau de la scène à porter du spéculaire. C'est
      voulu : dans une façade toute mate, c'est lui qui dit où est le ciel, et
@@ -585,7 +704,7 @@ export function buildEdifice(
      un mètre de haut au bas de chaque vitrage. Sans elle, un mur-rideau est un
      aquarium : la façade n'a plus qu'une seule matière du sol au plafond, et
      c'est exactement ce qui trahit un immeuble modélisé. */
-  const allege = mat(TON.allege, 0.42, { metalness: 0.5 });
+  const allege = mat(TON.allege, 0.42, { metalness: 0.5 }, matieres.metal);
   const tronc = mat(TON.tronc, 0.9);
   const garde = mat(TON.garde, 0.12, {
     metalness: 0.3,
@@ -618,19 +737,19 @@ export function buildEdifice(
     transparent: true,
     userData: { sansOmbre: true },
   });
-  const pierre = mat(TON.pierre, 0.15, { metalness: 0.05 });
+  const pierre = mat(TON.pierre, 0.15, { metalness: 0.05 }, matieres.pierre);
   /* Un chêne verni, pas un chêne brut. Quarante-deux centièmes de rugosité :
      à ce niveau, le sol renvoie une trace du vitrage et des lampes, et c'est
      ce reflet allongé sur les lames qui distingue une photographie d'intérieur
      d'un rendu. Toutes les matières de l'appartement ont été relevées d'un
      cran pour la même raison — un intérieur entièrement mat n'existe pas. */
-  const parquet = mat(TON.parquet, 0.42);
-  const lin = mat(TON.lin, 0.76);
+  const parquet = mat(TON.parquet, 0.42, {}, matieres.parquet);
+  const lin = mat(TON.lin, 0.76, {}, matieres.lin);
   /* L'unique accent de l'appartement : un olive profond, sur trois coussins et
      rien d'autre. Le nuancier du dépôt est neutre par principe, et il a raison
      — mais un séjour entièrement beige n'est pas neutre, il est éteint. Une
      seule couleur, à une seule place, réchauffe la pièce sans la décorer. */
-  const accent = mat(0x4d5340, 0.72);
+  const accent = mat(0x4d5340, 0.72, {}, matieres.lin);
   const lointain = mat(TON.lointain, 0.95);
   /* Les silhouettes du hall sont mates et sombres, et c'est un choix, pas un
      raccourci. Le dépôt a déjà appris cette leçon sur les intérieurs : une
@@ -654,15 +773,15 @@ export function buildEdifice(
    * mates du commerce tournent autour de 70 à 75 % ; on n'a rien inventé, on a
    * arrêté d'exagérer.
    */
-  const enduit = mat(0xc9c5bd, 0.94);
-  const metal = mat(0x6f7377, 0.24, { metalness: 0.72 });
+  const enduit = mat(0xc9c5bd, 0.94, {}, matieres.enduit);
+  const metal = mat(0x6f7377, 0.24, { metalness: 0.72 }, matieres.metal);
   /* Le marbre était descendu à 0,12 — un miroir. Un plateau de table basse
      posé devant une baie y renvoyait le ciel en aplat blanc et se lisait comme
      une source lumineuse, pas comme une pierre. Un marbre poli réel rend
      autour de 0,25 : assez pour attraper un reflet allongé, pas assez pour
      recopier la fenêtre. */
-  const marbre = mat(TON.marbre, 0.24, { metalness: 0.04 });
-  const bois = mat(TON.bois, 0.44);
+  const marbre = mat(TON.marbre, 0.24, { metalness: 0.04 }, matieres.marbre);
+  const bois = mat(TON.bois, 0.44, {}, matieres.bois);
   const fut = mat(TON.fut, 0.55, { metalness: 0.05 });
   /* Les corniches lumineuses sont un matériau **basique** : elles ne
      reçoivent pas la lumière, elles la donnent. Une source lumineuse rendue
@@ -1631,14 +1750,30 @@ export function buildEdifice(
      bâtiment sur le parvis. Elle est immense et parfaitement franche ; à 1,1
      elle tombait au noir et traversait le premier écran comme un aplat. Ce
      qu'on éclaire ici, ce n'est pas la façade, c'est le sol dans l'ombre. */
-  scene.add(new THREE.HemisphereLight(0xdfe6ee, 0x9d9890, 1.3));
+  /*
+   * Le ciel d'ambiance descend, le soleil monte : c'est le réglage qui
+   * rapproche le plus une image de synthèse d'une prise de vue.
+   *
+   * Une scène éclairée surtout par une ambiance uniforme n'a pas de faute
+   * repérable — elle a seulement un défaut, et c'est le plus tenace : rien
+   * n'y a de face éclairée et de face à l'ombre. Tout est du même côté de la
+   * lumière. On peut y poser toutes les matières du monde, elle continue de
+   * se lire comme un rendu, parce que ce que l'œil vérifie d'abord n'est pas
+   * la matière : c'est **d'où vient la lumière**.
+   *
+   * On déplace donc la même quantité de lumière de l'ambiance vers le soleil.
+   * L'exposition moyenne bouge à peine ; l'écart entre le mur qui reçoit et
+   * le mur qui ne reçoit pas double. C'est ce qui fait entrer de vraies taches
+   * de soleil par la baie est, au lieu d'un dégradé.
+   */
+  scene.add(new THREE.HemisphereLight(0xdfe6ee, 0x9d9890, 0.85));
   /* Le soleil monte à 3,4 pendant que l'environnement descend à 0,92. La
      somme est presque inchangée ; la **répartition** ne l'est pas. Une scène
      éclairée surtout par le ciel est une scène sans direction : rien n'y a de
      face claire et de face sombre. En rendant au soleil la part qui lui
      revient, chaque volume retrouve deux faces, et une pièce retrouve un
      modelé. */
-  const soleil = new THREE.DirectionalLight(0xffe9c9, 3.4);
+  const soleil = new THREE.DirectionalLight(0xffe9c9, 4.8);
   /*
    * L'azimut du soleil se règle contre celui de la **caméra**, pas dans
    * l'absolu.
@@ -1797,7 +1932,7 @@ export function buildEdifice(
      * le soleil ne touche pas. À 0,7, l'appartement rendait un séjour du soir
      * en plein après-midi.
      */
-    scene.environmentIntensity = 0.92;
+    scene.environmentIntensity = 0.74;
     renderer.shadowMap.enabled = true;
     /* Le filtrage doux coûte plus cher par pixel — mais la carte d'ombre,
        elle, n'est calculée qu'une fois (voir `Edifice.tsx`), et une ombre de
