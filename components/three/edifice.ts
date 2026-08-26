@@ -38,6 +38,7 @@ import {
   NIVEAUX,
   RETRAIT,
   SOCLE,
+  SOL,
   TRAME,
   empreinte,
 } from '@/lib/residence';
@@ -1993,6 +1994,8 @@ export function buildEdifice(
    * bâtiment se refléterait dans son propre vitrage.
    */
   let cible: THREE.WebGLRenderTarget | null = null;
+  let piece: THREE.WebGLRenderTarget | null = null;
+  let service: THREE.WebGLRenderTarget | null = null;
   if (renderer) {
     const seul = new THREE.Scene();
     seul.add(voute);
@@ -2025,12 +2028,106 @@ export function buildEdifice(
   }
   scene.add(voute);
 
+  /*
+   * La sonde d'environnement, posée **dans le séjour**.
+   *
+   * C'est le dernier grand mensonge du rendu, et il est partout à la fois : la
+   * seule carte de réflexion de la scène est le ciel. Le miroir de la salle de
+   * bains y renvoie donc du ciel ; le vernis du parquet, du ciel ; le marbre du
+   * plan de travail, du ciel ; le verre de la baie, du ciel — vu du dedans. Ce
+   * n'est pas une approximation grossière, c'est une erreur de nature : **une
+   * surface réfléchissante à l'intérieur réfléchit l'intérieur.** Tant qu'elle
+   * dure, chaque matière brillante ajoutée rend l'image un peu moins juste, et
+   * on l'a vérifié à ses dépens en posant un vrai miroir — il est sorti en
+   * plaque beige, parce qu'il renvoyait fidèlement un ciel d'heure dorée.
+   *
+   * On prend donc une vue cubique depuis le milieu du séjour, une fois, après
+   * que tout est posé. Six rendus, au démarrage, jamais rejoués : la caméra
+   * bouge, la scène non. Le coût est celui d'une demi-douzaine d'images à la
+   * construction, et il se paie une seule fois.
+   *
+   * Ce que cela change, concrètement : le miroir montre la pièce, le parquet
+   * verni renvoie la bande claire de la baie, le plan de marbre attrape les
+   * façades des caissons, et les vitres de la baie cessent d'être un trou.
+   *
+   * Deux limites, assumées et écrites ici pour qu'on ne les redécouvre pas :
+   * la sonde est prise d'un point unique, donc une réflexion n'est exacte
+   * qu'au voisinage de ce point — c'est le compromis universel des sondes
+   * locales, et il ne se voit que sur des surfaces très polies et très
+   * étendues, que cette scène n'a pas. Et le platelage de la terrasse partage
+   * son matériau avec le mobilier intérieur : il reçoit donc la sonde alors
+   * qu'il est dehors. À 0,44 de rugosité, sa réflexion est si diffuse que
+   * l'écart n'est pas lisible ; le jour où il le deviendrait, il faudra lui
+   * donner son propre matériau.
+   */
+  if (renderer) {
+    /*
+     * Deux sondes, et non une, parce qu'une sonde ne vaut qu'autour d'elle.
+     *
+     * La première version en posait une seule, au milieu du séjour. Le miroir
+     * de la salle de bains y a gagné un reflet — celui du **séjour**, avec sa
+     * baie et sa ville. C'est mieux qu'un ciel, et c'est faux autrement : un
+     * miroir qui montre une fenêtre inexistante dans la pièce où il est
+     * accroché est un mensonge qu'un visiteur repère sans savoir le nommer.
+     *
+     * La bande de service a donc la sienne. Deux sondes, douze rendus à la
+     * construction, zéro par image ensuite.
+     *
+     * Le partage se fait par **matériau** et non par pièce — c'est la limite
+     * du procédé, puisque la scène est fusionnée par matériau. Elle tombe
+     * bien : `miroir` et `pierre` ne servent que dans la salle de bains, et ce
+     * sont précisément les deux matières assez polies pour que l'erreur se
+     * voie.
+     */
+    const prendre = (x: number, y: number, z: number) => {
+      const cube = new THREE.WebGLCubeRenderTarget(leger ? 128 : 256, {
+        type: THREE.HalfFloatType,
+      });
+      const sonde = new THREE.CubeCamera(0.3, 400, cube);
+      sonde.position.set(x, y, z);
+      scene.add(sonde);
+      const avant = renderer.getRenderTarget();
+      sonde.update(renderer, scene);
+      renderer.setRenderTarget(avant);
+      scene.remove(sonde);
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const carte = pmrem.fromCubemap(cube.texture);
+      pmrem.dispose();
+      cube.dispose();
+      return carte;
+    };
+
+    /* Les deux prises se font **avant** toute affectation : sans quoi la
+       seconde photographierait des surfaces qui reflètent déjà la première, et
+       l'on empilerait un reflet de reflet. */
+    piece = prendre(5.0, SOL + 1.5, 6.0);
+    service = prendre(-2.0, SOL + 1.5, 1.2);
+
+    /* Le béton, le verre de la tour, les allèges et les voisins gardent le
+       ciel : ils sont dehors, et leur donner l'intérieur d'un appartement
+       serait la même faute à l'envers. */
+    /* Le vitrage de l'appartement est de la partie : c'est la seule vitre de
+       la scène qu'on regarde **du dedans**, et une vitre vue du dedans renvoie
+       la pièce — le montant du canapé sur le bas du panneau, le plafond sur le
+       haut. Avec le ciel pour seul reflet, elle restait un trou. */
+    for (const materiau of [parquet, lin, accent, bois, marbre, enduit, metal, vitrine]) {
+      materiau.envMap = piece.texture;
+      materiau.needsUpdate = true;
+    }
+    for (const materiau of [miroir, pierre]) {
+      materiau.envMap = service.texture;
+      materiau.needsUpdate = true;
+    }
+  }
+
   return {
     scene,
     hauteur,
     dispose() {
       for (const item of bin) item.dispose();
       cible?.dispose();
+      piece?.dispose();
+      service?.dispose();
     },
   };
 }
