@@ -1951,7 +1951,28 @@ export function buildEdifice(
     Math.sin(azimut) * Math.cos(site) * portee,
   );
   soleil.castShadow = true;
-  soleil.shadow.mapSize.set(leger ? 1024 : 2048, leger ? 1024 : 2048);
+  /*
+   * Quatre mille quatre-vingt-seize, et non deux mille quarante-huit.
+   *
+   * C'est le réglage le moins cher de toute la scène, et il l'est pour une
+   * raison particulière : **la carte d'ombre est gelée après la première
+   * image** (voir `autoUpdate` dans `Edifice.tsx`). Le soleil ne bouge pas, le
+   * bâtiment non plus ; seule la caméra bouge, et une carte d'ombre ne dépend
+   * pas de la caméra. On la paie donc une fois au démarrage et jamais ensuite,
+   * là où un moteur de jeu la redessine soixante fois par seconde et compte
+   * chaque pixel.
+   *
+   * Ce qu'on y gagne se voit là où l'on regarde : la carte couvre quatre-vingts
+   * mètres, donc elle passe de quatre à deux centimètres par texel. À deux
+   * centimètres, l'ombre d'un meneau de quatorze centimètres sur un parquet
+   * cesse d'être un escalier et redevient une ligne.
+   *
+   * Seize méga-octets de mémoire graphique de plus. Les petites machines
+   * gardent mille vingt-quatre : chez elles, c'est la mémoire qui manque
+   * d'abord, et une ombre douce sur six pouces ne réclame pas cette finesse.
+   */
+  const finesseOmbre = leger ? 1024 : 4096;
+  soleil.shadow.mapSize.set(finesseOmbre, finesseOmbre);
   /*
    * Le cadre de l'ombre est resserré sur le bâtiment.
    *

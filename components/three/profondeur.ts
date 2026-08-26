@@ -125,12 +125,97 @@ const SEUIL = /* glsl */ `
   }
 `;
 
+/*
+ * L'occlusion ambiante, calculée à partir du tampon de profondeur.
+ *
+ * C'est ce que tous les moteurs de jeu ont et que cette scène n'avait pas. Elle
+ * porte déjà une occlusion **cuite** — dans les sommets, à la construction —
+ * mais celle-là ne sait que ce que le code lui a dit : un mur est sombre au ras
+ * du sol parce qu'on a écrit qu'il devait l'être. Elle ignore tout du reste :
+ * l'angle entre deux meubles, le dessous d'un plateau, le creux entre deux
+ * coussins, la jonction d'un pied et d'un tapis. Or c'est précisément là que
+ * l'œil cherche la profondeur — une image sans ces ombres-là paraît lavée,
+ * quelles que soient ses matières.
+ *
+ * Le principe est le plus économe qui marche, et il n'a besoin d'aucune
+ * matrice : pour chaque point, on regarde autour de lui dans le tampon de
+ * profondeur, et on compte **ce qui est devant**. Un point au fond d'un angle a
+ * beaucoup de voisins plus proches de la caméra que lui ; un point au milieu
+ * d'un mur n'en a aucun. C'est de l'occlusion d'horizon, la plus ancienne des
+ * méthodes en espace écran, et elle donne quatre-vingts pour cent de l'effet
+ * pour un dixième du travail d'une méthode à hémisphère orientée.
+ *
+ * Trois précautions, et chacune corrige un défaut classique :
+ *
+ * **Le rayon est en mètres, pas en pixels.** On le divise par la distance, donc
+ * un angle de mur occlut sur la même largeur réelle qu'on soit à deux mètres ou
+ * à dix. Sans cela, l'occlusion grossit quand on recule, ce qui se lit comme un
+ * halo sale qui suit la caméra.
+ *
+ * **Une différence trop grande ne compte pas.** Un objet à trois mètres devant
+ * un mur n'assombrit pas le mur : il le cache. Sans ce plafond, chaque
+ * silhouette traîne une ombre noire dans le vide autour d'elle.
+ *
+ * **On échantillonne en anneaux tournés**, comme le flou : une grille laisse
+ * voir sa grille sur les grandes surfaces lisses.
+ */
+const OCCLUSION = /* glsl */ `
+  varying vec2 vUv;
+  uniform sampler2D tProfondeur;
+  uniform vec2 uTaille;
+  uniform float uPres;
+  uniform float uLoin;
+  uniform float uRayon;
+
+  float metres(vec2 uv) {
+    float d = texture2D(tProfondeur, uv).x;
+    return (uPres * uLoin) / (uLoin - d * (uLoin - uPres));
+  }
+
+  float part(vec2 uv, float centre, float portee) {
+    float voisin = metres(uv);
+    float ecart = centre - voisin;
+    // Devant, et pas trop loin devant.
+    return step(0.02, ecart) * smoothstep(portee * 1.6, portee * 0.1, ecart)
+         * smoothstep(0.02, portee * 0.35, ecart);
+  }
+
+  void main() {
+    float centre = metres(vUv);
+    // Au-delà de quarante mètres, l'occlusion de contact n'a plus de sens.
+    if (centre > 40.0) { gl_FragColor = vec4(1.0); return; }
+
+    float portee = uRayon;
+    // Le rayon en pixels décroît avec la distance : rayon réel constant.
+    vec2 pas = vec2(portee / centre) * uTaille;
+
+    float somme = 0.0;
+    somme += part(vUv + vec2( 1.000,  0.000) * pas, centre, portee);
+    somme += part(vUv + vec2( 0.500,  0.866) * pas, centre, portee);
+    somme += part(vUv + vec2(-0.500,  0.866) * pas, centre, portee);
+    somme += part(vUv + vec2(-1.000,  0.000) * pas, centre, portee);
+    somme += part(vUv + vec2(-0.500, -0.866) * pas, centre, portee);
+    somme += part(vUv + vec2( 0.500, -0.866) * pas, centre, portee);
+    somme += part(vUv + vec2( 1.732,  1.000) * pas, centre, portee);
+    somme += part(vUv + vec2( 0.000,  2.000) * pas, centre, portee);
+    somme += part(vUv + vec2(-1.732,  1.000) * pas, centre, portee);
+    somme += part(vUv + vec2(-1.732, -1.000) * pas, centre, portee);
+    somme += part(vUv + vec2( 0.000, -2.000) * pas, centre, portee);
+    somme += part(vUv + vec2( 1.732, -1.000) * pas, centre, portee);
+
+    float occlusion = 1.0 - somme / 12.0;
+    gl_FragColor = vec4(vec3(occlusion), 1.0);
+  }
+`;
+
 const MELANGE = /* glsl */ `
   varying vec2 vUv;
   uniform sampler2D tNet;
   uniform sampler2D tFlou;
   uniform sampler2D tProfondeur;
   uniform sampler2D tEclat;
+  uniform sampler2D tOcclusion;
+  uniform float uOcclusion;
   uniform float uPres;
   uniform float uLoin;
   uniform float uMise;
@@ -169,6 +254,24 @@ const MELANGE = /* glsl */ `
     float part = smoothstep(uMise * 1.35, uMise * 4.2, metres) * uForce;
     vec3 couleur = mix(net, flou, part);
 
+    /*
+     * L'occlusion multiplie, et elle multiplie **avant** l'éclat.
+     *
+     * Avant, parce que l'éclat est de la lumière en trop qui déborde d'une
+     * source : elle ne se fait pas manger par un coin de mur. Assombrir après
+     * reviendrait à éteindre un halo au motif qu'il passe devant un angle, ce
+     * qu'aucun objectif ne fait.
+     *
+     * Elle est appliquée à toute la couleur, ce qui est l'approximation
+     * assumée de la méthode : une occlusion ambiante ne devrait éteindre que
+     * l'indirect, et une passe de composition n'a plus les deux séparés. Le
+     * remède est de rester **discret** — quarante-cinq pour cent au fond d'un
+     * angle, jamais plus. Une occlusion qu'on remarque est une occlusion
+     * fausse.
+     */
+    float ao = texture2D(tOcclusion, vUv).r;
+    couleur *= mix(1.0, ao, uOcclusion);
+
     /* L'éclat s'**ajoute**, il ne se mélange pas : c'est de la lumière en
        trop, pas une autre version de l'image. Un mélange l'aurait fait payer
        par un assombrissement de ce qui l'entoure, ce qui est exactement le
@@ -188,6 +291,44 @@ const MELANGE = /* glsl */ `
      * distance au coin : sinon elle s'écrase sur un écran large et devient un
      * bandeau latéral.
      */
+    /*
+     * L'étalonnage.
+     *
+     * Deux gestes, et pas un de plus. Les ombres partent vers le bleu et les
+     * hautes lumières vers l'ambre : c'est la séparation de tons que fait
+     * n'importe quel étalonneur devant une scène de fin de journée, parce que
+     * l'ombre y est éclairée par le ciel et la lumière par le soleil. Puis une
+     * courbe en S très douce, qui creuse les noirs d'un rien et retient les
+     * blancs — la courbe de tonalité filmique en a déjà une, on ne fait que
+     * l'appuyer.
+     *
+     * C'est le dernier pour cent, et c'est celui qui manque le plus quand il
+     * n'est pas là : une image techniquement juste et non étalonnée se
+     * reconnaît à ce qu'elle est **neutre partout**.
+     */
+    /*
+     * On borne **avant** d'étalonner, et ce n'est pas une précaution : c'est
+     * une correction.
+     *
+     * La courbe en S est un polynôme de degré trois valable sur zéro-un.
+     * Au-dessus de un — et l'éclat en produit, c'est son métier — le terme
+     * « 3 − 2c » devient négatif et la courbe plonge. Le canal le plus lumineux
+     * passe sous zéro en premier, donc un point blanc éclatant sortait
+     * **cyan** : le rouge tombait, le bleu restait. La lampe sur pied et les
+     * foyers de la plaque en étaient constellés.
+     *
+     * Rien n'est perdu à borner ici : la sortie est écrite en huit bits, et
+     * tout ce qui dépasse un y serait écrêté quelques lignes plus bas de toute
+     * façon.
+     */
+    couleur = clamp(couleur, 0.0, 1.0);
+
+    float clarte = dot(couleur, vec3(0.2126, 0.7152, 0.0722));
+    vec3 froid = vec3(0.94, 0.98, 1.06);
+    vec3 chaud = vec3(1.05, 1.00, 0.93);
+    couleur *= mix(froid, chaud, smoothstep(0.12, 0.72, clarte));
+    couleur = couleur * couleur * (3.0 - 2.0 * couleur) * 0.22 + couleur * 0.78;
+
     vec2 hors = (vUv - 0.5) * 2.0;
     float bord = dot(hors, hors);
     couleur *= 1.0 - uVignette * bord * bord;
@@ -255,6 +396,13 @@ export interface Profondeur {
   /** Rend la scène avec le point de netteté à `mise` mètres. */
   rendre(scene: THREE.Scene, camera: THREE.PerspectiveCamera, mise: number): void;
   /**
+   * Coupe ou rallume l'occlusion ambiante.
+   *
+   * Elle part en même temps que l'éclat, au premier palier : ce sont les deux
+   * passes qui coûtent sans que leur absence rende l'image fausse.
+   */
+  occlusion(actif: boolean): void;
+  /**
    * Coupe ou rallume l'éclat.
    *
    * C'est le premier effet que la machine cède quand elle ne suit plus : trois
@@ -298,6 +446,11 @@ export function creerProfondeur(
      de tous les flous en cascade. */
   const vif = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
   const halo = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
+  /* L'occlusion est calculée en demi-résolution puis floutée : c'est une
+     quantité basse fréquence, elle n'a aucun détail à perdre, et le flou lui
+     enlève le grain d'échantillonnage qui, sinon, fourmille sur les aplats. */
+  const brut = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
+  const doux = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
 
   const quad = new THREE.BufferGeometry();
   quad.setAttribute(
@@ -316,6 +469,32 @@ export function creerProfondeur(
     fragmentShader: FLOU,
     uniforms: {
       tImage: { value: net.texture },
+      uPas: { value: new THREE.Vector2() },
+    },
+    depthTest: false,
+    depthWrite: false,
+  });
+  const matOcclusion = new THREE.ShaderMaterial({
+    vertexShader: PLAN,
+    fragmentShader: OCCLUSION,
+    uniforms: {
+      tProfondeur: { value: net.depthTexture },
+      uTaille: { value: new THREE.Vector2() },
+      uPres: { value: 0.2 },
+      uLoin: { value: 1200 },
+      /* Trente-cinq centimètres : c'est la portée d'une ombre de contact, pas
+         celle d'une ombre portée. Au-delà d'un demi-mètre, l'occlusion cesse
+         de coller aux objets et devient un voile gris qui suit la caméra. */
+      uRayon: { value: 0.35 },
+    },
+    depthTest: false,
+    depthWrite: false,
+  });
+  const matAdoucir = new THREE.ShaderMaterial({
+    vertexShader: PLAN,
+    fragmentShader: FLOU,
+    uniforms: {
+      tImage: { value: null as THREE.Texture | null },
       uPas: { value: new THREE.Vector2() },
     },
     depthTest: false,
@@ -366,6 +545,12 @@ export function creerProfondeur(
       tFlou: { value: flou.texture },
       tProfondeur: { value: net.depthTexture },
       tEclat: { value: halo.texture },
+      tOcclusion: { value: doux.texture },
+      /* Quarante-cinq pour cent au plus sombre. Poussée à soixante, elle
+         dessine un liseré noir au pied de chaque meuble — le défaut le plus
+         reconnaissable des occlusions en espace écran, et celui qui les fait
+         passer pour un filtre. */
+      uOcclusion: { value: 0.45 },
       uPres: { value: 0.2 },
       uLoin: { value: 1200 },
       uMise: { value: 40 },
@@ -397,7 +582,14 @@ export function creerProfondeur(
      de programme provoque une saccade d'une bonne dizaine d'images, ce qui
      est précisément ce qu'on essayait d'éviter en baissant le palier. */
   let avecEclat = true;
+  let avecOcclusion = true;
   const noir = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
+  /* Une cible blanche, pour quand l'occlusion est coupée : la composition
+     continue de multiplier par elle sans qu'on ait à recompiler le nuanceur.
+     Une recompilation de programme provoque une saccade d'une dizaine
+     d'images, ce qui est précisément ce qu'on cherche à éviter en baissant un
+     palier. */
+  const blanc = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
 
   return {
     setSize(largeur, hauteur) {
@@ -405,6 +597,12 @@ export function creerProfondeur(
       const h = Math.max(2, Math.round(hauteur));
       net.setSize(l, h);
       flou.setSize(Math.max(2, Math.round(l * DEMI)), Math.max(2, Math.round(h * DEMI)));
+      const ld = Math.max(2, Math.round(l * DEMI));
+      const hd = Math.max(2, Math.round(h * DEMI));
+      brut.setSize(ld, hd);
+      doux.setSize(ld, hd);
+      matOcclusion.uniforms.uTaille.value.set(1 / ld, 1 / hd);
+      matAdoucir.uniforms.uPas.value.set(1.4 / ld, 1.4 / hd);
       const lq = Math.max(2, Math.round(l * QUART));
       const hq = Math.max(2, Math.round(h * QUART));
       vif.setSize(lq, hq);
@@ -427,6 +625,21 @@ export function creerProfondeur(
       maille.material = matFlou;
       renderer.setRenderTarget(flou);
       renderer.render(plan, oeil);
+
+      if (avecOcclusion) {
+        matOcclusion.uniforms.uPres.value = camera.near;
+        matOcclusion.uniforms.uLoin.value = camera.far;
+        maille.material = matOcclusion;
+        renderer.setRenderTarget(brut);
+        renderer.render(plan, oeil);
+
+        matAdoucir.uniforms.tImage.value = brut.texture;
+        maille.material = matAdoucir;
+        renderer.setRenderTarget(doux);
+        renderer.render(plan, oeil);
+
+        matMelange.uniforms.tOcclusion.value = doux.texture;
+      }
 
       if (avecEclat) {
         maille.material = matSeuil;
@@ -456,6 +669,20 @@ export function creerProfondeur(
       renderer.render(plan, oeil);
     },
 
+    occlusion(actif) {
+      if (actif === avecOcclusion) return;
+      avecOcclusion = actif;
+      if (!actif) {
+        const precedent = renderer.getRenderTarget();
+        renderer.setRenderTarget(blanc);
+        renderer.setClearColor(0xffffff, 1);
+        renderer.clear(true, false, false);
+        renderer.setClearColor(0x0d1014, 1);
+        renderer.setRenderTarget(precedent);
+        matMelange.uniforms.tOcclusion.value = blanc.texture;
+      }
+    },
+
     eclat(actif) {
       if (actif === avecEclat) return;
       avecEclat = actif;
@@ -479,9 +706,14 @@ export function creerProfondeur(
       flou.dispose();
       vif.dispose();
       halo.dispose();
+      brut.dispose();
+      doux.dispose();
       noir.dispose();
+      blanc.dispose();
       quad.dispose();
       matFlou.dispose();
+      matOcclusion.dispose();
+      matAdoucir.dispose();
       matSeuil.dispose();
       matHalo.dispose();
       matMelange.dispose();
