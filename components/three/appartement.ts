@@ -24,7 +24,7 @@
  */
 
 import * as THREE from 'three';
-import { paveChanfreine } from '@/components/three/maillage';
+import { coussinGonfle, paveChanfreine } from '@/components/three/maillage';
 import {
   BAIE,
   CLOISON,
@@ -617,9 +617,59 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     bloc(M.bois, x0 + 0.08, x1 - 0.08, RANG + 0.06, RANG + 0.1, z0 + 0.08, z1 - 0.08);
     bloc(M.bois, x0, x1, RANG + 0.1, RANG + 0.3, z0, z1);
   };
+  /*
+   * Un coussin est un volume qu'on a rempli, pas un volume qu'on a dessiné.
+   *
+   * Il était deux pavés empilés, le second légèrement rentré, ce qui donnait
+   * la ligne d'ombre recherchée mais gardait une silhouette parfaitement
+   * droite. Aucun coussin n'a de silhouette droite : il est bombé au milieu,
+   * pincé sur sa couture, et creux à la ceinture. C'est `coussinGonfle` qui
+   * s'en charge — voir `maillage.ts` pour le détail du déplacement.
+   *
+   * On le pose par ses cotes de plan, comme tout le reste : la fonction
+   * fabrique le volume centré et on le déplace au milieu de l'emprise.
+   */
   const coussin = (x0: number, x1: number, z0: number, z1: number, epais: number) => {
-    bloc(M.lin, x0, x1, RANG + 0.3, RANG + 0.3 + epais * 0.72, z0, z1);
-    bloc(M.lin, x0 + 0.03, x1 - 0.03, RANG + 0.3 + epais * 0.72, RANG + 0.3 + epais, z0 + 0.03, z1 - 0.03);
+    /* Seize pour cent de bombé, et pas trente-quatre. Le premier essai en
+       mettait le double : les six coussins d'assise se rejoignaient par le
+       milieu et le canapé sortait en tas de guimauve. Une assise est comprimée
+       par le poids qu'elle attend — son bombé est faible, c'est le dossier et
+       les coussins d'appoint qui sont pleins. */
+    pose(
+      coussinGonfle(x1 - x0, epais, z1 - z0, 0.16),
+      M.lin,
+      (x0 + x1) / 2,
+      RANG + 0.3 + epais / 2,
+      (z0 + z1) / 2,
+      occlusionMeuble,
+      99,
+    );
+  };
+  /**
+   * Un dossier, bombé **sur son épaisseur** et non sur sa hauteur.
+   *
+   * `coussinGonfle` bombe toujours selon l'axe y, parce qu'il faut bien
+   * choisir. Un dossier est mince horizontalement et haut verticalement : posé
+   * tel quel, il gonflait de quinze centimètres vers le haut et le bas au lieu
+   * de gonfler vers la pièce. Le rendu ne montrait pas un dossier mou, il
+   * montrait un ballon. On construit donc le volume couché — épaisseur sur y —
+   * et on le redresse d'un quart de tour.
+   */
+  const dossier = (selonZ: boolean, fixe: number, de: number, a: number, epais: number) => {
+    const g = coussinGonfle(a - de, epais, 0.56, 0.17);
+    // rotateX(-π/2) envoie z sur y : la hauteur devient verticale.
+    g.rotateX(-Math.PI / 2);
+    // Et pour un dossier le long de z, un quart de tour de plus.
+    if (selonZ) g.rotateY(Math.PI / 2);
+    pose(
+      g,
+      M.lin,
+      selonZ ? fixe : (de + a) / 2,
+      RANG + 0.58,
+      selonZ ? (de + a) / 2 : fixe,
+      occlusionMeuble,
+      99,
+    );
   };
 
   // Le retour, le long de la façade est.
@@ -645,15 +695,13 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     [5.5, 7.4],
     [7.44, 9.3],
   ]) {
-    bloc(M.lin, 4.02, 4.24, RANG + 0.3, RANG + 0.86, z0, z1);
-    bloc(M.lin, 4.05, 4.22, RANG + 0.86, RANG + 0.9, z0 + 0.03, z1 - 0.03);
+    dossier(true, 4.14, z0, z1, 0.24);
   }
   for (const [x0, x1] of [
     [5.06, 6.8],
     [6.84, 8.6],
   ]) {
-    bloc(M.lin, x0, x1, RANG + 0.3, RANG + 0.86, 5.4, 5.62);
-    bloc(M.lin, x0 + 0.03, x1 - 0.03, RANG + 0.86, RANG + 0.9, 5.43, 5.6);
+    dossier(false, 5.52, x0, x1, 0.24);
   }
   // Les accoudoirs, qui débordent de l'assise.
   bloc(M.lin, 4.0, 5.0, RANG + 0.3, RANG + 0.62, 9.24, 9.4);
@@ -662,12 +710,19 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
      Un seul : posé sur trois oreillers d'un séjour beige, un vert olive profond
      réchauffe la pièce ; répété sur les chaises, les serviettes et le lit, il
      ferait un catalogue. */
-  for (const [x, z] of [
-    [4.5, 6.4],
-    [4.5, 8.4],
-    [7.6, 5.9],
+  for (const [x, z, tourne] of [
+    [4.5, 6.4, 0.22],
+    [4.5, 8.4, -0.15],
+    [7.6, 5.9, 0.3],
   ] as const) {
-    bloc(M.accent, x - 0.2, x + 0.2, RANG + 0.49, RANG + 0.78, z - 0.2, z + 0.2);
+    /* Un coussin d'appoint est **posé de travers**, appuyé contre le dossier.
+       Trois coussins parfaitement d'équerre sur un canapé, c'est une vitrine
+       de magasin, pas un salon — et la vitrine est justement l'effet qu'on
+       cherche à ne pas produire. */
+    const g = coussinGonfle(0.42, 0.16, 0.42, 0.34);
+    g.rotateX(-0.5);
+    g.rotateY(tourne);
+    pose(g, M.accent, x, RANG + 0.56, z, occlusionMeuble, 99);
   }
 
   // La table basse, plateau de marbre sur piètement métallique.
@@ -863,13 +918,56 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   // Le lit, tête contre le mur aveugle de l'ouest.
   bloc(M.bois, H.x0 + 0.2, H.x0 + 0.32, SOL + 0.28, SOL + 1.3, 7.55, 9.65);
   bloc(M.bois, H.x0 + 0.32, H.x0 + 2.32, SOL + 0.22, SOL + 0.5, 7.7, 9.5);
-  bloc(M.lin, H.x0 + 0.32, H.x0 + 2.32, SOL + 0.5, SOL + 0.66, 7.7, 9.5);
-  bloc(M.lin, H.x0 + 0.92, H.x0 + 2.32, SOL + 0.66, SOL + 0.72, 7.7, 9.5);
-  for (const z of [8.05, 9.15]) {
-    bloc(M.lin, H.x0 + 0.38, H.x0 + 0.86, SOL + 0.66, SOL + 0.83, z - 0.25, z + 0.25);
+  /*
+   * Le matelas, la couette et les oreillers — trois volumes mous, et traités
+   * comme tels.
+   *
+   * Le matelas garde un bombé faible : il est comprimé par son propre sommier
+   * et par ses bords cousus. La couette en a beaucoup plus, parce qu'elle est
+   * gonflée et qu'elle retombe sur les côtés. Les oreillers sont ce qu'il y a
+   * de plus mou dans la pièce, et ils sont posés en biais contre la tête de
+   * lit — deux oreillers rigoureusement parallèles font une chambre d'hôtel
+   * dans un catalogue.
+   */
+  pose(
+    coussinGonfle(2.0, 0.16, 1.8, 0.12, true),
+    M.lin,
+    H.x0 + 1.32,
+    SOL + 0.58,
+    8.6,
+    occlusionMeuble,
+    99,
+  );
+  // La couette, tirée jusqu'à mi-lit, et son retour replié.
+  pose(
+    coussinGonfle(1.4, 0.12, 1.8, 0.36),
+    M.lin,
+    H.x0 + 1.62,
+    SOL + 0.7,
+    8.6,
+    occlusionMeuble,
+    99,
+  );
+  bloc(M.lin, H.x0 + 0.9, H.x0 + 1.06, SOL + 0.66, SOL + 0.78, 7.7, 9.5);
+  for (const [z, biais] of [
+    [8.06, 0.14],
+    [9.14, -0.1],
+  ] as const) {
+    const o = coussinGonfle(0.5, 0.17, 0.7, 0.5);
+    o.rotateX(-0.22);
+    o.rotateY(biais);
+    pose(o, M.lin, H.x0 + 0.62, SOL + 0.72, z, occlusionMeuble, 99);
   }
   // Un plaid replié au pied du lit.
-  bloc(M.lin, H.x0 + 0.32, H.x0 + 2.32, SOL + 0.66, SOL + 0.74, 7.7, 8.22);
+  pose(
+    coussinGonfle(0.52, 0.1, 1.8, 0.3),
+    M.lin,
+    H.x0 + 0.58 + 1.74,
+    SOL + 0.7,
+    8.6,
+    occlusionMeuble,
+    99,
+  );
 
   // Deux chevets et leurs lampes, de part et d'autre de la tête de lit.
   for (const z of [7.6, 9.6]) {

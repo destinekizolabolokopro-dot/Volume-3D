@@ -241,3 +241,73 @@ export function paveChanfreine(
   geometry.computeVertexNormals();
   return geometry;
 }
+
+
+/**
+ * Un coussin : un volume qui a été rempli, pas un volume qui a été dessiné.
+ *
+ * C'est le dernier gros aplat de la scène, et il est sur le meuble le plus
+ * regardé de la page. Un coussin de canapé modélisé en pavé — même chanfreiné,
+ * même avec sa trame, même avec son lustre — reste lu comme de la mousse
+ * découpée, pour une raison que ni la matière ni la lumière ne rattrapent :
+ * **un coussin n'est pas convexe partout.** Il est bombé au milieu, pincé sur
+ * sa couture, et sa couture creuse. Ce sont ces trois choses, dans cet ordre,
+ * qui font la différence entre du textile et du polystyrène.
+ *
+ * On part donc d'un pavé segmenté et on déplace ses sommets :
+ *
+ *  - **le bombé** pousse les faces haute et basse vers l'extérieur, d'autant
+ *    plus qu'on est loin du bord. L'exposant trois sur la distance au bord
+ *    donne un plateau large et une retombée rapide, ce qui est le profil d'un
+ *    rembourrage — un cosinus donnerait un dôme, c'est-à-dire un galet ;
+ *  - **le pincement** resserre les flancs à mesure qu'on monte vers la
+ *    couture : sans lui, le coussin bombé devient un tonneau ;
+ *  - **le creux de couture** rentre légèrement la ceinture, là où le fil tire
+ *    le tissu. Il ne se remarque pas ; son absence, si — c'est ce qui laisse
+ *    l'objet avec une silhouette de savonnette.
+ *
+ * Les normales sont recalculées **lissées** : un coussin facetté serait pire
+ * qu'un pavé, parce qu'il aurait l'air d'un pavé raté.
+ */
+export function coussinGonfle(
+  largeur: number,
+  hauteur: number,
+  profondeur: number,
+  /** Part de la hauteur ajoutée au centre, de chaque côté. 0,3 est plausible. */
+  gonfle = 0.3,
+  fin = false,
+): THREE.BufferGeometry {
+  const sx = fin ? 4 : 6;
+  const sy = fin ? 2 : 3;
+  const sz = fin ? 4 : 6;
+  const geometry = new THREE.BoxGeometry(largeur, hauteur, profondeur, sx, sy, sz);
+  const position = geometry.getAttribute('position') as THREE.BufferAttribute;
+  const hx = largeur / 2;
+  const hy = hauteur / 2;
+  const hz = profondeur / 2;
+
+  for (let i = 0; i < position.count; i += 1) {
+    const x = position.getX(i);
+    const y = position.getY(i);
+    const z = position.getZ(i);
+    const u = hx > 0 ? x / hx : 0;
+    const v = hz > 0 ? z / hz : 0;
+    const t = hy > 0 ? y / hy : 0;
+
+    /* Le bombé : maximal au centre du coussin, nul sur la ceinture. */
+    const plein = (1 - Math.abs(u) ** 3) * (1 - Math.abs(v) ** 3);
+    const dy = Math.sign(t) * Math.abs(t) * hauteur * gonfle * plein;
+
+    /* Le pincement des flancs, qui croît avec la hauteur : le tissu se
+       rassemble vers la couture. */
+    const serre = 1 - 0.16 * t * t;
+    /* Et le creux de couture, sur la ceinture seulement. */
+    const ceinture = (1 - Math.abs(t)) * 0.035;
+
+    position.setXYZ(i, x * (serre - ceinture), y + dy, z * (serre - ceinture));
+  }
+
+  position.needsUpdate = true;
+  geometry.computeVertexNormals();
+  return geometry;
+}
