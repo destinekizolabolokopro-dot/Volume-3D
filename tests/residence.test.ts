@@ -6,6 +6,8 @@ import {
   BAINS,
   BAIE,
   CHAMBRE,
+  CLOISON,
+  CLOISONS,
   CUISINE,
   ETAGE,
   GALERIE,
@@ -19,7 +21,9 @@ import {
   SOL,
   SOUS_PLAFOND,
   TERRASSE,
+  TERRASSE_SECTION,
   VOL,
+  type Section,
   altitudeNiveau,
   chiffres,
   empreinte,
@@ -120,12 +124,14 @@ test('chaque pièce est plus grande que le meuble qu’elle contient', () => {
 test('la visite ne quitte jamais l’appartement, sauf pour la terrasse', () => {
   /* C'est la promesse de la page depuis qu'elle ne montre plus qu'un logement.
      Une étape qui s'échappe dans le plateau voisin — non modélisé — cadrerait
-     le vide. */
+     le vide.
+     La dernière est exemptée, et elle seule : c'est le recul final sur
+     l'immeuble, qui est vérifié par son propre test juste en dessous. */
   const liste = Object.values(PIECES);
   const x0 = Math.min(...liste.map((p) => p.x0));
   const z0 = Math.min(...liste.map((p) => p.z0));
   const z1 = Math.max(...liste.map((p) => p.z1));
-  for (const [i, e] of VOL.entries()) {
+  for (const [i, e] of VOL.slice(0, -1).entries()) {
     const [x, y, z] = e.oeil;
     const dehors = x > TERRASSE.x0;
     if (dehors) {
@@ -137,6 +143,52 @@ test('la visite ne quitte jamais l’appartement, sauf pour la terrasse', () => 
     }
     assert.equal(y.toFixed(2), (SOL + 1.55).toFixed(2), `l’étape ${i} n’est pas à hauteur d’œil`);
   }
+});
+
+test('le dernier plan recule dehors et se retourne sur l’immeuble', () => {
+  /*
+   * Le seul plan pris de l'extérieur, et le seul dont les règles de la visite
+   * ne disent rien : il faut donc les écrire ici, sans quoi une valeur mal
+   * recopiée poserait la caméra à l'intérieur d'une dalle et personne ne le
+   * verrait avant la capture.
+   *
+   * Trois conditions, et elles suffisent. L'œil doit être **hors de
+   * l'enveloppe** du bâtiment — il n'y a pas d'étage à quarante et un mètres
+   * du côté où il se trouve, mais l'emprise du socle, elle, va loin. Il doit
+   * être **assez loin** pour que la hauteur hors tout tienne dans le cadre.
+   * Et il doit **regarder l'immeuble**, ce qui n'a rien d'automatique : un
+   * point visé recopié de l'étape précédente laisserait la caméra tournée
+   * vers la ville, dos au sujet.
+   */
+  const dernier = VOL[VOL.length - 1];
+  const [x, y, z] = dernier.oeil;
+  const socle = empreinte(0);
+
+  assert.ok(
+    Math.abs(x - socle.dx) > socle.hx + 20 || Math.abs(z) > socle.hz + 20,
+    `le dernier œil (${x} ; ${z}) est dans l’emprise du bâtiment`,
+  );
+  assert.ok(y > SOL, `le dernier plan est sous l’appartement (${y} m)`);
+
+  /* Assez loin pour cadrer : à `foyer` degrés, la hauteur hors tout doit
+     tenir dans l'image avec de la marge — sinon on cadre un morceau de
+     façade, ce qui ne dit pas ce qu'est le bâtiment. */
+  const distance = Math.hypot(x - dernier.vise[0], y - dernier.vise[1], z - dernier.vise[2]);
+  const couvert = 2 * Math.atan(hauteurHorsTout() / 2 / distance) * (180 / Math.PI);
+  assert.ok(
+    couvert < dernier.foyer * 0.85,
+    `l’immeuble occupe ${couvert.toFixed(1)}° d’un cadre de ${dernier.foyer}° : trop près`,
+  );
+  assert.ok(
+    couvert > dernier.foyer * 0.3,
+    `l’immeuble n’occupe que ${couvert.toFixed(1)}° d’un cadre de ${dernier.foyer}° : trop loin`,
+  );
+
+  /* Et il le regarde : le point visé est dans l'emprise, à mi-hauteur. */
+  assert.ok(
+    Math.abs(dernier.vise[0] - socle.dx) < socle.hx && Math.abs(dernier.vise[2]) < socle.hz,
+    'le dernier plan ne vise pas le bâtiment',
+  );
 });
 
 test('on sort sur la terrasse par la baie coulissante', () => {
@@ -155,6 +207,55 @@ test('on sort sur la terrasse par la baie coulissante', () => {
     z > BAIE.z0 + 0.3 && z < BAIE.z1 - 0.3,
     `on franchit la façade à z = ${z.toFixed(2)}, hors de la baie [${BAIE.z0} ; ${BAIE.z1}]`,
   );
+});
+
+test('la caméra franchit chaque cloison par une ouverture', () => {
+  /*
+   * Le défaut que ce test existe pour attraper est invisible à l'arrêt.
+   *
+   * Les captures sont prises **aux arrêts**, et à un arrêt la caméra est
+   * toujours dans une pièce. Ce qui se passe entre deux arrêts n'est photographié
+   * par personne : le vol pouvait traverser une cloison de plein fouet pendant
+   * une seconde de défilement sans qu'aucune image de la série ne le montre.
+   * Il le faisait — deux fois, pour entrer dans la chambre et dans la salle de
+   * bains, en passant à côté des deux portes qu'on avait pris soin de
+   * modéliser et d'entrouvrir.
+   *
+   * On interpole en droite entre deux œils consécutifs. C'est une
+   * approximation : le vol est une spline. Mais elle reste dans l'enveloppe
+   * convexe de ses points de contrôle, donc une droite qui passe dans
+   * l'ouverture avec de la marge y passe aussi — et une droite qui traverse un
+   * mur signale une faute réelle, ce qui est le seul rôle demandé ici.
+   */
+  const MARGE = 0.25;
+  for (let i = 1; i < VOL.length; i += 1) {
+    const a = VOL[i - 1].oeil;
+    const b = VOL[i].oeil;
+    for (const r of CLOISONS) {
+      const axe = r.selonZ ? 0 : 2;
+      const libre = r.selonZ ? 2 : 0;
+      /* La cloison a une épaisseur : on traite ses deux faces, sans quoi un
+         segment qui s'arrête dans le mur passerait inaperçu. */
+      for (const plan of [r.fixe, r.fixe + CLOISON]) {
+        const d0 = a[axe] - plan;
+        const d1 = b[axe] - plan;
+        if (d0 === d1 || d0 * d1 > 0) continue;
+        const f = d0 / (d0 - d1);
+        const ou = a[libre] + (b[libre] - a[libre]) * f;
+        // Hors de la longueur de la cloison : il n'y a pas de mur là.
+        if (ou < r.de || ou > r.a) continue;
+        const passe = r.trous.some(([p0, p1]) => ou > p0 + MARGE && ou < p1 - MARGE);
+        assert.ok(
+          passe,
+          `entre les étapes ${i - 1} et ${i}, on franchit la cloison ${
+            r.selonZ ? 'x' : 'z'
+          } = ${plan.toFixed(2)} à ${ou.toFixed(2)}, hors de ses ouvertures ${JSON.stringify(
+            r.trous.map(([p0, p1]) => [p0, p1]),
+          )}`,
+        );
+      }
+    }
+  }
 });
 
 test('chaque pièce du plan a son arrêt de caméra', () => {
@@ -196,6 +297,64 @@ test('aucune ligne de titre n’est vide', () => {
 });
 
 
+
+test('la ponctuation double porte son espace insécable', () => {
+  /*
+   * Le deux-points français prend une espace **avant**, et cette espace est
+   * insécable.
+   *
+   * Sans elle, le navigateur coupe où il veut, et il coupe : la capture en
+   * 390 × 844 de la section « chambre » montrait une ligne commençant par
+   * « : on donne le jour du matin ». Ce n'est pas un détail de puriste — un
+   * deux-points en début de ligne se lit comme une coquille, et une page qui
+   * vend du haut de gamme n'a pas droit aux coquilles.
+   *
+   * On vérifie sur **la copie affichée** seulement. Les commentaires du code
+   * n'ont pas à respecter la typographie d'imprimerie, et les y forcer ferait
+   * un test que personne ne comprendrait en le voyant échouer.
+   */
+  const copie: [string, string][] = [];
+  const ajouter = (nom: string, texte: string) => copie.push([nom, texte]);
+  const section = (nom: string, s: Section) => {
+    ajouter(`${nom} — surtitre`, s.surtitre);
+    s.titre.forEach((l: string, i: number) => ajouter(`${nom} — titre ${i}`, l));
+    if (s.chapeau) ajouter(`${nom} — chapeau`, s.chapeau);
+    for (const f of s.faits) {
+      ajouter(`${nom} — clé`, f.cle);
+      ajouter(`${nom} — valeur`, f.valeur);
+    }
+  };
+  ajouter('projet — nom', PROJET.nom);
+  ajouter('projet — lieu', PROJET.lieu);
+  PROJET.titre.forEach((l: string, i: number) => ajouter(`projet — titre ${i}`, l));
+  ajouter('projet — chapô', PROJET.chapo);
+  ajouter('projet — action', PROJET.action);
+  section('séjour', SEJOUR);
+  section('cuisine', CUISINE);
+  section('chambre', CHAMBRE);
+  section('bains', BAINS);
+  section('terrasse', TERRASSE_SECTION);
+  for (const v of GALERIE.vues) {
+    ajouter('galerie — titre', v.titre);
+    ajouter('galerie — texte', v.texte);
+  }
+  APPEL.titre.forEach((l: string, i: number) => ajouter(`appel — titre ${i}`, l));
+  ajouter('appel — surtitre', APPEL.surtitre);
+  ajouter('appel — texte', APPEL.texte);
+  ajouter('appel — action', APPEL.action);
+  for (const c of chiffres()) {
+    ajouter('chiffre — libellé', c.libelle);
+    ajouter('chiffre — précision', c.precision);
+  }
+
+  for (const [nom, texte] of copie) {
+    assert.ok(
+      !/ [:;!?»]/.test(texte),
+      `${nom} : espace sécable avant une ponctuation double — « ${texte} »`,
+    );
+    assert.ok(!/« /.test(texte), `${nom} : espace sécable après un guillemet ouvrant`);
+  }
+});
 
 test('la galerie a autant de légendes que le vol a d’étapes en galerie', () => {
   /* On compte les étapes **ancrées** sur la galerie, et non celles qui tombent

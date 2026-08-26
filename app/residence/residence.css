@@ -527,16 +527,22 @@ body:has(.rz) {
 }
 
 /* Sous le bloc central, un halo sombre et très étalé : il donne au titre son
-   fond sans fermer la pièce, ce qui est le sujet du dernier écran. */
+   fond sans fermer l'image, ce qui est le sujet du dernier écran.
+   Il a été éclairci le jour où le dernier plan est devenu le recul sur
+   l'immeuble : à quatre-vingts pour cent au centre, le voile mangeait
+   exactement la partie du cadre qu'on venait d'aller chercher à
+   quatre-vingt-quinze mètres. Le contraste du texte est mesuré sur les
+   pixels par `npm run residence` — c'est lui qui dit jusqu'où on peut
+   éclaircir, pas l'œil. */
 .rz-appel::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    68% 52% at 50% 42%,
-    rgba(10, 13, 17, 0.8) 0%,
-    rgba(10, 13, 17, 0.5) 46%,
+    64% 50% at 50% 42%,
+    rgba(10, 13, 17, 0.66) 0%,
+    rgba(10, 13, 17, 0.42) 46%,
     rgba(10, 13, 17, 0) 78%
   );
 }
@@ -712,6 +718,36 @@ body:has(.rz) {
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
+  }
+}
+
+/*
+ * Les trois chiffres du dernier écran, sur un téléphone étroit.
+ *
+ * À deux par ligne, le troisième passe au rang du dessous et sort de l'écran :
+ * la capture en 390 × 844 montrait « 52 » coupé en deux par le bord bas, sous
+ * un bloc d'appel qui, lui, tenait. Un récapitulatif dont le dernier chiffre
+ * est illisible ne récapitule rien.
+ *
+ * Ils reviennent donc sur **une seule ligne**, à trois colonnes, avec des
+ * chiffres deux fois plus petits et la précision masquée. On perd le geste
+ * typographique ; on garde les trois nombres, qui sont ce qu'on est venu
+ * chercher. C'est le bon arbitrage à trois cent quatre-vingt-dix pixels, et
+ * seulement là.
+ */
+@media (max-width: 560px) {
+  .rz-appel .rz-tableau {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .rz-appel .rz-tableau .rz-valeur {
+    font-size: clamp(22px, 7vw, 32px);
+    letter-spacing: -0.03em;
+  }
+
+  .rz-appel .rz-tableau .rz-precision {
+    display: none;
   }
 }
 

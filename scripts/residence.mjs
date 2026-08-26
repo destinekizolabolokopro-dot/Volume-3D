@@ -27,7 +27,7 @@ const WIDTH = Number(process.env.W || 1440);
 const HEIGHT = Number(process.env.H || 900);
 const SORTIE = process.env.SORTIE || 'captures/residence';
 
-/** Les six sections, plus les trois plans de la galerie. */
+/** Les sept sections, plus les trois plans de la galerie. */
 const ARRETS = [
   ['1-entree', '#top', 0],
   ['2-sejour', '#sejour', 0],
@@ -37,8 +37,15 @@ const ARRETS = [
   ['4-galerie-iii', '#galerie', 2],
   ['5-chambre', '#chambre', 0],
   ['6-bains', '#bains', 0],
-  ['7-terrasse', '#contact', 0],
+  ['7-terrasse', '#terrasse', 0],
+  ['8-adresse', '#contact', 0],
 ];
+
+/* On peut n'en refaire qu'une : `ARRETS=8-adresse npm run residence`. Une
+   capture coûte une minute sous rendu logiciel, et on ne règle jamais un
+   cadrage du premier coup. */
+const CHOIX = (process.env.ARRETS || '').split(',').map((s) => s.trim()).filter(Boolean);
+const A_FAIRE = CHOIX.length ? ARRETS.filter(([nom]) => CHOIX.includes(nom)) : ARRETS;
 
 function navigateur() {
   if (process.env.CHROMIUM) return process.env.CHROMIUM;
@@ -238,7 +245,7 @@ async function contraste(nom) {
   }
 }
 
-for (const [nom, ancre, plan] of ARRETS) {
+for (const [nom, ancre, plan] of A_FAIRE) {
   await page.evaluate(
     ([ancre, plan]) => {
       const cible = document.querySelector(ancre);

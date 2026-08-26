@@ -12,6 +12,7 @@ import {
   GALERIE,
   PROJET,
   SEJOUR,
+  TERRASSE_SECTION,
   chiffres,
   type Fait,
   type Section,
@@ -21,11 +22,12 @@ import './residence.css';
 /**
  * ORIEL — la page.
  *
- * Huit écrans au-dessus d'une seule scène, et **une seule visite : celle d'un
+ * Neuf écrans au-dessus d'une seule scène, et **une seule visite : celle d'un
  * appartement.** La caméra part de son entrée, traverse le séjour, la cuisine,
- * la chambre, la salle de bains, et sort sur la terrasse au dernier écran.
- * Elle ne quitte jamais le logement — ce qu'on voit du bâtiment, on le voit
- * par ses baies.
+ * la chambre, la salle de bains, et sort sur la terrasse. Elle ne quitte le
+ * logement qu'au tout dernier écran, pour reculer et montrer l'immeuble qui le
+ * porte : neuf plans sur dix sont pris du dedans, et le dixième donne
+ * l'adresse.
  *
  * C'est un recentrage, pas une réduction. Volume3D ne vend pas des immeubles :
  * il vend la reconstitution d'un logement, et une démonstration qui fait le
@@ -182,6 +184,19 @@ export default function ResidencePage() {
           </div>
           <div className="rz-bande rz-pied-section">
             <Fiches faits={BAINS.faits} delai={220} />
+          </div>
+        </section>
+
+        {/* ------------------------------------------------- 7. terrasse --- */}
+        {/* Elle n'avait pas d'écran à elle : cinquante-deux mètres carrés
+            servaient de fond au bloc d'appel. Elle en a un, et la navigation
+            y mène enfin. */}
+        <section className="rz-section" id="terrasse">
+          <div className="rz-bande rz-plaque-haute">
+            <Titre section={TERRASSE_SECTION} cote="gauche" />
+          </div>
+          <div className="rz-bande rz-pied-section">
+            <Fiches faits={TERRASSE_SECTION.faits} delai={220} />
           </div>
         </section>
 

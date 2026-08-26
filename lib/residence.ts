@@ -149,6 +149,47 @@ export const TERRASSE = { x0: 10.8, x1: 16.2, z0: 1.0, z1: 10.6 } as const;
 /** La baie coulissante, sur la façade est : c'est par là qu'on sort. */
 export const BAIE = { z0: 6.4, z1: 9.2 } as const;
 
+/** Épaisseur d'une cloison de distribution. */
+export const CLOISON = 0.12;
+/** Hauteur d'une porte intérieure. */
+export const PORTE = 2.25;
+
+export interface Refend {
+  /** Vrai si la cloison est un plan `x = fixe` ; faux pour un plan `z = fixe`. */
+  selonZ: boolean;
+  fixe: number;
+  de: number;
+  a: number;
+  /** Les passages, en cotes absolues sur l'axe libre, avec leur hauteur. */
+  trous: [number, number, number][];
+}
+
+/*
+ * Les cloisons, ici et pas dans le modèle.
+ *
+ * Elles y étaient — trois appels dans `appartement.ts`, avec les cotes des
+ * portes écrites à la main. Le jour où l'on a voulu vérifier que **la caméra
+ * franchit chaque cloison par une ouverture**, il n'y avait rien à vérifier :
+ * le test aurait dû recopier les cotes, donc recopier l'erreur.
+ *
+ * Elles remontent donc dans le fichier qui fait déjà autorité sur le plan. Le
+ * modèle les lit, le test les lit, et une porte déplacée déplace les deux.
+ */
+export const CLOISONS: Refend[] = [
+  /* La cloison maîtresse, entre la bande de service et la bande de jour. Son
+     unique passage fait 1,80 m et n'a pas de porte : c'est la respiration du
+     plan, et une porte y ferait un couloir de ce qui est un dégagement. */
+  { selonZ: true, fixe: 0.6, de: -1.4, a: 10.6, trous: [[4.2, 6.0, SOUS_PLAFOND]] },
+  // Entrée / chambre, et entrée / bains : deux portes de quatre-vingt-dix.
+  /* La porte de la chambre a glissé vers l'est. Elle était à l'aplomb du
+     dressing, qui court tout le long du même mur : on ne pouvait pas entrer
+     dans la chambre, et la caméra ne s'en privait pas — elle traversait la
+     cloison. C'est le genre d'erreur qu'un plan dessiné à la main ne fait
+     jamais et qu'un plan écrit en chiffres fait tout le temps. */
+  { selonZ: false, fixe: 6.6, de: -3.6, a: 0.6, trous: [[-0.5, 0.4, PORTE]] },
+  { selonZ: false, fixe: 3.0 - CLOISON, de: -3.6, a: 0.6, trous: [[-2.8, -1.9, PORTE]] },
+];
+
 /** Surface d'une pièce, en mètres carrés. */
 export function surfacePiece(p: Piece): number {
   return (p.x1 - p.x0) * (p.z1 - p.z0);
@@ -262,7 +303,7 @@ export const VOL: Etape[] = [
      l'embrasure, la même caméra ne voit plus que le séjour et son angle vitré.
      C'est l'arrivée telle qu'on la vit — on ne s'arrête pas sur le paillasson
      pour regarder une porte. */
-  { t: 0.0, ancre: '#top', oeil: [0.3, 25.35, 5.15], vise: [10.4, 25.2, 9.4], foyer: 58 },
+  { t: 0.0, ancre: '#top', oeil: [0.5, 25.35, 4.9], vise: [10.4, 25.2, 9.4], foyer: 58 },
   /* Le séjour, pris de son angle nord-ouest : on longe le canapé, la table à
      manger vient au fond, et la baie tient toute la droite du cadre. */
   { t: 0.12, ancre: '#sejour', oeil: [2.0, 25.35, 9.8], vise: [10.4, 25.2, 4.4], foyer: 54 },
@@ -285,22 +326,105 @@ export const VOL: Etape[] = [
    * On avait construit une ville pour la regarder par une baie, et on l'avait
    * mise hors champ par un nombre.
    */
-  { t: 0.47, ancre: '#galerie', ecran: 1, oeil: [5.0, 25.35, 7.0], vise: [59.8, 23.9, 11.9], foyer: 46 },
+  /* Cent cinquante mètres, et non cinquante-cinq. Même direction au degré
+     près, mais le point de netteté était encore trop près : à cinquante-cinq
+     mètres, le flou s'installe à soixante-quatorze et sature à deux cent
+     trente — c'est-à-dire sur toute la ville, qui commence à cent cinquante.
+     Le plan dont le sujet est la vue rendait donc la vue en bouillie. À cent
+     cinquante, le premier rang de toitures est net et seul le lointain part
+     dans la brume : c'est ce que fait un œil qui regarde par une fenêtre. */
+  { t: 0.47, ancre: '#galerie', ecran: 1, oeil: [5.0, 25.35, 7.0], vise: [154.4, 21.4, 20.4], foyer: 46 },
   /* Galerie III — la diagonale complète : treize mètres de l'angle est
      jusqu'au fond de l'entrée, à travers l'ouverture. C'est ce plan-là qui dit
      la surface, bien mieux qu'un chiffre. */
   { t: 0.57, ancre: '#galerie', ecran: 2, oeil: [10.0, 25.35, 3.6], vise: [-3.2, 25.2, 5.6], foyer: 50 },
+  /*
+   * Les transits, et pourquoi il y en a cinq.
+   *
+   * Une visite qui va du séjour à la chambre passe par l'entrée et par une
+   * porte. Le vol, lui, allait tout droit : il traversait la cloison maîtresse
+   * hors de son passage, puis le mur de la chambre à côté de sa porte, deux
+   * fois, à l'aller et au retour. Personne ne l'avait vu, et pour une raison
+   * précise — **les captures sont prises aux arrêts**, et à un arrêt la caméra
+   * est toujours dans une pièce. Ce qui se passait entre deux arrêts n'était
+   * photographié par rien.
+   *
+   * C'est un test qui l'a dit, pas un rendu (`la caméra franchit chaque
+   * cloison par une ouverture`). Les cinq points ci-dessous sont sa réponse :
+   * ils ne sont pas des cadrages, ce sont des **passages** — un devant chaque
+   * porte, et deux dans la respiration entre bande de jour et bande de
+   * service. Le vol y ralentit à peine, et il y traverse de l'air.
+   */
+  /* Devant la porte de la chambre, dans l'entrée. */
+  { t: 0.63, oeil: [-0.05, 25.35, 5.5], vise: [-1.4, 25.2, 9.2], foyer: 56 },
   /* La chambre, depuis sa porte. */
-  { t: 0.68, ancre: '#chambre', oeil: [0.2, 25.35, 7.1], vise: [-3.4, 25.15, 10.2], foyer: 60 },
-  /* La salle de bains, depuis sa porte également. */
-  { t: 0.79, ancre: '#bains', oeil: [0.2, 25.35, 2.7], vise: [-3.4, 25.1, -1.0], foyer: 60 },
+  /* Depuis l'angle sud-est, et non depuis le pied du lit. Posée à cinquante
+     centimètres du matelas, la caméra ne cadrait plus une chambre : elle
+     cadrait un drap. Une pièce de quatre mètres sur quatre se prend de son
+     coin le plus dégagé, et c'est celui de la porte. */
+  { t: 0.68, ancre: '#chambre', oeil: [0.15, 25.35, 7.15], vise: [-1.6, 25.15, 10.3], foyer: 60 },
+  /* On ressort de la chambre, puis on se présente devant la salle de bains. */
+  { t: 0.72, oeil: [-1.0, 25.35, 4.4], vise: [-2.6, 25.2, 1.2], foyer: 58 },
+  { t: 0.76, oeil: [-2.5, 25.35, 3.6], vise: [-2.6, 25.15, 0.2], foyer: 60 },
+  /* La salle de bains, depuis sa porte également, dans l'axe de la baignoire. */
+  /* Depuis le seuil, en diagonale sur l'angle sud-ouest : la double vasque
+     prend la gauche du cadre, la baignoire le fond, la douche la droite. Visée
+     dans l'axe de la pièce, on ne cadrait qu'un mur — dix-huit mètres carrés
+     de pierre claire résumés à un aplat et à une baignoire vue de dessus. */
+  { t: 0.79, ancre: '#bains', oeil: [-2.3, 25.35, 2.25], vise: [-2.4, 24.98, -1.0], foyer: 60 },
+  /* Et le chemin inverse : la porte, l'entrée, le passage, le séjour. */
+  { t: 0.82, oeil: [-2.5, 25.35, 3.7], vise: [-1.0, 25.2, 5.6], foyer: 58 },
+  { t: 0.85, oeil: [0.9, 25.35, 5.1], vise: [6.0, 25.2, 6.6], foyer: 54 },
   /* Transit : on retraverse le séjour et on franchit la baie coulissante. */
   { t: 0.88, oeil: [7.0, 25.35, 7.9], vise: [14.0, 25.15, 8.2], foyer: 50 },
-  /* La terrasse, face au couchant, et la netteté portée à cent vingt mètres :
-     le sujet du dernier plan n'est ni la terrasse ni la rambarde, c'est la
-     ville. Fin de la visite — le dernier plan n'est plus une pièce, c'est ce
-     qu'on achète avec. */
-  { t: 1.0, ancre: '#contact', oeil: [13.4, 25.35, 8.4], vise: [128.8, 21.6, -24.3], foyer: 50 },
+  /* La terrasse, et la netteté portée à cent vingt mètres : le sujet de ce
+     plan n'est ni le platelage ni la rambarde, c'est la ville. */
+  /* Reculée contre la baie et **inclinée vers le bas** : le plan de la section
+     « terrasse » ne montrait pas la terrasse. La caméra était posée en son
+     milieu, à l'horizontale, et cadrait la ville par-dessus le garde-corps —
+     très bien pour un plan de vue, absurde pour un plan dont le sujet est
+     cinquante-deux mètres carrés de platelage. Cinq degrés de plongée et deux
+     mètres de recul, et le garde-corps, la jardinière et le nez de terrasse
+     tiennent le premier plan au lieu de sortir du cadre par le bas. La
+     netteté reste portée à cent vingt mètres : on incline le cadre, on ne
+     change pas le point — un plan dont le sujet est une vue et dont le
+     premier plan est une terrasse doit être net des deux bouts.
+
+     Une plongée plus forte a été essayée — quinze degrés — pour faire entrer
+     le platelage lui-même. Elle ne marche pas : à un mètre soixante sous
+     l'œil, le platelage n'entre dans le cadre qu'au prix d'un acrotère qui
+     mange le tiers bas de l'image, et on échange une terrasse qu'on ne voit
+     pas contre un muret qu'on voit trop. */
+  { t: 0.93, ancre: '#terrasse', oeil: [11.6, 25.35, 7.4], vise: [128.8, 14.0, -24.3], foyer: 50 },
+  /*
+   * Le dernier plan : on sort, et on se retourne.
+   *
+   * Neuf plans sur dix sont pris de l'intérieur, et c'était le bon choix — la
+   * page vend un appartement, pas une tour. Mais terminer dedans laissait le
+   * visiteur sans **adresse** : il avait traversé cent soixante-dix mètres
+   * carrés sans jamais voir dans quoi ils étaient. Le dernier écran recule
+   * donc de quatre-vingt-quinze mètres et se retourne sur l'immeuble entier,
+   * redan compris — la terrasse qu'on vient de quitter s'y voit, au cinquième,
+   * sur la façade est.
+   *
+   * Le point de vue est au sud-est, et ce n'est pas indifférent : le soleil
+   * est à dix-huit degrés d'azimut, donc à l'est-nord-est. En se plaçant à
+   * l'opposé on aurait un contre-jour — une silhouette noire sur un ciel
+   * clair, spectaculaire une fois et illisible ensuite. D'ici, la façade est
+   * est en pleine lumière et la façade sud dans l'ombre : deux valeurs sur un
+   * même volume, ce qui est la seule façon de faire lire une masse bâtie.
+   *
+   * Et il est **bas** — trente mètres, à peine au-dessus du cinquième. Le
+   * premier essai regardait de quarante et un mètres, et la tour en sortait
+   * noire : un vitrage vertical renvoie ce qui lui fait face en miroir, donc
+   * vu de haut il renvoie la ville, qui est sombre. Descendu à hauteur de
+   * façade, le même vitrage renvoie la bande claire de l'horizon — et un
+   * immeuble de verre redevient un immeuble de verre.
+   *
+   * La sortie passe par la baie coulissante, qui est ouverte à cet étage-là :
+   * l'œil franchit une ouverture, pas un mur.
+   */
+  { t: 1.0, ancre: '#contact', oeil: [84, 30, -46], vise: [4.5, 26.0, 1.0], foyer: 46 },
 ];
 
 /* =============================================================== mesures === */
@@ -392,12 +516,22 @@ export interface Section {
   faits: readonly Fait[];
 }
 
+/*
+ * La copie affichée, et sa typographie.
+ *
+ * Les deux-points portent une **espace fine insécable** (U+202F) et non une
+ * espace ordinaire. Ce n'est pas une coquetterie : sans elle, le navigateur
+ * coupe la ligne devant le deux-points quand la colonne est étroite, et la
+ * capture en 390 × 844 de la section « chambre » commençait une ligne par
+ * « : on donne le jour du matin ». Un test le vérifie sur toute la copie —
+ * `la ponctuation double porte son espace insécable`.
+ */
 export const PROJET = {
   nom: 'ORIEL',
   lieu: 'Rive gauche — îlot 14 · 5ᵉ étage',
   titre: ['Cent soixante-dix mètres carrés,', 'pièce par pièce.'],
   chapo:
-    'Un appartement d’angle au cinquième, deux façades vitrées et cinq mètres quarante de terrasse. Faites défiler : vous le traversez.',
+    'Un appartement d’angle au cinquième, deux façades vitrées et cinq mètres quarante de terrasse. Faites défiler : vous le traversez.',
   action: 'Entrer',
 } as const;
 
@@ -405,14 +539,14 @@ export const NAVIGATION: { href: string; label: string }[] = [
   { href: '#sejour', label: 'Séjour' },
   { href: '#cuisine', label: 'Cuisine' },
   { href: '#chambre', label: 'Chambre' },
-  { href: '#contact', label: 'Terrasse' },
+  { href: '#terrasse', label: 'Terrasse' },
 ];
 
 export const SEJOUR: Section = {
   surtitre: 'Le séjour',
   titre: ['Soixante-seize mètres carrés', 'et deux façades.'],
   chapeau:
-    'L’angle prend le jour de l’est et du nord. Rien ne coupe la pièce : la cuisine s’y ouvre sans porte, et la baie file d’un mur à l’autre.',
+    'L’angle prend le jour de l’est et du nord. Rien ne coupe la pièce : la cuisine s’y ouvre sans porte, et la baie file d’un mur à l’autre.',
   faits: [
     { cle: 'Surface', valeur: '76,0 m²' },
     { cle: 'Sous plafond', valeur: '3,00 m' },
@@ -424,7 +558,7 @@ export const CUISINE: Section = {
   surtitre: 'La cuisine',
   titre: ['Ouverte,', 'mais pas au milieu du salon.'],
   chapeau:
-    'Elle occupe la moitié sud de la bande de jour : l’îlot regarde la baie, les rangements sont contre le mur aveugle. On cuisine face à la lumière et on range dans l’ombre.',
+    'Elle occupe la moitié sud de la bande de jour : l’îlot regarde la baie, les rangements sont contre le mur aveugle. On cuisine face à la lumière et on range dans l’ombre.',
   faits: [
     { cle: 'Surface', valeur: '44,0 m²' },
     { cle: 'Îlot', valeur: '3,40 × 1,10 m' },
@@ -436,11 +570,11 @@ export const CHAMBRE: Section = {
   surtitre: 'La chambre',
   titre: ['Sur la façade nord,', 'loin de la rue.'],
   chapeau:
-    'Elle est la seule pièce de la bande de service à toucher une façade vitrée, et c’est délibéré : on donne le jour du matin à la pièce où l’on se réveille.',
+    'Elle est la seule pièce de la bande de service à toucher une façade vitrée, et c’est délibéré : on donne le jour du matin à la pièce où l’on se réveille.',
   faits: [
     { cle: 'Surface', valeur: '16,8 m²' },
     { cle: 'Lit', valeur: '180 × 200 cm' },
-    { cle: 'Dressing', valeur: '3,20 m de front' },
+    { cle: 'Dressing', valeur: '2,10 m de front' },
   ],
 };
 
@@ -461,7 +595,7 @@ export const GALERIE: { surtitre: string; vues: Vue[] } = {
   vues: [
     {
       titre: 'Le coin salon',
-      texte: 'Vu depuis l’angle vitré, dos à la ville : le seul plan qui montre l’appartement de dos.',
+      texte: 'Vu depuis l’angle vitré, dos à la ville : le seul plan qui montre l’appartement de dos.',
     },
     {
       titre: 'La baie',
@@ -474,8 +608,29 @@ export const GALERIE: { surtitre: string; vues: Vue[] } = {
   ],
 };
 
-export const APPEL = {
+/*
+ * La terrasse a maintenant sa section.
+ *
+ * Elle n'en avait pas : elle servait de décor au bloc d'appel, dont le
+ * surtitre annonçait « La terrasse » avant un titre qui parlait de tout autre
+ * chose. Cinquante-deux mètres carrés — le tiers de la surface annoncée en
+ * haut de page — passaient ainsi en fond d'un formulaire de contact. Le lien
+ * « Terrasse » de la navigation menait au pied de page.
+ */
+export const TERRASSE_SECTION: Section = {
   surtitre: 'La terrasse',
+  titre: ['Cinquante-deux mètres carrés', 'de plus, dehors.'],
+  chapeau:
+    'Le redan du cinquième la dégage sur toute la façade est. Cinq mètres quarante de profondeur : c’est une pièce, pas un balcon — on y met une table de six et deux bains de soleil sans que rien ne se touche.',
+  faits: [
+    { cle: 'Surface', valeur: '52 m²' },
+    { cle: 'Profondeur', valeur: '5,40 m' },
+    { cle: 'Orientation', valeur: 'plein est' },
+  ],
+};
+
+export const APPEL = {
+  surtitre: 'L’adresse',
   titre: ['Votre bien,', 'reconstruit en volume.'],
   texte:
     'Envoyez un plan, une surface, ou rien du tout. On modélise le volume, on l’éclaire, et on rend un lien que vos visiteurs traversent — exactement comme celui-ci.',

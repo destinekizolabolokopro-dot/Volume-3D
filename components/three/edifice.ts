@@ -66,7 +66,11 @@ const TON = {
   /** Le vitrage de vision, entre l'allège et le nez de dalle. */
   verre: 0x5d6d78,
   /** L'allège : le panneau plein qui masque la dalle, sous chaque vitrage. */
-  allege: 0x2e3439,
+  /* L'allège — le panneau plein sous chaque bandeau vitré. Elle était à
+     0x2e3439, soit trois pour cent de réflectance : sur un tiers de la
+     hauteur de chaque étage, cela fait un immeuble noir. Un panneau
+     d'allège réel est sombre, pas éteint. */
+  allege: 0x3d4750,
   /** Les meneaux et la résille verticale, en bronze sombre. */
   meneau: 0x4c4945,
   /** Garde-corps vitrés des terrasses. */
@@ -550,6 +554,14 @@ export function buildEdifice(
       color,
       roughness,
       vertexColors: true,
+      /* Le grain de quantification, pour le chemin sans profondeur de champ.
+         Les petites machines rendent en direct, sans passe de composition :
+         c'est donc au matériau de disperser les paliers de huit bits, faute de
+         quoi un mur en dégradé lent y sort en marches d'escalier colorées.
+         Sur le chemin avec profondeur de champ, le grain est appliqué une
+         seule fois à la composition — ce qui vaut mieux, un tramage appliqué
+         deux fois se voyant — mais les deux chemins doivent être couverts. */
+      dithering: true,
       ...extra,
     });
     bin.push(material);
@@ -606,9 +618,19 @@ export function buildEdifice(
     transparent: true,
     userData: { sansOmbre: true },
   });
-  const pierre = mat(TON.pierre, 0.2, { metalness: 0.04 });
-  const parquet = mat(TON.parquet, 0.66);
-  const lin = mat(TON.lin, 0.86);
+  const pierre = mat(TON.pierre, 0.15, { metalness: 0.05 });
+  /* Un chêne verni, pas un chêne brut. Quarante-deux centièmes de rugosité :
+     à ce niveau, le sol renvoie une trace du vitrage et des lampes, et c'est
+     ce reflet allongé sur les lames qui distingue une photographie d'intérieur
+     d'un rendu. Toutes les matières de l'appartement ont été relevées d'un
+     cran pour la même raison — un intérieur entièrement mat n'existe pas. */
+  const parquet = mat(TON.parquet, 0.42);
+  const lin = mat(TON.lin, 0.76);
+  /* L'unique accent de l'appartement : un olive profond, sur trois coussins et
+     rien d'autre. Le nuancier du dépôt est neutre par principe, et il a raison
+     — mais un séjour entièrement beige n'est pas neutre, il est éteint. Une
+     seule couleur, à une seule place, réchauffe la pièce sans la décorer. */
+  const accent = mat(0x4d5340, 0.72);
   const lointain = mat(TON.lointain, 0.95);
   /* Les silhouettes du hall sont mates et sombres, et c'est un choix, pas un
      raccourci. Le dépôt a déjà appris cette leçon sur les intérieurs : une
@@ -633,9 +655,14 @@ export function buildEdifice(
    * arrêté d'exagérer.
    */
   const enduit = mat(0xc9c5bd, 0.94);
-  const metal = mat(0x6f7377, 0.38, { metalness: 0.6 });
-  const marbre = mat(TON.marbre, 0.24, { metalness: 0.03 });
-  const bois = mat(TON.bois, 0.62);
+  const metal = mat(0x6f7377, 0.24, { metalness: 0.72 });
+  /* Le marbre était descendu à 0,12 — un miroir. Un plateau de table basse
+     posé devant une baie y renvoyait le ciel en aplat blanc et se lisait comme
+     une source lumineuse, pas comme une pierre. Un marbre poli réel rend
+     autour de 0,25 : assez pour attraper un reflet allongé, pas assez pour
+     recopier la fenêtre. */
+  const marbre = mat(TON.marbre, 0.24, { metalness: 0.04 });
+  const bois = mat(TON.bois, 0.44);
   const fut = mat(TON.fut, 0.55, { metalness: 0.05 });
   /* Les corniches lumineuses sont un matériau **basique** : elles ne
      reçoivent pas la lumière, elles la donnent. Une source lumineuse rendue
@@ -661,6 +688,7 @@ export function buildEdifice(
     soffite,
     bois,
     lin,
+    accent,
     meneau,
     vitrine,
     garde,
@@ -1068,7 +1096,31 @@ export function buildEdifice(
     /* Le nez de dalle, qui déborde de vingt centimètres — et sa sous-face.
        Les deux sont **percés** par l'atrium : ce sont eux qui le refermaient. */
     percee(beton, e.hx * 2 + 0.4, NEZ, e.hz * 2 + 0.4, e.dx, dalle + NEZ / 2, 0);
-    percee(soffite, e.hx * 2 + 0.1, 0.16, e.hz * 2 + 0.1, e.dx, dalle - 0.08, 0);
+    /*
+     * À l'étage de l'appartement, la sous-face remonte **dans** la dalle.
+     *
+     * Ailleurs elle pend seize centimètres sous le plancher haut, et c'est très
+     * bien : de dehors, cette ombre-là donne son épaisseur à chaque niveau.
+     * Mais au cinquième, elle pendait à l'intérieur du séjour, quinze
+     * centimètres sous le plafond peint — donc devant lui. Une sonde tirée
+     * depuis la caméra a répondu « #8e908f à 3,31 m » là où l'on avait peint
+     * du #c9c5bd : on regardait un béton gris de sous-face de dalle en croyant
+     * regarder un plafond, et toute la pièce était tirée vers le gris par la
+     * plus grande surface du cadre. La hauteur annoncée par la page était
+     * fausse du même coup — deux mètres quatre-vingt-cinq pour trois mètres
+     * écrits en gros. On la recale au ras du plancher haut : le plafond de
+     * l'appartement redevient la surface la plus basse, et les trois mètres
+     * sont vrais.
+     */
+    percee(
+      soffite,
+      e.hx * 2 + 0.1,
+      0.16,
+      e.hz * 2 + 0.1,
+      e.dx,
+      niveau === NIVEAU_APPARTEMENT ? dalle + 0.08 : dalle - 0.08,
+      0,
+    );
 
     /* La résille : un meneau toutes les trames sur les deux longs côtés.
        C'est la seule répétition assumée de la façade, et elle est
@@ -1372,12 +1424,43 @@ export function buildEdifice(
       /* On ne pose rien sur la parcelle du projet : elle a déjà son parvis. */
       if (Math.abs(cx) < ILOT && Math.abs(cz) < ILOT) continue;
       const vert = tirage() < 0.16;
+      /*
+       * Chaque îlot a **sa** valeur, et son bord est plus sombre que son
+       * milieu.
+       *
+       * Sans cela, le sol de la ville est un aplat : cent pavés de la même
+       * couleur mis bord à bord ne font pas une trame, ils font une dalle, et
+       * le dernier plan de la page — celui qui recule sur l'immeuble — sortait
+       * avec un plateau gris uniforme sur les deux tiers de sa surface. Ce
+       * qu'on lit d'une ville vue de haut n'est pas la forme des îlots, c'est
+       * qu'ils ne sont pas de la même couleur : un toit de zinc, un toit de
+       * tuile, une cour, un parking. Une valeur tirée par îlot dans la même
+       * suite déterministe suffit à le dire, et elle ne coûte rien puisqu'elle
+       * est portée par les sommets d'un pavé qu'on posait déjà.
+       *
+       * Le bord assombri, lui, fait le travail des rues : à trois cents
+       * mètres, une rue de douze mètres tient dans deux pixels, et c'est
+       * l'ombre à son droit — pas son asphalte — qui la fait exister.
+       */
+      const ton = 0.82 + tirage() * 0.36;
+      /* Une nappe à cinq divisions, et non un pavé subdivisé. Le pavé donnait
+         la même image pour soixante-quatre fois plus de triangles : on ne voit
+         que sa face supérieure, et la subdivision travaillait aussi sur les
+         cinq autres. Cinq divisions suffisent à porter un dégradé de bord —
+         on regarde cet îlot de trois cents mètres, pas de trois. */
+      const parcelle = new THREE.PlaneGeometry(ILOT, ILOT, 5, 5);
+      parcelle.rotateX(-Math.PI / 2);
       pose(
-        new THREE.BoxGeometry(ILOT, 0.18, ILOT),
+        parcelle,
         vert ? vegetal : pave,
         cx,
-        0.09,
+        0.18,
         cz,
+        (px, _py, pz) => {
+          const bord = Math.max(Math.abs(px - cx), Math.abs(pz - cz)) / (ILOT / 2);
+          return ton * (1 - 0.3 * Math.pow(bord, 3));
+        },
+        99,
       );
     }
   }
@@ -1418,13 +1501,33 @@ export function buildEdifice(
    */
   const voisin = mat(0x74716c, 0.95);
   const bandeau = mat(0xc8c3ba, 0.93);
-  for (let i = 0; i < 34; i += 1) {
-    const angle = (i / 34) * Math.PI * 2 + tirage() * 0.16;
+  /*
+   * Le vide devant la baie était un vide **total**, et c'était une erreur.
+   *
+   * La règle disait : on ne bâtit pas dans le cône que l'appartement regarde,
+   * pour que la vue porte. Le rendu a répondu autrement. Le plan « La baie »
+   * — celui dont le seul sujet est la vue — sortait en aplat crème d'un bord
+   * à l'autre du cadre : pas de ciel, pas de ville, un mur de brume. On avait
+   * dégagé la vue de tout ce qu'il y avait à voir.
+   *
+   * Ce que l'on voit d'un cinquième étage n'est pas l'horizon : c'est une
+   * **mer de toitures**, deux ou trois niveaux plus bas que soi, et le ciel
+   * au-dessus. Le cône reste donc dégagé de tout ce qui monterait plus haut
+   * que le plancher de l'appartement — vingt-trois mètres quatre-vingts — et
+   * se remplit d'immeubles de rapport de huit à vingt mètres. La vue porte
+   * toujours, et elle porte maintenant sur quelque chose.
+   */
+  const DEVANT = (x: number, z: number, loin: number) => x > 40 && Math.abs(z) < loin * 0.3;
+  const COMBIEN = leger ? 34 : 54;
+  for (let i = 0; i < COMBIEN; i += 1) {
+    const angle = (i / COMBIEN) * Math.PI * 2 + tirage() * 0.16;
     const loin = 150 + tirage() * 260;
     const x = Math.cos(angle) * loin;
     const z = Math.sin(angle) * loin;
-    if (x > 40 && Math.abs(z) < loin * 0.3) continue;
-    const haut = 16 + tirage() * 40 + (loin - 150) * 0.08;
+    const devant = DEVANT(x, z, loin);
+    const haut = devant
+      ? 8 + tirage() * 12
+      : 16 + tirage() * 40 + (loin - 150) * 0.08;
     const large = 15 + tirage() * 24;
     const profond = 15 + tirage() * 24;
     pose(new THREE.BoxGeometry(large, haut, profond), voisin, x, haut / 2, z);
@@ -1440,6 +1543,36 @@ export function buildEdifice(
     if (tirage() < 0.34) {
       pose(new THREE.BoxGeometry(large * 0.3, 2.2, profond * 0.3), voisin, x, haut + 2, z);
     }
+  }
+
+  /*
+   * L'arrière-plan lointain : des masses nues entre cinq cents et neuf cents
+   * mètres, sans nez de plancher ni acrotère.
+   *
+   * À cette distance-là, la brume a déjà mangé les deux tiers du contraste et
+   * un bandeau de trente-quatre centimètres ne fait plus un pixel : les poser
+   * serait payer deux mille triangles pour rien. Ce qui compte est le
+   * **profil**, et seulement lui — une ligne de toitures qui décroît vers le
+   * fond, derrière la mer de toits proches. C'est ce qui distingue une ville
+   * d'un quartier posé sur un plateau : à un moment, ça continue.
+   *
+   * Ils montent plus haut que les proches — trente à cent mètres — parce que
+   * c'est ainsi qu'on lit une distance sans stéréoscopie : ce qui est loin
+   * doit être grand pour paraître aussi petit.
+   */
+  for (let i = 0; i < (leger ? 16 : 30); i += 1) {
+    const angle = (i / (leger ? 16 : 30)) * Math.PI * 2 + tirage() * 0.2;
+    const loin = 520 + tirage() * 380;
+    const x = Math.cos(angle) * loin;
+    const z = Math.sin(angle) * loin;
+    const haut = 30 + tirage() * 70;
+    pose(
+      new THREE.BoxGeometry(26 + tirage() * 40, haut, 26 + tirage() * 40),
+      voisin,
+      x,
+      haut / 2,
+      z,
+    );
   }
 
   /* Les arbres d'alignement, le long des rues les plus proches. Ils donnent au
@@ -1499,7 +1632,13 @@ export function buildEdifice(
      elle tombait au noir et traversait le premier écran comme un aplat. Ce
      qu'on éclaire ici, ce n'est pas la façade, c'est le sol dans l'ombre. */
   scene.add(new THREE.HemisphereLight(0xdfe6ee, 0x9d9890, 1.3));
-  const soleil = new THREE.DirectionalLight(0xffe9c9, 2.6);
+  /* Le soleil monte à 3,4 pendant que l'environnement descend à 0,92. La
+     somme est presque inchangée ; la **répartition** ne l'est pas. Une scène
+     éclairée surtout par le ciel est une scène sans direction : rien n'y a de
+     face claire et de face sombre. En rendant au soleil la part qui lui
+     revient, chaque volume retrouve deux faces, et une pièce retrouve un
+     modelé. */
+  const soleil = new THREE.DirectionalLight(0xffe9c9, 3.4);
   /*
    * L'azimut du soleil se règle contre celui de la **caméra**, pas dans
    * l'absolu.
@@ -1658,7 +1797,7 @@ export function buildEdifice(
      * le soleil ne touche pas. À 0,7, l'appartement rendait un séjour du soir
      * en plein après-midi.
      */
-    scene.environmentIntensity = 1.05;
+    scene.environmentIntensity = 0.92;
     renderer.shadowMap.enabled = true;
     /* Le filtrage doux coûte plus cher par pixel — mais la carte d'ombre,
        elle, n'est calculée qu'une fois (voir `Edifice.tsx`), et une ombre de

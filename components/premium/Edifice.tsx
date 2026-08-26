@@ -266,6 +266,45 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
     const camera = new THREE.PerspectiveCamera(32, 1, 0.2, 1200);
     setEtat('vivant');
 
+    /*
+     * Une poignée sur la scène, pour les sondes.
+     *
+     * Elle ne sert à rien à l'écran et elle a déjà payé son écriture deux
+     * fois. Un rendu ne se débogue pas à l'œil : quand l'atrium est sorti
+     * comme un aplat, trois hypothèses fausses se sont succédé avant qu'un
+     * lancer de rayon depuis la caméra ne réponde en une seconde — « une
+     * sous-face de dalle, à un mètre soixante-dix ». Sans poignée, cette
+     * question-là ne peut pas être posée depuis un script, et on retombe sur
+     * la théorie.
+     *
+     * Elle n'expose que de la lecture, elle ne coûte rien, et elle reste en
+     * production : un site dont la scène est inspectable depuis la console est
+     * un site qu'on peut réparer.
+     */
+    const rayon = new THREE.Raycaster();
+    (window as unknown as { oriel?: unknown }).oriel = {
+      scene: edifice.scene,
+      camera,
+      renderer,
+      /**
+       * Ce que la caméra touche en un point de l'écran, en coordonnées
+       * normalisées (-1 à 1, y vers le haut). Rend `null` pour le ciel.
+       */
+      sonder(x: number, y: number) {
+        rayon.setFromCamera(new THREE.Vector2(x, y), camera);
+        const [touche] = rayon.intersectObjects([edifice.scene], true);
+        if (!touche) return null;
+        const material = (touche.object as THREE.Mesh).material as THREE.MeshStandardMaterial;
+        return {
+          nom: touche.object.name || touche.object.type,
+          distance: Number(touche.distance.toFixed(2)),
+          couleur: material?.color ? `#${material.color.getHexString()}` : null,
+          rugosite: material?.roughness ?? null,
+          point: [touche.point.x, touche.point.y, touche.point.z].map((v) => Number(v.toFixed(2))),
+        };
+      },
+    };
+
     let dirty = true;
     const resize = () => {
       const { clientWidth, clientHeight } = holder;

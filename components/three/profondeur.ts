@@ -132,7 +132,36 @@ const MELANGE = /* glsl */ `
     couleur = max(couleur, vec3(0.0));
     vec3 bas = couleur * 12.92;
     vec3 haut = 1.055 * pow(couleur, vec3(0.41666)) - 0.055;
-    gl_FragColor = vec4(mix(haut, bas, step(couleur, vec3(0.0031308))), 1.0);
+    vec3 sortie = mix(haut, bas, step(couleur, vec3(0.0031308)));
+
+    /*
+     * Un grain d'un niveau, juste avant d'écrire.
+     *
+     * Le rendu travaille en virgule flottante ; l'écran prend huit bits. Sur
+     * une surface où la lumière varie très lentement — un plafond, un mur, un
+     * ciel — les paliers de quantification deviennent visibles, et comme les
+     * trois canaux ne franchissent pas leur palier au même endroit, ces
+     * paliers sont colorés. Un bruit de la taille d'un niveau ajouté avant
+     * l'arrondi les disperse : le palier ne disparaît pas, il se répartit, et
+     * un dégradé bruité se lit comme continu là où un dégradé en escalier se
+     * lit comme un défaut.
+     *
+     * Une note, parce qu'elle a coûté une capture et une mesure. L'auréole
+     * froide qu'on voit au plafond du séjour n'est **pas** cela : le relevé
+     * des pixels donne quarante niveaux d'écart entre le rouge et le bleu sur
+     * la largeur de la tache, quand une marche de quantification en vaut un.
+     * C'est une vraie lumière — le bleu du ciel qui entre par la baie et
+     * rencontre la flaque chaude de la suspension. Le tramage reste, sur ses
+     * propres mérites ; il ne fallait pas lui attribuer un mérite qui n'est
+     * pas le sien.
+     */
+    float a = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+    float b = fract(sin(dot(gl_FragCoord.yx, vec2(39.3468, 11.135))) * 24634.6345);
+    /* Deux tirages et non un : la somme de deux lois uniformes donne une loi
+       triangulaire, qui est celle que demande un tramage d'un niveau. */
+    sortie += (a + b - 1.0) / 255.0;
+
+    gl_FragColor = vec4(sortie, 1.0);
   }
 `;
 
