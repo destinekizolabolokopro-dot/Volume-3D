@@ -18,7 +18,8 @@
     "vues": "node scripts/vues.mjs",
     "residence": "node scripts/residence.mjs",
     "oriel": "node scripts/standalone/oriel.mjs",
-    "sonde": "node scripts/sonde.mjs"
+    "sonde": "node scripts/sonde.mjs",
+    "resistance": "node scripts/resistance.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

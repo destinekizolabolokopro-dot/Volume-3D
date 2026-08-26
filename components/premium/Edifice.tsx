@@ -4,7 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { buildEdifice } from '@/components/three/edifice';
 import { creerProfondeur } from '@/components/three/profondeur';
-import { adaptQuality } from '@/components/three/quality';
+import {
+  adaptQuality,
+  PALIER_SANS_ECLAT,
+  PALIER_SANS_FLOU,
+  PALIER_SANS_OMBRE,
+} from '@/components/three/quality';
 import { VOL } from '@/lib/residence';
 import styles from './Edifice.module.css';
 
@@ -190,6 +195,25 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
   const holderRef = useRef<HTMLDivElement>(null);
   const [etat, setEtat] = useState<'attente' | 'vivant' | 'sansGL'>('attente');
   const [net, setNet] = useState(false);
+  /*
+   * Le compteur de reconstruction.
+   *
+   * Un contexte WebGL n'est pas acquis pour la durée d'une visite : le pilote
+   * peut le reprendre — mise en veille, changement de carte sur un portable
+   * hybride, plantage du processus graphique, onglet laissé longtemps en
+   * arrière-plan. Le navigateur prévient alors par `webglcontextlost`, et si
+   * personne n'écoute, la page garde un canevas définitivement vide. C'est la
+   * panne la plus commune d'un site en trois dimensions sur une machine
+   * modeste, et c'est celle qu'on ne voit jamais en développement.
+   *
+   * Ici, on l'écoute : on repasse au dégradé le temps de la perte, et quand le
+   * navigateur rend le contexte, ce compteur change — l'effet se rejoue, la
+   * scène se reconstruit entière. Reconstruire coûte une demi-seconde ; c'est
+   * incomparablement plus simple, et plus sûr, que de tenter de recoller les
+   * ressources une à une, dont les cibles de rendu et la carte d'environnement
+   * qui, elles, ne survivent pas.
+   */
+  const [generation, setGeneration] = useState(0);
 
   useEffect(() => {
     const holder = holderRef.current;
@@ -247,6 +271,31 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       'Vue en trois dimensions de l’appartement : la caméra le traverse pièce par pièce à mesure que la page défile.',
     );
 
+    /* On écoute la perte **avant** de construire quoi que ce soit : un contexte
+       peut se perdre pendant la construction elle-même, sur une machine qui
+       n'a plus de mémoire graphique. */
+    let vivant = true;
+    const perdu = (evenement: Event) => {
+      /* Sans un `preventDefault`, le navigateur ne tentera jamais de restaurer
+         le contexte : c'est l'appel dont l'absence transforme une perte
+         passagère en page morte.
+         three.js le fait déjà dans sa propre écoute — vérifié, et c'est
+         pourquoi le test `resistance` le voyait passer même quand cette ligne
+         était retirée. On le refait quand même, en connaissance de cause : il
+         ne coûte rien, il rend l'intention lisible ici, et il tient si un jour
+         la scène change de bibliothèque de rendu. */
+      evenement.preventDefault();
+      vivant = false;
+      cancelAnimationFrame(frame);
+      setNet(false);
+      setEtat('sansGL');
+    };
+    const repris = () => {
+      setGeneration((n) => n + 1);
+    };
+    renderer.domElement.addEventListener('webglcontextlost', perdu, false);
+    renderer.domElement.addEventListener('webglcontextrestored', repris, false);
+
     const edifice = buildEdifice(renderer, { leger });
 
     /*
@@ -290,6 +339,13 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
        * Ce que la caméra touche en un point de l'écran, en coordonnées
        * normalisées (-1 à 1, y vers le haut). Rend `null` pour le ciel.
        */
+      /* Pour `npm run resistance` : imposer un palier de repli et regarder ce
+         que la page devient. Le chemin dégradé n'est atteignable autrement que
+         sur une machine trop lente — donc jamais ici. */
+      forcerPalier(palier: number) {
+        quality.forcer(palier);
+        dirty = true;
+      },
       sonder(x: number, y: number) {
         rayon.setFromCamera(new THREE.Vector2(x, y), camera);
         const [touche] = rayon.intersectObjects([edifice.scene], true);
@@ -353,7 +409,42 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
     let precedent = performance.now();
     let frame = 0;
     let depuis = performance.now();
-    const quality = adaptQuality(renderer, Math.min(window.devicePixelRatio, leger ? 1.5 : 2));
+    /*
+     * Le dernier recours : couper les ombres portées.
+     *
+     * C'est la marche la plus visible de toute l'échelle — une scène sans
+     * ombre est une scène sans sol — et c'est pour cela qu'elle est la
+     * dernière. Elle n'est franchie que par une machine qui, déjà à
+     * cinquante-cinq pour cent de résolution, sans éclat et sans profondeur de
+     * champ, ne tient toujours pas seize millisecondes.
+     *
+     * La carte d'ombre est gelée (`autoUpdate = false`) : rallumer les ombres
+     * ne suffit donc pas, il faut redemander une image de carte. Sans cette
+     * ligne, une machine qui remonte d'un palier retrouve des ombres **figées
+     * sur la dernière image calculée**, ce qui est pire que pas d'ombre du
+     * tout — on l'a vu une fois, et cela ressemblait à une texture sale
+     * peinte sur le sol.
+     */
+    const quality = adaptQuality(
+      renderer,
+      Math.min(window.devicePixelRatio, leger ? 1.5 : 2),
+      (palier) => {
+        const ombres = palier < PALIER_SANS_OMBRE;
+        if (renderer.shadowMap.enabled === ombres) return;
+        renderer.shadowMap.enabled = ombres;
+        renderer.shadowMap.needsUpdate = ombres;
+        /* Les matériaux compilés portent la présence de l'ombre dans leur
+           programme : sans cette relance, le changement ne prend qu'au
+           prochain matériau touché, donc jamais. */
+        edifice.scene.traverse((noeud) => {
+          const mesh = noeud as THREE.Mesh;
+          const materiau = mesh.material as THREE.Material | THREE.Material[] | undefined;
+          if (!materiau) return;
+          for (const m of Array.isArray(materiau) ? materiau : [materiau]) m.needsUpdate = true;
+        });
+        dirty = true;
+      },
+    );
 
     /** Écrit la pose du curseur `t` dans la caméra, dérive comprise, et rend. */
     const oeil = new THREE.Vector3();
@@ -421,12 +512,21 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
        * C'est le bon ordre de sacrifice — mesuré : la profondeur de champ ne
        * pèse que 1 % du temps par image ici, contre 45 % pour la résolution.
        * On coupe donc d'abord ce qui coûte, et l'effet en dernier.
+       *
+       * Deux conditions et non une, depuis qu'il y a des paliers. L'échelle
+       * dit « la résolution est déjà basse » ; le palier dit « et cela n'a
+       * pas suffi ». Une machine peut très bien tourner à soixante pour cent
+       * de résolution en tenant la cadence — elle garde alors son flou.
        */
-      if (bokeh && quality.scale > 0.6) bokeh.rendre(edifice.scene, camera, oeil.distanceTo(vise));
-      else renderer.render(edifice.scene, camera);
+      if (bokeh && quality.palier < PALIER_SANS_FLOU && quality.scale > 0.6) {
+        bokeh.rendre(edifice.scene, camera, oeil.distanceTo(vise));
+      } else {
+        renderer.render(edifice.scene, camera);
+      }
     };
 
     const draw = (now: number) => {
+      if (!vivant) return;
       frame = requestAnimationFrame(draw);
       if (document.hidden || !onScreen) {
         precedent = now;
@@ -520,6 +620,9 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
 
     return () => {
       cancelAnimationFrame(frame);
+      vivant = false;
+      renderer.domElement.removeEventListener('webglcontextlost', perdu);
+      renderer.domElement.removeEventListener('webglcontextrestored', repris);
       window.clearTimeout(leve);
       window.clearTimeout(depart);
       window.removeEventListener('scroll', demarrer);
@@ -532,7 +635,9 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, []);
+    /* `generation` seule : elle ne change qu'à la reprise d'un contexte perdu,
+       et c'est exactement là qu'il faut tout refaire. */
+  }, [generation]);
 
   return (
     <div

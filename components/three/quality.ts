@@ -34,11 +34,53 @@ const PLANCHER = 0.55;
 /** Images agrégées avant chaque décision. */
 const FENETRE = 45;
 
+/*
+ * Les paliers, et pourquoi la résolution ne suffit pas.
+ *
+ * Baisser la résolution rapporte beaucoup et se voit peu — c'est pour cela
+ * qu'on commence par là. Mais elle a un plancher : en dessous de cinquante-cinq
+ * pour cent, l'image devient molle et on n'a plus rien gagné à descendre
+ * encore. Sur une machine qui est **toujours** trop lente à ce plancher, il
+ * faut alors renoncer à des effets, et dans un ordre choisi : du moins
+ * indispensable au plus indispensable.
+ *
+ * L'ordre est celui du coût par pixel divisé par ce que l'effet apporte :
+ *
+ *   0. tout — éclat, profondeur de champ, ombres portées ;
+ *   1. sans éclat — trois passes plein écran en moins, et l'image reste juste,
+ *      seulement moins lumineuse sur les arêtes ;
+ *   2. sans profondeur de champ — deux passes de plus en moins ; on perd le
+ *      signe le plus net d'une image d'objectif, mais on garde la scène ;
+ *   3. sans ombres portées — c'est la marche la plus visible, et donc la
+ *      dernière : une scène sans ombre est une scène sans sol. Elle n'est
+ *      franchie que par les machines qui, à résolution plancher et sans aucun
+ *      effet, ne tiennent toujours pas la cadence.
+ *
+ * On ne remonte un palier qu'après une marge confortable et **une fois** :
+ * une machine qui oscille entre deux paliers montre ses ombres qui
+ * apparaissent et disparaissent, ce qui est bien pire que de ne pas en avoir.
+ */
+export const PALIER_TOUT = 0;
+export const PALIER_SANS_ECLAT = 1;
+export const PALIER_SANS_FLOU = 2;
+export const PALIER_SANS_OMBRE = 3;
+
 export interface Quality {
   /** À appeler une fois par image, avant le rendu. */
   tick(now: number): void;
   /** L'échelle courante, pour l'affichage d'un diagnostic. */
   readonly scale: number;
+  /** Le palier de repli courant : 0 = tout, 3 = sans ombres portées. */
+  readonly palier: number;
+  /**
+   * Impose un palier, pour l'éprouver.
+   *
+   * Sans cela, le palier le plus bas n'est atteignable que sur une machine
+   * assez lente pour le déclencher — c'est-à-dire jamais celle sur laquelle on
+   * développe, et jamais dans un test. Un chemin de repli qu'on ne peut pas
+   * exécuter est un chemin de repli qu'on n'a pas.
+   */
+  forcer(palier: number): void;
   dispose(): void;
 }
 
@@ -48,9 +90,17 @@ export interface Quality {
 export function adaptQuality(
   renderer: THREE.WebGLRenderer,
   plafond: number,
+  /** Appelé quand le palier change, pour que l'appelant coupe ou rallume. */
+  surPalier?: (palier: number) => void,
 ): Quality {
   let echelle = 1;
+  let palier = PALIER_TOUT;
   let precedent = 0;
+  /* Combien de fenêtres de mesure consécutives passées au plancher sans
+     tenir la cadence. On ne descend un palier qu'après deux : une seule peut
+     être un pic de charge de la page — une fonte qui arrive, un observateur
+     qui se déclenche — et non la machine. */
+  let insuffisant = 0;
   const releves: number[] = [];
 
   const appliquer = () => {
@@ -58,9 +108,21 @@ export function adaptQuality(
   };
   appliquer();
 
+  const changerPalier = (suivant: number) => {
+    if (suivant === palier) return;
+    palier = suivant;
+    surPalier?.(palier);
+  };
+
   return {
     get scale() {
       return echelle;
+    },
+    get palier() {
+      return palier;
+    },
+    forcer(voulu: number) {
+      changerPalier(Math.max(PALIER_TOUT, Math.min(PALIER_SANS_OMBRE, Math.round(voulu))));
     },
     tick(now: number) {
       if (precedent === 0) {
@@ -83,9 +145,32 @@ export function adaptQuality(
       if (median > TROP_LENT && echelle > PLANCHER) {
         echelle = Math.max(PLANCHER, echelle * (median > CIBLE * 2 ? 0.72 : 0.86));
         appliquer();
-      } else if (median < CONFORTABLE && echelle < 1) {
+        insuffisant = 0;
+        return;
+      }
+
+      /* Au plancher et toujours trop lent : on descend d'un palier. C'est la
+         seule branche qui coupe un effet, et elle demande deux fenêtres de
+         mesure concordantes — soit une seconde et demie de lenteur franche. */
+      if (median > TROP_LENT) {
+        insuffisant += 1;
+        if (insuffisant >= 2 && palier < PALIER_SANS_OMBRE) {
+          changerPalier(palier + 1);
+          insuffisant = 0;
+        }
+        return;
+      }
+
+      insuffisant = 0;
+
+      /* On remonte la résolution avant de remonter un palier : elle se voit
+         plus et elle se reprend sans à-coup. Un effet qu'on rallume, lui,
+         change l'image d'un coup — donc seulement quand la marge est large. */
+      if (median < CONFORTABLE && echelle < 1) {
         echelle = Math.min(1, echelle * 1.08);
         appliquer();
+      } else if (median < CONFORTABLE * 0.72 && echelle >= 1 && palier > PALIER_TOUT) {
+        changerPalier(palier - 1);
       }
     },
     dispose() {
