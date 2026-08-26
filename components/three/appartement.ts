@@ -883,7 +883,21 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
    * 0,60 en linéaire, donc sous le seuil de l'éclat, donc sans halo.
    */
   pose(new THREE.CylinderGeometry(0.2, 0.15, 0.26, rond(10)), M.lueur, 4.0, SOL + 1.62, 4.3);
-  plante(a, 9.9, 9.9, 0.72, rond);
+  /*
+   * La plante a changé d'angle, parce que la caméra s'asseyait dedans.
+   *
+   * Elle était à (9,9 ; 9,9), c'est-à-dire à quatorze centimètres de l'étape
+   * « le coin salon », qui se tient à (9,8 ; 9,8). Sur la capture, son
+   * feuillage barrait tout le cadre en une grande diagonale vert sombre — le
+   * plan avant est à vingt centimètres, la masse était à onze, on en voyait
+   * donc l'intérieur. Un lancer de rayon a répondu « végétal, à 0,11 m ».
+   *
+   * Elle passe à la baie nord, à mi-longueur du séjour : la plus proche des
+   * étapes est à un mètre soixante. `npm run residence` refuse maintenant
+   * qu'une étape ait quoi que ce soit à moins de trente-cinq centimètres, ce
+   * qui aurait signalé celle-ci le jour où elle a été posée.
+   */
+  plante(a, 3.6, 9.9, 0.72, rond);
 
   /*
    * Les objets posés.

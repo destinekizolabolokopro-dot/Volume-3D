@@ -326,6 +326,45 @@ async function composition(nom) {
   console.log('');
 }
 
+/*
+ * Rien de trop près de l'œil.
+ *
+ * Une étape posée dans un meuble ne se rattrape pas au montage : le plan avant
+ * de la caméra est à vingt centimètres, donc tout ce qui est plus proche est
+ * traversé et l'on en voit l'intérieur. C'est arrivé sur « le coin salon », où
+ * la plante du séjour se trouvait à quatorze centimètres du point de vue : son
+ * feuillage barrait le cadre entier d'une diagonale vert sombre, et rien dans
+ * le code ne pouvait le dire — deux coordonnées écrites à deux endroits
+ * différents, à des semaines d'intervalle.
+ *
+ * Un éventail de rayons suffit à le voir, et il coûte vingt-cinq lancers.
+ */
+const TROP_PRES = 0.35;
+
+async function proximite(nom) {
+  const r = await page.evaluate(() => {
+    let min = Infinity;
+    let quoi = null;
+    for (let iy = 0; iy < 5; iy += 1)
+      for (let ix = 0; ix < 5; ix += 1) {
+        const t = window.oriel.sonder((ix / 4) * 1.8 - 0.9, 0.9 - (iy / 4) * 1.8);
+        if (t && t.distance < min) {
+          min = t.distance;
+          quoi = t;
+        }
+      }
+    return quoi ? { distance: min, couleur: quoi.couleur, point: quoi.point } : null;
+  });
+  if (r && r.distance < TROP_PRES) {
+    console.log(
+      `  ⚠ ${nom} : ${r.couleur} à ${r.distance.toFixed(2)} m de l'œil ` +
+        `(${r.point.join(', ')}) — la caméra est dans un objet`,
+    );
+    return false;
+  }
+  return true;
+}
+
 async function pointer(nom) {
   const r = await page.evaluate((pts) => pts.map(([x, y]) => [x, y, window.oriel.sonder(x, y)]), POINTS);
   for (const [x, y, t] of r) {
@@ -335,6 +374,9 @@ async function pointer(nom) {
     );
   }
 }
+
+/** Faux dès qu'une étape a un objet collé à l'œil. */
+let dedans = true;
 
 for (const [nom, ancre, plan] of A_FAIRE) {
   await page.evaluate(
@@ -349,6 +391,7 @@ for (const [nom, ancre, plan] of A_FAIRE) {
   await poser();
   await page.screenshot({ path: join(SORTIE, `${nom}.png`), timeout: 90000 });
   await contraste(nom);
+  if (!(await proximite(nom))) dedans = false;
   if (CADRE) await composition(nom);
   if (POINTS.length) await pointer(nom);
   console.log(`${nom.padEnd(16)} ok`);
@@ -382,4 +425,7 @@ if (erreurs.length > 0) {
   console.log('\nAucune erreur de console.');
 }
 
+if (!dedans) console.log('\n⚠ Une étape au moins a un objet collé à l’œil (voir ci-dessus).');
+
 await browser.close();
+process.exit(dedans && recale === 0 ? 0 : 1);
