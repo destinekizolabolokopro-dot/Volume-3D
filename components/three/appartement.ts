@@ -1234,9 +1234,72 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   bloc(M.lueur, B.x0 + 0.05, B.x0 + 0.11, SOL + 2.02, SOL + 2.08, 1.05, 2.85 - CLOISON);
   // Le bandeau de pierre derrière la baignoire, sur le mur sud.
   bloc(M.pierre, B.x0 + 0.2, B.x0 + 2.4, SOL, SOL + 1.35, B.z0, B.z0 + 0.05);
-  // Deux robinets muraux et une patère à serviettes.
+  /*
+   * Le mur ouest, habillé sur toute sa hauteur au-dessus de la baignoire.
+   *
+   * Le sondage du cadre donnait vingt-trois et demi pour cent de plâtre nu
+   * dans une pièce que la page décrit « en pierre claire ». Ce n'est pas une
+   * image pauvre, c'est un texte faux — et le mur en cause est le seul grand
+   * aplat que la caméra voit derrière la baignoire.
+   *
+   * Il s'arrête à `0,85` parce que le miroir prend le relais au-delà : la
+   * dalle de pierre et le miroir occupent la même bande de mur à un centimètre
+   * près, et deux plans qui se disputent le même millimètre clignotent.
+   */
+  bloc(M.pierre, B.x0, B.x0 + 0.04, SOL, SOL + 2.4, B.z0 + 0.06, 0.85);
+  /*
+   * Les deux vasques, et pourquoi elles manquaient au titre.
+   *
+   * La section s'appelle « Baignoire, douche, double vasque ». Le sondage du
+   * cadre (`CADRE=1 ARRETS=6-bains npm run residence`) donnait, sur le plan
+   * que la caméra regarde : vingt et un et demi pour cent de marbre — le
+   * plateau, nu — et pas une vasque. Deux cylindres verticaux flottaient à
+   * vingt-six centimètres au-dessus, censés être des mitigeurs. Un titre qui
+   * nomme trois équipements devant un cadre où l'un d'eux occupe zéro pour
+   * cent des pixels est un titre faux, et c'est plus grave qu'un défaut de
+   * rendu : c'est l'argument de vente qui ne tient pas.
+   *
+   * Vasques **posées** et non encastrées : le plan est un bloc plein, on ne
+   * l'évide pas — et une vasque à poser se voit de tous les angles, ce qui est
+   * précisément ce qu'on cherche ici. Le creux est rendu par un disque du même
+   * calcaire, peint à quarante-cinq pour cent : c'est ce qu'est un fond de
+   * vasque, la même pierre à l'ombre d'elle-même, et cela évite un matériau de
+   * plus — donc un appel de dessin de plus.
+   */
   for (const z of [1.45, 2.35]) {
-    pose(new THREE.CylinderGeometry(0.02, 0.02, 0.24, rond(6)), M.metal, B.x0 + 0.16, SOL + 1.16, z);
+    const cx = B.x0 + 0.3;
+    pose(new THREE.CylinderGeometry(0.19, 0.15, 0.13, rond(18)), M.pierre, cx, SOL + 0.965, z);
+    /* Le disque du creux se pose **au ras du bord**, et non en dessous : un
+       cylindre de three.js est fermé par ses deux couvercles, et le couvercle
+       du bol cachait entièrement le creux glissé dessous. Vu sur la capture,
+       la vasque sortait en galet plein. */
+    pose(
+      new THREE.CylinderGeometry(0.163, 0.163, 0.01, rond(18)),
+      M.pierre,
+      cx,
+      SOL + 1.031,
+      z,
+      () => 0.42,
+      99,
+    );
+
+    /*
+     * Le mitigeur mural : un bec **horizontal**, et non un tuyau debout.
+     *
+     * Ce qui était posé là était un cylindre de vingt-quatre centimètres dressé
+     * dans le vide, sans rosace, sans manette et sans rien en dessous. Un
+     * robinet se reconnaît à une seule chose — l'eau sort à l'horizontale
+     * au-dessus de quelque chose qui la reçoit — et c'est exactement cette
+     * chose-là qui manquait.
+     */
+    const bec = new THREE.CylinderGeometry(0.017, 0.017, 0.22, rond(8));
+    bec.rotateZ(Math.PI / 2);
+    pose(bec, M.metal, B.x0 + 0.15, SOL + 1.2, z, undefined, 99);
+    const rosace = new THREE.CylinderGeometry(0.032, 0.032, 0.05, rond(10));
+    rosace.rotateZ(Math.PI / 2);
+    pose(rosace, M.metal, B.x0 + 0.03, SOL + 1.2, z, undefined, 99);
+    // La manette, relevée : douze centimètres au-dessus de la rosace.
+    bloc(M.metal, B.x0 + 0.02, B.x0 + 0.05, SOL + 1.24, SOL + 1.33, z - 0.015, z + 0.015);
   }
   bloc(M.metal, B.x0 + 0.06, B.x0 + 0.1, SOL + 1.5, SOL + 1.53, -0.1, 0.5);
   bloc(M.lin, B.x0 + 0.05, B.x0 + 0.13, SOL + 0.86, SOL + 1.5, 0.02, 0.4);
@@ -1256,8 +1319,8 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
       PIECES.bains.x0 + 0.36,
       SOL + 0.9 + i * 0.05,
       SOL + 0.947 + i * 0.05,
-      2.5,
-      2.86,
+      2.61,
+      2.9,
     );
   }
 

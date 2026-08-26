@@ -89,6 +89,42 @@ const FLOU = /* glsl */ `
 `;
 
 /*
+ * Le noyau de l'éclat : une gaussienne **séparable**, et non l'anneau.
+ *
+ * L'anneau ci-dessus est un bon bokeh et un mauvais halo, pour une raison qui
+ * ne se voit que sur un point brillant petit et isolé : douze échantillons
+ * disposés en cercle recopient ce point **douze fois autour de lui**. Sur une
+ * grande zone claire, les copies se recouvrent et personne ne le remarque ;
+ * sur le plafonnier réfléchi dans le miroir de la salle de bains, cela donnait
+ * une rosace à douze lobes — mesurée sur la capture, et prise deux fois pour
+ * un défaut de la sonde d'environnement avant qu'un recadrage ne montre les
+ * lobes pour ce qu'ils étaient.
+ *
+ * Une gaussienne séparable n'a pas ce défaut : une passe horizontale puis une
+ * passe verticale composent un noyau à symétrie de révolution, sans direction
+ * privilégiée. Et elle coûte **moins cher** — neuf échantillons par passe au
+ * lieu de treize, soit dix-huit au total au lieu de vingt-six.
+ *
+ * `uPas` porte à la fois le pas et la direction : (s, 0) pour l'horizontale,
+ * (0, s) pour la verticale. Les poids sont ceux d'un écart-type de deux pas ;
+ * ils somment à un, donc la passe ne change pas la luminosité moyenne.
+ */
+const HALO = /* glsl */ `
+  varying vec2 vUv;
+  uniform sampler2D tImage;
+  uniform vec2 uPas;
+
+  void main() {
+    vec3 somme = texture2D(tImage, vUv).rgb * 0.2270;
+    somme += (texture2D(tImage, vUv + uPas).rgb + texture2D(tImage, vUv - uPas).rgb) * 0.1946;
+    somme += (texture2D(tImage, vUv + 2.0 * uPas).rgb + texture2D(tImage, vUv - 2.0 * uPas).rgb) * 0.1216;
+    somme += (texture2D(tImage, vUv + 3.0 * uPas).rgb + texture2D(tImage, vUv - 3.0 * uPas).rgb) * 0.0540;
+    somme += (texture2D(tImage, vUv + 4.0 * uPas).rgb + texture2D(tImage, vUv - 4.0 * uPas).rgb) * 0.0162;
+    gl_FragColor = vec4(somme, 1.0);
+  }
+`;
+
+/*
  * Le seuil de l'éclat.
  *
  * Un objectif n'est pas parfait : devant une surface très lumineuse, une part
@@ -500,6 +536,8 @@ export function creerProfondeur(
     depthTest: false,
     depthWrite: false,
   });
+  /** Le pas du halo, en fraction de la cible en quart de résolution. */
+  const pasHalo = new THREE.Vector2();
   const matSeuil = new THREE.ShaderMaterial({
     vertexShader: PLAN,
     fragmentShader: SEUIL,
@@ -529,7 +567,7 @@ export function creerProfondeur(
   });
   const matHalo = new THREE.ShaderMaterial({
     vertexShader: PLAN,
-    fragmentShader: FLOU,
+    fragmentShader: HALO,
     uniforms: {
       tImage: { value: vif.texture },
       uPas: { value: new THREE.Vector2() },
@@ -609,8 +647,10 @@ export function creerProfondeur(
       halo.setSize(lq, hq);
       /* Un pas bien plus large que celui de la profondeur de champ : un halo
          d'objectif s'étale sur des dizaines de pixels de l'image finale, soit
-         quelques-uns seulement en quart de résolution. */
-      matHalo.uniforms.uPas.value.set(2.6 / lq, 2.6 / hq);
+         quelques-uns seulement en quart de résolution. Il est retenu ici et
+         posé passe par passe, puisque la gaussienne est séparable : une passe
+         horizontale, une passe verticale. */
+      pasHalo.set(2.2 / lq, 2.2 / hq);
       /* Le pas est exprimé en fraction de la cible de flou, donc en texels de
          demi-résolution : c'est ce qui rend le rayon indépendant de la taille
          de la fenêtre. */
@@ -646,15 +686,16 @@ export function creerProfondeur(
         renderer.setRenderTarget(vif);
         renderer.render(plan, oeil);
 
-        /* Deux passes de flou en aller-retour. La seconde repart de la
-           première : c'est ce qui donne au halo sa décroissance douce plutôt
-           qu'un disque net. */
+        /* Horizontale, puis verticale : les deux moitiés d'une seule
+           gaussienne à deux dimensions. La seconde repart de la première. */
         matHalo.uniforms.tImage.value = vif.texture;
+        matHalo.uniforms.uPas.value.set(pasHalo.x, 0);
         maille.material = matHalo;
         renderer.setRenderTarget(halo);
         renderer.render(plan, oeil);
 
         matHalo.uniforms.tImage.value = halo.texture;
+        matHalo.uniforms.uPas.value.set(0, pasHalo.y);
         renderer.setRenderTarget(vif);
         renderer.render(plan, oeil);
 

@@ -261,6 +261,81 @@ async function contraste(nom) {
   }
 }
 
+/*
+ * Ce qui remplit le cadre, par matériau.
+ *
+ * Une capture se juge à l'œil, et l'œil se trompe sur les proportions : la
+ * salle de bains paraissait « sombre » alors qu'elle est mesurée plus claire
+ * que le séjour, et son vrai défaut — plus de la moitié du cadre en plâtre nu
+ * — ne se voyait pas. Une grille de lancers de rayon le chiffre.
+ *
+ * Elle tourne **ici** et non dans un script à part, et c'est le résultat d'un
+ * échec : un sondage isolé qui vise l'ancre lui-même place la caméra ailleurs
+ * dans le vol, parce que les sections se révèlent au défilement et que la page
+ * n'a pas encore sa hauteur définitive. Trois tentatives ont chiffré trois
+ * cadres qui n'étaient pas celui qu'on photographiait. Le seul endroit où la
+ * caméra est sûrement au bon point est celui d'où l'on prend la photo.
+ *
+ *   CADRE=1 ARRETS=6-bains npm run residence
+ */
+const CADRE = process.env.CADRE === '1';
+
+/*
+ * Ce qu'il y a en un point de l'écran.
+ *
+ * En coordonnées normalisées, séparées par des point-virgules :
+ *
+ *   POINT='-0.85,0.56' ARRETS=6-bains npm run residence
+ *
+ * Sert à nommer ce qu'on voit. Une tache claire en haut d'un cadre peut être
+ * un luminaire, un reflet ou une faute d'éclairage, et on ne le devine pas :
+ * trois hypothèses fausses se sont déjà succédé avant qu'un lancer de rayon ne
+ * réponde en une seconde.
+ */
+const POINTS = (process.env.POINT || '')
+  .split(';')
+  .map((p) => p.split(',').map(Number))
+  .filter((p) => p.length === 2 && p.every(Number.isFinite));
+
+async function composition(nom) {
+  const r = await page.evaluate(() => {
+    const oeil = window.oriel.camera.position;
+    const compte = new Map();
+    const PAS_X = 32;
+    const PAS_Y = 24;
+    for (let iy = 0; iy < PAS_Y; iy += 1)
+      for (let ix = 0; ix < PAS_X; ix += 1) {
+        const t = window.oriel.sonder(((ix + 0.5) / PAS_X) * 2 - 1, 1 - ((iy + 0.5) / PAS_Y) * 2);
+        const cle = t ? `${t.couleur} r=${t.rugosite === null ? '—' : t.rugosite.toFixed(2)}` : 'ciel';
+        compte.set(cle, (compte.get(cle) || 0) + 1);
+      }
+    return {
+      oeil: [oeil.x, oeil.y, oeil.z].map((v) => Math.round(v * 100) / 100),
+      compte: [...compte].sort((a, b) => b[1] - a[1]),
+      total: PAS_X * PAS_Y,
+    };
+  });
+  /* La position de la caméra est imprimée avec le résultat : un sondage qui ne
+     dit pas d'où il regarde ne prouve rien, et c'est très exactement l'erreur
+     qui a coûté trois relevés. */
+  console.log(`\n  ${nom} — cadre depuis ${r.oeil.join(', ')}`);
+  for (const [cle, n] of r.compte) {
+    if (n / r.total < 0.005) continue;
+    console.log(`    ${((100 * n) / r.total).toFixed(1).padStart(5)} %  ${cle}`);
+  }
+  console.log('');
+}
+
+async function pointer(nom) {
+  const r = await page.evaluate((pts) => pts.map(([x, y]) => [x, y, window.oriel.sonder(x, y)]), POINTS);
+  for (const [x, y, t] of r) {
+    console.log(
+      `  ${nom} @ ${x}, ${y} : ` +
+        (t ? `${t.couleur} r=${t.rugosite ?? '—'} à ${t.distance} m, en ${t.point.join(', ')}` : 'ciel'),
+    );
+  }
+}
+
 for (const [nom, ancre, plan] of A_FAIRE) {
   await page.evaluate(
     ([ancre, plan]) => {
@@ -274,6 +349,8 @@ for (const [nom, ancre, plan] of A_FAIRE) {
   await poser();
   await page.screenshot({ path: join(SORTIE, `${nom}.png`), timeout: 90000 });
   await contraste(nom);
+  if (CADRE) await composition(nom);
+  if (POINTS.length) await pointer(nom);
   console.log(`${nom.padEnd(16)} ok`);
 }
 

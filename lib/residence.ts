@@ -389,7 +389,37 @@ export const VOL: Etape[] = [
    * dans le flou, ce qui est la façon la plus simple de dire dix-huit mètres
    * carrés sans avoir à les cadrer.
    */
-  { t: 0.79, ancre: '#bains', oeil: [-2.3, 25.35, 2.25], vise: [-3.4, 25.0, 1.55], foyer: 54 },
+  /*
+   * Reculée de soixante centimètres, une fois la vasque posée.
+   *
+   * Le paragraphe ci-dessus annonçait un cadre contenant « la réglette, le
+   * miroir, la crédence, les deux robinets, la pile de serviettes et le retour
+   * de la baignoire ». Le sondage du cadre — `CADRE=1 ARRETS=6-bains npm run
+   * residence` — donnait autre chose : trente pour cent de miroir sombre,
+   * vingt et un et demi pour cent de plateau de marbre nu, et une seule des
+   * deux vasques, coupée par le bas de l'image. L'intention était juste, le
+   * point de vue ne la servait pas.
+   *
+   * L'angle de trois quarts est conservé — c'est lui qui avait été choisi
+   * après quatre essais — mais l'œil recule vers le seuil. Ce n'est possible
+   * que **depuis que les vasques existent** : reculer sur un plateau vide
+   * n'aurait fait que montrer plus de vide.
+   */
+  /*
+   * Deux fautes que les tests ont attrapées sur ce seul point de vue, et qui
+   * valent d'être écrites : reculer une caméra n'est pas qu'un choix de cadre.
+   *
+   * L'œil était monté à 25,42 — sept centimètres au-dessus de la hauteur d'œil
+   * que **toutes** les étapes partagent. Un vol dont un plan se hausse sur la
+   * pointe des pieds se sent au défilement sans qu'on sache le nommer.
+   *
+   * Et le chemin depuis l'étape précédente franchissait la cloison `z = 2,88`
+   * à `x = −1,93`, soit trois centimètres à côté de sa porte : la caméra
+   * passait à travers le mur. Ce n'est pas rattrapable à l'œil — le mur défile
+   * en une fraction de seconde — et c'est exactement pourquoi le franchissement
+   * est vérifié contre les ouvertures du plan.
+   */
+  { t: 0.79, ancre: '#bains', oeil: [-2.1, 25.35, 2.7], vise: [-3.3, 24.95, 1.2], foyer: 56 },
   /* Et le chemin inverse : la porte, l'entrée, le passage, le séjour. */
   { t: 0.82, oeil: [-2.5, 25.35, 3.7], vise: [-1.0, 25.2, 5.6], foyer: 58 },
   { t: 0.85, oeil: [0.9, 25.35, 5.1], vise: [6.0, 25.2, 6.6], foyer: 54 },

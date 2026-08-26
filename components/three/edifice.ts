@@ -804,7 +804,23 @@ export function buildEdifice(
     transparent: true,
     userData: { sansOmbre: true },
   });
-  const pierre = mat(TON.pierre, 0.15, { metalness: 0.05 }, matieres.pierre);
+  /*
+   * Cinquante pour cent de rugosité, et non quinze.
+   *
+   * Quinze, c'est du marbre poli — et la pierre sert ici au sol de la cuisine,
+   * au sol de la salle de bains, au receveur de la douche et, depuis qu'elle
+   * habille le mur ouest, à quarante-deux pour cent du cadre de cette pièce.
+   * Le défaut s'est vu dès que la surface a été grande : la carte de relief,
+   * lue par un reflet quasi spéculaire, sortait en **moucheture colorée** —
+   * des pixels à 126, 119, 96 contre 105, 91, 77 juste à côté, sur un mur
+   * voisin mesuré à 52, 51, 50. Un mur de calcaire ne scintille pas.
+   *
+   * Un calcaire adouci, qui est ce que décrit la page, se tient entre un demi
+   * et sept dixièmes. À cinquante pour cent il garde un lustre — on voit
+   * encore la réglette glisser dessus quand la caméra bouge — sans transformer
+   * son grain en paillettes.
+   */
+  const pierre = mat(TON.pierre, 0.5, { metalness: 0.05 }, matieres.pierre);
   /* Un chêne verni, pas un chêne brut. Quarante-deux centièmes de rugosité :
      à ce niveau, le sol renvoie une trace du vitrage et des lampes, et c'est
      ce reflet allongé sur les lames qui distingue une photographie d'intérieur
@@ -871,7 +887,22 @@ export function buildEdifice(
    * suffit à le distinguer d'une plaque de tôle — il attrape le ciel par la
    * porte, et la réglette qui est juste au-dessus de lui.
    */
-  const miroir = mat(0xf2f2f0, 0.03, { metalness: 1, envMapIntensity: 1.4 });
+  /*
+   * Neuf pour cent de rugosité, et non trois.
+   *
+   * Trois donne un miroir parfait — et un miroir parfait montre la **sonde
+   * telle qu'elle est** : un cube de deux cent cinquante-six pixels par face,
+   * lissé par le préfiltrage. Le plafonnier réfléchi en sortait en rosace, une
+   * douzaine de lobes réguliers, ce qui ne ressemble à rien de réel et qu'on
+   * lit tout de suite comme une faute de calcul.
+   *
+   * Il y a une raison de fond de ne pas viser le miroir parfait : la sonde est
+   * prise d'un point unique, donc la réflexion d'un grand plan est de toute
+   * façon fausse — chaque point du miroir devrait voir la pièce depuis lui, et
+   * ils la voient tous depuis le même endroit. Un reflet légèrement adouci est
+   * plus honnête qu'un reflet net et faux, et il coûte la même chose.
+   */
+  const miroir = mat(0xf2f2f0, 0.09, { metalness: 1, envMapIntensity: 1.4 });
   /* Le marbre était descendu à 0,12 — un miroir. Un plateau de table basse
      posé devant une baie y renvoyait le ciel en aplat blanc et se lisait comme
      une source lumineuse, pas comme une pierre. Un marbre poli réel rend
