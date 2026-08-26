@@ -10,7 +10,7 @@ import {
   PALIER_SANS_FLOU,
   PALIER_SANS_OMBRE,
 } from '@/components/three/quality';
-import { VOL } from '@/lib/residence';
+import { courbeOeil, courbeVise, VOL } from '@/lib/residence';
 import styles from './Edifice.module.css';
 
 /**
@@ -122,21 +122,11 @@ const lisse = (u: number) => {
  * puis treize. La caméra serait sortie de la trajectoire juste avant la porte,
  * c'est-à-dire au pire endroit.
  */
-const COURBE_OEIL = new THREE.CatmullRomCurve3(
-  VOL.map((e) => new THREE.Vector3(...e.oeil)),
-  false,
-  'centripetal',
-  0.5,
-);
+const COURBE_OEIL = courbeOeil();
 /** L'axe vertical, gardé au chaud : la dérive tourne autour de lui à chaque image. */
 const HAUT = new THREE.Vector3(0, 1, 0);
 
-const COURBE_VISE = new THREE.CatmullRomCurve3(
-  VOL.map((e) => new THREE.Vector3(...e.vise)),
-  false,
-  'centripetal',
-  0.5,
-);
+const COURBE_VISE = courbeVise();
 
 /**
  * Du curseur de défilement au paramètre de la courbe.

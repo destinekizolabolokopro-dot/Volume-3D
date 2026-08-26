@@ -19,6 +19,8 @@
  * Les identifiants restent français, comme partout ailleurs dans le dépôt.
  */
 
+import * as THREE from 'three';
+
 /* ================================================================= trame === */
 
 /** Trame de façade. Tout se cale dessus : meneaux, largeurs, redans. */
@@ -425,6 +427,22 @@ export const VOL: Etape[] = [
   { t: 0.85, oeil: [0.9, 25.35, 5.1], vise: [6.0, 25.2, 6.6], foyer: 54 },
   /* Transit : on retraverse le séjour et on franchit la baie coulissante. */
   { t: 0.88, oeil: [7.0, 25.35, 7.9], vise: [14.0, 25.15, 8.2], foyer: 50 },
+  /*
+   * Une étape **dans l'ouvrant**, et c'est un test qui l'a réclamée.
+   *
+   * Le franchissement de la façade était vérifié en interpolant une droite
+   * entre l'étape d'avant et celle d'après : elle passait à z = 8,82, bien au
+   * milieu de la baie. Mais le vol n'est pas une droite, et une Catmull-Rom
+   * déborde derrière ses points : la courbe réelle franchissait la façade à
+   * z = 9,40, c'est-à-dire **à travers un vitrage fixe**, vingt centimètres au
+   * nord du coulissant. Personne ne pouvait le voir — cela dure une fraction
+   * de seconde, et aucune capture d'arrêt ne tombe là.
+   *
+   * Une étape posée dans l'ouverture épingle la courbe : une spline passe par
+   * ses points de contrôle, elle ne fait déborder qu'entre eux.
+   */
+  { t: 0.9, oeil: [10.9, 25.35, 8.2], vise: [13.6, 25.0, 6.2], foyer: 52 },
+
   /* La terrasse, et la netteté portée à cent vingt mètres : le sujet de ce
      plan n'est ni le platelage ni la rambarde, c'est la ville. */
   /* Reculée contre la baie et **inclinée vers le bas** : le plan de la section
@@ -498,6 +516,44 @@ export const VOL: Etape[] = [
    */
   { t: 1.0, ancre: '#contact', oeil: [84, 30, -46], vise: [4.5, 26.0, 1.0], foyer: 46 },
 ];
+
+/*
+ * Les deux courbes du vol, et pourquoi elles vivent ici.
+ *
+ * Elles étaient construites dans le composant de rendu, et le test qui vérifie
+ * que la caméra franchit chaque cloison par une ouverture interpolait donc
+ * **en droite** entre deux étapes, en se justifiant ainsi : « la spline reste
+ * dans l'enveloppe convexe de ses points de contrôle, donc une droite qui
+ * passe dans l'ouverture y passe aussi ».
+ *
+ * C'est faux. Une Catmull-Rom **interpole** ses points et déborde derrière
+ * eux ; la variante centripète garantit l'absence de boucle et de rebroussement,
+ * pas le confinement. Mesuré : entre l'étape à z = 9,8 et l'étape à z = 7,0, la
+ * caméra atteint z = 10,44 — au-delà des deux — et arrive ainsi à vingt et un
+ * centimètres du vitrage nord, pour un plan avant de caméra à vingt. Un
+ * centimètre de marge, sur une trajectoire qu'une dérive fait respirer.
+ *
+ * Les courbes remontent donc dans le fichier qui fait autorité sur le vol. Le
+ * composant les lit, le test les échantillonne, et c'est le vol réel qui est
+ * vérifié et non son ombre rectiligne.
+ */
+export function courbeOeil(): THREE.CatmullRomCurve3 {
+  return new THREE.CatmullRomCurve3(
+    VOL.map((e) => new THREE.Vector3(...e.oeil)),
+    false,
+    'centripetal',
+    0.5,
+  );
+}
+
+export function courbeVise(): THREE.CatmullRomCurve3 {
+  return new THREE.CatmullRomCurve3(
+    VOL.map((e) => new THREE.Vector3(...e.vise)),
+    false,
+    'centripetal',
+    0.5,
+  );
+}
 
 /* =============================================================== mesures === */
 

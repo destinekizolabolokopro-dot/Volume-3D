@@ -8,6 +8,7 @@ import {
   CHAMBRE,
   CLOISON,
   CLOISONS,
+  courbeOeil,
   CUISINE,
   ETAGE,
   GALERIE,
@@ -145,6 +146,73 @@ test('la visite ne quitte jamais l’appartement, sauf pour la terrasse', () => 
   }
 });
 
+test('la courbe du vol ne frôle aucune façade', () => {
+  /*
+   * Les étapes sont dans le logement ; **la courbe qui les relie ne l'est pas
+   * forcément.**
+   *
+   * Le test au-dessus vérifie les points de contrôle, un par un, avec quarante
+   * centimètres de marge. Il ne dit rien de ce qui se passe entre eux, et une
+   * Catmull-Rom déborde derrière ses points : elle ne reste pas dans leur
+   * enveloppe convexe, contrairement à ce qu'affirmait un commentaire de ce
+   * fichier. Le sondage du rendu l'a chiffré — entre deux étapes posées à
+   * z = 9,8 et z = 7,0, la caméra atteint z = 10,44, et arrive à vingt et un
+   * centimètres du vitrage nord pour un plan avant de caméra à vingt.
+   *
+   * Trente centimètres de marge, et non quarante : une spline respire un peu
+   * plus que ses points, et l'exiger aussi strict qu'eux reviendrait à
+   * interdire la courbure. Mais elle doit rester au large du plan avant, sans
+   * quoi la façade se fait trancher pendant le défilement — ce que personne ne
+   * voit sur une capture d'arrêt.
+   *
+   * La dernière étape est exemptée : c'est le recul final sur l'immeuble.
+   */
+  const MARGE = 0.3;
+  const liste = Object.values(PIECES);
+  const x0 = Math.min(...liste.map((p) => p.x0));
+  const x1 = Math.max(...liste.map((p) => p.x1));
+  const z0 = Math.min(...liste.map((p) => p.z0));
+  const z1 = Math.max(...liste.map((p) => p.z1));
+  const courbe = courbeOeil();
+  const PAS = 2000;
+  /* On s'arrête au dernier point de contrôle intérieur : au-delà, le vol sort
+     pour de bon et c'est son propre test qui s'en charge. */
+  const fin = (VOL.length - 2) / (VOL.length - 1);
+  let pire = { marge: Infinity, u: 0, ou: '' };
+  for (let k = 0; k <= PAS; k += 1) {
+    const u = (k / PAS) * fin;
+    const p = courbe.getPoint(u);
+    /*
+     * Trois régimes, et on garde le meilleur.
+     *
+     * Choisir le régime d'après la seule abscisse ne marche pas : entre la
+     * façade (x = 10,6) et le nez de terrasse (x = 10,8) il y a vingt
+     * centimètres qui n'appartiennent ni au logement ni à la terrasse, et la
+     * caméra les traverse forcément en sortant. Sur le seuil de la baie, la
+     * seule contrainte qui ait un sens est de rester **dans l'ouvrant**.
+     */
+    const dansLogement = Math.min(p.x - x0, x1 - p.x, p.z - z0, z1 - p.z);
+    const surTerrasse = Math.min(
+      TERRASSE.x1 - p.x,
+      p.x - TERRASSE.x0,
+      p.z - TERRASSE.z0,
+      TERRASSE.z1 - p.z,
+    );
+    const dansBaie =
+      p.x > x1 - 0.6 && p.x < TERRASSE.x0 + 0.6
+        ? Math.min(p.z - BAIE.z0, BAIE.z1 - p.z)
+        : -Infinity;
+    const m = Math.max(dansLogement, surTerrasse, dansBaie);
+    if (m < pire.marge) pire = { marge: m, u, ou: `${p.x.toFixed(2)}, ${p.z.toFixed(2)}` };
+  }
+  assert.ok(
+    pire.marge >= MARGE,
+    `au point ${pire.u.toFixed(3)} du vol, la caméra passe à ${pire.marge.toFixed(
+      2,
+    )} m d’une façade (${pire.ou})`,
+  );
+});
+
 test('le dernier plan recule dehors et se retourne sur l’immeuble', () => {
   /*
    * Le seul plan pris de l'extérieur, et le seul dont les règles de la visite
@@ -221,16 +289,22 @@ test('la caméra franchit chaque cloison par une ouverture', () => {
    * bains, en passant à côté des deux portes qu'on avait pris soin de
    * modéliser et d'entrouvrir.
    *
-   * On interpole en droite entre deux œils consécutifs. C'est une
-   * approximation : le vol est une spline. Mais elle reste dans l'enveloppe
-   * convexe de ses points de contrôle, donc une droite qui passe dans
-   * l'ouverture avec de la marge y passe aussi — et une droite qui traverse un
-   * mur signale une faute réelle, ce qui est le seul rôle demandé ici.
+   * On échantillonne **la courbe elle-même**, et non des droites entre les
+   * étapes. La version précédente interpolait en droite en se justifiant
+   * ainsi : « la spline reste dans l'enveloppe convexe de ses points de
+   * contrôle ». C'est faux — une Catmull-Rom interpole ses points et déborde
+   * derrière eux — et le sondage du rendu l'a montré : entre l'étape à z = 9,8
+   * et l'étape à z = 7,0, la caméra atteint z = 10,44, au-delà des deux, et
+   * frôle le vitrage nord à vingt et un centimètres.
    */
   const MARGE = 0.25;
-  for (let i = 1; i < VOL.length; i += 1) {
-    const a = VOL[i - 1].oeil;
-    const b = VOL[i].oeil;
+  const courbe = courbeOeil();
+  const PAS = 2000;
+  for (let k = 1; k <= PAS; k += 1) {
+    const avant = courbe.getPoint((k - 1) / PAS);
+    const apres = courbe.getPoint(k / PAS);
+    const a = [avant.x, avant.y, avant.z];
+    const b = [apres.x, apres.y, apres.z];
     for (const r of CLOISONS) {
       const axe = r.selonZ ? 0 : 2;
       const libre = r.selonZ ? 2 : 0;
@@ -244,13 +318,13 @@ test('la caméra franchit chaque cloison par une ouverture', () => {
         const ou = a[libre] + (b[libre] - a[libre]) * f;
         // Hors de la longueur de la cloison : il n'y a pas de mur là.
         if (ou < r.de || ou > r.a) continue;
-        const passe = r.trous.some(([p0, p1]) => ou > p0 + MARGE && ou < p1 - MARGE);
+        const passe = r.trous.some(([q0, q1]) => ou > q0 + MARGE && ou < q1 - MARGE);
         assert.ok(
           passe,
-          `entre les étapes ${i - 1} et ${i}, on franchit la cloison ${
+          `au point ${(k / PAS).toFixed(3)} du vol, on franchit la cloison ${
             r.selonZ ? 'x' : 'z'
           } = ${plan.toFixed(2)} à ${ou.toFixed(2)}, hors de ses ouvertures ${JSON.stringify(
-            r.trous.map(([p0, p1]) => [p0, p1]),
+            r.trous.map(([q0, q1]) => [q0, q1]),
           )}`,
         );
       }

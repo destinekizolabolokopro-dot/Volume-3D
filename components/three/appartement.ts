@@ -1588,18 +1588,39 @@ function plante(a: Atelier, x: number, z: number, taille: number, rond: (r: numb
    * qu'elle est dessous ou sur le dessus — c'est ce que fait la lumière dans
    * un vrai feuillage, et c'est ce qui sépare deux masses qui se recoupent.
    */
+  /*
+   * Les masses sont **écartées davantage qu'elles ne sont larges**.
+   *
+   * Six masses, chacune de son vert : le principe était bon et le résultat
+   * restait un bloc. La raison est arithmétique — les décalages allaient
+   * jusqu'à 0,46 fois la taille quand les rayons valaient 0,78 fois la taille.
+   * Six sphères dont les centres sont plus rapprochés que leurs rayons ne font
+   * pas six paquets, elles font une enveloppe convexe : un sac de papier
+   * froissé, ce qui est exactement ce que la capture du premier écran montrait.
+   *
+   * Les écarts montent à 0,56 et les rayons descendent à 0,52 : les paquets se
+   * recouvrent encore — sinon ils flotteraient séparés — mais le contour est
+   * lobé, et c'est le contour qui fait lire un feuillage avant toute autre
+   * chose. Un premier réglage les avait écartés jusqu'à 0,86 : la couronne y
+   * gagnait ses lobes et y perdait ses proportions, large comme un chapeau de
+   * champignon sur un tronc trop mince.
+   */
   for (const [i, [dx, dy, dz, k, ton]] of ([
-    [0, 0.58, 0, 1, 1.06],
-    [0.44, 0.3, 0.26, 0.68, 0.9],
-    [-0.38, 0.4, -0.3, 0.62, 0.78],
-    [0.16, 0.12, -0.46, 0.54, 0.7],
-    [-0.3, 0.16, 0.42, 0.5, 0.74],
-    [0.2, 0.72, -0.16, 0.56, 1.14],
+    [0, 0.62, 0, 0.82, 1.06],
+    [0.45, 0.38, 0.26, 0.55, 0.9],
+    [-0.4, 0.52, -0.3, 0.52, 0.78],
+    [0.18, 0.16, -0.46, 0.48, 0.7],
+    [-0.32, 0.24, 0.43, 0.47, 0.74],
+    [0.21, 0.92, -0.16, 0.52, 1.14],
   ] as const).entries()) {
     /* Une masse feuillue et non une sphère : c'est le contour déchiqueté qui
        fait lire « feuillage », bien avant la couleur. Voir `masseFeuillue`
        dans `maillage.ts`. */
-    const masse = masseFeuillue(taille * k * 0.78, leger ? 1 : 2, i * 37 + 5, 0.74);
+    /* L'aplatissement passe de 0,74 à 0,90. À 0,74, six masses décalées surtout
+       à l'horizontale donnaient une couronne d'un mètre trente de large pour
+       quatre-vingts centimètres de haut — un chapeau de champignon. Un arbre
+       en pot est à peu près aussi haut que large. */
+    const masse = masseFeuillue(taille * k * 0.78, leger ? 1 : 2, i * 37 + 5, 0.9);
     pose(
       masse,
       M.vegetal,

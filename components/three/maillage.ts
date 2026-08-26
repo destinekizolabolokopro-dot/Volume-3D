@@ -364,8 +364,23 @@ export function masseFeuillue(
     /* Deux échelles de bruit : les grands paquets, puis leur découpe. Une
        seule échelle donne une patate, pas un feuillage. */
     const gros = bruit(ux * 2.1, uy * 2.1, uz * 2.1);
-    const fin = bruit(ux * 7.3 + 11, uy * 7.3 + 11, uz * 7.3 + 11);
-    const k = rayon * (0.74 + 0.34 * gros + 0.14 * fin);
+    /*
+     * L'échelle fine monte de 7,3 à 13,1 et son poids de 0,14 à 0,26.
+     *
+     * À 7,3, une masse de cinquante centimètres vue à quatre mètres — c'est le
+     * cas du sujet du premier écran — n'a que quelques grandes facettes, et
+     * quelques grandes facettes plates se lisent comme du papier froissé, pas
+     * comme un feuillage. Ce qui fait lire « feuilles », c'est que deux
+     * facettes voisines ne reçoivent pas la même lumière ; il faut donc que
+     * leurs orientations diffèrent, donc que le relief varie à l'échelle de la
+     * facette et non de la masse.
+     *
+     * Cela ne coûte pas un triangle : c'est le même maillage, déplacé
+     * autrement. Monter la subdivision d'un cran l'aurait quadruplé — mille
+     * deux cent quatre-vingts faces par masse, six masses par plante.
+     */
+    const fin = bruit(ux * 13.1 + 11, uy * 13.1 + 11, uz * 13.1 + 11);
+    const k = rayon * (0.70 + 0.30 * gros + 0.26 * fin);
     position.setXYZ(i, ux * k, uy * k * ecrase, uz * k);
   }
 
