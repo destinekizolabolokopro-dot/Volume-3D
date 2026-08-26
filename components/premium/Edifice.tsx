@@ -429,6 +429,8 @@ export function Edifice({ reveal = true }: { reveal?: boolean }) {
       renderer,
       Math.min(window.devicePixelRatio, leger ? 1.5 : 2),
       (palier) => {
+        bokeh?.eclat(palier < PALIER_SANS_ECLAT);
+
         const ombres = palier < PALIER_SANS_OMBRE;
         if (renderer.shadowMap.enabled === ombres) return;
         renderer.shadowMap.enabled = ombres;

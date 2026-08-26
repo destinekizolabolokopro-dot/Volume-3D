@@ -88,15 +88,56 @@ const FLOU = /* glsl */ `
   }
 `;
 
+/*
+ * Le seuil de l'éclat.
+ *
+ * Un objectif n'est pas parfait : devant une surface très lumineuse, une part
+ * de la lumière se disperse dans le verre et déborde sur ce qui l'entoure.
+ * C'est ce débordement — et non la netteté, ni le nombre de polygones — qui
+ * fait qu'une image de synthèse se met à ressembler à une prise de vue. Un
+ * nez de dalle au soleil doit mordre sur le ciel derrière lui.
+ *
+ * On extrait donc ce qui dépasse un seuil, on le floute très large, et on le
+ * rajoute. Trois précisions qui décident du résultat :
+ *
+ * **Le seuil porte sur la luminance et non sur les canaux.** Seuiller canal
+ * par canal fait virer les couleurs : un orange chaud franchit le seuil par
+ * le rouge seul et son halo sort rouge vif.
+ *
+ * **La transition est douce** — `smoothstep` sur un quart de niveau. Un seuil
+ * franc dessine dans le ciel le contour exact de l'iso-luminance, et cette
+ * ligne-là se voit comme un défaut de compression.
+ *
+ * **Tout se passe en quart de résolution.** Un halo n'a aucun détail à
+ * perdre : c'est la définition d'un halo. Les trois passes coûtent ensemble
+ * moins d'un dixième d'une passe pleine résolution.
+ */
+const SEUIL = /* glsl */ `
+  varying vec2 vUv;
+  uniform sampler2D tImage;
+  uniform float uSeuil;
+
+  void main() {
+    vec3 couleur = texture2D(tImage, vUv).rgb;
+    float clarte = dot(couleur, vec3(0.2126, 0.7152, 0.0722));
+    float part = smoothstep(uSeuil, uSeuil + 0.25, clarte);
+    gl_FragColor = vec4(couleur * part, 1.0);
+  }
+`;
+
 const MELANGE = /* glsl */ `
   varying vec2 vUv;
   uniform sampler2D tNet;
   uniform sampler2D tFlou;
   uniform sampler2D tProfondeur;
+  uniform sampler2D tEclat;
   uniform float uPres;
   uniform float uLoin;
   uniform float uMise;
   uniform float uForce;
+  uniform float uEclat;
+  uniform float uVignette;
+  uniform float uGrain;
 
   float distanceVue(float d) {
     // La profondeur du tampon est non linéaire : on revient en mètres.
@@ -127,6 +168,29 @@ const MELANGE = /* glsl */ `
      */
     float part = smoothstep(uMise * 1.35, uMise * 4.2, metres) * uForce;
     vec3 couleur = mix(net, flou, part);
+
+    /* L'éclat s'**ajoute**, il ne se mélange pas : c'est de la lumière en
+       trop, pas une autre version de l'image. Un mélange l'aurait fait payer
+       par un assombrissement de ce qui l'entoure, ce qui est exactement le
+       contraire de ce que fait un objectif. */
+    couleur += texture2D(tEclat, vUv).rgb * uEclat;
+
+    /*
+     * La vignette.
+     *
+     * Douze pour cent aux angles, et rien au centre. C'est peu, et c'est
+     * voulu : une vignette qu'on remarque est une vignette ratée. Son rôle
+     * n'est pas d'être vue, il est de retenir l'œil au milieu du cadre — un
+     * objectif en donne toujours un peu, et son absence totale participe à
+     * l'impression de « rendu » qu'on cherche à effacer.
+     *
+     * Elle est calculée sur des coordonnées **recentrées**, pas sur la
+     * distance au coin : sinon elle s'écrase sur un écran large et devient un
+     * bandeau latéral.
+     */
+    vec2 hors = (vUv - 0.5) * 2.0;
+    float bord = dot(hors, hors);
+    couleur *= 1.0 - uVignette * bord * bord;
 
     // L'encodage d'affichage, une seule fois, ici.
     couleur = max(couleur, vec3(0.0));
@@ -161,15 +225,43 @@ const MELANGE = /* glsl */ `
        triangulaire, qui est celle que demande un tramage d'un niveau. */
     sortie += (a + b - 1.0) / 255.0;
 
+    /*
+     * Le grain argentique, par-dessus le tramage.
+     *
+     * Le tramage vaut un niveau et sert à casser les paliers ; le grain, lui,
+     * est un parti pris d'image. Il est **modulé par la luminance** — fort
+     * dans les demi-teintes, presque nul dans les noirs et dans les blancs —
+     * parce que c'est ainsi que se comporte une émulsion, et parce qu'un
+     * grain uniforme salit les ombres au lieu de les habiller.
+     *
+     * Il est fixe à l'écran et non recalculé à chaque image. Un grain animé
+     * scintille, oblige à redessiner une scène qui n'a pas bougé, et se lit
+     * comme du bruit vidéo. Fixe, il se lit comme la texture du capteur — et
+     * comme l'image bouge en permanence sous lui, il ne se fige jamais.
+     */
+    float milieu = 1.0 - abs(dot(sortie, vec3(0.2126, 0.7152, 0.0722)) * 2.0 - 1.0);
+    sortie += (a - 0.5) * uGrain * milieu;
+
     gl_FragColor = vec4(sortie, 1.0);
   }
 `;
+
+/** Le rapport entre la résolution de l'éclat et celle de l'image. */
+const QUART = 0.25;
 
 export interface Profondeur {
   /** À appeler quand le canevas change de taille. */
   setSize(largeur: number, hauteur: number): void;
   /** Rend la scène avec le point de netteté à `mise` mètres. */
   rendre(scene: THREE.Scene, camera: THREE.PerspectiveCamera, mise: number): void;
+  /**
+   * Coupe ou rallume l'éclat.
+   *
+   * C'est le premier effet que la machine cède quand elle ne suit plus : trois
+   * passes en moins, et l'image reste juste — seulement moins lumineuse sur
+   * les arêtes. Voir les paliers dans `quality.ts`.
+   */
+  eclat(actif: boolean): void;
   dispose(): void;
 }
 
@@ -199,6 +291,13 @@ export function creerProfondeur(
   net.depthTexture.format = THREE.DepthFormat;
   net.depthTexture.type = THREE.UnsignedIntType;
   const flou = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
+  /* Deux cibles en quart de résolution pour l'éclat : on extrait dans la
+     première, on floute vers la seconde, on refloute vers la première avec un
+     pas plus large. Deux passes de treize points donnent un halo bien plus
+     doux qu'une seule à rayon double, pour le même prix — c'est le principe
+     de tous les flous en cascade. */
+  const vif = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
+  const halo = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
 
   const quad = new THREE.BufferGeometry();
   quad.setAttribute(
@@ -222,6 +321,43 @@ export function creerProfondeur(
     depthTest: false,
     depthWrite: false,
   });
+  const matSeuil = new THREE.ShaderMaterial({
+    vertexShader: PLAN,
+    fragmentShader: SEUIL,
+    uniforms: {
+      tImage: { value: net.texture },
+      /*
+       * Le seuil, et l'erreur qu'il faut faire une fois.
+       *
+       * Il était à 0,72, sur le raisonnement suivant : l'image écrite dans la
+       * cible est déjà passée par la courbe de tonalité, donc il n'y a plus de
+       * valeurs très au-dessus de un, donc il faut seuiller bas. Le
+       * raisonnement est juste et la conclusion est fausse — parce qu'un mur
+       * beige éclairé se tient précisément vers 0,7. À ce seuil, ce n'est plus
+       * un éclat qu'on ajoute, c'est **un voile sur toute l'image** : le
+       * séjour est ressorti plus clair, plus plat, et la table basse s'est
+       * remise à luire comme si elle était allumée.
+       *
+       * Un éclat ne doit trouver que ce qui est franchement plus lumineux que
+       * la scène. À 0,88, il ne reste que le ciel, la tache de soleil au sol
+       * et les vitres qui le renvoient — c'est-à-dire exactement ce qui, dans
+       * un objectif, déborde vraiment.
+       */
+      uSeuil: { value: 0.88 },
+    },
+    depthTest: false,
+    depthWrite: false,
+  });
+  const matHalo = new THREE.ShaderMaterial({
+    vertexShader: PLAN,
+    fragmentShader: FLOU,
+    uniforms: {
+      tImage: { value: vif.texture },
+      uPas: { value: new THREE.Vector2() },
+    },
+    depthTest: false,
+    depthWrite: false,
+  });
   const matMelange = new THREE.ShaderMaterial({
     vertexShader: PLAN,
     fragmentShader: MELANGE,
@@ -229,10 +365,20 @@ export function creerProfondeur(
       tNet: { value: net.texture },
       tFlou: { value: flou.texture },
       tProfondeur: { value: net.depthTexture },
+      tEclat: { value: halo.texture },
       uPres: { value: 0.2 },
       uLoin: { value: 1200 },
       uMise: { value: 40 },
       uForce: { value: force },
+      /* Cinquante-cinq pour cent, mais sur bien moins de pixels qu'avant : un
+         seuil haut et un gain franc valent mieux qu'un seuil bas et un gain
+         timide. Le premier fait déborder les quelques surfaces qui doivent
+         déborder ; le second lave l'image entière. */
+      uEclat: { value: 0.55 },
+      uVignette: { value: 0.12 },
+      /* Un peu plus de trois niveaux dans les demi-teintes. Assez pour que
+         l'image cesse d'être lisse, trop peu pour qu'on puisse le nommer. */
+      uGrain: { value: 3.2 / 255 },
     },
     depthTest: false,
     depthWrite: false,
@@ -244,12 +390,29 @@ export function creerProfondeur(
   maille.frustumCulled = false;
   plan.add(maille);
 
+  /* L'éclat peut être coupé à chaud par les paliers de qualité. Quand il
+     l'est, la composition lit une cible noire : c'est une texture de plus à
+     échantillonner, ce qui est négligeable, et cela évite de recompiler le
+     nuanceur de composition à chaque changement de palier — une recompilation
+     de programme provoque une saccade d'une bonne dizaine d'images, ce qui
+     est précisément ce qu'on essayait d'éviter en baissant le palier. */
+  let avecEclat = true;
+  const noir = new THREE.WebGLRenderTarget(2, 2, { ...options, depthBuffer: false });
+
   return {
     setSize(largeur, hauteur) {
       const l = Math.max(2, Math.round(largeur));
       const h = Math.max(2, Math.round(hauteur));
       net.setSize(l, h);
       flou.setSize(Math.max(2, Math.round(l * DEMI)), Math.max(2, Math.round(h * DEMI)));
+      const lq = Math.max(2, Math.round(l * QUART));
+      const hq = Math.max(2, Math.round(h * QUART));
+      vif.setSize(lq, hq);
+      halo.setSize(lq, hq);
+      /* Un pas bien plus large que celui de la profondeur de champ : un halo
+         d'objectif s'étale sur des dizaines de pixels de l'image finale, soit
+         quelques-uns seulement en quart de résolution. */
+      matHalo.uniforms.uPas.value.set(2.6 / lq, 2.6 / hq);
       /* Le pas est exprimé en fraction de la cible de flou, donc en texels de
          demi-résolution : c'est ce qui rend le rayon indépendant de la taille
          de la fenêtre. */
@@ -265,6 +428,26 @@ export function creerProfondeur(
       renderer.setRenderTarget(flou);
       renderer.render(plan, oeil);
 
+      if (avecEclat) {
+        maille.material = matSeuil;
+        renderer.setRenderTarget(vif);
+        renderer.render(plan, oeil);
+
+        /* Deux passes de flou en aller-retour. La seconde repart de la
+           première : c'est ce qui donne au halo sa décroissance douce plutôt
+           qu'un disque net. */
+        matHalo.uniforms.tImage.value = vif.texture;
+        maille.material = matHalo;
+        renderer.setRenderTarget(halo);
+        renderer.render(plan, oeil);
+
+        matHalo.uniforms.tImage.value = halo.texture;
+        renderer.setRenderTarget(vif);
+        renderer.render(plan, oeil);
+
+        matMelange.uniforms.tEclat.value = vif.texture;
+      }
+
       matMelange.uniforms.uPres.value = camera.near;
       matMelange.uniforms.uLoin.value = camera.far;
       matMelange.uniforms.uMise.value = Math.max(1, mise);
@@ -273,12 +456,34 @@ export function creerProfondeur(
       renderer.render(plan, oeil);
     },
 
+    eclat(actif) {
+      if (actif === avecEclat) return;
+      avecEclat = actif;
+      if (!actif) {
+        /* On efface la cible d'éclat une fois, au moment de la coupure : sans
+           cela, la composition continuerait d'ajouter le dernier halo calculé,
+           figé sur l'image d'avant. */
+        const precedent = renderer.getRenderTarget();
+        renderer.setRenderTarget(noir);
+        renderer.setClearColor(0x000000, 1);
+        renderer.clear(true, false, false);
+        renderer.setClearColor(0x0d1014, 1);
+        renderer.setRenderTarget(precedent);
+        matMelange.uniforms.tEclat.value = noir.texture;
+      }
+    },
+
     dispose() {
       net.depthTexture?.dispose();
       net.dispose();
       flou.dispose();
+      vif.dispose();
+      halo.dispose();
+      noir.dispose();
       quad.dispose();
       matFlou.dispose();
+      matSeuil.dispose();
+      matHalo.dispose();
       matMelange.dispose();
     },
   };
