@@ -502,6 +502,37 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   pose(new THREE.CylinderGeometry(0.2, 0.15, 0.26, rond(10)), M.lin, 4.0, SOL + 1.62, 4.3);
   plante(a, 9.9, 9.9, 0.72, rond);
 
+  /*
+   * Les objets posés.
+   *
+   * Une coupe sur la table, une pile de livres sur le buffet, un plateau sur
+   * l'îlot, des serviettes pliées : quatre poignées de pavés qui ne changent
+   * rien au plan et tout à la lecture. Une pièce parfaitement rangée et
+   * parfaitement vide se lit comme un showroom ; c'est le dernier écart entre
+   * « bien modélisé » et « habité », et il ne coûte que des centimètres cubes.
+   *
+   * On s'arrête là, volontairement. Au-delà — une tasse, un magazine ouvert,
+   * une paire de chaussures — on entre dans la mise en scène, et une mise en
+   * scène trop appuyée se retourne : le visiteur se met à regarder les objets
+   * au lieu de la pièce, qui est ce qu'on lui vend.
+   */
+  // La coupe sur la table à manger.
+  pose(new THREE.CylinderGeometry(0.19, 0.13, 0.11, rond(14)), M.marbre, 8.0, SOL + 0.83, 4.15);
+  // Trois livres empilés sur le buffet, légèrement décalés.
+  for (const [i, dz] of [0, 0.03, -0.02].entries()) {
+    bloc(
+      M.bois,
+      PIECES.sejour.x0 + CLOISON + 0.06,
+      PIECES.sejour.x0 + CLOISON + 0.34,
+      SOL + 0.9 + i * 0.035,
+      SOL + 0.933 + i * 0.035,
+      8.6 + dz,
+      8.98 + dz,
+    );
+  }
+  // Un vase élancé à l'autre bout du buffet.
+  pose(new THREE.CylinderGeometry(0.07, 0.1, 0.34, rond(12)), M.marbre, 1.0, SOL + 1.07, 9.7);
+
   /* ----------------------------------------------------------- cuisine --- */
   const C = PIECES.cuisine;
   // Le linéaire contre le mur aveugle : caissons, plan, crédence, hotte.
@@ -520,6 +551,17 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   for (const x of [5.3, 6.3, 7.3]) {
     pose(new THREE.CylinderGeometry(0.17, 0.17, 0.06, rond(10)), M.bois, x, SOL + 0.66, 2.86);
     pose(new THREE.CylinderGeometry(0.04, 0.06, 0.63, rond(7)), M.metal, x, SOL + 0.32, 2.86);
+  }
+
+  // Le plateau et deux bols, sur l'îlot.
+  bloc(M.bois, 6.9, 7.7, SOL + 0.94, SOL + 0.965, 1.35, 1.95);
+  for (const x of [7.06, 7.44]) {
+    pose(new THREE.CylinderGeometry(0.09, 0.06, 0.07, rond(12)), M.marbre, x, SOL + 1.0, 1.65);
+  }
+  // Une planche et deux pots contre la crédence.
+  bloc(M.bois, 3.4, 3.46, SOL + 0.94, SOL + 1.32, PIECES.cuisine.z0 + 0.1, PIECES.cuisine.z0 + 0.44);
+  for (const x of [8.5, 8.76]) {
+    pose(new THREE.CylinderGeometry(0.06, 0.07, 0.19, rond(10)), M.metal, x, SOL + 1.03, PIECES.cuisine.z0 + 0.3);
   }
 
   /* ----------------------------------------------------------- chambre --- */
@@ -542,6 +584,9 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
     bloc(M.metal, x - 0.01, x + 0.01, SOL + 1.0, SOL + 1.3, H.z0 + CLOISON + 0.6, H.z0 + CLOISON + 0.63);
   }
 
+  // Un plaid replié au pied du lit.
+  bloc(M.lin, PIECES.chambre.x0 + 0.32, PIECES.chambre.x0 + 2.32, SOL + 0.66, SOL + 0.73, 7.7, 8.24);
+
   /* ------------------------------------------------------------- bains --- */
   const B = PIECES.bains;
   // La baignoire contre le mur sud, et son tablier de marbre.
@@ -559,9 +604,33 @@ export function poserAppartement(a: Atelier): THREE.Light[] {
   bloc(M.garde, B.x1 - 1.52 - CLOISON, B.x1 - 1.46 - CLOISON, SOL, SOL + 2.1, B.z0 + 0.1, B.z0 + 1.6);
   bloc(M.metal, B.x1 - 0.9 - CLOISON, B.x1 - 0.86 - CLOISON, SOL + 2.05, SOL + 2.12, B.z0 + 0.4, B.z0 + 0.9);
 
+  // Deux serviettes pliées sur le bord de la baignoire, et une pile sur la vasque.
+  for (const z of [-0.72, -0.36]) {
+    bloc(M.lin, PIECES.bains.x0 + 0.42, PIECES.bains.x0 + 0.78, SOL + 0.56, SOL + 0.63, z, z + 0.28);
+  }
+  for (let i = 0; i < 2; i += 1) {
+    bloc(
+      M.lin,
+      PIECES.bains.x0 + 0.06,
+      PIECES.bains.x0 + 0.36,
+      SOL + 0.9 + i * 0.05,
+      SOL + 0.947 + i * 0.05,
+      2.5,
+      2.86,
+    );
+  }
+
   /* ---------------------------------------------------------- terrasse --- */
   /* Un salon d'extérieur, et rien de plus : la terrasse porte déjà sa
      jardinière filante et son garde-corps, posés avec le redan. */
+  /* Le platelage. La terrasse est au premier plan du dernier écran de la page :
+     une dalle de béton lisse y occupait tout le bas du cadre. Une lame tous les
+     quatorze centimètres, et le sol de la terrasse a une direction, une échelle
+     et une matière — pour trois cents pavés plats fusionnés en un seul. */
+  for (let z = TERRASSE.z0; z < TERRASSE.z1 - 0.05; z += 0.14) {
+    bloc(M.bois, TERRASSE.x0, TERRASSE.x1 - 1.2, SOL - 0.09, SOL - 0.055, z + 0.012, z + 0.128);
+  }
+
   bloc(M.bois, TERRASSE.x0 + 0.5, TERRASSE.x0 + 1.4, SOL - 0.06, SOL + 0.34, 6.6, 9.4);
   bloc(M.lin, TERRASSE.x0 + 0.56, TERRASSE.x0 + 1.34, SOL + 0.34, SOL + 0.46, 6.66, 9.34);
   bloc(M.lin, TERRASSE.x0 + 0.5, TERRASSE.x0 + 0.66, SOL + 0.34, SOL + 0.8, 6.6, 9.4);

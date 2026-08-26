@@ -272,8 +272,20 @@ export const VOL: Etape[] = [
   /* Galerie I — le coin salon, vu depuis l'angle vitré. On regarde vers
      l'intérieur : c'est le seul plan qui montre l'appartement de dos. */
   { t: 0.37, ancre: '#galerie', oeil: [9.8, 25.35, 9.8], vise: [1.6, 25.15, 4.2], foyer: 52 },
-  /* Galerie II — la baie et la terrasse. */
-  { t: 0.47, ancre: '#galerie', ecran: 1, oeil: [5.0, 25.35, 7.0], vise: [16.2, 25.05, 8.0], foyer: 46 },
+  /*
+   * Galerie II — la baie, et le point de netteté **dehors**.
+   *
+   * La direction n'a pas changé d'un degré ; seule la distance du point visé
+   * est passée de onze mètres à cinquante-cinq. C'est le même geste qu'un
+   * photographe qui fait le point à travers une fenêtre : ce qu'on regarde
+   * n'est pas la vitre, c'est ce qu'il y a derrière.
+   *
+   * Sans cela, la profondeur de champ — réglée sur ce que la caméra vise —
+   * mettait toute la ville au-delà de quarante-six mètres dans un flou complet.
+   * On avait construit une ville pour la regarder par une baie, et on l'avait
+   * mise hors champ par un nombre.
+   */
+  { t: 0.47, ancre: '#galerie', ecran: 1, oeil: [5.0, 25.35, 7.0], vise: [59.8, 23.9, 11.9], foyer: 46 },
   /* Galerie III — la diagonale complète : treize mètres de l'angle est
      jusqu'au fond de l'entrée, à travers l'ouverture. C'est ce plan-là qui dit
      la surface, bien mieux qu'un chiffre. */
@@ -284,9 +296,11 @@ export const VOL: Etape[] = [
   { t: 0.79, ancre: '#bains', oeil: [0.2, 25.35, 2.7], vise: [-3.4, 25.1, -1.0], foyer: 60 },
   /* Transit : on retraverse le séjour et on franchit la baie coulissante. */
   { t: 0.88, oeil: [7.0, 25.35, 7.9], vise: [14.0, 25.15, 8.2], foyer: 50 },
-  /* La terrasse, face au couchant. Fin de la visite : le dernier plan n'est
-     plus une pièce, c'est ce qu'on achète avec. */
-  { t: 1.0, ancre: '#contact', oeil: [13.4, 25.35, 8.4], vise: [24.0, 25.0, 5.4], foyer: 50 },
+  /* La terrasse, face au couchant, et la netteté portée à cent vingt mètres :
+     le sujet du dernier plan n'est ni la terrasse ni la rambarde, c'est la
+     ville. Fin de la visite — le dernier plan n'est plus une pièce, c'est ce
+     qu'on achète avec. */
+  { t: 1.0, ancre: '#contact', oeil: [13.4, 25.35, 8.4], vise: [128.8, 21.6, -24.3], foyer: 50 },
 ];
 
 /* =============================================================== mesures === */

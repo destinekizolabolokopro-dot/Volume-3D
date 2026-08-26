@@ -302,7 +302,13 @@ export interface Edifice {
  * plus de haut ni de bas dans l'image.
  */
 function ciel(disposables: Bin[], leger: boolean): THREE.Mesh {
-  const geometry = new THREE.SphereGeometry(600, leger ? 20 : 32, leger ? 14 : 24);
+  /* La voûte est bien plus fine qu'avant — soixante-douze méridiens contre
+     trente-deux. C'est le prix des nuages : une couleur portée par les sommets
+     ne peut varier qu'aux sommets, et une bande de nuages peinte sur une
+     sphère de trente-deux segments donne trente-deux facettes, pas des nuages.
+     Cinq mille triangles pour tout le ciel, dessinés en un appel : c'est le
+     poste le moins cher de la scène et le plus visible par une baie. */
+  const geometry = new THREE.SphereGeometry(600, leger ? 40 : 72, leger ? 24 : 44);
   const position = geometry.getAttribute('position');
   const couleur = new Float32Array(position.count * 3);
   const haut = new THREE.Color(0x38536f);
@@ -329,6 +335,47 @@ function ciel(disposables: Bin[], leger: boolean): THREE.Mesh {
     Math.sin(az) * Math.cos(si),
   );
   const dir = new THREE.Vector3();
+  const nue = new THREE.Color(0xe8ded0);
+  const nueOmbre = new THREE.Color(0x8f95a0);
+  const nueFeu = new THREE.Color(0xffd7a4);
+  const teinteNue = new THREE.Color();
+
+  /**
+   * La couverture nuageuse, en un point du ciel.
+   *
+   * Trois sinusoïdes d'échelles différentes, prises en azimut et en site : la
+   * première dessine les grands paquets, la deuxième les découpe, la troisième
+   * casse la régularité des deux autres. C'est le plus vieux truc du bruit
+   * procédural et il suffit ici, parce qu'on ne demande pas des nuages
+   * photographiques — on demande que le ciel cesse d'être un dégradé.
+   *
+   * Elles sont **rassemblées en bande** autour de douze degrés de hauteur. Un
+   * ciel d'heure dorée n'a pas de nuages au zénith : il en a une couche basse,
+   * qui prend la lumière par en dessous, et c'est précisément cette couche que
+   * l'on voit depuis une baie du cinquième étage — on regarde à l'horizontale,
+   * pas vers le haut.
+   */
+  const couverture = (azimut: number, site: number): number => {
+    /* Deux couches, et c'est ce qui fait la profondeur d'un ciel : une couche
+       basse, large et molle, vers dix degrés — celle qu'on voit par une baie —
+       et une couche haute, plus serrée et plus contrastée, vers trente. Une
+       seule couche donne un bandeau ; deux donnent une distance. */
+    const basse =
+      Math.sin(azimut * 3.1 + site * 8.5) * 0.46 +
+      Math.sin(azimut * 7.7 - site * 3.6 + 1.3) * 0.3 +
+      Math.sin(azimut * 1.6 + site * 15 + 2.4) * 0.24;
+    const haute =
+      Math.sin(azimut * 5.4 - site * 6.2 + 0.7) * 0.5 +
+      Math.sin(azimut * 11.3 + site * 9.1 + 2.9) * 0.28 +
+      Math.sin(azimut * 2.2 - site * 21 + 4.1) * 0.22;
+    const a =
+      Math.max(0, (basse * 0.5 + 0.5 - 0.44) / 0.56) *
+      Math.exp(-Math.pow((site - 0.17) / 0.2, 2));
+    const b =
+      Math.max(0, (haute * 0.5 + 0.5 - 0.56) / 0.44) *
+      Math.exp(-Math.pow((site - 0.52) / 0.26, 2));
+    return Math.min(1, a + b * 0.8);
+  };
 
   for (let i = 0; i < position.count; i += 1) {
     const u = position.getY(i) / 600;
@@ -347,6 +394,23 @@ function ciel(disposables: Bin[], leger: boolean): THREE.Mesh {
        soleil. Plafonné à 0,85 — un halo qui sature à blanc pur devient une
        lampe, et une lampe dans un ciel se voit comme un défaut. */
     teinte.lerp(halo, Math.min(0.85, Math.pow(proche, 16)));
+
+    /*
+     * Les nuages, posés par-dessus le dégradé.
+     *
+     * Leur couleur n'est pas une : elle va de l'ombre bleutée au feu, selon
+     * l'angle au soleil. C'est ce qui fait un ciel de fin de journée — un
+     * nuage éclairé par en dessous a une face allumée et une face froide, et
+     * un ciel dont tous les nuages ont le même gris est un ciel de midi
+     * couvert, quelle que soit la couleur du fond.
+     */
+    const site = Math.asin(Math.max(-1, Math.min(1, dir.y)));
+    const dense = couverture(Math.atan2(dir.z, dir.x), site);
+    if (dense > 0) {
+      teinteNue.copy(nueOmbre).lerp(nue, 0.35 + 0.4 * proche);
+      teinteNue.lerp(nueFeu, Math.pow(Math.max(0, proche), 2.2));
+      teinte.lerp(teinteNue, Math.min(0.88, dense));
+    }
 
     couleur[i * 3] = teinte.r;
     couleur[i * 3 + 1] = teinte.g;
@@ -464,15 +528,17 @@ export function buildEdifice(
    * un ciel, séparés par une arête nette. Aucun paysage ne ressemble à cela —
    * l'air est un matériau, il blanchit ce qui est loin, et c'est cette
    * dégradation-là qui donne à un bâtiment son échelle. Cent quatre-vingt-cinq
-   * mètres de franchise, sept cent vingt de portée : la franchise est réglée
-   * sur le plan le plus lointain de la page — cent quarante-deux mètres de
-   * rayon, plus la demi-diagonale du bâtiment — pour que la façade reste
-   * franche partout et que seul le parvis se perde.
+   * mètres de franchise, mille cinquante de portée. Les valeurs ont doublé le
+   * jour où la page est passée à l'intérieur : ce qu'on regarde n'est plus une
+   * façade à cent mètres mais **une ville par une baie**, entre cent cinquante
+   * et quatre cents mètres. Une brume réglée pour détacher un bâtiment de son
+   * parvis effaçait exactement ce qu'on venait de construire pour meubler
+   * l'horizon.
    *
    * La couleur est **exactement** celle de l'horizon du ciel. Un ton de brume
    * qui s'en écarte de deux points recrée la ligne qu'on cherchait à effacer.
    */
-  scene.fog = new THREE.Fog(TON.horizon, 185, 720);
+  scene.fog = new THREE.Fog(TON.horizon, 240, 1050);
 
   const voute = ciel(bin, leger);
 
@@ -530,9 +596,13 @@ export function buildEdifice(
      pour de bon — on doit deviner le hall éclairé depuis le parvis — et il ne
      porte pas d'ombre : un mur-rideau qui projette une ombre pleine à
      l'intérieur du hall le plongerait dans le noir. */
+  /* Seize pour cent, et non trente : c'est la seule vitre de la scène qu'on
+     regarde du dedans, et une vitre qu'on regarde du dedans doit disparaître.
+     Le reste — le reflet du ciel, la teinte froide — vient de la carte
+     d'environnement, pas de l'opacité. */
   const vitrine = mat(0x8fa2ad, 0.06, {
     metalness: 0.2,
-    opacity: 0.3,
+    opacity: 0.16,
     transparent: true,
     userData: { sansOmbre: true },
   });
@@ -946,8 +1016,21 @@ export function buildEdifice(
       const h = (niveau * 7 + face * 13) % 11;
       return h < 2 ? verreClair : h < 4 ? verreSombre : verre;
     };
+    /*
+     * Au niveau de l'appartement, les deux faces qu'il occupe ne sont **pas**
+     * posées ici : c'est lui qui les monte, avec son ouvrant coulissant, ses
+     * montants et son seuil.
+     *
+     * Elles l'étaient, et les deux vitrages se superposaient exactement. Deux
+     * panneaux translucides à trente pour cent l'un derrière l'autre laissent
+     * passer moins de la moitié de ce qu'un seul laisse passer : la ville
+     * qu'on venait de construire pour la regarder par cette baie s'y voyait à
+     * travers un voile laiteux, et le coupable n'était ni la brume, ni la
+     * profondeur de champ, ni le nuancier — c'était une vitre en trop.
+     */
     const baie = niveau === NIVEAU_APPARTEMENT;
     for (const [i, z] of [-(e.hz - 0.2), e.hz - 0.2].entries()) {
+      if (baie && i === 1) continue;
       pose(
         new THREE.BoxGeometry(e.hx * 2 - 0.4, ETAGE - NEZ, EP),
         teinte(i),
@@ -960,10 +1043,10 @@ export function buildEdifice(
       /* La face qui donne sur la terrasse du séjour est transparente : c'est
          la seule vitre de tout le bâtiment que l'on regarde du dedans, et le
          dernier plan de la page la traverse. */
-      const quoi = baie && i === 1 ? vitrine : teinte(i + 2);
+      if (baie && i === 1) continue;
       pose(
         new THREE.BoxGeometry(EP, ETAGE - NEZ, e.hz * 2 - 0.4 - EP * 2),
-        quoi,
+        teinte(i + 2),
         x,
         bas + (ETAGE - NEZ) / 2,
         0,
@@ -994,13 +1077,15 @@ export function buildEdifice(
     for (let i = 0; i <= colonnes; i += 1) {
       const x = e.dx - e.hx + i * ((e.hx * 2) / colonnes);
       for (const z of [-e.hz - 0.02, e.hz + 0.02]) {
+        if (baie && z > 0) continue;
         pose(new THREE.BoxGeometry(0.16, ETAGE - NEZ, 0.3), meneau, x, bas + (ETAGE - NEZ) / 2, z);
       }
     }
     const rangs = leger ? 0 : Math.round((e.hz * 2) / TRAME);
     for (let i = 1; i < rangs; i += 1) {
       const z = -e.hz + i * ((e.hz * 2) / rangs);
-      for (const x of [e.dx - e.hx - 0.02, e.dx + e.hx + 0.02]) {
+      for (const [k, x] of [e.dx - e.hx - 0.02, e.dx + e.hx + 0.02].entries()) {
+        if (baie && k === 1) continue;
         pose(new THREE.BoxGeometry(0.3, ETAGE - NEZ, 0.16), meneau, x, bas + (ETAGE - NEZ) / 2, z);
       }
     }
@@ -1264,18 +1349,117 @@ export function buildEdifice(
     graine = (graine * 1103515245 + 12345) % 2147483648;
     return graine / 2147483648;
   };
-  for (let i = 0; i < 26; i += 1) {
-    const angle = (i / 26) * Math.PI * 2 + tirage() * 0.14;
-    const loin = 180 + tirage() * 240;
+
+  /*
+   * Le sol de la ville : des îlots et des rues, et non une dalle.
+   *
+   * Depuis un cinquième étage, on ne regarde pas l'horizon — on regarde
+   * quarante-cinq degrés en dessous. Ce qui remplit la moitié basse d'une baie
+   * n'est donc pas le ciel ni la silhouette des tours, c'est **le sol**, et il
+   * était uniformément gris sur neuf cents mètres. Une trame de rues sombres
+   * tous les soixante mètres, des îlots un ton plus clair entre elles, et
+   * quelques carrés plantés : trois matières, une centaine de pavés plats, et
+   * la vue cesse d'être un désert.
+   */
+  const RUE = 12;
+  const ILOT = 62;
+  const bitume = mat(0x5d5b57, 0.96);
+  const pave = mat(0x9d9a93, 0.95);
+  for (let i = -6; i <= 6; i += 1) {
+    for (let j = -6; j <= 6; j += 1) {
+      const cx = i * (ILOT + RUE);
+      const cz = j * (ILOT + RUE);
+      /* On ne pose rien sur la parcelle du projet : elle a déjà son parvis. */
+      if (Math.abs(cx) < ILOT && Math.abs(cz) < ILOT) continue;
+      const vert = tirage() < 0.16;
+      pose(
+        new THREE.BoxGeometry(ILOT, 0.18, ILOT),
+        vert ? vegetal : pave,
+        cx,
+        0.09,
+        cz,
+      );
+    }
+  }
+  // Les rues, un rien en creux : elles passent entre les îlots.
+  for (let i = -6; i <= 6; i += 1) {
+    const c = i * (ILOT + RUE) + (ILOT + RUE) / 2;
+    pose(new THREE.BoxGeometry(RUE, 0.1, 13 * (ILOT + RUE)), bitume, c, 0.05, 0);
+    pose(new THREE.BoxGeometry(13 * (ILOT + RUE), 0.1, RUE), bitume, 0, 0.05, c);
+  }
+
+  /*
+   * Le lointain.
+   *
+   * C'est la correction qui a le plus changé l'image pour le moins de
+   * géométrie. Le bâtiment se dressait sur une dalle vide : quelle que soit la
+   * qualité de sa façade, il ressemblait à une maquette posée sur une table,
+   * parce qu'une maquette est précisément un bâtiment sans voisins.
+   *
+   * Les masses sont maintenant **bandées** : un nez de plancher tous les trois
+   * mètres et demi, un ton plus clair que la façade. C'est ce qui distingue un
+   * immeuble d'un parallélépipède, et à trois cents mètres c'est la seule
+   * chose qui les distingue — on ne voit ni fenêtres, ni matières, on voit
+   * seulement que quelque chose compte ses étages.
+   *
+   * Elles sont posées par une suite déterministe et non par un tirage : une
+   * ville qui change à chaque rechargement n'est pas un lieu. La règle laisse
+   * un vide devant la façade est — celle que l'appartement regarde — pour que
+   * la vue porte, et fait monter les hauteurs vers le fond.
+   */
+  /*
+   * Les voisins sont **sombres**, et les bandeaux clairs.
+   *
+   * La première ville était peinte dans les mêmes gris moyens que le ciel : à
+   * trois cents mètres, sous une brume et un éclairage d'environnement, tout
+   * tombait dans la même bande de valeurs et la vue par la baie ressemblait à
+   * du brouillard. Ce qui fait lire une silhouette n'est pas sa forme, c'est
+   * son écart au fond — et le fond, ici, est un ciel pâle d'heure dorée.
+   */
+  const voisin = mat(0x74716c, 0.95);
+  const bandeau = mat(0xc8c3ba, 0.93);
+  for (let i = 0; i < 34; i += 1) {
+    const angle = (i / 34) * Math.PI * 2 + tirage() * 0.16;
+    const loin = 150 + tirage() * 260;
     const x = Math.cos(angle) * loin;
     const z = Math.sin(angle) * loin;
-    // Le parvis d'entrée reste dégagé : rien dans le cône du vol.
-    if (x > 60 && Math.abs(z) < loin * 0.42) continue;
-    const haut = 18 + tirage() * 46 + (loin - 180) * 0.09;
-    const large = 16 + tirage() * 26;
-    const profond = 16 + tirage() * 26;
-    pose(new THREE.BoxGeometry(large, haut, profond), lointain, x, haut / 2, z);
-    pose(new THREE.BoxGeometry(large + 1, 0.8, profond + 1), soffite, x, haut + 0.4, z);
+    if (x > 40 && Math.abs(z) < loin * 0.3) continue;
+    const haut = 16 + tirage() * 40 + (loin - 150) * 0.08;
+    const large = 15 + tirage() * 24;
+    const profond = 15 + tirage() * 24;
+    pose(new THREE.BoxGeometry(large, haut, profond), voisin, x, haut / 2, z);
+    // Les nez de plancher, sur les deux faces tournées vers le projet.
+    const versX = x > 0 ? -1 : 1;
+    const versZ = z > 0 ? -1 : 1;
+    for (let y = 3.4; y < haut - 1.2; y += 3.4) {
+      pose(new THREE.BoxGeometry(large + 0.5, 0.34, 0.3), bandeau, x, y, z + versZ * (profond / 2));
+      pose(new THREE.BoxGeometry(0.3, 0.34, profond + 0.5), bandeau, x + versX * (large / 2), y, z);
+    }
+    // Un acrotère, et une machinerie sur le toit une fois sur trois.
+    pose(new THREE.BoxGeometry(large + 0.8, 0.9, profond + 0.8), bandeau, x, haut + 0.45, z);
+    if (tirage() < 0.34) {
+      pose(new THREE.BoxGeometry(large * 0.3, 2.2, profond * 0.3), voisin, x, haut + 2, z);
+    }
+  }
+
+  /* Les arbres d'alignement, le long des rues les plus proches. Ils donnent au
+     sol l'échelle que les îlots seuls ne donnent pas : un carré de soixante
+     mètres pourrait en faire six ou six cents. */
+  for (let i = 0; i < (leger ? 14 : 30); i += 1) {
+    const long = tirage() < 0.5;
+    const c = (Math.floor(tirage() * 3) - 1) * (ILOT + RUE) + (ILOT + RUE) / 2;
+    const t = (tirage() - 0.5) * 260;
+    const x = long ? c : t;
+    const z = long ? t : c;
+    if (Math.hypot(x, z) < 46) continue;
+    pose(new THREE.CylinderGeometry(0.14, 0.2, 3.4, 6), tronc, x, 1.7, z);
+    for (const [dx, dy, dz, r] of [
+      [0, 0, 0, 2.2],
+      [0.9, 0.6, 0.5, 1.5],
+      [-0.7, 0.5, -0.8, 1.3],
+    ] as const) {
+      pose(new THREE.SphereGeometry(r, leger ? 6 : 8, leger ? 5 : 6), vegetal, x + dx, 4.4 + dy, z + dz);
+    }
   }
 
   for (const [x, z, r] of [
