@@ -1,0 +1,559 @@
+/* =========================================================================
+   Assistant juridique — feuille de la zone /juridique
+
+   Elle n'emporte aucune couleur ni aucune fonte propre : tout vient des
+   jetons de `globals.css`. Le droit n'a pas besoin d'une palette à lui, et
+   deux palettes sur un même domaine se voient tout de suite.
+
+   Un seul écart assumé avec le reste du site : la colonne de lecture est plus
+   étroite (68 caractères), parce qu'ici on lit vraiment des paragraphes.
+   ========================================================================= */
+
+.jur {
+  background: var(--bg-alt);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------- barre --- */
+
+.jur-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 24px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.jur-bar-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  text-decoration: none;
+  color: var(--ink-strong);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-right: auto;
+}
+
+.jur-bar-brand small {
+  font-weight: 400;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  letter-spacing: 0;
+}
+
+.jur-bar a.jur-bar-link {
+  font-size: 14px;
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+.jur-bar a.jur-bar-link:hover {
+  color: var(--accent);
+}
+
+/* -------------------------------------------------------------- pages ---- */
+
+.jur-page {
+  width: 100%;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  flex: 1;
+}
+
+.jur-narrow {
+  max-width: 720px;
+}
+
+.jur-h1 {
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+
+.jur-lede {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin: 0 0 28px;
+  max-width: 62ch;
+}
+
+.jur-h2 {
+  font-size: 20px;
+  margin: 44px 0 4px;
+}
+
+.jur-sub {
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  margin: 0 0 18px;
+}
+
+/* ------------------------------------------------------- le champ d'entrée */
+
+.jur-ask {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+.jur-ask textarea {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 13px 14px;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  min-height: 96px;
+  resize: vertical;
+}
+
+.jur-ask textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+.jur-ask-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.jur-ask-foot p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-faint);
+  flex: 1;
+  min-width: 220px;
+}
+
+/* --------------------------------------------------------- la proposition */
+
+.jur-verdict {
+  margin-top: 18px;
+  border: 1px solid var(--accent);
+  background: var(--accent-wash);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.jur-verdict h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.jur-verdict p {
+  margin: 0 0 14px;
+  font-size: 14.5px;
+  color: var(--ink-muted);
+}
+
+.jur-indices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.jur-indices li {
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.jur-autres {
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+}
+
+.jur-autres a {
+  margin-right: 12px;
+}
+
+/* ------------------------------------------------------------- la grille --- */
+
+.jur-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.jur-card {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.jur-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-soft);
+  color: inherit;
+}
+
+.jur-card h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.jur-card p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------- la fiche du domaine --- */
+
+.jur-fiche {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .jur-fiche {
+    grid-template-columns: 1fr;
+  }
+}
+
+.jur-aside {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: 16px;
+}
+
+@media (max-width: 860px) {
+  .jur-aside {
+    position: static;
+  }
+}
+
+.jur-bloc {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+
+.jur-bloc h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+
+.jur-bloc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 9px;
+}
+
+.jur-bloc li {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+/* Les délais : le seul bloc qui a le droit de crier, parce qu'un délai
+   manqué ne se rattrape pas. */
+.jur-delais {
+  background: var(--warning-wash);
+  border-color: var(--warning);
+}
+
+.jur-delais h3 {
+  color: var(--warning);
+}
+
+.jur-delais li {
+  color: var(--ink);
+}
+
+.jur-delais li::before {
+  content: '⏳';
+  margin-right: 7px;
+}
+
+/* ------------------------------------------------------------- le fil ----- */
+
+.jur-fil {
+  display: grid;
+  gap: 16px;
+  margin: 4px 0 24px;
+}
+
+.jur-tour {
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  font-size: 15.5px;
+  line-height: 1.62;
+}
+
+.jur-de-vous {
+  background: var(--bg-sunk);
+  border: 1px solid var(--line);
+  color: var(--ink-strong);
+  margin-left: 48px;
+}
+
+@media (max-width: 640px) {
+  .jur-de-vous {
+    margin-left: 0;
+  }
+}
+
+.jur-de-lui {
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.jur-tour p {
+  margin: 0 0 12px;
+}
+
+.jur-tour p:last-child {
+  margin-bottom: 0;
+}
+
+/* Les intertitres que le spécialiste pose (« Le délai : ») sont rendus comme
+   des titres, pas comme du texte gras au milieu d'un paragraphe. */
+.jur-intertitre {
+  font-weight: 600;
+  color: var(--ink-strong);
+  margin: 18px 0 6px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.jur-tour > .jur-intertitre:first-child {
+  margin-top: 0;
+}
+
+.jur-liste {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  list-style: none;
+}
+
+.jur-liste li {
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.jur-liste li::before {
+  content: '—';
+  position: absolute;
+  left: -18px;
+  color: var(--ink-faint);
+}
+
+.jur-piece {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  margin-bottom: 10px;
+}
+
+.jur-attente {
+  color: var(--ink-faint);
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* ---------------------------------------------------------- le composeur --- */
+
+.jur-composer {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  position: sticky;
+  bottom: 16px;
+  box-shadow: var(--shadow-lift);
+}
+
+.jur-composer textarea {
+  width: 100%;
+  border: 0;
+  padding: 4px 2px 10px;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  min-height: 62px;
+  resize: vertical;
+}
+
+.jur-composer textarea:focus {
+  outline: none;
+}
+
+.jur-composer-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  flex-wrap: wrap;
+}
+
+.jur-fichier {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+}
+
+.jur-fichier:hover {
+  background: var(--bg-alt);
+}
+
+.jur-fichier input {
+  display: none;
+}
+
+.jur-composer-foot .jur-hint {
+  flex: 1;
+  min-width: 180px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+
+.jur-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.jur-chip {
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  text-align: left;
+}
+
+.jur-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* --------------------------------------------------------------- divers --- */
+
+.jur-avertissement {
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--ink-faint);
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin: 24px 0 0;
+}
+
+.jur-erreur {
+  background: var(--danger-wash);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 14px;
+  margin: 0 0 14px;
+}
+
+.jur-liste-fils {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jur-fil-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.jur-fil-ligne:hover {
+  border-color: var(--accent);
+  color: inherit;
+}
+
+.jur-fil-titre {
+  flex: 1;
+  font-size: 15px;
+  color: var(--ink-strong);
+}
+
+.jur-fil-meta {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.jur-vide {
+  background: #fff;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  padding: 32px;
+  text-align: center;
+  color: var(--ink-soft);
+}
