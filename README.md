@@ -21,6 +21,7 @@ un loyer mensuel mais le nombre de biens qu'il peut tenir.
 | **Back-office** | `/admin` | Vous seul, par mot de passe. Vue sur l'ensemble. |
 | **Rendez-vous** | `/admin/rendez-vous` | Vous seul. Ce que le site a pris comme rendez-vous. |
 | **Visite publique** | `/v/{slug}` | Les voyageurs, sans compte, avec assistant. |
+| **Assistant juridique** | `/juridique` | Le public. Neuf spécialités du droit immobilier, sans compte. |
 | **Aperçu de démarchage** | `/demo/{token}` | Un prospect précis, en privé, temporairement. |
 
 
@@ -432,6 +433,170 @@ que le budget d'API ne parte pas d'un coup.
 
 Activez-le avec `ANTHROPIC_API_KEY` dans les variables d'environnement. Sans
 clé, le bouton ne s'affiche pas et le reste du site fonctionne normalement.
+
+---
+
+## L'assistant juridique immobilier
+
+`/juridique` est une seconde zone publique, indépendante des visites : on y
+pose une question de droit en français, et elle part vers le spécialiste
+compétent. Neuf spécialités, toutes internes au droit immobilier — bail
+d'habitation, location courte durée, copropriété, achat-vente, travaux et
+malfaçons, urbanisme, voisinage, fiscalité du bien, sinistres et assurances.
+
+### Écrit du côté du propriétaire
+
+C'est le public de Volume3D : bailleurs, loueurs en meublé de tourisme,
+copropriétaires, conciergeries. Ça ne change pas le droit, ça change le point
+de vue — « puis-je donner congé ? » et « mon propriétaire peut-il me donner
+congé ? » appellent la même règle et deux réponses différentes. Les exemples,
+le vocabulaire et les délais sont écrits de ce côté-là. Un locataire qui pose
+sa question obtient quand même une réponse juste : le spécialiste dit alors
+depuis quel côté il répond.
+
+### Neuf spécialistes, un seul modèle
+
+Il n'y a pas neuf modèles : il y a un modèle et neuf consignes. Ce qui
+spécialise, c'est ce qu'on met devant lui — le périmètre exact, les textes
+mobilisables, les délais à signaler, et ce qu'il doit refuser de traiter. Ces
+quatre choses vivent dans **un seul fichier**, `lib/domaines.ts`, qui sert à la
+fois d'aiguillage, de consigne et de contenu affiché. Un spécialiste dont la
+consigne serait écrite à deux endroits finirait par en appliquer une
+troisième.
+
+### L'aiguillage se fait sans modèle, sauf quand il hésite
+
+`lib/aiguillage.ts` est du calcul pur : mots normalisés (sans accents ni
+apostrophes), mots décisifs pesés quatre fois plus que le champ lexical,
+expressions de plusieurs mots pesées davantage que les mots seuls. Une question
+sur trois se range d'elle-même — « décennale », « dépôt de garantie »,
+« numéro d'enregistrement » ne veulent dire qu'une seule chose, et faire
+trancher un modèle là-dessus coûterait une seconde d'attente pour la même
+réponse, sans pouvoir l'expliquer.
+
+Le modèle n'est appelé que lorsque deux domaines se tiennent (`certitude:
+'hesitante'`) — une fuite causée par un locataire relève autant du bail que de
+l'assurance, et les mots-clés le disent honnêtement par deux scores égaux. Il
+choisit alors **parmi les pistes trouvées localement** : un identifiant hors
+liste vaut absence de réponse, jamais domaine. Si l'API est injoignable,
+l'orientation retombe sur la meilleure piste locale au lieu d'échouer.
+
+L'aiguillage se fait **dans la requête de la question**, pas avant : la page
+envoie une question sans spécialité, le serveur range et répond dans le même
+aller-retour. Une route dédiée existait, elle a été retirée — elle imposait
+deux allers-retours au moment précis où quelqu'un attend devant un écran vide.
+
+Le résultat n'est pas qu'un identifiant : la conversation **nomme le
+spécialiste retenu** en tête de fil, donne accès à ses délais, et propose les
+autres pistes en un clic — cliquer repose la question au bon spécialiste, et
+le fil recommence, parce qu'une consigne ne s'applique pas rétroactivement aux
+réponses données par un autre. Un aiguillage qui se trompe en silence est plus
+agaçant qu'un menu ; un aiguillage qui se corrige d'un clic ne l'est pas.
+
+`tests/aiguillage.test.ts` juge le classement sur vingt-cinq questions écrites
+comme un propriétaire les écrit vraiment — minuscules, accents manquants,
+aucun vocabulaire juridique.
+
+### La conversation est la page
+
+`/juridique` n'est pas une page qui contient un chat : au premier envoi, le
+titre, la grille des neuf spécialités et les avertissements s'effacent, et le
+fil prend leur place. Sans navigation — changer d'URL à cet instant coûterait
+un chargement au moment où quelqu'un attend sa réponse, et ferait perdre le
+fil au retour arrière.
+
+Les fiches restent accessibles (`/juridique/{domaine}`) : elles valent pour
+elles-mêmes, elles s'indexent, et quelqu'un qui sait déjà que sa question
+porte sur la copropriété n'a pas à la formuler pour y arriver. Le lien
+« fiche » figure en tête de la conversation.
+
+Trois composants partagent l'écriture d'une question et son fil —
+`useConsultation` (l'état et l'envoi), `Composeur` (le champ, la pièce
+jointe), `Fil` (le rendu) — et deux coquilles s'en servent : `Assistant` sur
+l'accueil, où la spécialité est décidée par l'aiguillage, et `Consultation`
+sur la fiche d'un spécialiste et sur une consultation reprise, où elle est
+fixée d'avance.
+
+Seul le strict nécessaire des fiches descend jusqu'au navigateur — nom, résumé,
+délais. Le reste du catalogue (mots-clés d'aiguillage, textes de référence,
+périmètre donné au modèle) pèse cinq fois plus et ne sert qu'au serveur.
+
+### Deux règles avant toutes les autres
+
+- **Aucune référence inventée.** Le spécialiste nomme les textes — « la loi de
+  1989 sur les baux d'habitation », « la loi de 1965 sur la copropriété » — et
+  ne les numérote jamais. Un numéro d'article faux ne se voit pas : il a la
+  forme exacte d'un vrai, il sera recopié dans un courrier, puis lu par un
+  juge. Une réponse sans référence est utile ; une réponse avec une fausse
+  référence est un piège.
+- **Le délai d'abord.** C'est la seule chose qu'on ne rattrape pas : une
+  mauvaise argumentation se corrige à l'audience, un délai expiré ne se corrige
+  nulle part. Chaque fiche porte ses délais couperets, ils sont affichés
+  **avant** la première question, et rappelés au modèle à chaque réponse.
+  Quelqu'un qui apprend en arrivant qu'il lui reste deux mois pour contester
+  une assemblée générale a déjà obtenu ce qu'il venait chercher.
+
+Le reste du socle tient en cinq points : ne pas promettre d'issue, poser une
+question plutôt que supposer un fait, renvoyer vers la bonne spécialité, **ne
+pas sortir du droit immobilier** — une question de travail ou de famille est
+déclinée franchement —, et nommer l'interlocuteur réel : ADIL, point-justice,
+conciliateur, commissaire de justice, notaire, géomètre-expert, service
+urbanisme.
+
+### Les documents déposés ne sont jamais conservés
+
+On peut joindre un bail, un devis, un procès-verbal d'assemblée, un arrêté —
+PDF, photo ou texte, huit mégaoctets. La pièce traverse la mémoire du serveur
+le temps de l'appel au modèle, et **rien n'est écrit** : ni sur le disque, ni
+dans le bucket, ni en base. Ce qui subsiste dans le fil, c'est le nom du
+fichier et la réponse.
+
+C'est un choix, pas un oubli. Ces documents sont parmi les plus sensibles
+qu'un propriétaire possède ; les conserver imposerait un chiffrement, une durée
+de rétention, une procédure d'effacement et une réponse claire en cas de fuite.
+Ne pas les conserver répond à tout cela d'un coup. Le prix — redéposer une
+pièce pour la relire plus tard — est assumé.
+
+### L'historique n'existe que pour les comptes
+
+Sans connexion, un fil vit dans l'onglet et disparaît avec lui : aucun
+identifiant n'est déposé dans un cookie pour rattacher après coup des questions
+sur un impayé ou un contentieux de voisinage. La page le dit au lieu de faire
+semblant d'être vide.
+
+Avec un compte, la consultation est enregistrée (`/juridique/dossiers`), peut
+être reprise avec le même spécialiste, et s'efface d'un bouton — sans boîte de
+dialogue intermédiaire. Dès qu'une personne est connectée, **le serveur reprend
+le fil dans sa base et ignore ce que le navigateur envoie** : sans quoi il
+suffirait de réécrire les réponses précédentes dans la requête pour faire dire
+au spécialiste qu'il a déjà validé n'importe quoi.
+
+### Pourquoi la copie des pages vit dans `lib/`
+
+`lib/juridique-copie.ts` tient les textes affichés, et ce n'est pas un goût de
+l'indirection. La ponctuation double française prend une espace fine
+insécable (U+202F) — et U+202F porte la propriété Unicode `White_Space`. Le
+texte libre d'un élément JSX est normalisé à la compilation : l'espace fine y
+est ramenée à une espace ordinaire, et le navigateur redevient libre de couper
+devant le point d'interrogation. Le titre de l'accueil commençait ainsi une
+ligne par « ? Elle ira au bon spécialiste ». Dans une chaîne de caractères,
+rien n'est normalisé. C'est déjà la raison pour laquelle la copie de
+`/residence` vit dans `lib/residence.ts` ; le même test la vérifie des deux
+côtés.
+
+### Ce que la page dit d'elle-même
+
+L'accueil porte une section « ce que cet assistant est, et ce qu'il n'est
+pas », et chaque page de spécialité rappelle en pied qu'il s'agit d'une
+information juridique et non d'une consultation d'avocat, avec le renvoi vers
+l'ADIL, les points-justice et l'aide juridictionnelle. Ce n'est pas une mention
+légale posée en petit : c'est la seule façon honnête de vendre ce que fait
+réellement l'outil.
+
+Même clé que l'assistant des visites : `ANTHROPIC_API_KEY`. Sans elle, les
+fiches et les délais restent lisibles — ils ne dépendent d'aucun modèle — et
+le composeur s'éteint au lieu de faire semblant d'attendre une question. Un
+compteur limite les rafales (huit questions par minute et par adresse).
 
 ---
 
@@ -891,7 +1056,10 @@ app/
     logements/[id]/            éditeur de visite
   editor.css                   éditeur de visite, partagé admin / espace client
     rendez-vous/               les rendez-vous pris depuis le site
+  juridique/                   assistant juridique : accueil, fiche d'une spécialité, dossiers
+  juridique/juridique.css      feuille de la zone juridique
   api/chat/                    assistant du voyageur (Claude)
+  api/juridique/consultation/  une question, son aiguillage et sa réponse ; pièce jointe éventuelle
   api/contact/                 réception du formulaire
   api/rendez-vous/             réservation d'un créneau, et liste des créneaux libres
   api/files/[...path]/         service des fichiers en développement
@@ -910,6 +1078,12 @@ components/
   TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
+  juridique/Assistant.tsx      l'accueil : la conversation est la page
+  juridique/Consultation.tsx   le fil sur la fiche d'un spécialiste, ou repris
+  juridique/useConsultation.ts l'état d'une conversation, partagé par les deux
+  juridique/Composeur.tsx      le champ, la pièce jointe, l'état éteint
+  juridique/Fil.tsx            le fil rendu
+  juridique/Reponse.tsx        rendu d'une réponse : intertitres, énumérations
   landing/                     SiteNav, DemoTour, DemoVideo, Reveal, icônes
 lib/
   journey-path.ts              la timeline de l'accueil : plan → poses de caméra indexées par t
@@ -929,6 +1103,14 @@ lib/
   store.ts                     accès aux données (fichier JSON en dev, Supabase en prod)
   accounts.ts                  comptes clients, mots de passe, sessions
   assistant.ts                 invite système de l'assistant, garde-fous
+  domaines.ts                  les neuf spécialités : périmètre, textes, délais, mots-clés
+  juridique-copie.ts           la copie des pages, et son espace fine insécable
+  aiguillage.ts                question → spécialité, en local, sans appel de modèle
+  juriste.ts                   consigne des spécialistes, arbitrage, réponse (Claude)
+  consultations.ts             les fils enregistrés, cloisonnés par compte
+  piece.ts                     lecture d'un document déposé — et rien de plus, il n'est pas stocké
+  mise-en-forme.ts             découpage d'une réponse en titres, paragraphes, énumérations
+  cadence.ts                   frein sur les rafales, partagé par les routes juridiques
   storage.ts / paths.ts        envoi de fichiers et sécurité des chemins
   sphere.ts                    conversions yaw/pitch ↔ vecteurs
   ai-preview.ts                extension IA des photos (aperçus uniquement)

@@ -207,6 +207,38 @@ create table if not exists attention (
 create index if not exists attention_property on attention("propertyId");
 create index if not exists attention_day on attention(day);
 
+-- -----------------------------------------------------------------------------
+-- Assistant juridique
+--
+-- Un fil de consultation appartient à un compte : sans compte, rien n'est
+-- écrit ici, et le fil ne vit que dans l'onglet du visiteur.
+--
+-- Ce que ces deux tables NE contiennent PAS est aussi important que ce qu'elles
+-- contiennent : les documents déposés (bail, contrat de travail, arrêté) ne
+-- sont jamais stockés. Seul leur nom de fichier subsiste, dans "piece". Voir
+-- l'en-tête de lib/piece.ts pour la raison.
+-- -----------------------------------------------------------------------------
+create table if not exists consultations (
+  id          text primary key,
+  "accountId" text not null references accounts(id) on delete cascade,
+  domaine     text not null,
+  titre       text not null default '',
+  "createdAt" text not null,
+  "updatedAt" text not null
+);
+
+create table if not exists "consultationTours" (
+  id               text primary key,
+  "consultationId" text not null references consultations(id) on delete cascade,
+  role             text not null,
+  content          text not null default '',
+  piece            text not null default '',
+  "createdAt"      text not null
+);
+
+create index if not exists consultations_account on consultations("accountId");
+create index if not exists consultation_tours_fil on "consultationTours"("consultationId");
+
 -- Rien n'est accessible sans la clé service_role : aucune politique n'est créée.
 alter table accounts       enable row level security;
 alter table properties     enable row level security;
@@ -221,6 +253,8 @@ alter table leads          enable row level security;
 alter table plans          enable row level security;
 alter table "planDoors"    enable row level security;
 alter table attention      enable row level security;
+alter table consultations  enable row level security;
+alter table "consultationTours" enable row level security;
 
 -- =============================================================================
 -- Stockage des fichiers

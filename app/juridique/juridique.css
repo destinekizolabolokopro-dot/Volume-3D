@@ -1,0 +1,836 @@
+/* =========================================================================
+   Assistant juridique immobilier — feuille de la zone /juridique
+
+   Aucune couleur, aucune fonte, aucun rayon propre : tout vient des jetons de
+   `globals.css`. Le droit n'a pas besoin d'une palette à lui, et deux palettes
+   sur un même domaine se voient tout de suite.
+
+   Ce que cette feuille apporte en propre tient en trois choses :
+
+   1. Un pas d'espacement unique (`--pas`), et toutes les distances qui en
+      dérivent. Avant, chaque bloc avait sa marge écrite à la main : 44 px
+      ici, 28 px là, 18 px plus bas. Rien n'était faux, mais rien ne
+      s'alignait sur rien, et la page respirait par à-coups.
+   2. Des cartes de hauteur égale. La grille en `auto-fill` les étirait déjà,
+      mais leur contenu flottait en haut : un résumé d'une ligne et un de
+      trois ne se lisaient plus sur la même ligne de base.
+   3. Des états de survol sobres. Le relief et le déplacement ont été retirés :
+      sur une grille de neuf cartes, neuf ombres qui bougent font un
+      catalogue. Reste ce qui informe — la bordure prend l'accent, le titre
+      aussi.
+   ========================================================================= */
+
+.jur {
+  /* Le pas. Tout espacement vertical de cette zone en est un multiple. */
+  --pas: 8px;
+  --section: calc(var(--pas) * 7); /* 56 — entre deux sections d'une page */
+  --bloc: calc(var(--pas) * 2.5); /* 20 — dans un bloc */
+
+  background: var(--bg-alt);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------- barre --- */
+
+.jur-bar {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pas) * 3);
+  padding: calc(var(--pas) * 1.75) calc(var(--pas) * 3);
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.jur-bar-brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pas);
+  text-decoration: none;
+  color: var(--ink-strong);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  margin-right: auto;
+}
+
+.jur-bar-brand small {
+  font-weight: 400;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  letter-spacing: 0;
+}
+
+.jur-bar-link {
+  font-size: 14px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  padding: calc(var(--pas) * 0.5) 0;
+}
+
+.jur-bar-link:hover {
+  color: var(--accent);
+}
+
+/* -------------------------------------------------------------- pages ---- */
+
+.jur-page {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: calc(var(--pas) * 6) calc(var(--pas) * 3) calc(var(--pas) * 10);
+  flex: 1;
+}
+
+.jur-narrow {
+  max-width: 740px;
+}
+
+.jur-h1 {
+  font-size: clamp(28px, 3.6vw, 38px);
+  line-height: 1.14;
+  margin: 0 0 calc(var(--pas) * 1.5);
+}
+
+/* 58 caractères : la ligne de lecture confortable, et surtout une largeur qui
+   ne laisse pas un mot seul en fin de paragraphe. */
+.jur-lede {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin: 0 0 var(--section);
+  max-width: 58ch;
+}
+
+.jur-section {
+  margin-top: var(--section);
+}
+
+.jur-h2 {
+  font-size: 19px;
+  margin: 0 0 calc(var(--pas) * 0.5);
+}
+
+.jur-sub {
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  margin: 0 0 calc(var(--pas) * 2.5);
+  max-width: 62ch;
+}
+
+/* ------------------------------------------------------- le champ d'entrée */
+
+.jur-ask {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--bloc);
+}
+
+.jur-ask textarea {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 1.5) calc(var(--pas) * 1.75);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  min-height: 92px;
+  resize: vertical;
+}
+
+.jur-ask textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+.jur-ask-foot {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pas) * 2);
+  margin-top: calc(var(--pas) * 1.5);
+  flex-wrap: wrap;
+}
+
+.jur-ask-foot p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-faint);
+  flex: 1;
+  min-width: 220px;
+}
+
+/* --------------------------------------------------------- la proposition */
+
+.jur-verdict {
+  margin-top: var(--bloc);
+  border: 1px solid var(--accent);
+  background: var(--accent-wash);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 2.25) var(--bloc);
+}
+
+.jur-verdict h3 {
+  margin: 0 0 calc(var(--pas) * 0.5);
+  font-size: 17px;
+}
+
+.jur-verdict p {
+  margin: 0 0 calc(var(--pas) * 1.75);
+  font-size: 14.5px;
+  color: var(--ink-muted);
+  max-width: 62ch;
+}
+
+.jur-indices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--pas) * 0.75);
+  margin: 0 0 calc(var(--pas) * 2);
+  padding: 0;
+  list-style: none;
+}
+
+.jur-indices li {
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.jur-autres {
+  margin: calc(var(--pas) * 2) 0 0;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+}
+
+.jur-autres a {
+  margin-left: calc(var(--pas) * 1.5);
+}
+
+/* ------------------------------------------------------------- la grille --- */
+
+.jur-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+  gap: calc(var(--pas) * 1.5);
+}
+
+/* Colonne, pour que le résumé se pose au même endroit dans les neuf cartes,
+   quelle que soit la longueur du titre. */
+.jur-card {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pas) * 0.75);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 2.25) var(--bloc);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.jur-card:hover {
+  border-color: var(--accent);
+  background: var(--bg);
+  color: inherit;
+}
+
+.jur-card h3 {
+  margin: 0;
+  font-size: 16px;
+  transition: color 0.15s ease;
+}
+
+.jur-card:hover h3 {
+  color: var(--accent);
+}
+
+.jur-card p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------- la fiche du domaine --- */
+
+.jur-fiche {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 304px;
+  gap: calc(var(--pas) * 4);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .jur-fiche {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.jur-aside {
+  position: sticky;
+  top: calc(var(--pas) * 10);
+  display: grid;
+  gap: calc(var(--pas) * 2);
+}
+
+@media (max-width: 900px) {
+  .jur-aside {
+    position: static;
+  }
+}
+
+.jur-bloc {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 2.25);
+}
+
+.jur-bloc h3 {
+  margin: 0 0 calc(var(--pas) * 1.5);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+
+.jur-bloc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: calc(var(--pas) * 1.25);
+}
+
+.jur-bloc li {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.jur-bloc .hint {
+  margin-top: calc(var(--pas) * 1.5);
+  padding-top: calc(var(--pas) * 1.5);
+  border-top: 1px solid var(--line);
+}
+
+/* Les délais : le seul bloc qui a le droit d'élever la voix, parce qu'un délai
+   manqué ne se rattrape pas. Le filet à gauche de chaque ligne remplace le
+   sablier qui les précédait : un émoji dans une colonne de droit fait
+   décoration, un filet fait hiérarchie. */
+.jur-delais {
+  background: var(--warning-wash);
+  border-color: var(--warning);
+}
+
+.jur-delais h3 {
+  color: var(--warning);
+}
+
+.jur-delais ul {
+  gap: calc(var(--pas) * 1.5);
+}
+
+.jur-delais li {
+  color: var(--ink);
+  border-left: 2px solid var(--warning);
+  padding-left: calc(var(--pas) * 1.5);
+}
+
+.jur-delais .hint {
+  border-top-color: var(--warning);
+  color: var(--ink-muted);
+}
+
+/* ------------------------------------------------------------- le fil ----- */
+
+.jur-fil {
+  display: grid;
+  gap: calc(var(--pas) * 2);
+  margin: 0 0 calc(var(--pas) * 3);
+}
+
+.jur-tour {
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 2.25);
+  font-size: 15.5px;
+  line-height: 1.62;
+}
+
+.jur-de-vous {
+  background: var(--bg-sunk);
+  border: 1px solid var(--line);
+  color: var(--ink-strong);
+  margin-left: calc(var(--pas) * 6);
+}
+
+@media (max-width: 640px) {
+  .jur-de-vous {
+    margin-left: 0;
+  }
+}
+
+.jur-de-lui {
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.jur-tour p {
+  margin: 0 0 calc(var(--pas) * 1.5);
+}
+
+.jur-tour p:last-child {
+  margin-bottom: 0;
+}
+
+/* Les intertitres que le spécialiste pose (« Le délai : ») sont rendus comme
+   des titres, pas comme du gras au milieu d'un paragraphe. */
+.jur-intertitre {
+  font-weight: 600;
+  color: var(--ink-strong);
+  margin: calc(var(--pas) * 2.5) 0 calc(var(--pas) * 0.75);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.jur-tour > .jur-intertitre:first-child {
+  margin-top: 0;
+}
+
+.jur-liste {
+  margin: 0 0 calc(var(--pas) * 1.5);
+  padding-left: calc(var(--pas) * 2.25);
+  list-style: none;
+}
+
+.jur-liste li {
+  position: relative;
+  margin-bottom: calc(var(--pas) * 0.75);
+}
+
+.jur-liste li::before {
+  content: '—';
+  position: absolute;
+  left: calc(var(--pas) * -2.25);
+  color: var(--ink-faint);
+}
+
+.jur-piece {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pas);
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 5px 11px;
+  margin-bottom: calc(var(--pas) * 1.25);
+}
+
+.jur-attente {
+  color: var(--ink-faint);
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* ---------------------------------------------------------- le composeur --- */
+
+.jur-composer {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 1.75);
+  position: sticky;
+  bottom: calc(var(--pas) * 2);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Quand aucune clé d'API n'est configurée, le composeur ne fait pas semblant
+   d'attendre une question : il s'éteint, et le bandeau au-dessus dit pourquoi. */
+.jur-composer[data-inactif='1'] {
+  background: var(--bg-alt);
+  box-shadow: none;
+}
+
+.jur-composer textarea {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: calc(var(--pas) * 0.5) 2px calc(var(--pas) * 1.25);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  min-height: 60px;
+  resize: vertical;
+}
+
+.jur-composer textarea:focus {
+  outline: none;
+}
+
+.jur-composer textarea:disabled {
+  color: var(--ink-faint);
+}
+
+.jur-composer-foot {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pas) * 1.25);
+  border-top: 1px solid var(--line);
+  padding-top: calc(var(--pas) * 1.25);
+  flex-wrap: wrap;
+}
+
+.jur-fichier {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pas);
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 7px 13px;
+  max-width: 260px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jur-fichier:hover {
+  background: var(--bg-alt);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* L'entrée de fichier native est masquée, donc le focus clavier ne se voit
+   nulle part : on le reporte sur l'étiquette, qui est ce qu'on voit. */
+.jur-fichier:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.jur-fichier input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jur-composer-foot .jur-hint {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  line-height: 1.45;
+}
+
+.jur-suggestions {
+  display: grid;
+  gap: var(--pas);
+  margin: 0 0 calc(var(--pas) * 3);
+  justify-items: start;
+}
+
+.jur-chip {
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 1.25) calc(var(--pas) * 1.75);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.jur-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.jur-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------- divers --- */
+
+.jur-avertissement {
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--ink-faint);
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 2.25);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  max-width: 74ch;
+}
+
+.jur-avertissement p {
+  margin: 0 0 calc(var(--pas) * 1.5);
+}
+
+.jur-avertissement p:last-child {
+  margin-bottom: 0;
+}
+
+.jur-avertissement strong {
+  color: var(--ink-strong);
+}
+
+.jur-erreur {
+  background: var(--danger-wash);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 1.5) calc(var(--pas) * 1.75);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 calc(var(--pas) * 2);
+  max-width: 74ch;
+}
+
+.jur-liste-fils {
+  display: grid;
+  gap: var(--pas);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jur-fil-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--pas) * 2);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 1.75) calc(var(--pas) * 2.25);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.jur-fil-ligne:hover {
+  border-color: var(--accent);
+  color: inherit;
+}
+
+.jur-fil-titre {
+  flex: 1;
+  font-size: 15px;
+  color: var(--ink-strong);
+}
+
+.jur-fil-meta {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .jur-fil-ligne {
+    flex-direction: column;
+    gap: calc(var(--pas) * 0.5);
+  }
+}
+
+.jur-vide {
+  background: #fff;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 5);
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.jur-vide p {
+  margin: 0 0 calc(var(--pas) * 2.5);
+}
+
+/* Deux exceptions au rythme général, pour les deux blocs qui vivent à
+   l'intérieur du champ d'entrée plutôt qu'entre deux sections. */
+.jur-erreur-ask {
+  margin: var(--bloc) 0 0;
+}
+
+.jur-verdict-lead {
+  margin-bottom: calc(var(--pas) * 0.75);
+}
+
+/* Le titre d'une consultation reprise est une question de visiteur, pas un
+   titre de page : il se lit, il ne s'annonce pas. */
+.jur-h1-fil {
+  font-size: clamp(21px, 2.4vw, 25px);
+  line-height: 1.25;
+  max-width: 40ch;
+}
+
+/* =========================================================================
+   L'accueil conversationnel
+
+   La page d'accueil n'est plus une page qui contient un chat : elle EST le
+   chat. Deux états, un seul écran, et le passage de l'un à l'autre sans
+   navigation — changer d'URL au moment où quelqu'un attend sa réponse
+   coûterait un chargement et ferait perdre le fil au retour arrière.
+   ========================================================================= */
+
+.jur-accueil {
+  max-width: 820px;
+  padding-top: calc(var(--pas) * 9);
+}
+
+.jur-accueil .jur-lede {
+  margin-bottom: calc(var(--pas) * 4);
+}
+
+/* Le champ d'accueil : haut, posé, sans ombre ni ancrage bas. Il n'accompagne
+   pas une conversation, il l'ouvre. */
+.jur-composer-grand {
+  position: static;
+  box-shadow: none;
+  padding: calc(var(--pas) * 2.25);
+  border-color: var(--line-strong);
+}
+
+.jur-composer-grand textarea {
+  min-height: 116px;
+  font-size: 17px;
+}
+
+.jur-composer-grand:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+.jur-invite {
+  margin: calc(var(--pas) * 1.5) 0 0;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
+/* Les exemples : deux colonnes sur large, une seule dès que ça se resserre.
+   Ils ne sont pas décoratifs — ils montrent le niveau de précision utile. */
+.jur-suggestions-accueil {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  justify-items: stretch;
+  margin-top: calc(var(--pas) * 3);
+  margin-bottom: var(--section);
+}
+
+.jur-refus {
+  margin: calc(var(--pas) * 1.25) 0 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/* ------------------------------------------------------- la conversation --- */
+
+.jur-conversation {
+  padding-top: calc(var(--pas) * 3);
+}
+
+/* La sous-barre nomme le spécialiste retenu. C'est la seule chose qui dit à
+   quelle consigne on parle — sans elle, l'aiguillage serait invisible, et un
+   aiguillage invisible qui se trompe est pire qu'un menu. */
+.jur-sousbarre {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pas) * 2);
+  flex-wrap: wrap;
+  position: sticky;
+  top: calc(var(--pas) * 7);
+  z-index: 10;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--line);
+  padding: calc(var(--pas) * 1.25) 0;
+  margin-bottom: calc(var(--pas) * 3);
+}
+
+.jur-specialite {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--pas) * 1.5);
+  margin-right: auto;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink-strong);
+  letter-spacing: -0.015em;
+}
+
+.jur-specialite a {
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* Un bouton qui doit se lire comme un lien de barre : même taille, même
+   couleur, aucune bordure. `.btn` ne convient pas — ce n'est pas une action
+   principale, et neuf boutons pleins sur un écran n'en font plus aucun. */
+.jur-bouton-plat {
+  background: none;
+  border: 0;
+  padding: calc(var(--pas) * 0.5) 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.jur-bouton-plat:hover {
+  color: var(--accent);
+}
+
+.jur-bouton-lien {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: calc(var(--pas) * 1.5);
+  font-family: var(--sans);
+  font-size: inherit;
+  color: var(--link);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.jur-bouton-lien:hover {
+  color: var(--link-hover);
+}
+
+.jur-delais-fil {
+  margin-bottom: calc(var(--pas) * 3);
+}
+
+.jur-autres-fil {
+  margin: calc(var(--pas) * -1) 0 calc(var(--pas) * 3);
+}
+
+@media (max-width: 560px) {
+  .jur-sousbarre {
+    top: calc(var(--pas) * 6.5);
+  }
+
+  .jur-accueil {
+    padding-top: calc(var(--pas) * 5);
+  }
+}
