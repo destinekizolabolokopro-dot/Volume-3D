@@ -71,12 +71,6 @@ export const DOSSIERS = {
 export const ORIENTATION = {
   invite: 'Aucune inscription n’est demandée pour poser une question.',
   placeholder:
-    'Décrivez votre situation en quelques mots. Par exemple : mon locataire est parti en laissant deux mois de loyer, et je ne sais pas par quoi commencer.',
-  trop_court: 'Écrivez votre situation en une phrase au moins.',
-  echecTitre: 'Je n’ai pas reconnu de spécialité',
-  echec:
-    'Votre question ne contient pas encore de quoi la ranger. Précisez ce qui s’est passé et avec qui — un locataire, un voyageur, le syndic, un artisan, la mairie, un acquéreur, un assureur —, ou choisissez directement une spécialité dans la liste ci-dessous. Cet assistant ne traite que le droit immobilier : une question de travail, de famille ou de succession n’y trouvera pas de réponse.',
-  indices: 'Ce que j’ai retenu de votre question :',
-  action: 'Poser la question à ce spécialiste',
-  autres: 'Ce n’est pas ça ?',
+    'Racontez votre situation. Par exemple : mon locataire est parti en laissant deux mois de loyer, et je ne sais pas par quoi commencer.',
+  autres: 'Ce n’est pas la bonne spécialité ?',
 } as const;

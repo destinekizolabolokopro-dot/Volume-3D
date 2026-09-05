@@ -686,3 +686,151 @@
   line-height: 1.25;
   max-width: 40ch;
 }
+
+/* =========================================================================
+   L'accueil conversationnel
+
+   La page d'accueil n'est plus une page qui contient un chat : elle EST le
+   chat. Deux états, un seul écran, et le passage de l'un à l'autre sans
+   navigation — changer d'URL au moment où quelqu'un attend sa réponse
+   coûterait un chargement et ferait perdre le fil au retour arrière.
+   ========================================================================= */
+
+.jur-accueil {
+  max-width: 820px;
+  padding-top: calc(var(--pas) * 9);
+}
+
+.jur-accueil .jur-lede {
+  margin-bottom: calc(var(--pas) * 4);
+}
+
+/* Le champ d'accueil : haut, posé, sans ombre ni ancrage bas. Il n'accompagne
+   pas une conversation, il l'ouvre. */
+.jur-composer-grand {
+  position: static;
+  box-shadow: none;
+  padding: calc(var(--pas) * 2.25);
+  border-color: var(--line-strong);
+}
+
+.jur-composer-grand textarea {
+  min-height: 116px;
+  font-size: 17px;
+}
+
+.jur-composer-grand:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+.jur-invite {
+  margin: calc(var(--pas) * 1.5) 0 0;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
+/* Les exemples : deux colonnes sur large, une seule dès que ça se resserre.
+   Ils ne sont pas décoratifs — ils montrent le niveau de précision utile. */
+.jur-suggestions-accueil {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  justify-items: stretch;
+  margin-top: calc(var(--pas) * 3);
+  margin-bottom: var(--section);
+}
+
+.jur-refus {
+  margin: calc(var(--pas) * 1.25) 0 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/* ------------------------------------------------------- la conversation --- */
+
+.jur-conversation {
+  padding-top: calc(var(--pas) * 3);
+}
+
+/* La sous-barre nomme le spécialiste retenu. C'est la seule chose qui dit à
+   quelle consigne on parle — sans elle, l'aiguillage serait invisible, et un
+   aiguillage invisible qui se trompe est pire qu'un menu. */
+.jur-sousbarre {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pas) * 2);
+  flex-wrap: wrap;
+  position: sticky;
+  top: calc(var(--pas) * 7);
+  z-index: 10;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--line);
+  padding: calc(var(--pas) * 1.25) 0;
+  margin-bottom: calc(var(--pas) * 3);
+}
+
+.jur-specialite {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--pas) * 1.5);
+  margin-right: auto;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink-strong);
+  letter-spacing: -0.015em;
+}
+
+.jur-specialite a {
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* Un bouton qui doit se lire comme un lien de barre : même taille, même
+   couleur, aucune bordure. `.btn` ne convient pas — ce n'est pas une action
+   principale, et neuf boutons pleins sur un écran n'en font plus aucun. */
+.jur-bouton-plat {
+  background: none;
+  border: 0;
+  padding: calc(var(--pas) * 0.5) 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.jur-bouton-plat:hover {
+  color: var(--accent);
+}
+
+.jur-bouton-lien {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: calc(var(--pas) * 1.5);
+  font-family: var(--sans);
+  font-size: inherit;
+  color: var(--link);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.jur-bouton-lien:hover {
+  color: var(--link-hover);
+}
+
+.jur-delais-fil {
+  margin-bottom: calc(var(--pas) * 3);
+}
+
+.jur-autres-fil {
+  margin: calc(var(--pas) * -1) 0 calc(var(--pas) * 3);
+}
+
+@media (max-width: 560px) {
+  .jur-sousbarre {
+    top: calc(var(--pas) * 6.5);
+  }
+
+  .jur-accueil {
+    padding-top: calc(var(--pas) * 5);
+  }
+}

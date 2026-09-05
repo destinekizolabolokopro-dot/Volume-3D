@@ -1,40 +1,64 @@
+import { Assistant } from '@/components/juridique/Assistant';
 import { Barre } from '@/components/juridique/Barre';
-import { Orientation } from '@/components/juridique/Orientation';
-import { DOMAINES } from '@/lib/domaines';
+import { currentAccount } from '@/lib/accounts';
+import { DOMAINES, domaine } from '@/lib/domaines';
 import { ACCUEIL, LIMITES } from '@/lib/juridique-copie';
+import { estJuristeConfigure } from '@/lib/juriste';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * L'accueil.
  *
- * Deux entrées vers la même chose, et aucune n'est cachée derrière l'autre :
- * le champ libre pour qui sait décrire sa situation mais pas la nommer, la
- * grille pour qui sait déjà où il va. L'aiguillage automatique seul serait un
- * pari — il se trompe parfois — et la grille seule demanderait au visiteur de
- * connaître le découpage du droit immobilier avant d'avoir posé sa question.
+ * La conversation est la page : on écrit, on envoie, le fil prend la place du
+ * reste. Ce qui suit — la grille des neuf spécialités et ce que l'assistant
+ * n'est pas — n'existe que tant qu'aucune question n'a été posée, et passe
+ * donc en `children` de l'assistant plutôt que d'être rendu à côté de lui.
  *
- * La copie vient de `lib/juridique-copie.ts` : voir l'en-tête de ce fichier
- * pour la raison, qui tient à une espace de trois dixièmes de cadratin.
+ * La grille reste : les fiches valent pour elles-mêmes, elles s'indexent, et
+ * quelqu'un qui sait déjà que sa question porte sur la copropriété n'a pas à
+ * la formuler pour y arriver.
+ *
+ * Seul le strict nécessaire des fiches descend jusqu'au navigateur — nom,
+ * résumé, délais. Le reste du catalogue (mots-clés d'aiguillage, textes de
+ * référence, périmètre donné au modèle) pèse cinq fois plus et ne sert qu'au
+ * serveur.
  */
-export default function AccueilJuridique() {
+export default async function AccueilJuridique() {
+  const account = await currentAccount();
+
+  const fiches = DOMAINES.map((fiche) => ({
+    id: fiche.id,
+    label: fiche.label,
+    resume: fiche.resume,
+    delais: fiche.delais,
+  }));
+
+  /* Quatre exemples pris dans quatre spécialités différentes : ils montrent
+     l'étendue du périmètre en même temps que le niveau de précision utile. */
+  const exemples = (['bail-habitation', 'courte-duree', 'copropriete', 'travaux'] as const).map(
+    (id) => domaine(id).exemples[0],
+  );
+
   return (
     <>
       <Barre />
 
-      <main className="jur-page">
-        <h1 className="jur-h1">{ACCUEIL.titre}</h1>
-        <p className="jur-lede">{ACCUEIL.lede}</p>
-
-        <Orientation />
-
+      <Assistant
+        fiches={fiches}
+        exemples={exemples}
+        connecte={Boolean(account)}
+        actif={estJuristeConfigure()}
+      >
         <section className="jur-section">
           <h2 className="jur-h2">{ACCUEIL.grilleTitre}</h2>
           <p className="jur-sub">{ACCUEIL.grilleSous}</p>
 
           <div className="jur-grid">
-            {DOMAINES.map((domaine) => (
-              <a className="jur-card" key={domaine.id} href={`/juridique/${domaine.id}`}>
-                <h3>{domaine.label}</h3>
-                <p>{domaine.resume}</p>
+            {DOMAINES.map((fiche) => (
+              <a className="jur-card" key={fiche.id} href={`/juridique/${fiche.id}`}>
+                <h3>{fiche.label}</h3>
+                <p>{fiche.resume}</p>
               </a>
             ))}
           </div>
@@ -53,7 +77,7 @@ export default function AccueilJuridique() {
             ))}
           </div>
         </section>
-      </main>
+      </Assistant>
     </>
   );
 }

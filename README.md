@@ -481,14 +481,45 @@ choisit alors **parmi les pistes trouvées localement** : un identifiant hors
 liste vaut absence de réponse, jamais domaine. Si l'API est injoignable,
 l'orientation retombe sur la meilleure piste locale au lieu d'échouer.
 
-Le résultat n'est pas qu'un identifiant : la page affiche aussi **les mots qui
-ont décidé** et les autres pistes, en un clic. Un aiguillage qui se trompe en
-silence est plus agaçant qu'un menu ; un aiguillage qui montre son
-raisonnement se corrige.
+L'aiguillage se fait **dans la requête de la question**, pas avant : la page
+envoie une question sans spécialité, le serveur range et répond dans le même
+aller-retour. Une route dédiée existait, elle a été retirée — elle imposait
+deux allers-retours au moment précis où quelqu'un attend devant un écran vide.
+
+Le résultat n'est pas qu'un identifiant : la conversation **nomme le
+spécialiste retenu** en tête de fil, donne accès à ses délais, et propose les
+autres pistes en un clic — cliquer repose la question au bon spécialiste, et
+le fil recommence, parce qu'une consigne ne s'applique pas rétroactivement aux
+réponses données par un autre. Un aiguillage qui se trompe en silence est plus
+agaçant qu'un menu ; un aiguillage qui se corrige d'un clic ne l'est pas.
 
 `tests/aiguillage.test.ts` juge le classement sur vingt-cinq questions écrites
 comme un propriétaire les écrit vraiment — minuscules, accents manquants,
 aucun vocabulaire juridique.
+
+### La conversation est la page
+
+`/juridique` n'est pas une page qui contient un chat : au premier envoi, le
+titre, la grille des neuf spécialités et les avertissements s'effacent, et le
+fil prend leur place. Sans navigation — changer d'URL à cet instant coûterait
+un chargement au moment où quelqu'un attend sa réponse, et ferait perdre le
+fil au retour arrière.
+
+Les fiches restent accessibles (`/juridique/{domaine}`) : elles valent pour
+elles-mêmes, elles s'indexent, et quelqu'un qui sait déjà que sa question
+porte sur la copropriété n'a pas à la formuler pour y arriver. Le lien
+« fiche » figure en tête de la conversation.
+
+Trois composants partagent l'écriture d'une question et son fil —
+`useConsultation` (l'état et l'envoi), `Composeur` (le champ, la pièce
+jointe), `Fil` (le rendu) — et deux coquilles s'en servent : `Assistant` sur
+l'accueil, où la spécialité est décidée par l'aiguillage, et `Consultation`
+sur la fiche d'un spécialiste et sur une consultation reprise, où elle est
+fixée d'avance.
+
+Seul le strict nécessaire des fiches descend jusqu'au navigateur — nom, résumé,
+délais. Le reste du catalogue (mots-clés d'aiguillage, textes de référence,
+périmètre donné au modèle) pèse cinq fois plus et ne sert qu'au serveur.
 
 ### Deux règles avant toutes les autres
 
@@ -1003,8 +1034,7 @@ app/
   juridique/                   assistant juridique : accueil, fiche d'une spécialité, dossiers
   juridique/juridique.css      feuille de la zone juridique
   api/chat/                    assistant du voyageur (Claude)
-  api/juridique/aiguillage/    « où va cette question ? »
-  api/juridique/consultation/  une question à un spécialiste, avec pièce jointe éventuelle
+  api/juridique/consultation/  une question, son aiguillage et sa réponse ; pièce jointe éventuelle
   api/contact/                 réception du formulaire
   api/rendez-vous/             réservation d'un créneau, et liste des créneaux libres
   api/files/[...path]/         service des fichiers en développement
@@ -1023,8 +1053,11 @@ components/
   TourStage.tsx                choix du format et chapitres de la vidéo
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
-  juridique/Orientation.tsx    le champ unique de l'accueil, et ce qui l'a décidé
-  juridique/Consultation.tsx   le fil avec un spécialiste, dépôt de pièce compris
+  juridique/Assistant.tsx      l'accueil : la conversation est la page
+  juridique/Consultation.tsx   le fil sur la fiche d'un spécialiste, ou repris
+  juridique/useConsultation.ts l'état d'une conversation, partagé par les deux
+  juridique/Composeur.tsx      le champ, la pièce jointe, l'état éteint
+  juridique/Fil.tsx            le fil rendu
   juridique/Reponse.tsx        rendu d'une réponse : intertitres, énumérations
   landing/                     SiteNav, DemoTour, DemoVideo, Reveal, icônes
 lib/
