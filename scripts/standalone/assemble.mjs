@@ -168,7 +168,16 @@ body { padding-bottom: 84px; }
   font: 500 13px/1 var(--sans, system-ui); padding: 9px 15px; border-radius: 100px;
   white-space: nowrap; transition: background-color .15s ease, color .15s ease;
 }
-.v3d-switch button:hover { color: #fff; }
+.v3d-switch button:hover, .v3d-switch a:hover { color: #fff; }
+/* Le lien vers ORIEL n'est pas un écran de la démonstration mais un **fichier
+   voisin** : il se tient comme les autres, séparé par un filet pour dire qu'il
+   sort d'ici. */
+.v3d-switch a {
+  color: var(--ink-on-dark-soft, #a9b6b3); text-decoration: none;
+  font: 500 13px/1 var(--sans, system-ui); padding: 9px 15px; border-radius: 100px;
+  white-space: nowrap; transition: color .15s ease;
+  border-left: 1px solid rgba(255,255,255,.16); margin-left: 4px;
+}
 .v3d-switch button.on { background: #fff; color: var(--ink-strong, #14120f); }
 
 .v3d-note {
@@ -315,6 +324,15 @@ ${EXTRA_CSS}
   <button type="button" data-screen="visite">La visite</button>
   <button type="button" data-screen="tableau">Tableau de bord</button>
   <button type="button" data-screen="espace">Fiche d’un bien</button>
+  <!--
+    ORIEL est l'autre fichier autonome, pas un écran de celui-ci : il a son
+    propre moteur et sa propre page. Le lien vise un **voisin** — les deux
+    fichiers sont produits ensemble et publiés ensemble dans `docs/`. Sorti de
+    cette paire, un `oriel.html` isolé n'a personne à côté de lui et le lien
+    tombe à côté : c'est le prix d'un fichier qui se suffit à lui-même, et il
+    est payé du bon côté — la démonstration reste entière sans son voisin.
+  -->
+  <a href="oriel.html">ORIEL&nbsp;↗</a>
 </nav>
 
 <script>
