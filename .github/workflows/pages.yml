@@ -1,0 +1,50 @@
+# Publication du site sur GitHub Pages.
+#
+# On ne construit rien ici, et c'est délibéré. Les deux fichiers publiés sont
+# des versions **autonomes** extraites du site en fonctionnement, et cette
+# extraction lit `.data/db.json`, qui n'est pas versionné : l'intégration
+# continue n'a pas de quoi la refaire. Ils sont donc produits à la main —
+# `npm run standalone` et `npm run oriel`, qui écrivent tous deux dans `docs/`
+# — puis versionnés. Ce qui est publié est exactement ce qui a été vérifié par
+# `npm run autonome`.
+#
+# Le site complet, lui, ne peut pas être publié ici : il tient sur Supabase,
+# cinq routes d'API, des actions serveur et une authentification, et Pages ne
+# sert que des fichiers.
+name: Pages
+
+on:
+  push:
+    branches: [claude/airbnb-3d-tours-project-4zm9yq]
+    paths: ['docs/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Une seule publication à la fois ; on n'annule pas celle qui est en cours,
+# sans quoi un déploiement à moitié fait resterait en ligne.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      # `enablement` active Pages au premier passage : sans lui, il faudrait
+      # aller le cocher à la main dans les réglages du dépôt.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deploiement
+        uses: actions/deploy-pages@v4

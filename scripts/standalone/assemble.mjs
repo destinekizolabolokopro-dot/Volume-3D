@@ -9,7 +9,7 @@ import fs from 'node:fs';
  */
 
 const OUT = process.env.V3D_BUILD_DIR || '.standalone-build';
-const DEST = process.env.V3D_DEST || 'standalone/volume3d.html';
+const DEST = process.env.V3D_DEST || 'docs/index.html';
 const X = JSON.parse(fs.readFileSync(`${OUT}/extrait.json`, 'utf8'));
 const HERE = new URL('.', import.meta.url).pathname;
 const APP = fs.readFileSync(`${HERE}app.js`, 'utf8');

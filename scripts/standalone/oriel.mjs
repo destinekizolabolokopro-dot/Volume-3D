@@ -3,7 +3,8 @@
  *
  *   npm run oriel
  *
- * Sortie : `standalone/oriel.html`, qui s'ouvre par double-clic. Rien à
+ * Sortie : `docs/oriel.html`, qui s'ouvre par double-clic **et** que GitHub
+ * Pages sert tel quel. Rien à
  * installer, aucun serveur, aucune requête réseau — la fonte, les feuilles de
  * style, React, three.js et la scène entière sont dans le fichier.
  *
@@ -17,7 +18,7 @@ import { build } from 'esbuild';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-const DEST = process.env.DEST || 'standalone/oriel.html';
+const DEST = process.env.DEST || 'docs/oriel.html';
 /*
  * Deux formes pour un même contenu.
  *

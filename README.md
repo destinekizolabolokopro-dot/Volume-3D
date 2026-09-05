@@ -461,11 +461,24 @@ les photos d'origine dans l'habillage Volume3D, sans rien inventer.
 
 ---
 
-## La version autonome : `standalone/volume3d.html`
+## La version autonome : `docs/index.html`
 
 Un seul fichier, sans installation ni serveur. Il s'ouvre par double-clic,
 fonctionne **sans réseau**, et se dépose tel quel sur n'importe quel
 hébergement. C'est la vitrine à sortir en rendez-vous.
+
+C'est aussi **ce qui est publié**. Le site complet ne peut pas l'être : il tient
+sur Supabase, cinq routes d'API, des actions serveur et une authentification, et
+GitHub Pages ne sert que des fichiers. Les deux versions autonomes, elles, n'ont
+besoin de rien — d'où le dossier `docs/`, que Pages publie tel quel :
+
+    docs/index.html    le site Volume3D, démonstration comprise
+    docs/oriel.html    la page ORIEL, la visite au défilement
+
+Le dossier n'est pas reconstruit par l'intégration continue, et c'est délibéré :
+l'extraction lit `.data/db.json`, qui n'est pas versionné. Les deux fichiers sont
+donc des artefacts versionnés, régénérés à la main par `npm run standalone` et
+`npm run oriel`, qui écrivent directement dedans.
 
 Il n'est pas écrit à la main : `npm run standalone` **extrait le site en
 fonctionnement** — le HTML que le serveur rend, la feuille de style qu'il sert,
@@ -910,7 +923,7 @@ lib/
 scripts/
   generate-demo.mjs            prépare public/demo/*.jpg depuis les sources CC0
   record-demo.mjs              filme la visite réelle, écrit public/demo/visite.*
-  standalone/                  génère standalone/volume3d.html depuis le site en marche
+  standalone/                  génère docs/index.html depuis le site en marche
     extract.mjs                relève le HTML rendu, la feuille de style, les fichiers
     assemble.mjs               recolle le tout en un seul fichier
     app.js                     viewer 360° et marche dans le volume, en WebGL nu

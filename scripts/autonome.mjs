@@ -20,7 +20,7 @@ import pw from 'playwright';
 import sharp from 'sharp';
 
 const { chromium } = pw;
-const FICHIER = resolve(process.env.FICHIER || 'standalone/oriel.html');
+const FICHIER = resolve(process.env.FICHIER || 'docs/oriel.html');
 const SORTIE = process.env.SORTIE || 'captures/autonome.png';
 const VERT = '\x1b[32m';
 const ROUGE = '\x1b[31m';
