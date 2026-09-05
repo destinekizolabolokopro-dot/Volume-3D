@@ -38,8 +38,19 @@ jobs:
       url: ${{ steps.deploiement.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      # `enablement` active Pages au premier passage : sans lui, il faudrait
-      # aller le cocher à la main dans les réglages du dépôt.
+      # `enablement` demande la création du site s'il n'existe pas. Il **ne
+      # suffit pas** : le premier passage a répondu « Create Pages site failed.
+      # Error: Resource not accessible by integration ». Créer un site Pages est
+      # une action d'administration du dépôt, et le `GITHUB_TOKEN` d'un workflow
+      # ne l'a pas, quelles que soient les permissions déclarées plus haut.
+      #
+      # Il faut donc l'allumer **une fois, à la main** :
+      #   Settings › Pages › Build and deployment › Source : GitHub Actions
+      #
+      # Ensuite ce workflow trouve le site existant et déploie tout seul, à
+      # chaque poussée qui touche `docs/`. On garde `enablement` : il ne coûte
+      # rien une fois le site créé, et il ferait le travail le jour où le jeton
+      # en aurait le droit.
       - uses: actions/configure-pages@v5
         with:
           enablement: true

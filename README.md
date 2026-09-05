@@ -480,6 +480,18 @@ l'extraction lit `.data/db.json`, qui n'est pas versionné. Les deux fichiers so
 donc des artefacts versionnés, régénérés à la main par `npm run standalone` et
 `npm run oriel`, qui écrivent directement dedans.
 
+`.github/workflows/pages.yml` les déploie à chaque poussée qui touche `docs/`.
+**Une seule chose est à faire une fois**, et elle ne peut pas l'être depuis un
+workflow : allumer Pages dans `Settings › Pages › Build and deployment › Source :
+GitHub Actions`. Créer un site Pages est une action d'administration du dépôt, et
+le jeton d'un workflow ne l'a pas — le premier passage a répondu « Resource not
+accessible by integration ». Une fois allumé, plus rien à faire.
+
+Les adresses :
+
+    https://destinekizolabolokopro-dot.github.io/Volume-3D/
+    https://destinekizolabolokopro-dot.github.io/Volume-3D/oriel.html
+
 Il n'est pas écrit à la main : `npm run standalone` **extrait le site en
 fonctionnement** — le HTML que le serveur rend, la feuille de style qu'il sert,
 les images et la vidéo — et remplace chaque adresse de fichier par son contenu.
