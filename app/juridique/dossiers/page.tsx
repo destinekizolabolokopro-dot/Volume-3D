@@ -3,6 +3,7 @@ import { Barre } from '@/components/juridique/Barre';
 import { currentAccount } from '@/lib/accounts';
 import { consultationsDuCompte } from '@/lib/consultations';
 import { domaineOuNull } from '@/lib/domaines';
+import { DOSSIERS } from '@/lib/juridique-copie';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,12 +31,9 @@ export default async function Dossiers() {
         <Barre retour={{ href: '/juridique', label: 'Toutes les spécialités' }} />
         <main className="jur-page jur-narrow">
           <h1 className="jur-h1">Mes consultations</h1>
-          <p className="jur-lede">
-            Vos échanges ne sont conservés que si vous avez un compte. Sans connexion, un fil vit le
-            temps de l’onglet : rien n’est écrit, ni côté serveur, ni dans un cookie.
-          </p>
+          <p className="jur-lede">{DOSSIERS.anonyme}</p>
           <div className="jur-vide">
-            <p style={{ marginTop: 0 }}>Connectez-vous pour retrouver vos consultations passées.</p>
+            <p>Connectez-vous pour retrouver vos consultations passées.</p>
             <a className="btn btn-accent" href="/espace/connexion">
               Se connecter
             </a>
@@ -55,12 +53,12 @@ export default async function Dossiers() {
         <p className="jur-lede">
           {fils.length === 0
             ? 'Aucune consultation enregistrée pour l’instant.'
-            : `${fils.length} consultation${fils.length > 1 ? 's' : ''}. Les documents que vous avez déposés n’y figurent pas : ils ne sont jamais conservés.`}
+            : `${fils.length} consultation${fils.length > 1 ? 's' : ''}. Les documents que vous avez déposés n’y figurent pas : ils ne sont jamais conservés.`}
         </p>
 
         {fils.length === 0 ? (
           <div className="jur-vide">
-            <p style={{ marginTop: 0 }}>Posez une première question pour ouvrir un dossier.</p>
+            <p>{DOSSIERS.inviteQuestion}</p>
             <a className="btn btn-accent" href="/juridique">
               Choisir une spécialité
             </a>

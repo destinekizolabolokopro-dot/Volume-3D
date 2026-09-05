@@ -3,11 +3,11 @@ import './juridique.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Assistant juridique — treize spécialités du droit français',
-    template: '%s · Assistant juridique',
+    default: 'Assistant juridique immobilier — neuf spécialités, pour les propriétaires',
+    template: '%s · Droit immobilier',
   },
   description:
-    'Posez votre question en français : elle est orientée vers le spécialiste compétent — logement, travail, famille, consommation, succession, étrangers, pénal, fiscal. Information juridique, pas consultation d’avocat.',
+    'Bail, location courte durée, copropriété, achat-vente, travaux, urbanisme, voisinage, fiscalité, sinistres : posez votre question, elle va au bon spécialiste. Information juridique, pas consultation d’avocat.',
 };
 
 export default function JuridiqueLayout({ children }: { children: React.ReactNode }) {

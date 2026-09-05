@@ -47,9 +47,7 @@ export default async function PageConsultation({ params }: Params) {
       <Barre retour={{ href: '/juridique/dossiers', label: 'Mes consultations' }} />
 
       <main className="jur-page jur-narrow">
-        <h1 className="jur-h1" style={{ fontSize: 26 }}>
-          {consultation.titre}
-        </h1>
+        <h1 className="jur-h1 jur-h1-fil">{consultation.titre}</h1>
         <p className="jur-sub">
           {fiche.label} · <a href={`/juridique/${fiche.id}`}>fiche du spécialiste</a>
         </p>
@@ -63,7 +61,7 @@ export default async function PageConsultation({ params }: Params) {
           connecte
         />
 
-        <form action={effacer} style={{ marginTop: 28 }}>
+        <form action={effacer} className="jur-section">
           <input type="hidden" name="id" value={consultation.id} />
           <button className="btn btn-ghost btn-danger btn-sm" type="submit">
             Effacer cette consultation

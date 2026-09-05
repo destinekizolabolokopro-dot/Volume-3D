@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ORIENTATION } from '@/lib/juridique-copie';
 
 /**
  * Le champ unique de la page d'accueil.
@@ -38,7 +39,7 @@ export function Orientation() {
     event.preventDefault();
     const propre = question.trim();
     if (propre.length < 8 || pending) {
-      if (propre.length < 8) setErreur('Écrivez votre situation en une phrase au moins.');
+      if (propre.length < 8) setErreur(ORIENTATION.trop_court);
       return;
     }
 
@@ -74,27 +75,23 @@ export function Orientation() {
         id="question"
         value={question}
         onChange={(event) => setQuestion(event.target.value)}
-        placeholder="Décrivez votre situation en quelques mots. Par exemple : mon propriétaire refuse de me rendre le dépôt de garantie deux mois après mon départ."
+        placeholder={ORIENTATION.placeholder}
         maxLength={2000}
       />
 
       <div className="jur-ask-foot">
-        <p>Aucune inscription n’est demandée pour poser une question.</p>
+        <p>{ORIENTATION.invite}</p>
         <button className="btn btn-accent" type="submit" disabled={pending}>
           {pending ? 'Recherche…' : 'Trouver le spécialiste'}
         </button>
       </div>
 
-      {erreur && <p className="jur-erreur" style={{ marginTop: 14, marginBottom: 0 }}>{erreur}</p>}
+      {erreur && <p className="jur-erreur jur-erreur-ask">{erreur}</p>}
 
       {verdict && verdict.certitude === 'nulle' && (
         <div className="jur-verdict">
-          <h3>Je n’ai pas reconnu de spécialité</h3>
-          <p>
-            Votre question ne contient pas encore de quoi la ranger. Précisez ce qui s’est passé et
-            avec qui — un employeur, un propriétaire, une administration, un vendeur —, ou choisissez
-            directement une spécialité dans la liste ci-dessous.
-          </p>
+          <h3>{ORIENTATION.echecTitre}</h3>
+          <p>{ORIENTATION.echec}</p>
         </div>
       )}
 
@@ -105,7 +102,7 @@ export function Orientation() {
 
           {retenu.indices.length > 0 && (
             <>
-              <p style={{ marginBottom: 6 }}>Ce que j’ai retenu de votre question :</p>
+              <p className="jur-verdict-lead">{ORIENTATION.indices}</p>
               <ul className="jur-indices">
                 {retenu.indices.map((indice) => (
                   <li key={indice}>{indice}</li>
@@ -115,12 +112,12 @@ export function Orientation() {
           )}
 
           <a className="btn btn-accent" href={lien(retenu.id, question.trim())}>
-            Poser la question à ce spécialiste
+            {ORIENTATION.action}
           </a>
 
           {autres.length > 0 && (
             <p className="jur-autres">
-              Ce n’est pas ça ?{' '}
+              {ORIENTATION.autres}{' '}
               {autres.map((piste) => (
                 <a key={piste.id} href={lien(piste.id, question.trim())}>
                   {piste.label}

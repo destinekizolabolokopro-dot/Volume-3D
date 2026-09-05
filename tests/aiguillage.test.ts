@@ -10,31 +10,31 @@ import type { DomaineId } from '../lib/domaines.ts';
  * lire sur un forum d'entraide, pas un énoncé d'examen.
  */
 const CORPUS: [string, DomaineId][] = [
-  ['mon propriétaire refuse de me rendre le dépôt de garantie', 'immobilier'],
-  ['le syndic a fait voter des travaux en assemblée générale, je conteste', 'immobilier'],
-  ['j’ai été licencié pour faute grave sans entretien préalable', 'travail'],
-  ['mon employeur ne paye pas mes heures supplémentaires', 'travail'],
-  ['je veux divorcer, on a deux enfants en garde alternée', 'famille'],
-  ['mon ex ne verse plus la pension alimentaire depuis six mois', 'famille'],
-  ['mon lave-linge est tombé en panne après 15 mois, le vendeur refuse', 'consommation'],
-  ['un demarcheur m’a fait signer pour des panneaux solaires', 'consommation'],
-  ['la caf me réclame un trop perçu de 4000 euros', 'social'],
-  ['france travail m’a radié sans prévenir', 'social'],
-  ['ma plainte pour escroquerie a été classée sans suite', 'penal'],
-  ['je suis convoqué au commissariat, que faire', 'penal'],
-  ['la mairie a refusé mon permis de construire', 'administratif'],
-  ['j’ai reçu une oqtf de 30 jours', 'etrangers'],
-  ['la préfecture refuse de renouveler mon titre de séjour', 'etrangers'],
-  ['mon frère occupe seul la maison dont nous avons hérité', 'succession'],
-  ['mon père a fait un testament qui déshérite ma soeur', 'succession'],
-  ['un client professionnel ne paye pas ma facture depuis 4 mois', 'affaires'],
-  ['mon associé bloque toutes les décisions de la sarl', 'affaires'],
-  ['j’ai reçu une proposition de rectification après un controle fiscal', 'fiscal'],
-  ['comment contester ma taxe fonciere qui a doublé', 'fiscal'],
-  ['mon permis a été invalidé pour solde de points nul', 'routier'],
-  ['je conteste un exces de vitesse relevé par un radar', 'routier'],
-  ['une photo de moi est publiée sur facebook sans mon accord', 'numerique'],
-  ['mon ancien employeur refuse d’effacer mes données, je saisis la cnil', 'numerique'],
+  ['mon locataire est parti en laissant deux mois de loyer impayé', 'bail-habitation'],
+  ['puis-je retenir le dépôt de garantie après l’état des lieux de sortie', 'bail-habitation'],
+  ['j’ai oublié la révision annuelle du loyer, puis-je la rattraper', 'bail-habitation'],
+  ['ma ville impose un numéro d’enregistrement pour louer sur airbnb', 'courte-duree'],
+  ['un voyageur a cassé du mobilier pendant son séjour', 'courte-duree'],
+  ['combien de jours puis-je louer ma résidence principale en meublé de tourisme', 'courte-duree'],
+  ['l’assemblée générale a voté un ravalement que je conteste', 'copropriete'],
+  ['le syndic ne répond plus et les charges augmentent', 'copropriete'],
+  ['l’acquéreur refuse de signer l’acte alors que le compromis est signé', 'achat-vente'],
+  ['une infiltration a été découverte après la vente, vice caché ou pas', 'achat-vente'],
+  ['mon acheteur n’a pas notifié son refus de prêt dans le délai', 'achat-vente'],
+  ['des fissures sont apparues deux ans après la réception des travaux', 'travaux'],
+  ['l’artisan a encaissé l’acompte et a abandonné le chantier', 'travaux'],
+  ['mon entreprise n’avait pas d’assurance décennale', 'travaux'],
+  ['la mairie a refusé mon permis de construire pour une extension', 'urbanisme'],
+  ['un voisin attaque mon permis, mon affichage était-il valable', 'urbanisme'],
+  ['puis-je transformer mon garage en studio, changement de destination', 'urbanisme'],
+  ['les arbres du voisin dépassent sur mon terrain, puis-je élaguer', 'voisinage'],
+  ['il conteste la limite entre nos terrains, comment faire borner', 'voisinage'],
+  ['micro bic ou régime réel pour un meublé qui rapporte 18000 euros', 'fiscalite'],
+  ['comment est calculée la plus value sur un bien détenu depuis douze ans', 'fiscalite'],
+  ['j’ai reçu une proposition de rectification sur mes revenus fonciers', 'fiscalite'],
+  ['un dégât des eaux venu du dessus a abîmé mon plafond', 'sinistres'],
+  ['mon assureur refuse d’indemniser le dégât des eaux', 'sinistres'],
+  ['l’expert propose 2000 euros, je veux une contre expertise', 'sinistres'],
 ];
 
 test('l’aiguillage range correctement les questions du corpus', () => {
@@ -49,15 +49,15 @@ test('l’aiguillage range correctement les questions du corpus', () => {
 });
 
 test('les accents et les apostrophes ne changent rien au résultat', () => {
-  const avec = aiguiller('J’ai reçu une décision de la préfecture : OQTF sous 30 jours.');
-  const sans = aiguiller('j ai recu une decision de la prefecture oqtf sous 30 jours');
+  const avec = aiguiller('L’assemblée générale a voté sans respecter la convocation à 21 jours.');
+  const sans = aiguiller('l assemblee generale a vote sans respecter la convocation a 21 jours');
   assert.equal(avec.domaine, sans.domaine);
-  assert.equal(avec.domaine, 'etrangers');
+  assert.equal(avec.domaine, 'copropriete');
 });
 
 test('le pluriel est toléré dans les deux sens', () => {
-  assert.equal(aiguiller('mes impôts ont augmenté après un contrôle fiscal').domaine, 'fiscal');
-  assert.equal(aiguiller('question sur les baux et les loyers').domaine, 'immobilier');
+  assert.equal(aiguiller('mes tantièmes de charges de copropriété ont changé').domaine, 'copropriete');
+  assert.equal(aiguiller('question sur les baux et les quittances').domaine, 'bail-habitation');
 });
 
 test('une question sans aucun repère ne prétend pas être rangée', () => {
@@ -73,23 +73,22 @@ test('une question vide ne lève pas', () => {
 });
 
 /**
- * Le cas qui justifie l'arbitrage par le modèle : deux domaines nommés dans
- * la même phrase, avec des poids comparables. L'aiguillage doit alors dire
- * qu'il hésite, et proposer les deux — pas trancher sur un point d'écart.
+ * Le cas qui justifie l'arbitrage par le modèle. Une fuite causée par un
+ * locataire relève autant du bail que de l'assurance, et les mots-clés le
+ * disent honnêtement : deux scores égaux. L'aiguillage propose alors les deux
+ * au lieu de trancher sur l'ordre du catalogue.
  */
 test('deux spécialités également plausibles produisent une hésitation', () => {
-  const resultat = aiguiller(
-    'j’ai un litige avec mon syndic, et mon employeur ne me verse plus mon salaire',
-  );
+  const resultat = aiguiller('une fuite chez mon locataire a abîmé l’appartement du dessous');
   assert.equal(resultat.certitude, 'hesitante');
   const proposes = resultat.pistes.map((piste) => piste.id);
-  assert.ok(proposes.includes('travail'));
-  assert.ok(proposes.includes('immobilier'));
+  assert.ok(proposes.includes('sinistres'));
+  assert.ok(proposes.includes('bail-habitation'));
 });
 
 test('les indices renvoyés sont ceux qui ont réellement décidé', () => {
-  const resultat = aiguiller('mon propriétaire garde le dépôt de garantie après l’état des lieux');
-  assert.equal(resultat.domaine, 'immobilier');
+  const resultat = aiguiller('je rends le dépôt de garantie après l’état des lieux de sortie');
+  assert.equal(resultat.domaine, 'bail-habitation');
   assert.ok(resultat.pistes[0].indices.includes('depot de garantie'));
   assert.ok(resultat.pistes[0].indices.includes('etat des lieux'));
 });
@@ -100,6 +99,6 @@ test('le résultat est stable : deux appels donnent le même classement', () => 
 });
 
 test('mots normalise ce qui lui est donné', () => {
-  assert.deepEqual(mots('L’OQTF, reçue hier !'), ['l', 'oqtf', 'recue', 'hier']);
+  assert.deepEqual(mots('L’état des lieux, reçu hier !'), ['l', 'etat', 'des', 'lieux', 'recu', 'hier']);
   assert.deepEqual(mots('   '), []);
 });

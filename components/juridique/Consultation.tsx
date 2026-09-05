@@ -34,6 +34,12 @@ interface Props {
   questionInitiale?: string;
   /** Change le pied du composeur : conservé ou non. */
   connecte: boolean;
+  /**
+   * Faux quand aucune clé d'API n'est configurée. Le composeur s'éteint alors
+   * plutôt que d'accepter une question qui reviendra en erreur : le bandeau
+   * au-dessus a déjà dit pourquoi, l'inviter à écrire serait un piège.
+   */
+  actif?: boolean;
 }
 
 export function Consultation({
@@ -44,6 +50,7 @@ export function Consultation({
   toursInitiaux = [],
   questionInitiale = '',
   connecte,
+  actif = true,
 }: Props) {
   const [tours, setTours] = useState<Tour[]>(toursInitiaux);
   const [brouillon, setBrouillon] = useState('');
@@ -122,7 +129,7 @@ export function Consultation({
   }
 
   useEffect(() => {
-    if (!questionInitiale || envoiAuto.current || toursInitiaux.length > 0) return;
+    if (!actif || !questionInitiale || envoiAuto.current || toursInitiaux.length > 0) return;
     envoiAuto.current = true;
     void demander(questionInitiale);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -148,6 +155,7 @@ export function Consultation({
               key={exemple}
               type="button"
               className="jur-chip"
+              disabled={!actif || pending}
               onClick={() => void demander(exemple)}
             >
               {exemple}
@@ -183,6 +191,7 @@ export function Consultation({
 
       <form
         className="jur-composer"
+        data-inactif={actif ? undefined : '1'}
         onSubmit={(event) => {
           event.preventDefault();
           void demander(brouillon, fichier);
@@ -196,11 +205,14 @@ export function Consultation({
           value={brouillon}
           onChange={(event) => setBrouillon(event.target.value)}
           placeholder={
-            tours.length === 0
-              ? 'Décrivez votre situation : ce qui s’est passé, quand, et ce que vous cherchez à obtenir.'
-              : 'Précisez, ou posez la question suivante.'
+            !actif
+              ? 'Assistant indisponible : aucune clé d’API n’est configurée sur ce site.'
+              : tours.length === 0
+                ? 'Décrivez votre situation : la date des faits, le type de bien, et ce que vous cherchez à obtenir.'
+                : 'Précisez, ou posez la question suivante.'
           }
           maxLength={6000}
+          disabled={!actif}
           onKeyDown={(event) => {
             if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
               event.preventDefault();
@@ -214,6 +226,7 @@ export function Consultation({
             <input
               type="file"
               accept=".pdf,.txt,.md,.csv,image/jpeg,image/png,image/webp"
+              disabled={!actif}
               onChange={choisirFichier}
             />
             <span aria-hidden="true">📎</span>
@@ -223,10 +236,14 @@ export function Consultation({
           <p className="jur-hint">
             {connecte
               ? 'Cette consultation est enregistrée dans vos dossiers. Le document joint, lui, n’est jamais conservé.'
-              : 'Rien n’est conservé : en fermant cet onglet, le fil disparaît. Connectez-vous pour le retrouver.'}
+              : 'Rien n’est conservé : en fermant cet onglet, le fil disparaît. Connectez-vous pour le retrouver.'}
           </p>
 
-          <button className="btn btn-accent" type="submit" disabled={pending || !brouillon.trim()}>
+          <button
+            className="btn btn-accent"
+            type="submit"
+            disabled={!actif || pending || !brouillon.trim()}
+          >
             {pending ? 'En cours…' : 'Envoyer'}
           </button>
         </div>

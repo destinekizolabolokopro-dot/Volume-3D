@@ -10,8 +10,8 @@ export function Barre({ retour }: { retour?: { href: string; label: string } }) 
   return (
     <header className="jur-bar">
       <a className="jur-bar-brand" href="/juridique">
-        Assistant juridique
-        <small>par Volume3D</small>
+        Droit immobilier
+        <small>l’assistant de Volume3D</small>
       </a>
       {retour && (
         <a className="jur-bar-link" href={retour.href}>

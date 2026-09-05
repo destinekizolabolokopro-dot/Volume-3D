@@ -1,15 +1,31 @@
 /* =========================================================================
-   Assistant juridique — feuille de la zone /juridique
+   Assistant juridique immobilier — feuille de la zone /juridique
 
-   Elle n'emporte aucune couleur ni aucune fonte propre : tout vient des
-   jetons de `globals.css`. Le droit n'a pas besoin d'une palette à lui, et
-   deux palettes sur un même domaine se voient tout de suite.
+   Aucune couleur, aucune fonte, aucun rayon propre : tout vient des jetons de
+   `globals.css`. Le droit n'a pas besoin d'une palette à lui, et deux palettes
+   sur un même domaine se voient tout de suite.
 
-   Un seul écart assumé avec le reste du site : la colonne de lecture est plus
-   étroite (68 caractères), parce qu'ici on lit vraiment des paragraphes.
+   Ce que cette feuille apporte en propre tient en trois choses :
+
+   1. Un pas d'espacement unique (`--pas`), et toutes les distances qui en
+      dérivent. Avant, chaque bloc avait sa marge écrite à la main : 44 px
+      ici, 28 px là, 18 px plus bas. Rien n'était faux, mais rien ne
+      s'alignait sur rien, et la page respirait par à-coups.
+   2. Des cartes de hauteur égale. La grille en `auto-fill` les étirait déjà,
+      mais leur contenu flottait en haut : un résumé d'une ligne et un de
+      trois ne se lisaient plus sur la même ligne de base.
+   3. Des états de survol sobres. Le relief et le déplacement ont été retirés :
+      sur une grille de neuf cartes, neuf ombres qui bougent font un
+      catalogue. Reste ce qui informe — la bordure prend l'accent, le titre
+      aussi.
    ========================================================================= */
 
 .jur {
+  /* Le pas. Tout espacement vertical de cette zone en est un multiple. */
+  --pas: 8px;
+  --section: calc(var(--pas) * 7); /* 56 — entre deux sections d'une page */
+  --bloc: calc(var(--pas) * 2.5); /* 20 — dans un bloc */
+
   background: var(--bg-alt);
   min-height: 100vh;
   display: flex;
@@ -21,8 +37,8 @@
 .jur-bar {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 14px 24px;
+  gap: calc(var(--pas) * 3);
+  padding: calc(var(--pas) * 1.75) calc(var(--pas) * 3);
   background: #fff;
   border-bottom: 1px solid var(--line);
   position: sticky;
@@ -33,10 +49,11 @@
 .jur-bar-brand {
   display: flex;
   align-items: baseline;
-  gap: 9px;
+  gap: var(--pas);
   text-decoration: none;
   color: var(--ink-strong);
   font-weight: 600;
+  font-size: 16px;
   letter-spacing: -0.02em;
   margin-right: auto;
 }
@@ -48,13 +65,14 @@
   letter-spacing: 0;
 }
 
-.jur-bar a.jur-bar-link {
+.jur-bar-link {
   font-size: 14px;
   color: var(--ink-muted);
   text-decoration: none;
+  padding: calc(var(--pas) * 0.5) 0;
 }
 
-.jur-bar a.jur-bar-link:hover {
+.jur-bar-link:hover {
   color: var(--accent);
 }
 
@@ -62,39 +80,46 @@
 
 .jur-page {
   width: 100%;
-  max-width: 940px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: calc(var(--pas) * 6) calc(var(--pas) * 3) calc(var(--pas) * 10);
   flex: 1;
 }
 
 .jur-narrow {
-  max-width: 720px;
+  max-width: 740px;
 }
 
 .jur-h1 {
-  font-size: clamp(28px, 4vw, 40px);
-  line-height: 1.15;
-  margin: 0 0 12px;
+  font-size: clamp(28px, 3.6vw, 38px);
+  line-height: 1.14;
+  margin: 0 0 calc(var(--pas) * 1.5);
 }
 
+/* 58 caractères : la ligne de lecture confortable, et surtout une largeur qui
+   ne laisse pas un mot seul en fin de paragraphe. */
 .jur-lede {
   font-size: 17px;
   line-height: 1.6;
   color: var(--ink-muted);
-  margin: 0 0 28px;
-  max-width: 62ch;
+  margin: 0 0 var(--section);
+  max-width: 58ch;
+}
+
+.jur-section {
+  margin-top: var(--section);
 }
 
 .jur-h2 {
-  font-size: 20px;
-  margin: 44px 0 4px;
+  font-size: 19px;
+  margin: 0 0 calc(var(--pas) * 0.5);
 }
 
 .jur-sub {
   color: var(--ink-soft);
   font-size: 14.5px;
-  margin: 0 0 18px;
+  margin: 0 0 calc(var(--pas) * 2.5);
+  max-width: 62ch;
 }
 
 /* ------------------------------------------------------- le champ d'entrée */
@@ -103,20 +128,19 @@
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow-soft);
+  padding: var(--bloc);
 }
 
 .jur-ask textarea {
   width: 100%;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  padding: 13px 14px;
+  padding: calc(var(--pas) * 1.5) calc(var(--pas) * 1.75);
   font-family: var(--sans);
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink);
-  min-height: 96px;
+  min-height: 92px;
   resize: vertical;
 }
 
@@ -129,8 +153,8 @@
 .jur-ask-foot {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-top: 12px;
+  gap: calc(var(--pas) * 2);
+  margin-top: calc(var(--pas) * 1.5);
   flex-wrap: wrap;
 }
 
@@ -145,29 +169,30 @@
 /* --------------------------------------------------------- la proposition */
 
 .jur-verdict {
-  margin-top: 18px;
+  margin-top: var(--bloc);
   border: 1px solid var(--accent);
   background: var(--accent-wash);
-  border-radius: var(--radius);
-  padding: 18px 20px;
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 2.25) var(--bloc);
 }
 
 .jur-verdict h3 {
-  margin: 0 0 6px;
+  margin: 0 0 calc(var(--pas) * 0.5);
   font-size: 17px;
 }
 
 .jur-verdict p {
-  margin: 0 0 14px;
+  margin: 0 0 calc(var(--pas) * 1.75);
   font-size: 14.5px;
   color: var(--ink-muted);
+  max-width: 62ch;
 }
 
 .jur-indices {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 14px;
+  gap: calc(var(--pas) * 0.75);
+  margin: 0 0 calc(var(--pas) * 2);
   padding: 0;
   list-style: none;
 }
@@ -176,49 +201,58 @@
   background: #fff;
   border: 1px solid var(--line-soft);
   border-radius: 999px;
-  padding: 3px 10px;
+  padding: 3px 11px;
   font-size: 12.5px;
   color: var(--ink-soft);
 }
 
 .jur-autres {
-  margin: 14px 0 0;
+  margin: calc(var(--pas) * 2) 0 0;
   font-size: 13.5px;
   color: var(--ink-muted);
 }
 
 .jur-autres a {
-  margin-right: 12px;
+  margin-left: calc(var(--pas) * 1.5);
 }
 
 /* ------------------------------------------------------------- la grille --- */
 
 .jur-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+  gap: calc(var(--pas) * 1.5);
 }
 
+/* Colonne, pour que le résumé se pose au même endroit dans les neuf cartes,
+   quelle que soit la longueur du titre. */
 .jur-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pas) * 0.75);
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 18px 20px;
+  padding: calc(var(--pas) * 2.25) var(--bloc);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .jur-card:hover {
   border-color: var(--accent);
-  box-shadow: var(--shadow-soft);
+  background: var(--bg);
   color: inherit;
 }
 
 .jur-card h3 {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 16px;
+  transition: color 0.15s ease;
+}
+
+.jur-card:hover h3 {
+  color: var(--accent);
 }
 
 .jur-card p {
@@ -232,25 +266,25 @@
 
 .jur-fiche {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) 304px;
+  gap: calc(var(--pas) * 4);
   align-items: start;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .jur-fiche {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 .jur-aside {
   position: sticky;
-  top: 84px;
+  top: calc(var(--pas) * 10);
   display: grid;
-  gap: 16px;
+  gap: calc(var(--pas) * 2);
 }
 
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .jur-aside {
     position: static;
   }
@@ -260,14 +294,14 @@
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 2.25);
 }
 
 .jur-bloc h3 {
-  margin: 0 0 10px;
-  font-size: 13px;
+  margin: 0 0 calc(var(--pas) * 1.5);
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   color: var(--ink-faint);
   font-weight: 600;
 }
@@ -277,17 +311,25 @@
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 9px;
+  gap: calc(var(--pas) * 1.25);
 }
 
 .jur-bloc li {
   font-size: 13.5px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--ink-muted);
 }
 
-/* Les délais : le seul bloc qui a le droit de crier, parce qu'un délai
-   manqué ne se rattrape pas. */
+.jur-bloc .hint {
+  margin-top: calc(var(--pas) * 1.5);
+  padding-top: calc(var(--pas) * 1.5);
+  border-top: 1px solid var(--line);
+}
+
+/* Les délais : le seul bloc qui a le droit d'élever la voix, parce qu'un délai
+   manqué ne se rattrape pas. Le filet à gauche de chaque ligne remplace le
+   sablier qui les précédait : un émoji dans une colonne de droit fait
+   décoration, un filet fait hiérarchie. */
 .jur-delais {
   background: var(--warning-wash);
   border-color: var(--warning);
@@ -297,26 +339,32 @@
   color: var(--warning);
 }
 
-.jur-delais li {
-  color: var(--ink);
+.jur-delais ul {
+  gap: calc(var(--pas) * 1.5);
 }
 
-.jur-delais li::before {
-  content: '⏳';
-  margin-right: 7px;
+.jur-delais li {
+  color: var(--ink);
+  border-left: 2px solid var(--warning);
+  padding-left: calc(var(--pas) * 1.5);
+}
+
+.jur-delais .hint {
+  border-top-color: var(--warning);
+  color: var(--ink-muted);
 }
 
 /* ------------------------------------------------------------- le fil ----- */
 
 .jur-fil {
   display: grid;
-  gap: 16px;
-  margin: 4px 0 24px;
+  gap: calc(var(--pas) * 2);
+  margin: 0 0 calc(var(--pas) * 3);
 }
 
 .jur-tour {
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 2.25);
   font-size: 15.5px;
   line-height: 1.62;
 }
@@ -325,7 +373,7 @@
   background: var(--bg-sunk);
   border: 1px solid var(--line);
   color: var(--ink-strong);
-  margin-left: 48px;
+  margin-left: calc(var(--pas) * 6);
 }
 
 @media (max-width: 640px) {
@@ -340,7 +388,7 @@
 }
 
 .jur-tour p {
-  margin: 0 0 12px;
+  margin: 0 0 calc(var(--pas) * 1.5);
 }
 
 .jur-tour p:last-child {
@@ -348,14 +396,14 @@
 }
 
 /* Les intertitres que le spécialiste pose (« Le délai : ») sont rendus comme
-   des titres, pas comme du texte gras au milieu d'un paragraphe. */
+   des titres, pas comme du gras au milieu d'un paragraphe. */
 .jur-intertitre {
   font-weight: 600;
   color: var(--ink-strong);
-  margin: 18px 0 6px;
-  font-size: 14px;
+  margin: calc(var(--pas) * 2.5) 0 calc(var(--pas) * 0.75);
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .jur-tour > .jur-intertitre:first-child {
@@ -363,34 +411,34 @@
 }
 
 .jur-liste {
-  margin: 0 0 12px;
-  padding-left: 18px;
+  margin: 0 0 calc(var(--pas) * 1.5);
+  padding-left: calc(var(--pas) * 2.25);
   list-style: none;
 }
 
 .jur-liste li {
   position: relative;
-  margin-bottom: 6px;
+  margin-bottom: calc(var(--pas) * 0.75);
 }
 
 .jur-liste li::before {
   content: '—';
   position: absolute;
-  left: -18px;
+  left: calc(var(--pas) * -2.25);
   color: var(--ink-faint);
 }
 
 .jur-piece {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--pas);
   font-size: 13px;
   color: var(--ink-soft);
   background: #fff;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
-  padding: 5px 10px;
-  margin-bottom: 10px;
+  padding: 5px 11px;
+  margin-bottom: calc(var(--pas) * 1.25);
 }
 
 .jur-attente {
@@ -405,21 +453,29 @@
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 14px;
+  padding: calc(var(--pas) * 1.75);
   position: sticky;
-  bottom: 16px;
-  box-shadow: var(--shadow-lift);
+  bottom: calc(var(--pas) * 2);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Quand aucune clé d'API n'est configurée, le composeur ne fait pas semblant
+   d'attendre une question : il s'éteint, et le bandeau au-dessus dit pourquoi. */
+.jur-composer[data-inactif='1'] {
+  background: var(--bg-alt);
+  box-shadow: none;
 }
 
 .jur-composer textarea {
   width: 100%;
   border: 0;
-  padding: 4px 2px 10px;
+  background: transparent;
+  padding: calc(var(--pas) * 0.5) 2px calc(var(--pas) * 1.25);
   font-family: var(--sans);
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink);
-  min-height: 62px;
+  min-height: 60px;
   resize: vertical;
 }
 
@@ -427,65 +483,94 @@
   outline: none;
 }
 
+.jur-composer textarea:disabled {
+  color: var(--ink-faint);
+}
+
 .jur-composer-foot {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: calc(var(--pas) * 1.25);
   border-top: 1px solid var(--line);
-  padding-top: 10px;
+  padding-top: calc(var(--pas) * 1.25);
   flex-wrap: wrap;
 }
 
 .jur-fichier {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--pas);
   font-size: 13.5px;
   color: var(--ink-muted);
   cursor: pointer;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  padding: 7px 12px;
+  padding: 7px 13px;
+  max-width: 260px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .jur-fichier:hover {
   background: var(--bg-alt);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* L'entrée de fichier native est masquée, donc le focus clavier ne se voit
+   nulle part : on le reporte sur l'étiquette, qui est ce qu'on voit. */
+.jur-fichier:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .jur-fichier input {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .jur-composer-foot .jur-hint {
   flex: 1;
-  min-width: 180px;
+  min-width: 200px;
   margin: 0;
   font-size: 12.5px;
   color: var(--ink-faint);
+  line-height: 1.45;
 }
 
 .jur-suggestions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 0 20px;
+  display: grid;
+  gap: var(--pas);
+  margin: 0 0 calc(var(--pas) * 3);
+  justify-items: start;
 }
 
 .jur-chip {
   background: #fff;
   border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 1.25) calc(var(--pas) * 1.75);
   font-family: var(--sans);
-  font-size: 13.5px;
+  font-size: 14px;
+  line-height: 1.4;
   color: var(--ink-muted);
   cursor: pointer;
   text-align: left;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .jur-chip:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.jur-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* --------------------------------------------------------------- divers --- */
@@ -495,11 +580,23 @@
   border-left: 3px solid var(--ink-faint);
   background: #fff;
   border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 2.25);
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--ink-muted);
-  margin: 24px 0 0;
+  max-width: 74ch;
+}
+
+.jur-avertissement p {
+  margin: 0 0 calc(var(--pas) * 1.5);
+}
+
+.jur-avertissement p:last-child {
+  margin-bottom: 0;
+}
+
+.jur-avertissement strong {
+  color: var(--ink-strong);
 }
 
 .jur-erreur {
@@ -507,14 +604,16 @@
   border: 1px solid var(--danger);
   color: var(--danger);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: calc(var(--pas) * 1.5) calc(var(--pas) * 1.75);
   font-size: 14px;
-  margin: 0 0 14px;
+  line-height: 1.55;
+  margin: 0 0 calc(var(--pas) * 2);
+  max-width: 74ch;
 }
 
 .jur-liste-fils {
   display: grid;
-  gap: 10px;
+  gap: var(--pas);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -523,13 +622,14 @@
 .jur-fil-ligne {
   display: flex;
   align-items: baseline;
-  gap: 14px;
+  gap: calc(var(--pas) * 2);
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 14px 18px;
+  padding: calc(var(--pas) * 1.75) calc(var(--pas) * 2.25);
   text-decoration: none;
   color: inherit;
+  transition: border-color 0.15s ease;
 }
 
 .jur-fil-ligne:hover {
@@ -549,11 +649,40 @@
   white-space: nowrap;
 }
 
+@media (max-width: 560px) {
+  .jur-fil-ligne {
+    flex-direction: column;
+    gap: calc(var(--pas) * 0.5);
+  }
+}
+
 .jur-vide {
   background: #fff;
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius);
-  padding: 32px;
+  padding: calc(var(--pas) * 5);
   text-align: center;
   color: var(--ink-soft);
+}
+
+.jur-vide p {
+  margin: 0 0 calc(var(--pas) * 2.5);
+}
+
+/* Deux exceptions au rythme général, pour les deux blocs qui vivent à
+   l'intérieur du champ d'entrée plutôt qu'entre deux sections. */
+.jur-erreur-ask {
+  margin: var(--bloc) 0 0;
+}
+
+.jur-verdict-lead {
+  margin-bottom: calc(var(--pas) * 0.75);
+}
+
+/* Le titre d'une consultation reprise est une question de visiteur, pas un
+   titre de page : il se lit, il ne s'annonce pas. */
+.jur-h1-fil {
+  font-size: clamp(21px, 2.4vw, 25px);
+  line-height: 1.25;
+  max-width: 40ch;
 }

@@ -4,6 +4,7 @@ import { Barre } from '@/components/juridique/Barre';
 import { Consultation } from '@/components/juridique/Consultation';
 import { currentAccount } from '@/lib/accounts';
 import { domaine, domaineOuNull, estDomaineId } from '@/lib/domaines';
+import { SPECIALISTE } from '@/lib/juridique-copie';
 import { estJuristeConfigure } from '@/lib/juriste';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,7 @@ export default async function PageDomaine({ params, searchParams }: Params) {
   const fiche = domaine(id);
   const { q } = await searchParams;
   const account = await currentAccount();
+  const actif = estJuristeConfigure();
 
   return (
     <>
@@ -48,12 +50,7 @@ export default async function PageDomaine({ params, searchParams }: Params) {
         <h1 className="jur-h1">{fiche.label}</h1>
         <p className="jur-lede">{fiche.resume}</p>
 
-        {!estJuristeConfigure() && (
-          <p className="jur-erreur">
-            L’assistant n’est pas configuré sur ce site : la clé ANTHROPIC_API_KEY est absente. La
-            fiche ci-dessous reste consultable, mais aucune question ne peut être posée.
-          </p>
-        )}
+        {!actif && <p className="jur-erreur">{SPECIALISTE.inactif}</p>}
 
         <div className="jur-fiche">
           <div>
@@ -63,6 +60,7 @@ export default async function PageDomaine({ params, searchParams }: Params) {
               exemples={fiche.exemples}
               questionInitiale={q ?? ''}
               connecte={Boolean(account)}
+              actif={actif}
             />
           </div>
 
@@ -74,9 +72,7 @@ export default async function PageDomaine({ params, searchParams }: Params) {
                   <li key={delai}>{delai}</li>
                 ))}
               </ul>
-              <p className="hint" style={{ marginTop: 12 }}>
-                Si un document que vous avez reçu mentionne un autre délai, c’est lui qui fait foi.
-              </p>
+              <p className="hint">{SPECIALISTE.delaisNote}</p>
             </section>
 
             <section className="jur-bloc">
@@ -111,11 +107,8 @@ export default async function PageDomaine({ params, searchParams }: Params) {
           </aside>
         </div>
 
-        <div className="jur-avertissement">
-          Cette réponse est une information juridique, pas une consultation d’avocat. Elle ne tient
-          compte que de ce que vous avez écrit, et rien n’y remplace la lecture de vos documents par
-          un professionnel. En cas de délai en cours, prenez conseil sans attendre : un point-justice
-          reçoit gratuitement, et l’aide juridictionnelle peut prendre en charge un avocat.
+        <div className="jur-avertissement jur-section">
+          <p>{SPECIALISTE.avertissement}</p>
         </div>
       </main>
     </>

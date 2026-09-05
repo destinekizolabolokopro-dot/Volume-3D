@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mots } from '../lib/aiguillage.ts';
 import { DOMAINES, domaine, domaineOuNull, estDomaineId } from '../lib/domaines.ts';
+import { ACCUEIL, DOSSIERS, LIMITES, ORIENTATION, SPECIALISTE } from '../lib/juridique-copie.ts';
 
 /**
  * Le catalogue est du contenu, mais il obéit à des règles que rien d'autre ne
@@ -71,5 +72,44 @@ test('domaine lève sur un identifiant inconnu, domaineOuNull renvoie null', () 
   assert.throws(() => domaine('inexistant' as never));
   assert.equal(domaineOuNull('inexistant'), null);
   assert.equal(domaineOuNull(42), null);
-  assert.equal(domaineOuNull('travail')?.id, 'travail');
+  assert.equal(domaineOuNull('copropriete')?.id, 'copropriete');
+});
+
+/**
+ * La ponctuation double française prend une espace AVANT, et cette espace est
+ * insécable. Sans elle, le navigateur coupe où il veut : le titre de l'accueil
+ * commençait une ligne par « ? Elle ira au bon spécialiste ».
+ *
+ * La règle est déjà celle du reste du site (voir `tests/residence.test.ts`) ;
+ * elle s'applique ici à la copie du catalogue, qui est lue à l'écran autant
+ * qu'envoyée au modèle. Les commentaires du code n'y sont pas soumis.
+ */
+test('la copie du catalogue porte ses espaces insécables', () => {
+  const fautes: string[] = [];
+  const verifier = (ou: string, texte: string) => {
+    if (/ [?!;:]/.test(texte)) fautes.push(`${ou} — « ${texte} »`);
+  };
+
+  for (const fiche of DOMAINES) {
+    verifier(`${fiche.id} · label`, fiche.label);
+    verifier(`${fiche.id} · resume`, fiche.resume);
+    fiche.matieres.forEach((t, i) => verifier(`${fiche.id} · matiere ${i}`, t));
+    fiche.renvois.forEach((r, i) => verifier(`${fiche.id} · renvoi ${i}`, r.quand));
+    fiche.sources.forEach((t, i) => verifier(`${fiche.id} · source ${i}`, t));
+    fiche.delais.forEach((t, i) => verifier(`${fiche.id} · delai ${i}`, t));
+    fiche.exemples.forEach((t, i) => verifier(`${fiche.id} · exemple ${i}`, t));
+  }
+
+  /* La copie des pages obéit à la même règle, et pour la même raison : elle a
+     été sortie du JSX précisément parce que le JSX ramenait l'espace fine à
+     une espace ordinaire. Si elle y retournait, ce test le dirait. */
+  for (const [nom, bloc] of Object.entries({ ACCUEIL, SPECIALISTE, DOSSIERS, ORIENTATION })) {
+    for (const [cle, texte] of Object.entries(bloc)) verifier(`${nom}.${cle}`, texte);
+  }
+  LIMITES.forEach((limite, i) => {
+    verifier(`LIMITES ${i} · amorce`, limite.amorce);
+    verifier(`LIMITES ${i} · suite`, limite.suite);
+  });
+
+  assert.deepEqual(fautes, []);
 });
