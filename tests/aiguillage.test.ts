@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { aiguiller, mots } from '../lib/aiguillage.ts';
-import type { DomaineId } from '../lib/domaines.ts';
+import { DOMAINES, type DomaineId } from '../lib/domaines.ts';
 
 /**
  * L'aiguillage se juge sur des questions écrites comme on les écrit vraiment :
@@ -35,6 +35,10 @@ const CORPUS: [string, DomaineId][] = [
   ['un dégât des eaux venu du dessus a abîmé mon plafond', 'sinistres'],
   ['mon assureur refuse d’indemniser le dégât des eaux', 'sinistres'],
   ['l’expert propose 2000 euros, je veux une contre expertise', 'sinistres'],
+  ['mon mandat exclusif expire et le vendeur traite en direct', 'profession'],
+  ['quelles mentions obligatoires sur une annonce de vente', 'profession'],
+  ['le vendeur refuse de payer mes honoraires d’agence', 'profession'],
+  ['dois-je déclarer ce client à tracfin', 'profession'],
 ];
 
 test('l’aiguillage range correctement les questions du corpus', () => {
@@ -46,6 +50,16 @@ test('l’aiguillage range correctement les questions du corpus', () => {
     }
   }
   assert.deepEqual(rates, []);
+});
+
+/**
+ * Une spécialité ajoutée au catalogue sans être éprouvée sur une vraie
+ * question est une spécialité qu'on croit atteignable. Ce test le refuse.
+ */
+test('chaque spécialité est éprouvée par au moins une question du corpus', () => {
+  const couvertes = new Set(CORPUS.map(([, attendu]) => attendu));
+  const manquantes = DOMAINES.filter((fiche) => !couvertes.has(fiche.id)).map((fiche) => fiche.id);
+  assert.deepEqual(manquantes, []);
 });
 
 test('les accents et les apostrophes ne changent rien au résultat', () => {

@@ -30,6 +30,7 @@ test('aucune fiche n’est vide de ce qui la rend utile', () => {
   for (const fiche of DOMAINES) {
     assert.ok(fiche.matieres.length >= 3, `${fiche.id} : trop peu de matières`);
     assert.ok(fiche.delais.length >= 3, `${fiche.id} : les délais sont ce qu'on vient chercher`);
+    assert.ok(fiche.verifications.length >= 4, `${fiche.id} : aide-mémoire trop court`);
     assert.ok(fiche.sources.length >= 2, `${fiche.id} : pas de texte de référence`);
     assert.ok(fiche.exemples.length >= 3, `${fiche.id} : pas assez d'exemples`);
     assert.ok(fiche.signaux.length >= 10, `${fiche.id} : trop peu de mots décisifs`);
@@ -97,6 +98,7 @@ test('la copie du catalogue porte ses espaces insécables', () => {
     fiche.renvois.forEach((r, i) => verifier(`${fiche.id} · renvoi ${i}`, r.quand));
     fiche.sources.forEach((t, i) => verifier(`${fiche.id} · source ${i}`, t));
     fiche.delais.forEach((t, i) => verifier(`${fiche.id} · delai ${i}`, t));
+    fiche.verifications.forEach((t, i) => verifier(`${fiche.id} · verification ${i}`, t));
     fiche.exemples.forEach((t, i) => verifier(`${fiche.id} · exemple ${i}`, t));
   }
 

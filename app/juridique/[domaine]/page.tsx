@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Barre } from '@/components/juridique/Barre';
 import { Consultation } from '@/components/juridique/Consultation';
 import { currentAccount } from '@/lib/accounts';
+import { CALENDRIER_ENERGIE, DIAGNOSTICS } from '@/lib/diagnostics';
 import { domaine, domaineOuNull, estDomaineId } from '@/lib/domaines';
 import { SPECIALISTE } from '@/lib/juridique-copie';
 import { estJuristeConfigure } from '@/lib/juriste';
@@ -76,6 +77,15 @@ export default async function PageDomaine({ params, searchParams }: Params) {
             </section>
 
             <section className="jur-bloc">
+              <h3>À vérifier avant d’agir</h3>
+              <ul>
+                {fiche.verifications.map((verification) => (
+                  <li key={verification}>{verification}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="jur-bloc">
               <h3>Ce que ce spécialiste traite</h3>
               <ul>
                 {fiche.matieres.map((matiere) => (
@@ -106,6 +116,44 @@ export default async function PageDomaine({ params, searchParams }: Params) {
             </section>
           </aside>
         </div>
+
+        {fiche.diagnostics && (
+          <section className="jur-section">
+            <h2 className="jur-h2">Diagnostics et durées de validité</h2>
+            <p className="jur-sub">
+              Le rapport remis porte sa propre date de réalisation et de fin de validité{'\u202f'}: c’est
+              elle qui fait foi. Ce tableau dit ce qu’il faut y chercher.
+            </p>
+
+            <div className="jur-tableau">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Diagnostic</th>
+                    <th scope="col">Quand il est exigé</th>
+                    <th scope="col">Validité</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {DIAGNOSTICS.map((diagnostic) => (
+                    <tr key={diagnostic.nom}>
+                      <th scope="row">{diagnostic.nom}</th>
+                      <td>{diagnostic.quand}</td>
+                      <td>{diagnostic.validite}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <h3 className="jur-h3">Interdictions de louer, selon la classe énergie</h3>
+            <ul className="jur-calendrier">
+              {CALENDRIER_ENERGIE.map((etape) => (
+                <li key={etape}>{etape}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="jur-avertissement jur-section">
           <p>{SPECIALISTE.avertissement}</p>

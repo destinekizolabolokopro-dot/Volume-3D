@@ -30,6 +30,7 @@ export interface FicheLegere {
   label: string;
   resume: string;
   delais: string[];
+  verifications: string[];
 }
 
 interface Props {
@@ -111,7 +112,7 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
             aria-expanded={delaisOuverts}
             onClick={() => setDelaisOuverts((ouvert) => !ouvert)}
           >
-            Délais {delaisOuverts ? '▴' : '▾'}
+            Délais et vérifications {delaisOuverts ? '▴' : '▾'}
           </button>
         )}
 
@@ -121,14 +122,25 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
       </div>
 
       {fiche && delaisOuverts && (
-        <section className="jur-bloc jur-delais jur-delais-fil">
-          <h3>Délais à ne pas manquer</h3>
-          <ul>
-            {fiche.delais.map((delai) => (
-              <li key={delai}>{delai}</li>
-            ))}
-          </ul>
-        </section>
+        <div className="jur-reperes">
+          <section className="jur-bloc jur-delais">
+            <h3>Délais à ne pas manquer</h3>
+            <ul>
+              {fiche.delais.map((delai) => (
+                <li key={delai}>{delai}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="jur-bloc">
+            <h3>À vérifier avant d’agir</h3>
+            <ul>
+              {fiche.verifications.map((verification) => (
+                <li key={verification}>{verification}</li>
+              ))}
+            </ul>
+          </section>
+        </div>
       )}
 
       <Fil tours={tours} pending={pending} attente={`${specialite.label || 'L’assistant'} examine votre question…`} />

@@ -834,3 +834,108 @@
     padding-top: calc(var(--pas) * 5);
   }
 }
+
+/* =========================================================================
+   L'aide-mémoire, le tableau des diagnostics
+
+   Deux ajouts pour les professionnels. Un agent immobilier ne vient pas
+   apprendre le droit : il vient vérifier une durée de validité entre deux
+   rendez-vous, et savoir quelle pièce lui manque avant de faire signer. Ces
+   deux blocs se lisent debout, en diagonale, sur un téléphone.
+   ========================================================================= */
+
+.jur-h3 {
+  font-size: 15px;
+  margin: var(--section) 0 calc(var(--pas) * 1.5);
+}
+
+/* Un tableau ne se compresse pas : sous une certaine largeur il devient
+   illisible avant de devenir étroit. Il défile donc dans sa propre boîte,
+   sans jamais faire défiler la page. */
+.jur-tableau {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.jur-tableau table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  line-height: 1.5;
+  min-width: 620px;
+}
+
+.jur-tableau th,
+.jur-tableau td {
+  text-align: left;
+  vertical-align: top;
+  padding: calc(var(--pas) * 1.5) calc(var(--pas) * 2);
+  border-bottom: 1px solid var(--line);
+}
+
+.jur-tableau thead th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  font-weight: 600;
+  background: var(--bg-alt);
+  white-space: nowrap;
+}
+
+.jur-tableau tbody th {
+  font-weight: 600;
+  color: var(--ink-strong);
+  width: 30%;
+}
+
+.jur-tableau td {
+  color: var(--ink-muted);
+}
+
+.jur-tableau tbody tr:last-child th,
+.jur-tableau tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.jur-calendrier {
+  margin: 0;
+  padding-left: calc(var(--pas) * 2.25);
+  list-style: none;
+  display: grid;
+  gap: calc(var(--pas) * 1.25);
+  max-width: 74ch;
+}
+
+.jur-calendrier li {
+  position: relative;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.jur-calendrier li::before {
+  content: '—';
+  position: absolute;
+  left: calc(var(--pas) * -2.25);
+  color: var(--ink-faint);
+}
+
+/* Les repères dépliés en tête de conversation : les délais d'abord, ce qui
+   manque encore ensuite. Deux blocs et non un seul — mélanger « il sera trop
+   tard le 12 » et « il vous manque le PV d'assemblée » ferait perdre au
+   premier ce qui fait sa force. */
+.jur-reperes {
+  display: grid;
+  gap: calc(var(--pas) * 1.5);
+  margin-bottom: calc(var(--pas) * 3);
+}
+
+@media (min-width: 720px) {
+  .jur-reperes {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}

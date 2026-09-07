@@ -24,10 +24,10 @@ export interface Paragraphe {
 export const ACCUEIL = {
   titre: 'Une question sur votre bien ? Elle ira au bon spécialiste.',
   lede:
-    'Neuf spécialités du droit immobilier, écrites du côté du propriétaire : bailleur, loueur en meublé de tourisme, copropriétaire, conciergerie. Chacune avec son périmètre, ses textes de référence et ses délais. Racontez votre situation comme vous la raconteriez à quelqu’un.',
+    'Dix spécialités du droit immobilier, pour ceux qui en vivent : propriétaires bailleurs, loueurs en meublé de tourisme, copropriétaires — et les professionnels qui les accompagnent, agents, mandataires, gestionnaires. Chacune avec son périmètre, ses délais couperets et son aide-mémoire. Racontez votre situation comme vous la raconteriez à quelqu’un.',
   grilleTitre: 'Ou choisissez directement',
   grilleSous:
-    'Chaque fiche indique ce que le spécialiste traite, ce qu’il ne traite pas, et les délais à ne pas manquer.',
+    'Chaque fiche indique ce que le spécialiste traite, ce qu’il ne traite pas, les délais à ne pas manquer et les pièces à réunir avant d’agir.',
   limitesTitre: 'Ce que cet assistant est, et ce qu’il n’est pas',
   limitesSous: 'Trois limites, dites avant plutôt qu’après.',
 } as const;

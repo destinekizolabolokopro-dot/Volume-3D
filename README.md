@@ -21,7 +21,7 @@ un loyer mensuel mais le nombre de biens qu'il peut tenir.
 | **Back-office** | `/admin` | Vous seul, par mot de passe. Vue sur l'ensemble. |
 | **Rendez-vous** | `/admin/rendez-vous` | Vous seul. Ce que le site a pris comme rendez-vous. |
 | **Visite publique** | `/v/{slug}` | Les voyageurs, sans compte, avec assistant. |
-| **Assistant juridique** | `/juridique` | Le public. Neuf spécialités du droit immobilier, sans compte. |
+| **Assistant juridique** | `/juridique` | Le public. Dix spécialités du droit immobilier, sans compte. |
 | **Aperçu de démarchage** | `/demo/{token}` | Un prospect précis, en privé, temporairement. |
 
 
@@ -440,23 +440,39 @@ clé, le bouton ne s'affiche pas et le reste du site fonctionne normalement.
 
 `/juridique` est une seconde zone publique, indépendante des visites : on y
 pose une question de droit en français, et elle part vers le spécialiste
-compétent. Neuf spécialités, toutes internes au droit immobilier — bail
+compétent. Dix spécialités, toutes internes au droit immobilier — bail
 d'habitation, location courte durée, copropriété, achat-vente, travaux et
-malfaçons, urbanisme, voisinage, fiscalité du bien, sinistres et assurances.
+malfaçons, urbanisme, voisinage, fiscalité du bien, sinistres et assurances,
+et le métier de l'agent immobilier lui-même.
 
-### Écrit du côté du propriétaire
+### Deux publics, et le spécialiste reconnaît lequel lui parle
 
-C'est le public de Volume3D : bailleurs, loueurs en meublé de tourisme,
-copropriétaires, conciergeries. Ça ne change pas le droit, ça change le point
-de vue — « puis-je donner congé ? » et « mon propriétaire peut-il me donner
-congé ? » appellent la même règle et deux réponses différentes. Les exemples,
-le vocabulaire et les délais sont écrits de ce côté-là. Un locataire qui pose
-sa question obtient quand même une réponse juste : le spécialiste dit alors
-depuis quel côté il répond.
+**Les propriétaires** d'abord — c'est le public de Volume3D : bailleurs,
+loueurs en meublé de tourisme, copropriétaires. Ça ne change pas le droit, ça
+change le point de vue : « puis-je donner congé ? » et « mon propriétaire
+peut-il me donner congé ? » appellent la même règle et deux réponses
+différentes. Un locataire qui pose sa question obtient quand même une réponse
+juste : le spécialiste dit alors depuis quel côté il répond.
+
+**Les professionnels** ensuite : agents immobiliers, mandataires,
+négociateurs, gestionnaires. Ils changent trois choses. Ils connaissent le
+vocabulaire — les définitions leur font perdre du temps, jamais les conditions
+de forme. Ils travaillent sous contrainte : ce qu'ils veulent tient en la
+règle exacte, la pièce à réunir, et le risque pris s'ils passent outre. Et
+surtout **ils engagent leur responsabilité** là où un particulier ne risque
+que son affaire — d'où la consigne de leur dire ce qu'ils doivent écrire et
+conserver, pas seulement ce qu'ils doivent faire.
+
+C'est ce second public qui a fait apparaître une dixième spécialité, **le
+métier de l'agent immobilier** : mandat et registre, honoraires et
+exigibilité, mentions obligatoires d'une annonce, carte professionnelle et
+garantie financière, vigilance anti-blanchiment, devoir de conseil. Les neuf
+autres traitent le droit des biens de ses clients ; celle-là traite le sien,
+et c'est celui sur lequel il est attaqué.
 
 ### Neuf spécialistes, un seul modèle
 
-Il n'y a pas neuf modèles : il y a un modèle et neuf consignes. Ce qui
+Il n'y a pas dix modèles : il y a un modèle et dix consignes. Ce qui
 spécialise, c'est ce qu'on met devant lui — le périmètre exact, les textes
 mobilisables, les délais à signaler, et ce qu'il doit refuser de traiter. Ces
 quatre choses vivent dans **un seul fichier**, `lib/domaines.ts`, qui sert à la
@@ -500,7 +516,7 @@ aucun vocabulaire juridique.
 ### La conversation est la page
 
 `/juridique` n'est pas une page qui contient un chat : au premier envoi, le
-titre, la grille des neuf spécialités et les avertissements s'effacent, et le
+titre, la grille des dix spécialités et les avertissements s'effacent, et le
 fil prend leur place. Sans navigation — changer d'URL à cet instant coûterait
 un chargement au moment où quelqu'un attend sa réponse, et ferait perdre le
 fil au retour arrière.
@@ -542,6 +558,27 @@ pas sortir du droit immobilier** — une question de travail ou de famille est
 déclinée franchement —, et nommer l'interlocuteur réel : ADIL, point-justice,
 conciliateur, commissaire de justice, notaire, géomètre-expert, service
 urbanisme.
+
+### Deux choses qu'un professionnel rouvre plusieurs fois par semaine
+
+**L'aide-mémoire.** Chaque spécialité porte, à côté de ses délais, la liste de
+ce qu'il faut avoir sous les yeux *avant* d'agir : le mandat numéroté au
+registre et son double remis, les trois derniers procès-verbaux d'assemblée et
+le pré-état daté, l'attestation décennale valable à la date d'ouverture du
+chantier, la date de mise en recouvrement portée sur l'avis. Les délais disent
+quand il sera trop tard ; celui-ci dit ce qui manque encore. Il est affiché sur
+la fiche, dépliable en tête de conversation, et donné au modèle — avec la
+consigne de réclamer la pièce manquante au lieu de supposer qu'elle existe.
+
+**Le tableau des diagnostics.** Douze lignes, leur condition d'exigibilité et
+leur durée de validité, plus le calendrier des interdictions de louer selon la
+classe énergie. Il vit dans `lib/diagnostics.ts` et non dans la tête du modèle,
+et la raison tient en une phrase : une durée de validité est un fait
+vérifiable, pas une appréciation. Un modèle qui l'invente produit une réponse
+crédible et fausse ; un tableau se relit et se corrige. Il n'est donné qu'aux
+quatre spécialités qui le manipulent vraiment — ailleurs il occuperait la
+fenêtre sans servir. La règle qui l'accompagne partout : le rapport remis porte
+sa propre date de fin de validité, et c'est elle qui fait foi.
 
 ### Les documents déposés ne sont jamais conservés
 
@@ -1078,7 +1115,8 @@ lib/
   store.ts                     accès aux données (fichier JSON en dev, Supabase en prod)
   accounts.ts                  comptes clients, mots de passe, sessions
   assistant.ts                 invite système de l'assistant, garde-fous
-  domaines.ts                  les neuf spécialités : périmètre, textes, délais, mots-clés
+  domaines.ts                  les dix spécialités : périmètre, textes, délais, aide-mémoire
+  diagnostics.ts               le tableau des diagnostics et de leur validité, et le calendrier énergie
   juridique-copie.ts           la copie des pages, et son espace fine insécable
   aiguillage.ts                question → spécialité, en local, sans appel de modèle
   juriste.ts                   consigne des spécialistes, arbitrage, réponse (Claude)

@@ -50,7 +50,8 @@ export type DomaineId =
   | 'urbanisme'
   | 'voisinage'
   | 'fiscalite'
-  | 'sinistres';
+  | 'sinistres'
+  | 'profession';
 
 export interface Renvoi {
   /** La situation qui sort du périmètre, telle qu'un propriétaire la formulerait. */
@@ -72,6 +73,21 @@ export interface Domaine {
   sources: string[];
   /** Délais couperets. Le premier de la liste est le plus souvent décisif. */
   delais: string[];
+  /**
+   * L'aide-mémoire : ce qu'il faut avoir sous les yeux AVANT d'agir.
+   *
+   * Les délais disent quand il sera trop tard ; celui-ci dit ce qui manque
+   * encore. C'est la liste qu'un professionnel garde ouverte pendant un
+   * rendez-vous, et c'est aussi ce qui permet au spécialiste de demander la
+   * bonne pièce au lieu de supposer qu'elle existe.
+   */
+  verifications: string[];
+  /**
+   * Vrai si le tableau des diagnostics (lib/diagnostics.ts) fait partie du
+   * quotidien de cette spécialité : il est alors affiché sur la fiche et donné
+   * au modèle avec sa consigne.
+   */
+  diagnostics?: boolean;
   /**
    * Termes décisifs pour l'aiguillage : leur présence désigne le domaine à
    * elle seule. « décennale » ne veut dire qu'une chose.
@@ -125,6 +141,15 @@ export const DOMAINES: Domaine[] = [
       'Régularisation des charges : trois ans en arrière, pas davantage, et la même limite vaut pour le locataire qui réclame un trop-versé.',
       'Impayés : après un commandement de payer délivré par commissaire de justice, le locataire dispose d’un délai — six semaines depuis la loi de 2023 — pour régler avant que la clause résolutoire puisse jouer.',
     ],
+    verifications: [
+      'le bail écrit avec la notice d’information annexée, et l’état des lieux dressé le même jour en double exemplaire',
+      'le dossier de diagnostics à jour : DPE, état des risques, plomb, gaz, électricité selon le bien',
+      'la surface habitable au sens de la loi Boutin, portée au bail',
+      'le dépôt de garantie : un mois de loyer hors charges pour un vide, deux au plus pour un meublé',
+      'en zone d’encadrement : le loyer de référence majoré, et le complément de loyer justifié par écrit',
+      'pour un meublé : l’inventaire du mobilier, et la liste des équipements exigés',
+    ],
+    diagnostics: true,
     signaux: [
       'bail',
       'locataire',
@@ -209,6 +234,15 @@ export const DOMAINES: Domaine[] = [
       'Contester une décision d’assemblée générale interdisant la location : deux mois à compter de la notification du procès-verbal, et seulement si vous étiez opposant ou absent.',
       'Dégradation par un voyageur : les plateformes enferment la réclamation dans un délai très court, souvent avant l’arrivée du voyageur suivant. C’est un délai contractuel et non légal, mais il s’applique quand même — les photos se prennent le jour du départ.',
     ],
+    verifications: [
+      'le numéro d’enregistrement affiché sur chaque annonce, dans les communes qui l’imposent',
+      'ce que dit le règlement de copropriété : clause d’habitation bourgeoise, interdiction d’activité commerciale',
+      'la déclaration en mairie, et l’autorisation de changement d’usage si le bien n’est pas votre résidence principale',
+      'le classement du meublé de tourisme : il change l’abattement fiscal et la taxe de séjour',
+      'l’assurance : la garantie « location saisonnière » ne figure pas dans un contrat d’habitation ordinaire',
+      'un état des lieux photographique daté à chaque départ, pris avant l’arrivée suivante',
+    ],
+    diagnostics: true,
     signaux: [
       'airbnb',
       'booking',
@@ -287,6 +321,14 @@ export const DOMAINES: Domaine[] = [
       'Demande d’inscription d’une résolution à l’ordre du jour : elle doit parvenir au syndic assez tôt pour figurer dans la convocation — en pratique, dès la clôture de l’assemblée précédente.',
       'Charges impayées : le syndicat peut les réclamer cinq ans en arrière, et le copropriétaire dispose du même délai pour contester une répartition erronée.',
     ],
+    verifications: [
+      'la convocation reçue vingt et un jours avant, avec les pièces exigées pour chaque résolution',
+      'votre position au procès-verbal : seuls les opposants et les absents peuvent contester',
+      'la majorité applicable à la résolution — c’est elle qui décide de la validité du vote',
+      'le règlement de copropriété et l’état descriptif de division, avant toute interprétation',
+      'les tantièmes de votre lot pour la clé de répartition en cause',
+      'le carnet d’entretien et le dernier diagnostic technique global',
+    ],
     signaux: [
       'copropriete',
       'syndic',
@@ -364,6 +406,15 @@ export const DOMAINES: Domaine[] = [
       'Droit de préemption de la commune : deux mois pour répondre à la déclaration d’intention d’aliéner adressée par le notaire ; le silence vaut renonciation.',
       'Vente d’un logement loué vide : le congé pour vente vaut offre au locataire et se donne six mois avant l’échéance du bail, avec un droit de préemption ouvert deux mois.',
     ],
+    verifications: [
+      'le dossier de diagnostics complet et en cours de validité, chaque rapport portant sa date',
+      'le titre de propriété, la surface Carrez en copropriété, et les servitudes publiées',
+      'pour un lot de copropriété : les trois derniers procès-verbaux d’assemblée, le pré-état daté, les travaux votés',
+      'l’état des risques daté de moins de six mois',
+      'les conditions suspensives : leur délai, leur forme de notification, et qui doit notifier',
+      'l’existence d’un droit de préemption : commune, locataire en place, indivisaires',
+    ],
+    diagnostics: true,
     signaux: [
       'compromis',
       'promesse de vente',
@@ -379,7 +430,6 @@ export const DOMAINES: Domaine[] = [
       'declaration d intention d aliener',
       'frais de notaire',
       'diagnostic obligatoire',
-      'mandat exclusif',
       'signature chez le notaire',
       'refus de pret',
       'conge pour vente',
@@ -441,6 +491,14 @@ export const DOMAINES: Domaine[] = [
       'Garantie de bon fonctionnement : deux ans, pour les éléments d’équipement dissociables — volets, chaudière, robinetterie.',
       'Assurance dommages-ouvrage : elle se souscrit AVANT l’ouverture du chantier. Une fois le sinistre déclaré, l’assureur a soixante jours pour se prononcer et quatre-vingt-dix pour proposer une indemnité.',
       'Les réserves se consignent au procès-verbal de réception le jour même : ce qui n’y figure pas est réputé accepté, sauf vice caché.',
+    ],
+    verifications: [
+      'l’attestation d’assurance décennale de l’entreprise, valable à la date d’ouverture du chantier',
+      'le devis signé : nature des travaux, prix ferme ou révisable, délai, échéancier',
+      'la dommages-ouvrage souscrite AVANT le premier coup de pioche',
+      'le procès-verbal de réception, avec les réserves écrites le jour même',
+      'des photos datées avant, pendant et après — elles valent preuve',
+      'pour une aide à la rénovation : la mention RGE portée sur le devis, et non seulement sur le site de l’entreprise',
     ],
     signaux: [
       'decennale',
@@ -520,6 +578,14 @@ export const DOMAINES: Domaine[] = [
       'Validité du permis : trois ans pour ouvrir le chantier, prorogeable deux fois un an sur demande déposée avant l’expiration.',
       'Après la déclaration d’achèvement, la mairie a trois mois pour contester la conformité — cinq mois en secteur protégé.',
     ],
+    verifications: [
+      'la règle applicable à votre parcelle dans le PLU, et non la règle générale de la commune',
+      'le seuil de surface qui décide entre déclaration préalable et permis',
+      'le panneau d’affichage sur le terrain, photographié et daté dès le premier jour',
+      'le certificat d’urbanisme, qui fige les règles applicables pendant dix-huit mois',
+      'en secteur protégé : l’avis de l’architecte des bâtiments de France, qui allonge l’instruction',
+      'la déclaration attestant l’achèvement, et le délai de contestation de la conformité',
+    ],
     signaux: [
       'permis',
       'declaration prealable',
@@ -597,6 +663,13 @@ export const DOMAINES: Domaine[] = [
       'Servitude de passage : elle s’acquiert par trente ans d’usage continu et apparent, ou par titre. Laisser passer sans rien écrire pendant des années n’est jamais neutre.',
       'Avant toute action en justice pour un litige de voisinage de faible montant, une tentative de conciliation ou de médiation est obligatoire : sans elle, la demande est déclarée irrecevable.',
     ],
+    verifications: [
+      'des preuves datées : photos, constat de commissaire de justice, témoignages écrits et signés',
+      'le titre de propriété et le plan cadastral, avant de discuter d’une limite',
+      'les usages locaux de votre département : ils l’emportent parfois sur les distances générales',
+      'la tentative amiable préalable — sans elle, la demande est déclarée irrecevable',
+      'l’existence d’une servitude publiée au service de la publicité foncière',
+    ],
     signaux: [
       'voisin',
       'trouble anormal',
@@ -671,6 +744,14 @@ export const DOMAINES: Domaine[] = [
       'Option pour le régime réel : elle s’exerce avant la date limite de déclaration et engage pour l’année — trois ans en revenus fonciers, avec reconduction tacite.',
       'Début d’une activité de location meublée : la déclaration auprès du guichet unique se fait dans les quinze jours, faute de quoi le numéro SIRET manque au moment de déclarer.',
       'Droit de reprise de l’administration : trois ans en principe, bien davantage en cas d’activité occulte ou de revenus non déclarés.',
+    ],
+    verifications: [
+      'le régime réellement appliqué l’an dernier, et l’année où l’option a été exercée',
+      'le montant exact des recettes encaissées : les seuils se jouent à l’euro près',
+      'les charges déductibles justifiées, factures à l’appui et au nom du propriétaire',
+      'pour un meublé : le numéro SIRET et la déclaration au guichet unique',
+      'la date de mise en recouvrement portée sur l’avis : c’est elle qui ouvre le délai de réclamation',
+      'le classement du meublé de tourisme, qui change l’abattement applicable',
     ],
     signaux: [
       'lmnp',
@@ -749,6 +830,14 @@ export const DOMAINES: Domaine[] = [
       'Dégât des eaux courant : la convention entre assureurs organise la prise en charge sous des plafonds précis ; au-delà, chacun reprend ses recours, et l’expertise devient contradictoire.',
       'Contre-expertise : elle se demande avant d’accepter l’indemnité proposée. Un accord signé sur un montant se défait très difficilement.',
     ],
+    verifications: [
+      'la date exacte du sinistre : c’est elle qui fait courir la prescription de deux ans',
+      'les garanties, plafonds et franchises de votre contrat, lus avant d’appeler',
+      'des photos datées, et la conservation des éléments endommagés jusqu’à l’expertise',
+      'des devis de remise en état obtenus avant le passage de l’expert',
+      'le constat amiable de dégât des eaux, signé des deux parties',
+      'la déclaration à l’assureur dans les cinq jours ouvrés, deux pour un vol',
+    ],
     signaux: [
       'degat des eaux',
       'sinistre',
@@ -791,6 +880,96 @@ export const DOMAINES: Domaine[] = [
       'La garantie loyers impayés refuse de jouer parce que le dossier était incomplet.',
     ],
   },
+  {
+    id: 'profession',
+    label: 'Métier de l’agent immobilier',
+    resume: 'Mandat, honoraires, annonces, carte professionnelle, responsabilité.',
+    matieres: [
+      'mandat de vente, de recherche ou de gestion : forme, mentions, registre, durée',
+      'clause d’exclusivité, dénonciation, renouvellement tacite',
+      'honoraires : montant, qui les paie, exigibilité, barème affiché',
+      'annonces et publicité : mentions obligatoires, prix, classe énergie, honoraires',
+      'carte professionnelle, garantie financière, assurance de responsabilité, formation continue',
+      'devoir de conseil et d’information : ce qu’il faut dire, écrire et conserver',
+      'lutte anti-blanchiment : vigilance, identité du client, déclaration à Tracfin',
+      'délégation de mandat, réseaux de mandataires, agents commerciaux',
+      'litiges d’honoraires : vente hors mandat, acquéreur présenté, mandat expiré',
+    ],
+    renvois: [
+      { quand: 'le contrat de vente lui-même et ses conditions', vers: 'achat-vente' },
+      { quand: 'la rédaction d’un bail ou un litige avec le locataire', vers: 'bail-habitation' },
+      { quand: 'la location en meublé de tourisme et ses autorisations', vers: 'courte-duree' },
+      { quand: 'la fiscalité du bien géré', vers: 'fiscalite' },
+    ],
+    sources: [
+      'la loi Hoguet du 2 janvier 1970 et son décret d’application de 1972',
+      'la loi ALUR, pour la formation continue et les règles de déontologie',
+      'le code de la consommation, pour la publicité et le démarchage',
+      'le code monétaire et financier, pour la lutte anti-blanchiment',
+      'le code civil, pour le mandat et la responsabilité contractuelle',
+    ],
+    delais: [
+      'Le mandat doit être écrit, daté, numéroté au registre des mandats et remis en double exemplaire. Un mandat non conforme est nul et la commission n’est pas due : c’est la première chose qu’un juge vérifie, avant même de lire le dossier.',
+      'Mandat exclusif : passé trois mois, le client peut le dénoncer à tout moment par lettre recommandée, avec quinze jours de préavis.',
+      'Mandat signé ailleurs qu’à l’agence, au domicile du client ou à distance : quatorze jours de rétractation, et aucune prestation ne peut être facturée si elle a commencé avant la fin du délai sans demande écrite.',
+      'La commission n’est exigible qu’à la signature de l’acte authentique. Aucune somme, sous aucune forme, ne peut être perçue avant — pas même une provision.',
+      'Formation continue : quatorze heures par an, ou quarante-deux heures sur trois ans. C’est la condition du renouvellement de la carte professionnelle, qui dure trois ans.',
+    ],
+    verifications: [
+      'le mandat écrit, daté, numéroté au registre, et le double effectivement remis au client',
+      'la durée du mandat, sa clause d’exclusivité et sa date d’expiration exacte',
+      'le barème d’honoraires affiché, et l’annonce qui indique clairement qui les paie',
+      'la carte professionnelle, la garantie financière et l’assurance de responsabilité, toutes en cours de validité',
+      'la vigilance anti-blanchiment : identité du client vérifiée, origine des fonds, dossier conservé',
+      'la trace écrite du devoir de conseil — ce que vous avez dit, à qui, et quand',
+    ],
+    diagnostics: true,
+    signaux: [
+      'mandat de vente',
+      'mandat exclusif',
+      'carte professionnelle',
+      'loi hoguet',
+      'registre des mandats',
+      'honoraires d agence',
+      'commission d agence',
+      'garantie financiere',
+      'tracfin',
+      'devoir de conseil',
+      'mandataire immobilier',
+      'delegation de mandat',
+      'bareme d honoraires',
+      'formation continue',
+      'negociateur',
+      'agent commercial immobilier',
+      'annonce immobiliere',
+      'loi alur',
+      'mentions obligatoires',
+      'acte authentique honoraires',
+    ],
+    motsCles: [
+      'agence',
+      'agent',
+      'mandat',
+      'honoraires',
+      'commission',
+      'estimation',
+      'prospection',
+      'vitrine',
+      'reseau',
+      'publicite',
+      'annonce',
+      'client',
+      'vendeur',
+      'acquereur',
+      'visite',
+    ],
+    exemples: [
+      'Mon mandat exclusif expire dans un mois et le vendeur traite en direct avec un acquéreur que j’ai présenté.',
+      'Quelles mentions sont obligatoires sur une annonce de vente ?',
+      'Le vendeur refuse de payer mes honoraires après la signature chez le notaire.',
+      'Que dois-je vérifier avant de faire signer un compromis à mes clients ?',
+    ],
+  },
 ];
 
 const PAR_ID = new Map<DomaineId, Domaine>(DOMAINES.map((domaine) => [domaine.id, domaine]));
@@ -802,7 +981,7 @@ export function estDomaineId(value: unknown): value is DomaineId {
 /** Lève si l'identifiant est inconnu : un domaine manquant est un bug, pas un cas. */
 export function domaine(id: DomaineId): Domaine {
   const found = PAR_ID.get(id);
-  if (!found) throw new Error(`Domaine inconnu : ${id}`);
+  if (!found) throw new Error(`Domaine inconnu : ${id}`);
   return found;
 }
 

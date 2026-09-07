@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
  * la formuler pour y arriver.
  *
  * Seul le strict nécessaire des fiches descend jusqu'au navigateur — nom,
- * résumé, délais. Le reste du catalogue (mots-clés d'aiguillage, textes de
+ * résumé, délais, aide-mémoire. Le reste du catalogue (mots-clés d'aiguillage, textes de
  * référence, périmètre donné au modèle) pèse cinq fois plus et ne sert qu'au
  * serveur.
  */
@@ -32,11 +32,15 @@ export default async function AccueilJuridique() {
     label: fiche.label,
     resume: fiche.resume,
     delais: fiche.delais,
+    verifications: fiche.verifications,
   }));
 
   /* Quatre exemples pris dans quatre spécialités différentes : ils montrent
-     l'étendue du périmètre en même temps que le niveau de précision utile. */
-  const exemples = (['bail-habitation', 'courte-duree', 'copropriete', 'travaux'] as const).map(
+     l'étendue du périmètre en même temps que le niveau de précision utile. Le
+     dernier vient du métier — c'est le seul moyen qu'un agent immobilier
+     comprenne, sans lire la grille, que sa propre réglementation est traitée
+     ici et pas seulement celle de ses clients. */
+  const exemples = (['bail-habitation', 'courte-duree', 'travaux', 'profession'] as const).map(
     (id) => domaine(id).exemples[0],
   );
 
