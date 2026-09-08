@@ -43,7 +43,11 @@ interface Reponse {
   label?: string;
   pistes?: Piste[];
   consultationId?: string;
+  /** Ce qu'il reste de questions ce mois-ci. `null` quand c'est illimité. */
+  restant?: number | null;
   error?: string;
+  /** Vrai quand le refus vient d'un quota : la page propose alors une issue. */
+  abonnement?: boolean;
 }
 
 export function useConsultation({
@@ -58,6 +62,10 @@ export function useConsultation({
   const [consultationId, setConsultationId] = useState(consultationInitiale);
   const [specialite, setSpecialite] = useState({ id: domaine, label });
   const [pistes, setPistes] = useState<Piste[]>([]);
+  const [restant, setRestant] = useState<number | null>(null);
+  /* Vrai quand la dernière erreur est un quota atteint plutôt qu'une panne :
+     la page montre alors la sortie au lieu d'un simple message rouge. */
+  const [quotaAtteint, setQuotaAtteint] = useState(false);
 
   /* `tours` et la spécialité sont lus dans `demander` sans figurer dans ses
      dépendances : les références donnent la valeur courante sans reconstruire
@@ -93,6 +101,7 @@ export function useConsultation({
       setPending(true);
       setErreur('');
       setPistes([]);
+      setQuotaAtteint(false);
 
       try {
         let requete: RequestInit;
@@ -119,11 +128,15 @@ export function useConsultation({
 
         const reponse = await fetch('/api/juridique/consultation', requete);
         const corps = (await reponse.json()) as Reponse;
-        if (!reponse.ok) throw new Error(corps.error ?? 'Réponse impossible.');
+        if (!reponse.ok) {
+          setQuotaAtteint(Boolean(corps.abonnement));
+          throw new Error(corps.error ?? 'Réponse impossible.');
+        }
 
         if (corps.consultationId) setConsultationId(corps.consultationId);
         if (corps.domaine) setSpecialite({ id: corps.domaine, label: corps.label ?? '' });
         setPistes(corps.pistes ?? []);
+        setRestant(corps.restant ?? null);
         setTours([...suite, { role: 'assistant', content: corps.reponse ?? '' }]);
       } catch (cause) {
         /* La question reste dans le fil : la retirer donnerait l'impression
@@ -141,6 +154,7 @@ export function useConsultation({
     setTours([]);
     setPistes([]);
     setErreur('');
+    setQuotaAtteint(false);
     setConsultationId('');
     setSpecialite({ id: domaine, label });
   }, [domaine, label]);
@@ -150,6 +164,8 @@ export function useConsultation({
     pending,
     erreur,
     setErreur,
+    quotaAtteint,
+    restant,
     consultationId,
     specialite,
     pistes,

@@ -22,7 +22,12 @@ export interface Paragraphe {
 }
 
 export const ACCUEIL = {
+  oeil: 'Assistant juridique · droit immobilier',
   titre: 'Une question sur votre bien ? Elle ira au bon spécialiste.',
+  /* Le titre coupé là où il doit l'être. Laissé au navigateur, il place le
+     point d'interrogation en début de ligne une fois sur deux selon la
+     largeur — et `text-wrap: balance` n'y peut rien. */
+  titreLignes: ['Une question sur votre bien ?', 'Elle ira au bon spécialiste.'],
   lede:
     'Dix spécialités du droit immobilier, pour ceux qui en vivent : propriétaires bailleurs, loueurs en meublé de tourisme, copropriétaires — et les professionnels qui les accompagnent, agents, mandataires, gestionnaires. Chacune avec son périmètre, ses délais couperets et son aide-mémoire. Racontez votre situation comme vous la raconteriez à quelqu’un.',
   grilleTitre: 'Ou choisissez directement',
@@ -30,23 +35,25 @@ export const ACCUEIL = {
     'Chaque fiche indique ce que le spécialiste traite, ce qu’il ne traite pas, les délais à ne pas manquer et les pièces à réunir avant d’agir.',
   limitesTitre: 'Ce que cet assistant est, et ce qu’il n’est pas',
   limitesSous: 'Trois limites, dites avant plutôt qu’après.',
+  piedMention:
+    'Information juridique, et non consultation d’avocat. Les réponses ne tiennent compte que de ce qui est écrit dans la conversation. En cas de délai en cours, prenez conseil sans attendre : l’ADIL renseigne gratuitement sur le logement, un point-justice reçoit sans condition de ressources.',
 } as const;
 
 export const LIMITES: Paragraphe[] = [
   {
-    amorce: 'Il donne une information juridique',
+    amorce: 'Il donne une information juridique.',
     suite:
-      ' : ce que dit la règle, ce que vous pouvez faire, dans quel délai, et vers qui vous tourner. C’est utile pour comprendre une situation, préparer un rendez-vous, ou savoir s’il y a urgence.',
+      'Ce que dit la règle, ce que vous pouvez faire, dans quel délai, et vers qui vous tourner. C’est utile pour comprendre une situation, préparer un rendez-vous, ou savoir s’il y a urgence.',
   },
   {
     amorce: 'Il ne remplace pas un avocat.',
     suite:
-      ' Il ne connaît de votre dossier que ce que vous lui en dites, il ne peut ni vous représenter, ni signer, ni agir avant l’expiration d’un délai. L’ADIL de votre département renseigne gratuitement sur le logement, et un point-justice reçoit sans condition de ressources pour un premier conseil.',
+      'Il ne connaît de votre dossier que ce que vous lui en dites, il ne peut ni vous représenter, ni signer, ni agir avant l’expiration d’un délai. L’ADIL de votre département renseigne gratuitement sur le logement, et un point-justice reçoit sans condition de ressources pour un premier conseil.',
   },
   {
     amorce: 'Il ne cite pas de numéros d’article.',
     suite:
-      ' C’est délibéré : une référence inexacte a l’apparence exacte d’une vraie et se retrouve recopiée dans un courrier. Il nomme les textes, il ne les numérote pas.',
+      'C’est délibéré : une référence inexacte a l’apparence exacte d’une vraie et se retrouve recopiée dans un courrier. Il nomme les textes, il ne les numérote pas.',
   },
 ];
 

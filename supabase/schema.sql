@@ -207,6 +207,19 @@ create table if not exists attention (
 create index if not exists attention_property on attention("propertyId");
 create index if not exists attention_day on attention(day);
 
+-- Formule de l'assistant juridique. Distincte de "plan", qui plafonne le
+-- nombre de biens du service de visites : les deux produits se vendent
+-- séparément. Une valeur vide vaut « Découverte ».
+alter table accounts add column if not exists abonnement text not null default 'decouverte';
+alter table accounts add column if not exists "abonnementDepuis" text not null default '';
+
+-- Le profil déclaré à l'ouverture du compte : d'où la personne parle. Il sert
+-- au spécialiste, pas à un fichier commercial. Les trois champs sont
+-- facultatifs — un profil faux serait pire qu'un profil vide.
+alter table accounts add column if not exists metier text not null default '';
+alter table accounts add column if not exists volume text not null default '';
+alter table accounts add column if not exists usage  text not null default '';
+
 -- -----------------------------------------------------------------------------
 -- Assistant juridique
 --

@@ -106,7 +106,10 @@ test('la copie du catalogue porte ses espaces insécables', () => {
      été sortie du JSX précisément parce que le JSX ramenait l'espace fine à
      une espace ordinaire. Si elle y retournait, ce test le dirait. */
   for (const [nom, bloc] of Object.entries({ ACCUEIL, SPECIALISTE, DOSSIERS, ORIENTATION })) {
-    for (const [cle, texte] of Object.entries(bloc)) verifier(`${nom}.${cle}`, texte);
+    for (const [cle, valeur] of Object.entries(bloc)) {
+      if (Array.isArray(valeur)) valeur.forEach((t, i) => verifier(`${nom}.${cle} ${i}`, t));
+      else verifier(`${nom}.${cle}`, valeur);
+    }
   }
   LIMITES.forEach((limite, i) => {
     verifier(`LIMITES ${i} · amorce`, limite.amorce);

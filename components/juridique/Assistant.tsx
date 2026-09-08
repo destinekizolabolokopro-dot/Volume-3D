@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Alerte } from '@/components/juridique/Alerte';
 import { Composeur } from '@/components/juridique/Composeur';
 import { Fil } from '@/components/juridique/Fil';
 import { useConsultation } from '@/components/juridique/useConsultation';
@@ -44,7 +45,8 @@ interface Props {
 }
 
 export function Assistant({ fiches, exemples, connecte, actif, children }: Props) {
-  const { tours, pending, erreur, specialite, pistes, demander, recommencer } = useConsultation({});
+  const { tours, pending, erreur, quotaAtteint, restant, specialite, pistes, demander, recommencer } =
+    useConsultation({});
   const [delaisOuverts, setDelaisOuverts] = useState(false);
   const finRef = useRef<HTMLDivElement>(null);
   /* La dernière question posée, pour pouvoir la reposer à un autre
@@ -61,7 +63,12 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
   if (!enConversation) {
     return (
       <main className="jur-page jur-accueil">
-        <h1 className="jur-h1">{ACCUEIL.titre}</h1>
+        <p className="jur-oeil">{ACCUEIL.oeil}</p>
+        <h1 className="jur-h1">
+          {ACCUEIL.titreLignes.map((ligne) => (
+            <span key={ligne}>{ligne}</span>
+          ))}
+        </h1>
         <p className="jur-lede">{ACCUEIL.lede}</p>
 
         <Composeur
@@ -76,7 +83,11 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
 
         <p className="jur-invite">{ORIENTATION.invite}</p>
 
-        {erreur && <p className="jur-erreur jur-erreur-ask">{erreur}</p>}
+        {erreur && (
+          <div className="jur-erreur-ask">
+            <Alerte message={erreur} quota={quotaAtteint} />
+          </div>
+        )}
 
         <div className="jur-suggestions jur-suggestions-accueil">
           {exemples.map((exemple) => (
@@ -162,7 +173,7 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
         </p>
       )}
 
-      {erreur && <p className="jur-erreur">{erreur}</p>}
+      {erreur && <Alerte message={erreur} quota={quotaAtteint} />}
 
       <Composeur
         onEnvoyer={(question, piece) => void demander(question, piece)}
@@ -171,6 +182,15 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
         connecte={connecte}
         placeholder="Précisez, ou posez la question suivante."
       />
+
+      {restant !== null && (
+        <p className="jur-restant">
+          {restant > 0
+            ? `Il vous reste ${restant} question${restant > 1 ? 's' : ''} ce mois-ci.`
+            : 'C’était votre dernière question du mois.'}
+          <a href="/juridique/abonnement">Changer de formule</a>
+        </p>
+      )}
     </main>
   );
 }

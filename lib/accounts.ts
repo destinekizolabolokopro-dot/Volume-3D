@@ -118,6 +118,8 @@ export async function createAccount(input: {
   company: string;
   phone: string;
   plan: Plan;
+  /** Formule juridique à l'ouverture. « Découverte » par défaut. */
+  abonnement?: string;
 }): Promise<Account> {
   const account: Account = {
     id: randomId(),
@@ -129,6 +131,16 @@ export async function createAccount(input: {
     plan: input.plan,
     status: 'active',
     createdAt: new Date().toISOString(),
+    /* Tout compte ouvre sur la formule gratuite de l'assistant juridique,
+       qu'il vienne des visites 3D ou du droit : les deux produits partagent
+       le compte, pas la facturation. */
+    abonnement: input.abonnement ?? 'decouverte',
+    abonnementDepuis: new Date().toISOString(),
+    /* Le profil est demandé juste après, sur un écran à lui : trois questions
+       à l'inscription font trois occasions d'abandonner. */
+    metier: '',
+    volume: '',
+    usage: '',
   };
   await getStore().insert('accounts', account);
   return account;

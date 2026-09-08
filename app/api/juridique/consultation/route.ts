@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
+import { QUOTA_ANONYME, formuleDuCompte } from '@/lib/abonnements';
 import { currentAccount } from '@/lib/accounts';
 import { cadence, origine } from '@/lib/cadence';
 import {
   ajouterTour,
   consultationDuCompte,
   ouvrirConsultation,
+  questionsDuMois,
   toursDeConsultation,
 } from '@/lib/consultations';
 import { domaine as ficheDomaine, estDomaineId, type DomaineId } from '@/lib/domaines';
 import { estJuristeConfigure, orienter, repondre, type Echange } from '@/lib/juriste';
 import { PieceRefusee, lirePiece, type Piece } from '@/lib/piece';
+import type { Account } from '@/lib/types';
 import { ValidationError, text } from '@/lib/validation';
 
 /**
@@ -106,6 +109,86 @@ const SANS_PISTE = [
   'Cet assistant ne traite que le droit immobilier : une question de travail, de famille ou de succession n’y trouvera pas de réponse.',
 ].join('\n');
 
+/* ------------------------------------------------------------------ quota --- */
+
+/** Sans compte, le quota se compte à la journée : il n'y a pas de mois à qui l'attribuer. */
+const JOURNEE = cadence(QUOTA_ANONYME, 24 * 60 * 60 * 1000);
+
+interface Verdict {
+  /** Renseigné quand la question ne doit pas partir. */
+  refus?: { statut: number; message: string; abonnement: boolean };
+  /** Ce qu'il restera après cette question. `null` quand c'est illimité. */
+  restant: number | null;
+}
+
+/**
+ * Le quota se vérifie AVANT l'appel au modèle.
+ *
+ * L'ordre n'est pas indifférent : refuser après avoir produit la réponse
+ * reviendrait à la facturer sans la rendre. Et le message de refus dit ce qui
+ * manque et ce que ça coûte — un mur qui se contente d'annoncer une limite
+ * fait perdre la personne au lieu de lui vendre quelque chose.
+ */
+async function evaluerQuota(
+  account: Account | null,
+  request: Request,
+  avecPiece: boolean,
+): Promise<Verdict> {
+  if (!account) {
+    if (avecPiece) {
+      return {
+        restant: null,
+        refus: {
+          statut: 402,
+          abonnement: true,
+          message:
+            'Le dépôt d’un document demande un compte : la pièce doit être rattachée à quelqu’un, même si elle n’est jamais conservée. La création de compte est gratuite.',
+        },
+      };
+    }
+    if (JOURNEE.depasse(origine(request))) {
+      return {
+        restant: 0,
+        refus: {
+          statut: 402,
+          abonnement: true,
+          message: `Sans compte, l’assistant répond à ${QUOTA_ANONYME} questions par jour. Créez un compte gratuit pour en poser dix par mois, garder vos consultations, et les rouvrir plus tard.`,
+        },
+      };
+    }
+    return { restant: null };
+  }
+
+  const formule = formuleDuCompte(account.abonnement);
+
+  if (avecPiece && !formule.pieces) {
+    return {
+      restant: null,
+      refus: {
+        statut: 402,
+        abonnement: true,
+        message: `Le dépôt de documents n’est pas inclus dans la formule ${formule.nom}. Il l’est à partir de la formule Pro — bail, devis, procès-verbal d’assemblée, arrêté.`,
+      },
+    };
+  }
+
+  if (!Number.isFinite(formule.quota)) return { restant: null };
+
+  const utilisees = await questionsDuMois(account.id);
+  if (utilisees >= formule.quota) {
+    return {
+      restant: 0,
+      refus: {
+        statut: 402,
+        abonnement: true,
+        message: `Vous avez posé vos ${formule.quota} questions du mois avec la formule ${formule.nom}. Le compteur repart le 1ᵉʳ du mois prochain, et une formule supérieure le lève dès maintenant.`,
+      },
+    };
+  }
+
+  return { restant: formule.quota - utilisees - 1 };
+}
+
 export async function POST(request: Request) {
   try {
     if (!estJuristeConfigure()) {
@@ -123,6 +206,14 @@ export async function POST(request: Request) {
 
     const demande = await lireDemande(request);
     const account = await currentAccount();
+
+    const quota = await evaluerQuota(account, request, Boolean(demande.piece));
+    if (quota.refus) {
+      return NextResponse.json(
+        { error: quota.refus.message, abonnement: quota.refus.abonnement },
+        { status: quota.refus.statut },
+      );
+    }
 
     /* Le fil de référence : la base si la personne est connectée et que la
        consultation lui appartient, sinon ce que le navigateur a gardé. */
@@ -181,7 +272,7 @@ export async function POST(request: Request) {
       demande.domaine = orientation.domaine;
     }
 
-    const reponse = await repondre(demande.domaine, historique, demande.piece);
+    const reponse = await repondre(demande.domaine, historique, demande.piece, account);
 
     if (account) {
       if (!consultation) {
@@ -205,6 +296,10 @@ export async function POST(request: Request) {
       /* Le nom du fichier est renvoyé pour que la page l'affiche dans le fil ;
          il n'y a rien d'autre à en garder. */
       piece: demande.piece?.nom ?? '',
+      /* Ce qu'il reste après cette question. La page l'affiche sous le champ :
+         un compteur qu'on découvre au moment du refus est une mauvaise
+         surprise, un compteur qu'on voit descendre est une information. */
+      restant: quota.restant,
     });
   } catch (cause) {
     if (cause instanceof PieceRefusee || cause instanceof ValidationError) {

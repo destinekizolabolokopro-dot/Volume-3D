@@ -22,6 +22,8 @@ un loyer mensuel mais le nombre de biens qu'il peut tenir.
 | **Rendez-vous** | `/admin/rendez-vous` | Vous seul. Ce que le site a pris comme rendez-vous. |
 | **Visite publique** | `/v/{slug}` | Les voyageurs, sans compte, avec assistant. |
 | **Assistant juridique** | `/juridique` | Le public. Dix spécialités du droit immobilier, sans compte. |
+| **Formules** | `/juridique/abonnement` | Le public. Trois formules, dont une gratuite. |
+| **Compte juridique** | `/juridique/compte` | Le client. Sa formule, sa consommation, son profil. |
 | **Aperçu de démarchage** | `/demo/{token}` | Un prospect précis, en privé, temporairement. |
 
 
@@ -580,6 +582,84 @@ quatre spécialités qui le manipulent vraiment — ailleurs il occuperait la
 fenêtre sans servir. La règle qui l'accompagne partout : le rapport remis porte
 sa propre date de fin de validité, et c'est elle qui fait foi.
 
+### Compte, formules, et le quota qui se voit descendre
+
+Trois formules et pas quatre — au-delà, on ne choisit plus, on hésite. La
+médiane est marquée : elle existe autant pour être vendue que pour rendre la
+haute lisible. Sans compte, l'assistant répond à trois questions par jour et
+par adresse ; un compte gratuit en donne dix par mois et conserve les
+consultations ; les formules payantes lèvent la limite et ouvrent le dépôt de
+documents.
+
+Le quota se vérifie **avant** l'appel au modèle — refuser après avoir produit
+la réponse reviendrait à la facturer sans la rendre — et il se compte en
+relisant les messages du mois plutôt qu'en tenant un compteur. Un compteur
+peut dériver de la réalité, et il faudrait alors décider laquelle des deux
+valeurs fait foi ; ici, effacer une consultation rend vraiment ses questions.
+Ce qu'il reste s'affiche sous le champ après chaque réponse : un quota qu'on
+découvre au moment où il bloque est une mauvaise surprise, un quota qu'on voit
+descendre est une information.
+
+Les comptes sont ceux de Volume3D — même table, même cookie, même empreinte
+scrypt — mais la formule juridique est un champ à part : les deux produits se
+vendent séparément, et un client peut n'avoir que l'un des deux.
+
+**Aucun prestataire de paiement n'est branché**, et le site l'écrit sur les
+deux écrans qui proposent une formule. Le changement est immédiat et gratuit.
+Simuler une page de carte bancaire pour une caisse qui n'existe pas serait la
+seule chose vraiment malhonnête à faire ici. Le jour où `STRIPE_SECRET_KEY`
+existe, c'est `changerFormule` dans `app/juridique/compte/actions.ts` qui
+redirige vers le paiement au lieu d'écrire directement — les formules, les
+quotas et leur application sont déjà en place.
+
+### Trois questions posées une fois
+
+À l'ouverture du compte, un écran demande d'où la personne parle : son métier,
+le nombre de biens qu'elle suit, ce qu'elle vient chercher. Le socle
+distinguait déjà les propriétaires des professionnels, mais il devait le
+deviner aux mots employés — deviner marche une fois sur deux, demander marche
+à tous les coups.
+
+Tout y est facultatif, et l'écran le dit sans le cacher en gris clair : un
+questionnaire qu'on ne peut pas éviter se remplit au hasard, et un profil faux
+oriente les réponses dans le mauvais sens pendant des mois. Des cartes
+cliquables, pas des menus déroulants : on voit tout d'un coup, et la cible
+fait quarante-quatre pixels au doigt.
+
+Le profil est donné au spécialiste **après** le point de mise en cache, et
+c'est tout l'intérêt : la consigne du domaine ne change jamais et se facture
+une fois, le profil change à chaque personne et n'invalide rien. Il dit d'où
+la personne parle, pas ce qui lui arrive — s'il contredit ce qu'elle écrit,
+c'est ce qu'elle écrit qui gagne.
+
+### La couche esthétique, et ses quatre partis pris
+
+Ni palette ni fonte nouvelles : les jetons de `globals.css` restent la seule
+source de couleur, Inter la seule famille. Ce qui change, c'est la façon de
+s'en servir.
+
+1. **Un seul objectif par écran.** Les pages qui portent un seul appel à
+   l'action convertissent nettement mieux que celles qui en portent cinq —
+   c'est la mesure la plus constante du métier. L'accueil ne propose donc
+   qu'une chose : écrire sa question. Formules, compte et fiches sont dans la
+   barre, pas dans le chemin.
+2. **De l'air, puis du contraste.** Le fond clair domine ; deux moments
+   seulement basculent en sombre, la bande de clôture et le pied. Un site
+   entièrement sombre fatigue sur des textes longs, un site entièrement clair
+   n'a pas de colonne vertébrale.
+3. **Le trait plutôt que l'ombre.** Filets fins, bordures nettes, une seule
+   ombre franche — sous le champ d'accueil, c'est-à-dire sous la seule chose
+   qu'on demande de faire.
+4. **Un motif qui dit d'où l'on vient.** Le bandeau porte une trame de lignes
+   très pâle : le papier millimétré du dessin d'architecture, seul rappel
+   visuel entre cet assistant et les visites 3D qui l'hébergent. Aucune image,
+   deux dégradés répétés.
+
+Les cartes de spécialité sont numérotées : dix cartes sans numéro font une
+liste, dix cartes numérotées font un sommaire. Et le titre d'accueil est coupé
+dans la copie, pas par le navigateur — laissé à `text-wrap: balance`, le point
+d'interrogation se retrouvait en début de ligne une fois sur deux.
+
 ### Les documents déposés ne sont jamais conservés
 
 On peut joindre un bail, un devis, un procès-verbal d'assemblée, un arrêté —
@@ -1068,7 +1148,7 @@ app/
     logements/[id]/            éditeur de visite
   editor.css                   éditeur de visite, partagé admin / espace client
     rendez-vous/               les rendez-vous pris depuis le site
-  juridique/                   assistant juridique : accueil, fiche d'une spécialité, dossiers
+  juridique/                   assistant juridique : accueil, fiche, dossiers, formules, compte
   juridique/juridique.css      feuille de la zone juridique
   api/chat/                    assistant du voyageur (Claude)
   api/juridique/consultation/  une question, son aiguillage et sa réponse ; pièce jointe éventuelle
@@ -1091,6 +1171,10 @@ components/
   ModelViewer.tsx              viewer de modèle .glb
   ChatWidget.tsx               assistant posé sur la visite
   juridique/Assistant.tsx      l'accueil : la conversation est la page
+  juridique/Portail.tsx        entrer, ou ouvrir un compte
+  juridique/Questionnaire.tsx  les trois questions d'entrée
+  juridique/Pied.tsx           le pied de page et sa mention
+  juridique/Alerte.tsx         l'erreur du fil, avec la sortie quand c'est un quota
   juridique/Consultation.tsx   le fil sur la fiche d'un spécialiste, ou repris
   juridique/useConsultation.ts l'état d'une conversation, partagé par les deux
   juridique/Composeur.tsx      le champ, la pièce jointe, l'état éteint
@@ -1115,6 +1199,8 @@ lib/
   store.ts                     accès aux données (fichier JSON en dev, Supabase en prod)
   accounts.ts                  comptes clients, mots de passe, sessions
   assistant.ts                 invite système de l'assistant, garde-fous
+  abonnements.ts               les trois formules, leurs quotas, et le point de branchement du paiement
+  profils.ts                   les trois questions d'entrée, et ce qu'elles disent au spécialiste
   domaines.ts                  les dix spécialités : périmètre, textes, délais, aide-mémoire
   diagnostics.ts               le tableau des diagnostics et de leur validité, et le calendrier énergie
   juridique-copie.ts           la copie des pages, et son espace fine insécable

@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { aiguiller, type Aiguillage } from './aiguillage';
 import { diagnosticsPourLeModele } from './diagnostics';
 import { domaine, estDomaineId, type Domaine, type DomaineId } from './domaines';
+import { profilPourLeModele, type Profil } from './profils';
 import type { Piece } from './piece';
 
 /**
@@ -270,6 +271,7 @@ export async function repondre(
   id: DomaineId,
   historique: Echange[],
   piece: Piece | null = null,
+  profil: Partial<Profil> | null = null,
 ): Promise<ReponseJuriste> {
   const fiche = domaine(id);
   const client = new Anthropic();
@@ -297,6 +299,13 @@ export async function repondre(
            consultation : mis en cache, ils ne sont facturés qu'une fois. */
         cache_control: { type: 'ephemeral' },
       },
+      /* Le profil vient APRÈS le point de mise en cache, et c'est tout
+         l'intérêt : il change d'une personne à l'autre, quand la consigne du
+         spécialiste ne change jamais. Placé avant, il ferait refacturer la
+         fiche à chaque utilisateur. */
+      ...(profil && profilPourLeModele(profil)
+        ? [{ type: 'text' as const, text: profilPourLeModele(profil) }]
+        : []),
     ],
     messages: [...precedents, messageAvecPiece(derniere?.content ?? '', piece)],
   });

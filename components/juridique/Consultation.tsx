@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Alerte } from '@/components/juridique/Alerte';
 import { Composeur } from '@/components/juridique/Composeur';
 import { Fil } from '@/components/juridique/Fil';
 import { useConsultation, type Tour } from '@/components/juridique/useConsultation';
@@ -45,7 +46,7 @@ export function Consultation({
   connecte,
   actif = true,
 }: Props) {
-  const { tours, pending, erreur, demander } = useConsultation({
+  const { tours, pending, erreur, quotaAtteint, restant, demander } = useConsultation({
     domaine,
     label,
     consultationInitiale,
@@ -87,7 +88,7 @@ export function Consultation({
       <Fil tours={tours} pending={pending} attente={`${label} examine votre question…`} />
       <div ref={finRef} />
 
-      {erreur && <p className="jur-erreur">{erreur}</p>}
+      {erreur && <Alerte message={erreur} quota={quotaAtteint} />}
 
       <Composeur
         onEnvoyer={(question, piece) => void demander(question, piece)}
@@ -100,6 +101,15 @@ export function Consultation({
             : 'Précisez, ou posez la question suivante.'
         }
       />
+
+      {restant !== null && (
+        <p className="jur-restant">
+          {restant > 0
+            ? `Il vous reste ${restant} question${restant > 1 ? 's' : ''} ce mois-ci.`
+            : 'C’était votre dernière question du mois.'}
+          <a href="/juridique/abonnement">Changer de formule</a>
+        </p>
+      )}
     </div>
   );
 }

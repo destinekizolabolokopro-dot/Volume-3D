@@ -44,6 +44,26 @@ export interface Account {
   /** 'active' | 'suspended' — un compte suspendu ne peut plus publier. */
   status: string;
   createdAt: string;
+  /**
+   * Formule de l'assistant juridique — voir `FormuleId` dans lib/abonnements.ts.
+   *
+   * Elle est distincte de `plan`, qui plafonne le nombre de biens du service
+   * de visites : les deux produits se vendent séparément, et un client peut
+   * n'avoir que l'un des deux. Un champ vide vaut « Découverte ».
+   */
+  abonnement: string;
+  /** Date du dernier changement de formule, en ISO. Vide si jamais changée. */
+  abonnementDepuis: string;
+  /**
+   * Le profil déclaré à l'ouverture du compte — voir lib/profils.ts.
+   *
+   * Il sert au spécialiste, qui doit savoir de quel côté du bail se tient
+   * celui qui lui écrit. Les trois champs sont facultatifs : un profil faux
+   * est pire qu'un profil vide.
+   */
+  metier: string;
+  volume: string;
+  usage: string;
 }
 
 export interface Property {

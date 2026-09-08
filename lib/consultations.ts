@@ -93,3 +93,28 @@ export async function effacerConsultation(id: string, accountId: string): Promis
   await store.remove('consultations', { id });
   return true;
 }
+
+/**
+ * Le nombre de questions posées ce mois-ci par un compte.
+ *
+ * Il est recalculé à la demande plutôt que tenu dans un compteur : un
+ * compteur peut dériver de la réalité — une consultation effacée, une
+ * écriture perdue — et il faudrait alors décider laquelle des deux valeurs
+ * fait foi. Ici la question est comptée là où elle est écrite, et effacer une
+ * consultation rend vraiment ses questions.
+ *
+ * Le filtrage se fait en mémoire : la couche de stockage ne sait comparer que
+ * des égalités, et à cette échelle un compte n'a pas assez de messages pour
+ * que cela se voie. Si cela devait changer, c'est ici qu'on ajouterait un
+ * index par mois.
+ */
+export async function questionsDuMois(accountId: string, maintenant = new Date()): Promise<number> {
+  const debut = new Date(Date.UTC(maintenant.getUTCFullYear(), maintenant.getUTCMonth(), 1)).toISOString();
+  const store = getStore();
+  const fils = await store.list('consultations', { accountId });
+  if (fils.length === 0) return 0;
+
+  const miens = new Set(fils.map((fil) => fil.id));
+  const tours = await store.list('consultationTours', { role: 'user' });
+  return tours.filter((tour) => miens.has(tour.consultationId) && tour.createdAt >= debut).length;
+}

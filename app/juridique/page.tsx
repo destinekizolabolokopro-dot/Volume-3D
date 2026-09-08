@@ -1,5 +1,6 @@
 import { Assistant } from '@/components/juridique/Assistant';
 import { Barre } from '@/components/juridique/Barre';
+import { Pied } from '@/components/juridique/Pied';
 import { currentAccount } from '@/lib/accounts';
 import { DOMAINES, domaine } from '@/lib/domaines';
 import { ACCUEIL, LIMITES } from '@/lib/juridique-copie';
@@ -68,20 +69,25 @@ export default async function AccueilJuridique() {
           </div>
         </section>
 
-        <section className="jur-section">
-          <h2 className="jur-h2">{ACCUEIL.limitesTitre}</h2>
-          <p className="jur-sub">{ACCUEIL.limitesSous}</p>
+        <section className="jur-section jur-bande">
+          <p className="jur-oeil">Ce qu’il faut savoir</p>
+          <h2>{ACCUEIL.limitesTitre}</h2>
+          <p className="jur-bande-sous">{ACCUEIL.limitesSous}</p>
 
-          <div className="jur-avertissement">
+          <div className="jur-limites">
             {LIMITES.map((limite) => (
-              <p key={limite.amorce}>
-                <strong>{limite.amorce}</strong>
-                {limite.suite}
-              </p>
+              <div className="jur-limite" key={limite.amorce}>
+                <p>
+                  <strong>{limite.amorce}</strong>
+                  {limite.suite}
+                </p>
+              </div>
             ))}
           </div>
         </section>
       </Assistant>
+
+      <Pied />
     </>
   );
 }
