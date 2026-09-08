@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Le schéma, en entier.
 --
--- Trois tables. C'est la mesure de ce service : des comptes, des fils de
+-- Quatre tables. C'est la mesure de ce service : des comptes, des fils de
 -- consultation, et les messages de ces fils.
 --
 -- Ce que ces tables NE contiennent PAS compte autant que le reste : les
@@ -56,10 +56,21 @@ create table if not exists "consultationTours" (
   "createdAt"      text not null
 );
 
+-- Les réglages posés depuis /reglages. Une seule ligne existe aujourd'hui :
+-- « cle-modele », la clé d'API. Sa valeur est CHIFFRÉE (AES-256-GCM, clé
+-- dérivée d'AUTH_SECRET) : un vidage de cette table ne donne rien
+-- d'exploitable sans la variable d'environnement, qui n'est pas ici.
+create table if not exists reglages (
+  id       text primary key,
+  valeur   text not null,
+  "majAt"  text not null
+);
+
 create index if not exists consultations_compte on consultations("compteId");
 create index if not exists consultation_tours_fil on "consultationTours"("consultationId");
 
 -- Rien n'est accessible sans la clé service_role : aucune politique n'est créée.
 alter table "comptesJuridiques"     enable row level security;
+alter table reglages                enable row level security;
 alter table consultations           enable row level security;
 alter table "consultationTours"     enable row level security;

@@ -1,8 +1,8 @@
 /**
  * Ce que la base contient, et rien d'autre.
  *
- * Trois tables. C'est la mesure de ce service : des comptes, des fils de
- * consultation, et les messages de ces fils. Pas de logements, pas de
+ * Quatre tables. C'est la mesure de ce service : des comptes, des fils de
+ * consultation, les messages de ces fils, et une poignée de réglages. Pas de logements, pas de
  * panoramas, pas de rendez-vous — ce sont d'autres produits, dans d'autres
  * dépôts.
  *
@@ -74,14 +74,36 @@ export interface ConsultationTour {
   createdAt: string;
 }
 
+/**
+ * Un réglage, posé depuis l'espace du propriétaire.
+ *
+ * Une seule ligne existe aujourd'hui : `cle-modele`, la clé d'API. Sa
+ * `valeur` est CHIFFRÉE — voir lib/coffre.ts —, jamais lisible telle quelle
+ * dans un vidage de table.
+ *
+ * Une table plutôt qu'un champ sur un compte : ce réglage n'appartient à
+ * personne, il appartient au site. Et le jour où un second réglage arrive, il
+ * s'ajoute sans migration.
+ */
+export interface Reglage {
+  /** L'identifiant du réglage, par exemple « cle-modele ». */
+  id: string;
+  /** La valeur scellée. Jamais en clair, jamais renvoyée au navigateur. */
+  valeur: string;
+  /** Quand elle a été posée, en ISO. S'affiche : un secret a un âge. */
+  majAt: string;
+}
+
 export interface Database {
   comptesJuridiques: CompteJuridique[];
+  reglages: Reglage[];
   consultations: Consultation[];
   consultationTours: ConsultationTour[];
 }
 
 export const EMPTY_DB: Database = {
   comptesJuridiques: [],
+  reglages: [],
   consultations: [],
   consultationTours: [],
 };

@@ -1,6 +1,7 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import { aiguiller, type Aiguillage } from './aiguillage';
+import { cleDuModele } from './reglages';
 import { rassemblerLesReferences, type CitationBrute, type Reference } from './citations';
 import { corpusDuDomaine, nommerArticle, planDuCorpus, type PlanCorpus } from './corpus';
 import { diagnosticsPourLeModele } from './diagnostics';
@@ -36,8 +37,29 @@ const MODEL = 'claude-opus-5';
  */
 const MAX_TOKENS = 16000;
 
-export function estJuristeConfigure(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+/**
+ * La clé vient de `lib/reglages.ts`, pas de l'environnement directement.
+ *
+ * Le SDK sait lire `ANTHROPIC_API_KEY` tout seul, et c'est précisément ce
+ * qu'il ne faut pas laisser faire : la clé peut aussi venir de l'espace de
+ * réglages, chiffrée en base. Une seule fonction décide laquelle s'applique,
+ * et tout le monde passe par elle — sinon la page afficherait « configuré »
+ * pendant que l'appel partirait sans clé.
+ */
+export async function estJuristeConfigure(): Promise<boolean> {
+  return Boolean(await cleDuModele());
+}
+
+/**
+ * Le client, ou `null` si aucune clé n'est en place.
+ *
+ * Renvoyer `null` plutôt que de laisser le SDK partir sans clé change la
+ * nature de l'échec : une panne d'authentification devient une absence de
+ * configuration, que l'appelant sait expliquer en français.
+ */
+async function client(): Promise<Anthropic | null> {
+  const apiKey = await cleDuModele();
+  return apiKey ? new Anthropic({ apiKey }) : null;
 }
 
 /* ============================================================== la consigne === */
@@ -151,13 +173,15 @@ export async function arbitrer(question: string, pistes: DomaineId[]): Promise<D
   if (pistes.length === 0) return null;
   if (pistes.length === 1) return pistes[0];
 
-  const client = new Anthropic();
+  const anthropic = await client();
+  if (!anthropic) return null;
+
   const choix = pistes.map((id) => {
     const fiche = domaine(id);
     return `${fiche.id} — ${fiche.label} : ${fiche.resume}`;
   });
 
-  const response = await client.messages.create({
+  const response = await anthropic.messages.create({
     model: MODEL,
     /* Le modèle réfléchit par défaut, et sa réflexion se décompte de ce
        plafond : un budget calé sur la longueur de la réponse attendue — un
@@ -201,7 +225,7 @@ export interface Orientation extends Aiguillage {
  */
 export async function orienter(question: string): Promise<Orientation> {
   const local = aiguiller(question);
-  if (local.certitude !== 'hesitante' || !estJuristeConfigure()) {
+  if (local.certitude !== 'hesitante' || !(await estJuristeConfigure())) {
     return { ...local, arbitre: false };
   }
 
@@ -423,7 +447,8 @@ export async function repondre(
   profil: Partial<Profil> | null = null,
 ): Promise<ReponseJuriste> {
   const fiche = domaine(id);
-  const client = new Anthropic();
+  const anthropic = await client();
+  if (!anthropic) throw new Error('Aucune clé d’API n’est configurée.');
   const { blocs, plan } = await blocsDuCorpus(id);
 
   const precedents = historique.slice(0, -1).map<Anthropic.MessageParam>((echange) => ({
@@ -432,7 +457,7 @@ export async function repondre(
   }));
   const derniere = historique[historique.length - 1];
 
-  const response = await client.messages.create({
+  const response = await anthropic.messages.create({
     model: MODEL,
     max_tokens: MAX_TOKENS,
     /* Une question de droit se traite en réfléchissant : le modèle doit

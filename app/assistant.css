@@ -1407,7 +1407,11 @@
   gap: calc(var(--pas) * 2.5);
 }
 
-.jur-form .hint {
+/* Le décalage négatif rattrape l'écart de la grille pour une mention posée
+   ENTRE deux champs. Il ne doit pas s'appliquer à une mention placée dans un
+   `.field`, sous son champ : là il n'y a pas d'écart à rattraper, et le texte
+   passait par-dessus la bordure de l'entrée. Le `>` est tout le correctif. */
+.jur-form > .hint {
   margin-top: calc(var(--pas) * -1);
 }
 
@@ -1784,4 +1788,72 @@
   line-height: 1.6;
   color: var(--ink-soft);
   max-width: 66ch;
+}
+
+/* ----------------------------------------------------------------- réglages
+   L'espace du propriétaire. Volontairement pauvre : une page qui reçoit un
+   moyen de paiement n'a pas à être agréable, elle a à être lisible. Rien n'y
+   attire l'œil sauf le champ et l'état de la clé. */
+
+.jur-etat-cle {
+  margin: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 2.5) calc(var(--pas) * 2.75);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pas) * 1.5);
+}
+
+.jur-etat-cle > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--pas) * 0.5) calc(var(--pas) * 1.5);
+  align-items: baseline;
+}
+
+.jur-etat-cle dt {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  min-width: 14ch;
+}
+
+.jur-etat-cle dd {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink-strong);
+}
+
+/* L'empreinte se lit caractère par caractère : une chasse fixe évite de
+   confondre un « l » avec un « 1 » au moment de comparer avec la console. */
+.jur-empreinte {
+  font-family: var(--mono);
+  font-size: 14px !important;
+  letter-spacing: 0.02em;
+}
+
+.jur-succes {
+  background: var(--accent-wash);
+  border: 1px solid var(--accent);
+  color: var(--accent-strong);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 1.5) calc(var(--pas) * 1.75);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 calc(var(--pas) * 2);
+  max-width: 74ch;
+}
+
+.jur-retrait {
+  margin-top: calc(var(--pas) * 3);
+}
+
+.jur-sortie {
+  margin-top: calc(var(--pas) * 5);
+  padding-top: calc(var(--pas) * 2.5);
+  border-top: 1px solid var(--line-soft);
 }

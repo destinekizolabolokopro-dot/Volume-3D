@@ -53,7 +53,7 @@ export default async function AccueilJuridique() {
         fiches={fiches}
         exemples={exemples}
         connecte={Boolean(compte)}
-        actif={estJuristeConfigure()}
+        actif={await estJuristeConfigure()}
       >
         <section className="jur-section">
           <h2 className="jur-h2">{ACCUEIL.grilleTitre}</h2>
