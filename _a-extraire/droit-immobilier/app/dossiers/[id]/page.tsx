@@ -26,7 +26,7 @@ type Params = { params: Promise<{ id: string }> };
  */
 export default async function PageConsultation({ params }: Params) {
   const compte = await compteCourant();
-  if (!compte) redirect('/espace/connexion');
+  if (!compte) redirect('/compte/connexion');
 
   const { id } = await params;
   const consultation = await consultationDuCompte(id, compte.id);

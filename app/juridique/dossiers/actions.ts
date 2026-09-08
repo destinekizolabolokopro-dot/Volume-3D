@@ -15,7 +15,7 @@ import { effacerConsultation } from '@/lib/juridique/consultations';
  */
 export async function effacer(formData: FormData): Promise<void> {
   const compte = await compteCourant();
-  if (!compte) redirect('/espace/connexion');
+  if (!compte) redirect('/juridique/compte/connexion');
 
   const id = String(formData.get('id') ?? '');
   if (id) await effacerConsultation(id, compte.id);

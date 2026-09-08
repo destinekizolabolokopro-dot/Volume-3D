@@ -34,7 +34,7 @@ export default async function Dossiers() {
           <p className="jur-lede">{DOSSIERS.anonyme}</p>
           <div className="jur-vide">
             <p>Connectez-vous pour retrouver vos consultations passées.</p>
-            <a className="btn btn-accent" href="/espace/connexion">
+            <a className="btn btn-accent" href="/juridique/compte/connexion">
               Se connecter
             </a>
           </div>
