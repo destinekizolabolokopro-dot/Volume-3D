@@ -1,0 +1,2198 @@
+{
+ "domaine": "achat-vente",
+ "arrete": "2026-09-08",
+ "documents": [
+  {
+   "nom": "code civil",
+   "titre": "Code civil",
+   "cid": "LEGITEXT000006070721",
+   "articles": [
+    {
+     "num": "1582",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "La vente est une convention par laquelle l'un s'oblige à livrer une chose, et l'autre à la payer.\n\nElle peut être faite par acte authentique ou sous seing privé."
+    },
+    {
+     "num": "1583",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Elle est parfaite entre les parties, et la propriété est acquise de droit à l'acheteur à l'égard du vendeur, dès qu'on est convenu de la chose et du prix, quoique la chose n'ait pas encore été livrée ni le prix payé."
+    },
+    {
+     "num": "1584",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "La vente peut être faite purement et simplement, ou sous une condition soit suspensive, soit résolutoire.\n\nElle peut aussi avoir pour objet deux ou plusieurs choses alternatives.\n\nDans tous ces cas, son effet est réglé par les principes généraux des conventions."
+    },
+    {
+     "num": "1585",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Lorsque des marchandises ne sont pas vendues en bloc, mais au poids, au compte ou à la mesure, la vente n'est point parfaite, en ce sens que les choses vendues sont aux risques du vendeur jusqu'à ce qu'elles soient pesées, comptées ou mesurées ; mais l'acheteur peut en demander ou la délivrance ou des dommages-intérêts, s'il y a lieu, en cas d'inexécution de l'engagement."
+    },
+    {
+     "num": "1586",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Si, au contraire, les marchandises ont été vendues en bloc, la vente est parfaite, quoique les marchandises n'aient pas encore été pesées, comptées ou mesurées."
+    },
+    {
+     "num": "1587",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "A l'égard du vin, de l'huile, et des autres choses que l'on est dans l'usage de goûter avant d'en faire l'achat, il n'y a point de vente tant que l'acheteur ne les a pas goûtées et agréées."
+    },
+    {
+     "num": "1588",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "La vente faite à l'essai est toujours présumée faite sous une condition suspensive."
+    },
+    {
+     "num": "1589",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "La promesse de vente vaut vente, lorsqu'il y a consentement réciproque des deux parties sur la chose et sur le prix.\n\nSi cette promesse s'applique à des terrains déjà lotis ou à lotir, son acceptation et la convention qui en résultera s'établiront par le paiement d'un acompte sur le prix, quel que soit le nom donné à cet acompte, et par la prise de possession du terrain.\n\nLa date de la convention, même régularisée ultérieurement, sera celle du versement du premier acompte."
+    },
+    {
+     "num": "1589-1",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Est frappé de nullité tout engagement unilatéral souscrit en vue de l'acquisition d'un bien ou d'un droit immobilier pour lequel il est exigé ou reçu de celui qui s'engage un versement, quelle qu'en soit la cause et la forme."
+    },
+    {
+     "num": "1589-2",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Est nulle et de nul effet toute promesse unilatérale de vente afférente à un immeuble, à un droit immobilier, à un fonds de commerce, à un droit à un bail portant sur tout ou partie d'un immeuble ou aux titres des sociétés visées aux articles 728 et 1655 ter du code général des impôts, si elle n'est pas constatée par un acte authentique ou par un acte sous seing privé enregistré dans le délai de dix jours à compter de la date de son acceptation par le bénéficiaire. Il en est de même de toute cession portant sur lesdites promesses qui n'a pas fait l'objet d'un acte authentique ou d'un acte sous seing privé enregistré dans les dix jours de sa date."
+    },
+    {
+     "num": "1590",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Si la promesse de vendre a été faite avec des arrhes chacun des contractants est maître de s'en départir,\n\nCelui qui les a données, en les perdant,\n\nEt celui qui les a reçues, en restituant le double."
+    },
+    {
+     "num": "1591",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Le prix de la vente doit être déterminé et désigné par les parties."
+    },
+    {
+     "num": "1592",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Il peut cependant être laissé à l'estimation d'un tiers ; si le tiers ne veut ou ne peut faire l'estimation, il n'y a point de vente, sauf estimation par un autre tiers."
+    },
+    {
+     "num": "1593",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre Ier : De la nature et de la forme de la vente."
+     ],
+     "texte": "Les frais d'actes et autres accessoires à la vente sont à la charge de l'acheteur."
+    },
+    {
+     "num": "1594",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre II : Qui peut acheter ou vendre."
+     ],
+     "texte": "Tous ceux auxquels la loi ne l'interdit pas peuvent acheter ou vendre."
+    },
+    {
+     "num": "1596",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre II : Qui peut acheter ou vendre."
+     ],
+     "texte": "Ne peuvent se rendre adjudicataires, sous peine de nullité, ni par eux-mêmes, ni par personnes interposées :\n\nLes tuteurs, des biens de ceux dont ils ont la tutelle ;\n\nLes mandataires, des biens qu'ils sont chargés de vendre ;\n\nLes administrateurs, de ceux des communes ou des établissements publics confiés à leurs soins ;\n\nLes officiers publics, des biens nationaux dont les ventes se font par leur ministère ;\n\nLes fiduciaires, des biens ou droits composant le patrimoine fiduciaire."
+    },
+    {
+     "num": "1597",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre II : Qui peut acheter ou vendre."
+     ],
+     "texte": "Les juges, leurs suppléants, les magistrats remplissant le ministère public, les greffiers, huissiers, avocats, défenseurs officieux et notaires, ne peuvent devenir cessionnaires des procès, droits et actions litigieux qui sont de la compétence du tribunal dans le ressort duquel ils exercent leurs fonctions, à peine de nullité, et des dépens, dommages et intérêts."
+    },
+    {
+     "num": "1598",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre III : Des choses qui peuvent être vendues."
+     ],
+     "texte": "Tout ce qui est dans le commerce peut être vendu lorsque des lois particulières n'en ont pas prohibé l'aliénation."
+    },
+    {
+     "num": "1599",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre III : Des choses qui peuvent être vendues."
+     ],
+     "texte": "La vente de la chose d'autrui est nulle : elle peut donner lieu à des dommages-intérêts lorsque l'acheteur a ignoré que la chose fût à autrui."
+    },
+    {
+     "num": "1601",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre III : Des choses qui peuvent être vendues."
+     ],
+     "texte": "Si au moment de la vente la chose vendue était périe en totalité, la vente serait nulle.\n\nSi une partie seulement de la chose est périe, il est au choix de l'acquéreur d'abandonner la vente, ou de demander la partie conservée, en faisant déterminer le prix par la ventilation."
+    },
+    {
+     "num": "1601-1",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre III-1 : De la vente d’immeubles à construire."
+     ],
+     "texte": "La vente d'immeubles à construire est celle par laquelle le vendeur s'oblige à édifier un immeuble dans un délai déterminé par le contrat.\n\nElle peut être conclue à terme ou en l'état futur d'achèvement."
+    },
+    {
+     "num": "1601-2",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre III-1 : De la vente d’immeubles à construire."
+     ],
+     "texte": "La vente à terme est le contrat par lequel le vendeur s'engage à livrer l'immeuble à son achèvement, l'acheteur s'engage à en prendre livraison et à en payer le prix à la date de livraison. Le transfert de propriété s'opère de plein droit par la constatation par acte authentique de l'achèvement de l'immeuble ; il produit ses effets rétroactivement au jour de la vente."
+    },
+    {
+     "num": "1601-3",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre III-1 : De la vente d’immeubles à construire."
+     ],
+     "texte": "La vente en l'état futur d'achèvement est le contrat par lequel le vendeur transfère immédiatement à l'acquéreur ses droits sur le sol ainsi que la propriété des constructions existantes. Les ouvrages à venir deviennent la propriété de l'acquéreur au fur et à mesure de leur exécution ; l'acquéreur est tenu d'en payer le prix à mesure de l'avancement des travaux.\n\nLe vendeur conserve les pouvoirs de maître de l'ouvrage jusqu'à la réception des travaux."
+    },
+    {
+     "num": "1601-4",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre III-1 : De la vente d’immeubles à construire."
+     ],
+     "texte": "La cession par l'acquéreur des droits qu'il tient d'une vente d'immeuble à construire substitue de plein droit le cessionnaire dans les obligations de l'acquéreur envers le vendeur.\n\nSi la vente a été assortie d'un mandat, celui-ci se poursuit entre le vendeur et le cessionnaire.\n\nCes dispositions s'appliquent à toute mutation entre vifs, volontaire ou forcée, ou à cause de mort."
+    },
+    {
+     "num": "1602",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 1 : Dispositions générales."
+     ],
+     "texte": "Le vendeur est tenu d'expliquer clairement ce à quoi il s'oblige.\n\nTout pacte obscur ou ambigu s'interprète contre le vendeur."
+    },
+    {
+     "num": "1603",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 1 : Dispositions générales."
+     ],
+     "texte": "Il a deux obligations principales, celle de délivrer et celle de garantir la chose qu'il vend."
+    },
+    {
+     "num": "1604",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "La délivrance est le transport de la chose vendue en la puissance et possession de l'acheteur."
+    },
+    {
+     "num": "1605",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "L'obligation de délivrer les immeubles est remplie de la part du vendeur lorsqu'il a remis les clefs, s'il s'agit d'un bâtiment, ou lorsqu'il a remis les titres de propriété."
+    },
+    {
+     "num": "1606",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "La délivrance des effets mobiliers s'opère :\n\nOu par la remise de la chose,\n\nOu par la remise des clefs des bâtiments qui les contiennent,\n\nOu même par le seul consentement des parties, si le transport ne peut pas s'en faire au moment de la vente, ou si l'acheteur les avait déjà en son pouvoir à un autre titre."
+    },
+    {
+     "num": "1607",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "La tradition des droits incorporels se fait, ou par la remise des titres, ou par l'usage que l'acquéreur en fait du consentement du vendeur."
+    },
+    {
+     "num": "1608",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Les frais de la délivrance sont à la charge du vendeur, et ceux de l'enlèvement à la charge de l'acheteur, s'il n'y a eu stipulation contraire."
+    },
+    {
+     "num": "1609",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "La délivrance doit se faire au lieu où était, au temps de la vente, la chose qui en a fait l'objet, s'il n'en a été autrement convenu."
+    },
+    {
+     "num": "1610",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Si le vendeur manque à faire la délivrance dans le temps convenu entre les parties, l'acquéreur pourra, à son choix, demander la résolution de la vente, ou sa mise en possession, si le retard ne vient que du fait du vendeur."
+    },
+    {
+     "num": "1611",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Dans tous les cas, le vendeur doit être condamné aux dommages et intérêts, s'il résulte un préjudice pour l'acquéreur, du défaut de délivrance au terme convenu."
+    },
+    {
+     "num": "1612",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Le vendeur n'est pas tenu de délivrer la chose, si l'acheteur n'en paye pas le prix, et que le vendeur ne lui ait pas accordé un délai pour le paiement."
+    },
+    {
+     "num": "1613",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Il ne sera pas non plus obligé à la délivrance, quand même il aurait accordé un délai pour le paiement, si, depuis la vente, l'acheteur est tombé en faillite ou en état de déconfiture, en sorte que le vendeur se trouve en danger imminent de perdre le prix ; à moins que l'acheteur ne lui donne caution de payer au terme."
+    },
+    {
+     "num": "1614",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "La chose doit être délivrée en l'état où elle se trouve au moment de la vente.\n\nDepuis ce jour, tous les fruits appartiennent à l'acquéreur."
+    },
+    {
+     "num": "1615",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "L'obligation de délivrer la chose comprend ses accessoires et tout ce qui a été destiné à son usage perpétuel."
+    },
+    {
+     "num": "1616",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Le vendeur est tenu de délivrer la contenance telle qu'elle est portée au contrat, sous les modifications ci-après exprimées."
+    },
+    {
+     "num": "1617",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Si la vente d'un immeuble a été faite avec indication de la contenance, à raison de tant la mesure, le vendeur est obligé de délivrer à l'acquéreur, s'il l'exige, la quantité indiquée au contrat ;\n\nEt si la chose ne lui est pas possible, ou si l'acquéreur ne l'exige pas, le vendeur est obligé de souffrir une diminution proportionnelle du prix."
+    },
+    {
+     "num": "1618",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Si, au contraire, dans le cas de l'article précédent, il se trouve une contenance plus grande que celle exprimée au contrat, l'acquéreur a le choix de fournir le supplément du prix, ou de se désister du contrat, si l'excédent est d'un vingtième au-dessus de la contenance déclarée."
+    },
+    {
+     "num": "1619",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Dans tous les autres cas,\n\nSoit que la vente soit faite d'un corps certain et limité,\n\nSoit qu'elle ait pour objet des fonds distincts et séparés,\n\nSoit qu'elle commence par la mesure, ou par la désignation de l'objet vendu suivie de la mesure,\n\nL'expression de cette mesure ne donne lieu à aucun supplément de prix, en faveur du vendeur, pour l'excédent de mesure, ni en faveur de l'acquéreur, à aucune diminution du prix pour moindre mesure, qu'autant que la différence de la mesure réelle à celle exprimée au contrat est d'un vingtième en plus ou en moins, eu égard à la valeur de la totalité des objets vendus, s'il n'y a stipulation contraire."
+    },
+    {
+     "num": "1620",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Dans le cas où, suivant l'article précédent, il y a lieu à augmentation de prix pour excédent de mesure, l'acquéreur a le choix ou de se désister du contrat ou de fournir le supplément du prix, et ce, avec les intérêts s'il a gardé l'immeuble."
+    },
+    {
+     "num": "1621",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "Dans tous les cas où l'acquéreur a le droit de se désister du contrat, le vendeur est tenu de lui restituer, outre le prix, s'il l'a reçu, les frais de ce contrat."
+    },
+    {
+     "num": "1622",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "L'action en supplément de prix de la part du vendeur, et celle en diminution de prix ou en résiliation du contrat de la part de l'acquéreur, doivent être intentées dans l'année, à compter du jour du contrat, à peine de déchéance."
+    },
+    {
+     "num": "1623",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "S'il a été vendu deux fonds par le même contrat, et pour un seul et même prix, avec désignation de la mesure de chacun, et qu'il se trouve moins de contenance en l'un et plus en l'autre, on fait compensation jusqu'à due concurrence ; et l'action, soit en supplément, soit en diminution du prix, n'a lieu que suivant les règles ci-dessus établies."
+    },
+    {
+     "num": "1624",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 2 : De la délivrance."
+     ],
+     "texte": "La question de savoir sur lequel, du vendeur ou de l'acquéreur, doit tomber la perte ou la détérioration de la chose vendue avant la livraison, est jugée d'après les règles prescrites au titre \" Des contrats ou des obligations conventionnelles en général \"."
+    },
+    {
+     "num": "1625",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie."
+     ],
+     "texte": "La garantie que le vendeur doit à l'acquéreur a deux objets : le premier est la possession paisible de la chose vendue ; le second, les défauts cachés de cette chose ou les vices rédhibitoires."
+    },
+    {
+     "num": "1626",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Quoique lors de la vente il n'ait été fait aucune stipulation sur la garantie, le vendeur est obligé de droit à garantir l'acquéreur de l'éviction qu'il souffre dans la totalité ou partie de l'objet vendu, ou des charges prétendues sur cet objet, et non déclarées lors de la vente."
+    },
+    {
+     "num": "1627",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Les parties peuvent, par des conventions particulières, ajouter à cette obligation de droit ou en diminuer l'effet ; elles peuvent même convenir que le vendeur ne sera soumis à aucune garantie."
+    },
+    {
+     "num": "1628",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Quoiqu'il soit dit que le vendeur ne sera soumis à aucune garantie, il demeure cependant tenu de celle qui résulte d'un fait qui lui est personnel : toute convention contraire est nulle."
+    },
+    {
+     "num": "1629",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Dans le même cas de stipulation de non-garantie, le vendeur, en cas d'éviction, est tenu à la restitution du prix, à moins que l'acquéreur n'ait connu lors de la vente le danger de l'éviction ou qu'il n'ait acheté à ses périls et risques."
+    },
+    {
+     "num": "1630",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Lorsque la garantie a été promise, ou qu'il n'a rien été stipulé à ce sujet, si l'acquéreur est évincé, il a droit de demander contre le vendeur :\n\n1° La restitution du prix ;\n\n2° Celle des fruits, lorsqu'il est obligé de les rendre au propriétaire qui l'évince ;\n\n3° Les frais faits sur la demande en garantie de l'acheteur, et ceux faits par le demandeur originaire ;\n\n4° Enfin les dommages et intérêts, ainsi que les frais et loyaux coûts du contrat."
+    },
+    {
+     "num": "1631",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Lorsqu'à l'époque de l'éviction, la chose vendue se trouve diminuée de valeur, ou considérablement détériorée, soit par la négligence de l'acheteur, soit par des accidents de force majeure, le vendeur n'en est pas moins tenu de restituer la totalité du prix."
+    },
+    {
+     "num": "1632",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Mais si l'acquéreur a tiré profit des dégradations par lui faites, le vendeur a droit de retenir sur le prix une somme égale à ce profit."
+    },
+    {
+     "num": "1633",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Si la chose vendue se trouve avoir augmenté de prix à l'époque de l'éviction, indépendamment même du fait de l'acquéreur, le vendeur est tenu de lui payer ce qu'elle vaut au-dessus du prix de la vente."
+    },
+    {
+     "num": "1634",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Le vendeur est tenu de rembourser ou de faire rembourser à l'acquéreur, par celui qui l'évince, toutes les réparations et améliorations utiles qu'il aura faites au fonds."
+    },
+    {
+     "num": "1635",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Si le vendeur avait vendu de mauvaise foi le fonds d'autrui, il sera obligé de rembourser à l'acquéreur toutes les dépenses, même voluptuaires ou d'agrément, que celui-ci aura faites au fonds."
+    },
+    {
+     "num": "1636",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Si l'acquéreur n'est évincé que d'une partie de la chose, et qu'elle soit de telle conséquence, relativement au tout, que l'acquéreur n'eût point acheté sans la partie dont il a été évincé, il peut faire résilier la vente."
+    },
+    {
+     "num": "1637",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Si, dans le cas de l'éviction d'une partie du fonds vendu, la vente n'est pas résiliée, la valeur de la partie dont l'acquéreur se trouve évincé lui est remboursée suivant l'estimation à l'époque de l'éviction, et non proportionnellement au prix total de la vente, soit que la chose vendue ait augmenté ou diminué de valeur."
+    },
+    {
+     "num": "1638",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Si l'héritage vendu se trouve grevé, sans qu'il en ait été fait de déclaration, de servitudes non apparentes, et qu'elles soient de telle importance qu'il y ait lieu de présumer que l'acquéreur n'aurait pas acheté s'il en avait été instruit, il peut demander la résiliation du contrat, si mieux il n'aime se contenter d'une indemnité."
+    },
+    {
+     "num": "1639",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "Les autres questions auxquelles peuvent donner lieu les dommages et intérêts résultant pour l'acquéreur de l'inexécution de la vente doivent être décidées suivant les règles générales établies au titre \" Des contrats ou des obligations conventionnelles en général \"."
+    },
+    {
+     "num": "1640",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 1 : De la garantie en cas d’éviction."
+     ],
+     "texte": "La garantie pour cause d'éviction cesse lorsque l'acquéreur s'est laissé condamner par un jugement en dernier ressort, ou dont l'appel n'est plus recevable, sans appeler son vendeur, si celui-ci prouve qu'il existait des moyens suffisants pour faire rejeter la demande."
+    },
+    {
+     "num": "1641",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Le vendeur est tenu de la garantie à raison des défauts cachés de la chose vendue qui la rendent impropre à l'usage auquel on la destine, ou qui diminuent tellement cet usage que l'acheteur ne l'aurait pas acquise, ou n'en aurait donné qu'un moindre prix, s'il les avait connus."
+    },
+    {
+     "num": "1642",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Le vendeur n'est pas tenu des vices apparents et dont l'acheteur a pu se convaincre lui-même."
+    },
+    {
+     "num": "1642-1",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Le vendeur d'un immeuble à construire ne peut être déchargé, ni avant la réception des travaux, ni avant l'expiration d'un délai d'un mois après la prise de possession par l'acquéreur, des vices de construction ou des défauts de conformité alors apparents.\n\nIl n'y aura pas lieu à résolution du contrat ou à diminution du prix si le vendeur s'oblige à réparer."
+    },
+    {
+     "num": "1643",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Il est tenu des vices cachés, quand même il ne les aurait pas connus, à moins que, dans ce cas, il n'ait stipulé qu'il ne sera obligé à aucune garantie."
+    },
+    {
+     "num": "1644",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Dans le cas des articles 1641 et 1643, l'acheteur a le choix de rendre la chose et de se faire restituer le prix, ou de garder la chose et de se faire rendre une partie du prix."
+    },
+    {
+     "num": "1645",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Si le vendeur connaissait les vices de la chose, il est tenu, outre la restitution du prix qu'il en a reçu, de tous les dommages et intérêts envers l'acheteur."
+    },
+    {
+     "num": "1646",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Si le vendeur ignorait les vices de la chose, il ne sera tenu qu'à la restitution du prix, et à rembourser à l'acquéreur les frais occasionnés par la vente."
+    },
+    {
+     "num": "1646-1",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Le vendeur d'un immeuble à construire est tenu, à compter de la réception des travaux, des obligations dont les architectes, entrepreneurs et autres personnes liées au maître de l'ouvrage par un contrat de louage d'ouvrage sont eux-mêmes tenus en application des articles 1792, 1792-1, 1792-2 et 1792-3 du présent code.\n\nCes garanties bénéficient aux propriétaires successifs de l'immeuble.\n\nIl n'y aura pas lieu à résolution de la vente ou à diminution du prix si le vendeur s'oblige à réparer les dommages définis aux articles 1792, 1792-1 et 1792-2 du présent code et à assumer la garantie prévue à l'article 1792-3."
+    },
+    {
+     "num": "1647",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Si la chose qui avait des vices a péri par suite de sa mauvaise qualité, la perte est pour le vendeur, qui sera tenu envers l'acheteur à la restitution du prix et aux autres dédommagements expliqués dans les deux articles précédents.\n\nMais la perte arrivée par cas fortuit sera pour le compte de l'acheteur."
+    },
+    {
+     "num": "1648",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "L'action résultant des vices rédhibitoires doit être intentée par l'acquéreur dans un délai de deux ans à compter de la découverte du vice.\n\nDans le cas prévu par l'article 1642-1, l'action doit être introduite, à peine de forclusion, dans l'année qui suit la date à laquelle le vendeur peut être déchargé des vices ou des défauts de conformité apparents."
+    },
+    {
+     "num": "1649",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre IV : Des obligations du vendeur",
+      "Section 3 : De la garantie.",
+      "Paragraphe 2 : De la garantie des défauts de la chose vendue."
+     ],
+     "texte": "Elle n'a pas lieu dans les ventes faites par autorité de justice."
+    },
+    {
+     "num": "1650",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre V : Des obligations de l’acheteur."
+     ],
+     "texte": "La principale obligation de l'acheteur est de payer le prix au jour et au lieu réglés par la vente."
+    },
+    {
+     "num": "1651",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre V : Des obligations de l’acheteur."
+     ],
+     "texte": "S'il n'a rien été réglé à cet égard lors de la vente, l'acheteur doit payer au lieu et dans le temps où doit se faire la délivrance."
+    },
+    {
+     "num": "1652",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre V : Des obligations de l’acheteur."
+     ],
+     "texte": "L'acheteur doit l'intérêt du prix de la vente jusqu'au paiement du capital, dans les trois cas suivants :\n\nS'il a été ainsi convenu lors de la vente ;\n\nSi la chose vendue et livrée produit des fruits ou autres revenus ;\n\nSi l'acheteur a été sommé de payer.\n\nDans ce dernier cas, l'intérêt ne court que depuis la sommation."
+    },
+    {
+     "num": "1653",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre V : Des obligations de l’acheteur."
+     ],
+     "texte": "Si l'acheteur est troublé ou a juste sujet de craindre d'être troublé par une action, soit hypothécaire, soit en revendication, il peut suspendre le paiement du prix jusqu'à ce que le vendeur ait fait cesser le trouble, si mieux n'aime celui-ci donner caution, ou à moins qu'il n'ait été stipulé que, nonobstant le trouble, l'acheteur paiera."
+    },
+    {
+     "num": "1654",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre V : Des obligations de l’acheteur."
+     ],
+     "texte": "Si l'acheteur ne paye pas le prix, le vendeur peut demander la résolution de la vente."
+    },
+    {
+     "num": "1655",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre V : Des obligations de l’acheteur."
+     ],
+     "texte": "La résolution de la vente d'immeubles est prononcée aussitôt si le vendeur est en danger de perdre la chose et le prix.\n\nSi ce danger n'existe pas, le juge peut accorder à l'acquéreur un délai plus ou moins long suivant les circonstances.\n\nCe délai passé sans que l'acquéreur ait payé, la résolution de la vente sera prononcée."
+    },
+    {
+     "num": "1656",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre V : Des obligations de l’acheteur."
+     ],
+     "texte": "S'il a été stipulé lors de la vente d'immeubles que, faute du paiement du prix dans le terme convenu, la vente serait résolue de plein droit, l'acquéreur peut néanmoins payer après l'expiration du délai, tant qu'il n'a pas été mis en demeure par une sommation ; mais, après cette sommation, le juge ne peut pas lui accorder ce délai."
+    },
+    {
+     "num": "1657",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre V : Des obligations de l’acheteur."
+     ],
+     "texte": "En matière de vente de denrées et effets mobiliers, la résolution de la vente aura lieu de plein droit et sans sommation, au profit du vendeur, après l'expiration du terme convenu pour le retirement."
+    },
+    {
+     "num": "1658",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente."
+     ],
+     "texte": "Indépendamment des causes de nullité ou de résolution déjà expliquées dans ce titre, et de celles qui sont communes à toutes les conventions, le contrat de vente peut être résolu par l'exercice de la faculté de rachat et par la vileté du prix."
+    },
+    {
+     "num": "1659",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "La faculté de rachat est un pacte par lequel le vendeur se réserve de reprendre la chose vendue, moyennant la restitution du prix principal et le remboursement dont il est parlé à l'article 1673."
+    },
+    {
+     "num": "1660",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "La faculté de rachat ne peut être stipulée pour un terme excédant cinq années.\n\nSi elle a été stipulée pour un terme plus long, elle est réduite à ce terme."
+    },
+    {
+     "num": "1661",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Le terme fixé est de rigueur et ne peut être prolongé par le juge."
+    },
+    {
+     "num": "1662",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Faute par le vendeur d'avoir exercé son action en rachat dans le terme prescrit, l'acquéreur demeure propriétaire irrévocable."
+    },
+    {
+     "num": "1663",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Le délai court contre toutes personnes, même contre le mineur, sauf, s'il y a lieu, le recours contre qui de droit."
+    },
+    {
+     "num": "1664",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Le vendeur à pacte de rachat peut exercer son action contre un second acquéreur, quand même la faculté de rachat n'aurait pas été déclarée dans le second contrat."
+    },
+    {
+     "num": "1665",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "L'acquéreur à pacte de rachat exerce tous les droits de son vendeur ; il peut prescrire tant contre le véritable maître que contre ceux qui prétendraient des droits ou hypothèques sur la chose vendue."
+    },
+    {
+     "num": "1666",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Il peut opposer le bénéfice de la discussion aux créanciers de son vendeur."
+    },
+    {
+     "num": "1667",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Si l'acquéreur à pacte de rachat d'une partie indivise d'un héritage s'est rendu adjudicataire de la totalité sur une licitation provoquée contre lui, il peut obliger le vendeur à retirer le tout lorsque celui-ci veut user du pacte."
+    },
+    {
+     "num": "1668",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Si plusieurs ont vendu conjointement, et par un seul contrat, un héritage commun entre eux, chacun ne peut exercer l'action en rachat que pour la part qu'il y avait."
+    },
+    {
+     "num": "1669",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Il en est de même si celui qui a vendu seul un héritage a laissé plusieurs héritiers.\n\nChacun de ces cohéritiers ne peut user de la faculté de rachat que pour la part qu'il prend pour la succession."
+    },
+    {
+     "num": "1670",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Mais, dans le cas des deux articles précédents, l'acquéreur peut exiger que tous les covendeurs ou tous les cohéritiers soient mis en cause, afin de se concilier entre eux pour la reprise de l'héritage entier ; et, s'ils ne se concilient pas, il sera renvoyé de la demande."
+    },
+    {
+     "num": "1671",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Si la vente d'un héritage appartenant à plusieurs n'a pas été faite conjointement et de tout l'héritage ensemble, et que chacun n'ait vendu que la part qu'il y avait, ils peuvent exercer séparément l'action en rachat sur la portion qui leur appartenait ;\n\nEt l'acquéreur ne peut forcer celui qui l'exercera de cette manière à retirer le tout."
+    },
+    {
+     "num": "1672",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Si l'acquéreur a laissé plusieurs héritiers, l'action en rachat ne peut être exercée contre chacun d'eux que pour sa part, dans le cas où elle est encore indivise, et dans celui où la chose vendue a été partagée entre eux.\n\nMais s'il y a eu partage de la succession et que la chose vendue soit échue au lot de l'un des héritiers, l'action en rachat peut être intentée contre lui pour le tout."
+    },
+    {
+     "num": "1673",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 1 : De la faculté de rachat."
+     ],
+     "texte": "Le vendeur qui use du pacte de rachat doit rembourser non seulement le prix principal, mais encore les frais et loyaux coûts de la vente, les réparations nécessaires, et celles qui ont augmenté la valeur du fonds, jusqu'à concurrence de cette augmentation. Il ne peut entrer en possession qu'après avoir satisfait à toutes ces obligations.\n\nLorsque le vendeur rentre dans son héritage par l'effet du pacte de rachat, il le reprend, exempt de toutes les charges et hypothèques dont l'acquéreur l'aurait grevé, à la condition que ce pacte ait été régulièrement publié au fichier immobilier, antérieurement à la publication desdites charges et hypothèques. Il est tenu d'exécuter les baux faits sans fraude par l'acquéreur."
+    },
+    {
+     "num": "1674",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "Si le vendeur a été lésé de plus de sept douzièmes dans le prix d'un immeuble, il a le droit de demander la rescision de la vente, quand même il aurait expressément renoncé dans le contrat à la faculté de demander cette rescision, et qu'il aurait déclaré donner la plus-value."
+    },
+    {
+     "num": "1675",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "Pour savoir s'il y a lésion de plus de sept douzièmes, il faut estimer l'immeuble suivant son état et sa valeur au moment de la vente.\n\nEn cas de promesse de vente unilatérale, la lésion s'apprécie au jour de la réalisation."
+    },
+    {
+     "num": "1676",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "La demande n'est plus recevable après l'expiration de deux années, à compter du jour de la vente.\n\nCe délai court et n'est pas suspendu pendant la durée du temps stipulé pour le pacte du rachat."
+    },
+    {
+     "num": "1677",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "La preuve de la lésion ne pourra être admise que par jugement, et dans le cas seulement où les faits articulés seraient assez vraisemblables et assez graves pour faire présumer la lésion."
+    },
+    {
+     "num": "1678",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "Cette preuve ne pourra se faire que par un rapport de trois experts, qui seront tenus de dresser un seul procès-verbal commun, et de ne former qu'un seul avis à la pluralité des voix."
+    },
+    {
+     "num": "1679",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "S'il y a des avis différents, le procès-verbal en contiendra les motifs, sans qu'il soit permis de faire connaître de quel avis chaque expert a été."
+    },
+    {
+     "num": "1680",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "Les trois experts seront nommés d'office, à moins que les parties ne se soient accordées pour les nommer tous les trois conjointement."
+    },
+    {
+     "num": "1681",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "Dans le cas où l'action en rescision est admise, l'acquéreur a le choix ou de rendre la chose en retirant le prix qu'il en a payé, ou de garder le fonds en payant le supplément du juste prix, sous la déduction du dixième du prix total.\n\nLe tiers possesseur a le même droit, sauf sa garantie contre son vendeur."
+    },
+    {
+     "num": "1682",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "Si l'acquéreur préfère garder la chose en fournissant le supplément réglé par l'article précédent, il doit l'intérêt du supplément, du jour de la demande en rescision.\n\nS'il préfère la rendre et recevoir le prix, il rend les fruits du jour de la demande.\n\nL'intérêt du prix qu'il a payé lui est aussi compté du jour de la même demande, ou du jour du paiement, s'il n'a touché aucuns fruits."
+    },
+    {
+     "num": "1683",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "La rescision pour lésion n'a pas lieu en faveur de l'acheteur."
+    },
+    {
+     "num": "1684",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "Elle n'a pas lieu en toutes ventes qui, d'après la loi, ne peuvent être faites que d'autorité de justice."
+    },
+    {
+     "num": "1685",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VI : De la nullité et de la résolution de la vente.",
+      "Section 2 : De la rescision de la vente pour cause de lésion."
+     ],
+     "texte": "Les règles expliquées dans la section précédente pour les cas où plusieurs ont vendu conjointement ou séparément, et pour celui où le vendeur ou l'acheteur a laissé plusieurs héritiers, sont pareillement observées pour l'exercice de l'action en rescision."
+    },
+    {
+     "num": "1686",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VII : De la licitation."
+     ],
+     "texte": "Si une chose commune à plusieurs ne peut être partagée commodément et sans perte ;\n\nOu si, dans un partage fait de gré à gré de biens communs, il s'en trouve quelques-uns qu'aucun des copartageants ne puisse ou ne veuille prendre,\n\nLa vente s'en fait aux enchères, et le prix en est partagé entre les copropriétaires."
+    },
+    {
+     "num": "1687",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VII : De la licitation."
+     ],
+     "texte": "Chacun des copropriétaires est le maître de demander que les étrangers soient appelés à la licitation : ils sont nécessairement appelés, lorsque l'un des copropriétaires est mineur."
+    },
+    {
+     "num": "1688",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VII : De la licitation."
+     ],
+     "texte": "Le mode et les formalités à observer pour la licitation sont expliqués au titre \" Des successions \" et au code de procédure."
+    },
+    {
+     "num": "1689",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "Dans le transport d'un droit ou d'une action sur un tiers, la délivrance s'opère entre le cédant et le cessionnaire par la remise du titre."
+    },
+    {
+     "num": "1690",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "Le cessionnaire n'est saisi à l'égard des tiers que par la signification du transport faite au débiteur.\n\nNéanmoins, le cessionnaire peut être également saisi par l'acceptation du transport faite par le débiteur dans un acte authentique."
+    },
+    {
+     "num": "1691",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "Si, avant que le cédant ou le cessionnaire eût signifié le transport au débiteur, celui-ci avait payé le cédant, il sera valablement libéré."
+    },
+    {
+     "num": "1693",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "Celui qui vend un droit incorporel doit en garantir l'existence au temps du transport, quoiqu'il soit fait sans garantie."
+    },
+    {
+     "num": "1696",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "Celui qui vend une succession sans en spécifier en détail les objets n'est tenu de garantir que sa qualité d'héritier."
+    },
+    {
+     "num": "1697",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "S'il avait déjà profité des fruits de quelque fonds, ou reçu le montant de quelque créance appartenant à cette succession, ou vendu quelques effets de la succession, il est tenu de les rembourser à l'acquéreur, s'il ne les a expressément réservés lors de la vente."
+    },
+    {
+     "num": "1698",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "L'acquéreur doit de son côté rembourser au vendeur ce que celui-ci a payé pour les dettes et charges de la succession, et lui faire raison de tout ce dont il était créancier, s'il n'y a stipulation contraire."
+    },
+    {
+     "num": "1699",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "Celui contre lequel on a cédé un droit litigieux peut s'en faire tenir quitte par le cessionnaire, en lui remboursant le prix réel de la cession avec les frais et loyaux coûts, et avec les intérêts à compter du jour où le cessionnaire a payé le prix de la cession à lui faite."
+    },
+    {
+     "num": "1700",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "La chose est censée litigieuse dès qu'il y a procès et contestation sur le fond du droit."
+    },
+    {
+     "num": "1701",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "La disposition portée en l'article 1699 cesse :\n\n1° Dans le cas où la cession a été faite à un cohéritier ou copropriétaire du droit cédé ;\n\n2° Lorsqu'elle a été faite à un créancier en paiement de ce qui lui est dû ;\n\n3° Lorsqu'elle a été faite au possesseur de l'héritage sujet au droit litigieux."
+    },
+    {
+     "num": "1701-1",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VI : De la vente",
+      "Chapitre VIII : Du transport de certains droits incorporels, des droits successifs et des droits litigieux"
+     ],
+     "texte": "Les articles 1689 à 1691 et 1693 ne s'appliquent pas aux cessions régies par les articles 1321 à 1326 du présent code."
+    }
+   ]
+  },
+  {
+   "nom": "code de la construction et de l’habitation",
+   "titre": "Code de la construction et de l’habitation",
+   "cid": "LEGITEXT000006074096",
+   "articles": [
+    {
+     "num": "L271-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique.",
+      "Section 1 : Dispositions générales."
+     ],
+     "texte": "Pour tout acte ayant pour objet la construction ou l'acquisition d'un immeuble à usage d'habitation, la souscription de parts donnant vocation à l'attribution en jouissance ou en propriété d'immeubles d'habitation ou la vente d'immeubles à construire ou de location-accession à la propriété immobilière, l'acquéreur non professionnel peut se rétracter dans un délai de dix jours à compter du lendemain de la première présentation de la lettre lui notifiant l'acte.\n\nCet acte est notifié à l'acquéreur par lettre recommandée avec demande d'avis de réception ou par tout autre moyen présentant des garanties équivalentes pour la détermination de la date de réception ou de remise. La faculté de rétractation est exercée dans ces mêmes formes.\n\nLorsque l'acte est conclu par l'intermédiaire d'un professionnel ayant reçu mandat pour prêter son concours à la vente, cet acte peut être remis directement au bénéficiaire du droit de rétractation. Dans ce cas, le délai de rétractation court à compter du lendemain de la remise de l'acte, qui doit être attestée selon des modalités fixées par décret.\n\nLorsque le contrat constatant ou réalisant la convention est précédé d'un contrat préliminaire ou d'une promesse synallagmatique ou unilatérale, les dispositions figurant aux trois alinéas précédents ne s'appliquent qu'à ce contrat ou à cette promesse.\n\nLorsque le contrat constatant ou réalisant la convention est dressé en la forme authentique et n'est pas précédé d'un contrat préliminaire ou d'une promesse synallagmatique ou unilatérale, l'acquéreur non professionnel dispose d'un délai de réflexion de dix jours à compter de la notification ou de la remise du projet d'acte selon les mêmes modalités que celles prévues pour le délai de rétractation mentionné aux premier et troisième alinéas. En aucun cas l'acte authentique ne peut être signé pendant ce délai de dix jours.\n\nLes actes mentionnés au présent article indiquent, de manière lisible et compréhensible, les informations relatives aux conditions et aux modalités d'exercice du droit de rétractation ou de réflexion.\n\nTout manquement à l'obligation d'information mentionnée à l'avant-dernier alinéa est passible d'une amende administrative dont le montant ne peut excéder 3 000 euros pour une personne physique et 15 000 euros pour une personne morale. Cette amende est prononcée dans les conditions prévues au chapitre II du titre II du livre V du code de la consommation."
+    },
+    {
+     "num": "L271-2",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique.",
+      "Section 1 : Dispositions générales."
+     ],
+     "texte": "Lors de la conclusion d'un acte mentionné à l'article L. 271-1, nul ne peut recevoir de l'acquéreur non professionnel, directement ou indirectement, aucun versement à quelque titre ou sous quelque forme que ce soit avant l'expiration du délai de rétractation, sauf dispositions législatives expresses contraires prévues notamment pour les contrats ayant pour objet l'acquisition ou la construction d'un immeuble neuf d'habitation, la souscription de parts donnant vocation à l'attribution en jouissance ou en propriété d'immeubles d'habitation et les contrats préliminaires de vente d'immeubles à construire ou de location-accession à la propriété immobilière. Si les parties conviennent d'un versement à une date postérieure à l'expiration de ce délai et dont elles fixent le montant, l'acte est conclu sous la condition suspensive de la remise desdites sommes à la date convenue.\n\nToutefois, lorsque l'un des actes mentionnés à l'alinéa précédent est conclu par l'intermédiaire d'un professionnel ayant reçu mandat pour prêter son concours à la vente, un versement peut être reçu de l'acquéreur s'il est effectué entre les mains d'un professionnel disposant d'une garantie financière affectée au remboursement des fonds déposés. Si l'acquéreur exerce sa faculté de rétractation, le professionnel dépositaire des fonds les lui restitue dans un délai de vingt et un jours à compter du lendemain de la date de cette rétractation.\n\nLorsque l'acte est dressé en la forme authentique, aucune somme ne peut être versée pendant le délai de réflexion de dix jours.\n\nEst puni de 30 000 euros d'amende le fait d'exiger ou de recevoir un versement ou un engagement de versement en méconnaissance des alinéas ci-dessus."
+    },
+    {
+     "num": "L271-3",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique.",
+      "Section 1 : Dispositions générales."
+     ],
+     "texte": "Les dispositions de la présente section ne sont pas applicables aux ventes par adjudication réalisées en la forme authentique."
+    },
+    {
+     "num": "L271-4",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique.",
+      "Section 2 : Dossier de diagnostic technique."
+     ],
+     "texte": "I.-En cas de vente de tout ou partie d'un immeuble bâti, un dossier de diagnostic technique, fourni par le vendeur, est annexé à la promesse de vente ou, à défaut de promesse, à l'acte authentique de vente. En cas de vente publique, le dossier de diagnostic technique est annexé au cahier des charges.\n\nLe dossier de diagnostic technique comprend, dans les conditions définies par les dispositions qui les régissent, les documents suivants :\n\n1° Le constat de risque d'exposition au plomb prévu aux articles L. 1334-5 et L. 1334-6 du code de la santé publique ;\n\n2° L'état mentionnant la présence ou l'absence de matériaux ou produits contenant de l'amiante prévu à l'article L. 1334-13 du même code ;\n\n3° L'état relatif à la présence de termites dans le bâtiment prévu à l'article L. 126-24 du présent code ;\n\n4° L'état de l'installation intérieure de gaz prévu à l'article L. 134-9 du présent code ;\n\n5° Dans les zones mentionnées au I de l'article L. 125-5 du code de l'environnement, l'état des risques prévu au I du même article ;\n\n6° Le diagnostic de performance énergétique et, le cas échéant, l'audit énergétique prévus aux articles L. 126-26 et L. 126-28-1 du présent code ;\n\n7° L'état de l'installation intérieure d'électricité prévu à l'article L. 134-7 ;\n\n8° Le document établi à l'issue du contrôle des installations d'assainissement non collectif mentionné à l'article L. 1331-11-1 du code de la santé publique ou, sur les territoires dont les rejets d'eaux usées et pluviales ont une incidence sur la qualité de l'eau pour les épreuves olympiques de nage libre et de triathlon en Seine, le document établi à l'issue du contrôle du raccordement au réseau public de collecte des eaux usées mentionné au II de l'article L. 2224-8 du code général des collectivités territoriales ;\n\n9° Dans les zones prévues à l'article L. 131-3 du présent code, l'information sur la présence d'un risque de mérule ;\n\n10° Lorsque le bien est situé dans l'une des zones de bruit définies par un plan d'exposition au bruit des aérodromes prévu à l'article L. 112-6 du code de l'urbanisme, un document comportant l'indication claire et précise de cette zone ainsi que les autres informations prévues au I de l'article L. 112-11 du même code.\n\n11° Lorsque le bien est situé dans le périmètre d'un plan de protection de l'atmosphère prévu à l'article L. 222-4 du code de l'environnement, un certificat attestant la conformité de l'appareil de chauffage au bois aux règles d'installation et d'émission fixées par le représentant de l'Etat dans le département ;\n\n12° S'ils existent, les arrêtés pris au titre de la police de la sécurité et de la salubrité des immeubles, locaux et installations régie par le titre Ier du livre V du présent code.\n\nLes documents mentionnés aux 1°, 4° et 7° du présent I ne sont requis que pour les immeubles ou parties d'immeuble à usage d'habitation.\n\nLe document mentionné au 10° n'est requis que pour les immeubles ou parties d'immeubles à usage d'habitation ou à usage professionnel et d'habitation.\n\nLes documents mentionnés au 6° ne sont pas requis en cas de vente d'un immeuble à construire visée à l'article L. 261-1.\n\nLorsque les locaux faisant l'objet de la vente sont soumis aux dispositions de la loi n° 65-557 du 10 juillet 1965 fixant le statut de la copropriété des immeubles bâtis ou appartiennent à des personnes titulaires de droits réels immobiliers sur les locaux ou à des titulaires de parts donnant droit ou non à l'attribution ou à la jouissance en propriété des locaux, le document mentionné au 1° porte exclusivement sur la partie privative de l'immeuble affectée au logement et les documents mentionnés au 3°, 4°, 7° et 12° sur la partie privative du lot.\n\nL'audit énergétique mentionné au 6° du présent I est remis par le vendeur ou son représentant à l'acquéreur potentiel lors de la première visite de l'immeuble ou de la partie d'immeuble faisant l'objet d'un tel audit. La remise peut être faite par tout moyen, y compris par voie électronique.\n\nII.-En l'absence, lors de la signature de l'acte authentique de vente, d'un des documents mentionnés aux 1°, 2°, 3°, 4°, 7° et 8° du I en cours de validité, le vendeur ne peut pas s'exonérer de la garantie des vices cachés correspondante.\n\nEn l'absence, lors de la signature de l'acte authentique de vente, du document mentionné aux 5° et 12° du I, l'acquéreur peut poursuivre la résolution du contrat ou demander au juge une diminution du prix.\n\nEn cas de non-conformité de l'installation d'assainissement non collectif lors de la signature de l'acte authentique de vente, l'acquéreur fait procéder aux travaux de mise en conformité dans un délai d'un an après l'acte de vente.\n\nL'acquéreur ne peut se prévaloir à l'encontre du propriétaire des recommandations accompagnant le diagnostic de performance énergétique ainsi que le document relatif à la situation du bien dans une zone définie par un plan d'exposition au bruit des aérodromes, qui n'ont qu'une valeur indicative."
+    },
+    {
+     "num": "L271-5",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique.",
+      "Section 2 : Dossier de diagnostic technique."
+     ],
+     "texte": "La durée de validité des documents prévus aux 1° à 4°, 6°, 7° et 8° du I de l'article L. 271-4 est fixée par décret en fonction de la nature du constat, de l'état ou du diagnostic.\n\nSi l'un de ces documents produits lors de la signature de la promesse de vente n'est plus en cours de validité à la date de la signature de l'acte authentique de vente, il est remplacé par un nouveau document pour être annexé à l'acte authentique de vente.\n\nSi le constat mentionné au 1° établit l'absence de revêtements contenant du plomb ou la présence de revêtements contenant du plomb à des concentrations inférieures aux seuils définis par arrêté des ministres chargés de la santé et de la construction, il n'y a pas lieu de faire établir un nouveau constat à chaque mutation, le constat initial étant joint au dossier de diagnostic technique.\n\nSi, après la promesse de vente, la parcelle sur laquelle est implanté l'immeuble est inscrite dans une des zones mentionnées au I de l'article L. 125-5 du code de l'environnement ou si les documents à prendre en compte pour l'application du même I ont fait l'objet d'une mise à jour, le dossier de diagnostic technique est complété lors de la signature de l'acte authentique de vente par un état des risques ou par la mise à jour de l'état existant."
+    },
+    {
+     "num": "L271-6",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique.",
+      "Section 2 : Dossier de diagnostic technique."
+     ],
+     "texte": "Les documents prévus aux 1° à 4°, 6° et 7° du I de l'article L. 271-4 ainsi qu'à l'article L. 126-26 sont établis par une personne présentant des garanties de compétence et disposant d'une organisation et de moyens appropriés.\n\nCette personne est tenue de souscrire une assurance permettant de couvrir les conséquences d'un engagement de sa responsabilité en raison de ses interventions.\n\nElle ne doit avoir aucun lien de nature à porter atteinte à son impartialité et à son indépendance ni avec le propriétaire ou son mandataire qui fait appel à elle, ni avec une entreprise pouvant réaliser des travaux sur les ouvrages, installations ou équipements pour lesquels il lui est demandé d'établir l'un des documents mentionnés au premier alinéa.\n\nLe diagnostic de performance énergétique mentionné à l'article L. 126-30 affiché à l'intention du public peut être réalisé par un agent de la collectivité publique ou de la personne morale occupant le bâtiment, dans les conditions prévues au premier alinéa du présent article. Un décret définit les conditions et modalités d'application du présent article.\n\nUn annuaire rendu public recense les personnes en activité mentionnées au premier alinéa du présent article. Les modalités d'application du présent alinéa sont précisées par arrêté du ministre chargé de la construction."
+    },
+    {
+     "num": "D271-5",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique",
+      "Section 1 : Conditions d’établissement du dossier de diagnostic technique"
+     ],
+     "texte": "Par rapport à la date de la promesse de vente ou à la date de l'acte authentique de vente de tout ou partie d'un immeuble bâti, les documents prévus aux 1°, 3° et 4° du I de l'article L. 271-4 doivent avoir été établis depuis :\n\n- sous réserve des dispositions du troisième alinéa de l'article L. 271-5, moins d'un an pour le constat de risque d'exposition au plomb ;\n\n- moins de six mois pour l'état du bâtiment relatif à la présence de termites ;\n\n- moins de trois ans pour l'état de l'installation intérieure de gaz ;\n\n- moins de trois ans pour l'état de l'installation intérieure d'électricité."
+    },
+    {
+     "num": "R271-1",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique",
+      "Section 1 : Conditions d’établissement du dossier de diagnostic technique"
+     ],
+     "texte": "Pour l'application de l'article L. 271-6, il est recouru soit à une personne physique dont les compétences ont été certifiées par un organisme accrédité dans le domaine de la construction, soit à une personne morale employant des salariés ou constituée de personnes physiques qui disposent des compétences certifiées dans les mêmes conditions.\n\nLa certification des compétences est délivrée en fonction des connaissances techniques dans le domaine du bâtiment et de l'aptitude à établir les différents éléments composant le dossier de diagnostic technique.\n\nLes organismes autorisés à délivrer la certification des compétences sont accrédités par un organisme signataire de l'accord européen multilatéral pris dans le cadre de la coordination européenne des organismes d'accréditation. L'accréditation est accordée en considération de l'organisation interne de l'organisme en cause, des exigences requises des personnes chargées des missions d'examinateur et de sa capacité à assurer la surveillance des organismes certifiés. Un organisme certificateur ne peut pas établir les documents qui doivent être établis dans les conditions prévues à l'article L. 271-6.\n\nDes arrêtés des ministres chargés du logement, de la santé et de l'industrie précisent les modalités d'application du présent article."
+    },
+    {
+     "num": "R271-2",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique",
+      "Section 1 : Conditions d’établissement du dossier de diagnostic technique"
+     ],
+     "texte": "Les personnes mentionnées à l'article L. 271-6 souscrivent une assurance dont le montant de la garantie ne peut être inférieur à 300 000 euros par sinistre et 500 000 euros par année d'assurance."
+    },
+    {
+     "num": "R271-2-1",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique",
+      "Section 1 : Conditions d’établissement du dossier de diagnostic technique"
+     ],
+     "texte": "Les personnes qui réalisent les repérages prévus aux articles R. 1334-20 à R. 1334-22 du code de la santé publique ainsi que l'évaluation périodique de l'état de conservation et l'examen visuel prévus aux articles R. 1334-27 et R. 1334-29-3 du même code adressent aux ministres chargés de la construction et de la santé un rapport annuel d'activité. Un arrêté des ministres chargés de la construction et de la santé définit les modalités de transmission et le contenu du rapport d'activité."
+    },
+    {
+     "num": "R271-3",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique",
+      "Section 1 : Conditions d’établissement du dossier de diagnostic technique"
+     ],
+     "texte": "La personne à laquelle il est fait appel pour l'établissement des documents qui doivent être établis dans les conditions prévues à l'article L. 271-6 remet préalablement à son client un document par lequel elle atteste sur l'honneur qu'elle est en situation régulière au regard des dispositions de cet article et qu'elle dispose des moyens en matériel et en personnel nécessaires à sa prestation.\n\nLes documents établis sous couvert de la certification prévue à l'article R. 271-1 comportent la mention suivante : \" Le présent rapport est établi par une personne dont les compétences sont certifiées par... : \", complétée par le nom et l'adresse postale de l'organisme certificateur concerné.\n\nNi la personne citée au premier alinéa ni son employé ne peut accorder, directement ou indirectement, à l'entité visée à l'article 1er de la loi n° 70-9 du 2 janvier 1970 qui intervient pour la vente ou la location pour laquelle l'un des documents qui doivent être établis dans les conditions prévues à l'article L. 271-6 est demandé, aucun avantage ni rétribution, sous quelque forme que ce soit.\n\nNi la personne citée au premier alinéa ni son employé ne peut recevoir, directement ou indirectement, de la part d'une entreprise pouvant réaliser des travaux sur les ouvrages, installations ou équipements sur lesquels porte sa prestation, aucun avantage ni rétribution, sous quelque forme que ce soit."
+    },
+    {
+     "num": "R271-4",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique",
+      "Section 1 : Conditions d’établissement du dossier de diagnostic technique"
+     ],
+     "texte": "Est puni de l'amende prévue pour les contraventions de la cinquième classe le fait :\n\na) D'établir ou d'accepter d'établir un document devant être établi dans les conditions de l'article L. 271-6, et de ne pas respecter les conditions de compétences, d'organisation et d'assurance définies par les articles R. 271-1, R. 271-2 et R. 134-5-6 et les conditions d'impartialité et d'indépendance exigées à l'article L. 271-6 ;\n\nb) Pour un organisme certificateur d'établir un document devant être établi dans les conditions prévues à l'article L. 271-6, en méconnaissance de l'article R. 271-1 ;\n\nc) De faire appel, en vue d'établir un document devant être établi dans les conditions prévues à l'article L. 271-6, à une personne qui ne satisfait pas aux conditions de compétences, d'organisation et d'assurance définies aux articles R. 271-1 et R. 271-2 ou aux conditions d'impartialité et d'indépendance exigées à l'article L. 271-6.\n\nLa récidive est réprimée conformément aux articles 132-11 et 132-15 du code pénal."
+    },
+    {
+     "num": "D271-6",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique",
+      "Section 2 : Dispositions générales"
+     ],
+     "texte": "L'acte sous seing privé ou une copie de l'avant-contrat réalisé en la forme authentique remis directement à l'acquéreur non professionnel en application du troisième alinéa de l'article L. 271-1 reproduit les dispositions de l'article L. 271-2.\n\nLe bénéficiaire du droit de rétractation y inscrit de sa main les mentions suivantes : \" remis par (nom du professionnel)... à (lieu)... le (date)... \" et : \" Je déclare avoir connaissance qu'un délai de rétractation de dix jours m'est accordé par l'article L. 271-1 du code de la construction et de l'habitation, et qu'il court à compter du lendemain de la date de remise inscrite de ma main sur le présent acte, soit à compter du... \"."
+    },
+    {
+     "num": "D271-7",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre VII : Protection de l’acquéreur immobilier.",
+      "Chapitre unique",
+      "Section 2 : Dispositions générales"
+     ],
+     "texte": "Le projet d'acte authentique mentionné au cinquième alinéa de l'article L. 271-1 remis directement à l'acquéreur non professionnel reproduit les dispositions de l'article L. 271-2.\n\nLe bénéficiaire du droit de réflexion y inscrit de sa main les mentions suivantes : \" remis par (nom du professionnel)... à (lieu)... le (date)... \" et : \" Je déclare avoir connaissance qu'un délai de réflexion de dix jours m'est accordé par l'article L. 271-1 du code de la construction et de l'habitation, et qu'il court à compter du lendemain de la date de remise inscrite de ma main sur le présent projet, soit à compter du... \""
+    }
+   ]
+  },
+  {
+   "nom": "code de l’urbanisme",
+   "titre": "Code de l’urbanisme",
+   "cid": "LEGITEXT000006074075",
+   "articles": [
+    {
+     "num": "L211-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Les communes dotées d'un plan d'occupation des sols rendu public ou d'un plan local d'urbanisme approuvé peuvent, par délibération, instituer un droit de préemption urbain sur tout ou partie des zones urbaines et des zones d'urbanisation future délimitées par ce plan, dans les périmètres de protection rapprochée de prélèvement d'eau destinée à l'alimentation des collectivités humaines définis en application de l'article L. 1321-2 du code de la santé publique, dans les zones et secteurs définis par un plan de prévention des risques technologiques en application de l'article L. 515-16 du code de l'environnement, dans les zones soumises aux servitudes prévues au II de l'article L. 211-12 du même code, sur tout ou partie des espaces urbains et des secteurs occupés par une urbanisation diffuse délimités conformément aux articles L. 5112-1 et L. 5112-2 du code général de la propriété des personnes publiques, ainsi que sur tout ou partie de leur territoire couvert par un plan de sauvegarde et de mise en valeur rendu public ou approuvé en application de l'article L. 313-1 du présent code lorsqu'il n'a pas été créé de zone d'aménagement différé ou de périmètre provisoire de zone d'aménagement différé sur ces territoires.\n\nLes conseils municipaux des communes dotées d'une carte communale approuvée peuvent, en vue de la réalisation d'un équipement ou d'une opération d'aménagement, instituer un droit de préemption dans un ou plusieurs périmètres délimités par la carte. La délibération précise, pour chaque périmètre, l'équipement ou l'opération projetée.\n\nCe droit de préemption est ouvert à la commune. Le conseil municipal peut décider de le supprimer sur tout ou partie des zones considérées. Il peut ultérieurement le rétablir dans les mêmes conditions. Toutefois, dans le cas prévu au deuxième alinéa de l'article L. 210-1, le droit de préemption peut être institué ou rétabli par arrêté du représentant de l'Etat dans le département. Dans les parties actuellement urbanisées des communes couvertes par un plan d'occupation des sols devenu caduc en application de l'article L. 174-1, le droit de préemption prévu au deuxième alinéa de l'article L. 210-1 est maintenu.\n\nLorsqu'un lotissement a été autorisé ou une zone d'aménagement concerté créée, la commune peut exclure du champ d'application du droit de préemption urbain la vente des lots issus dudit lotissement ou les cessions de terrain par la personne chargée de l'aménagement de la zone d'aménagement concerté. Dans ce cas, la délibération du conseil municipal est valable pour une durée de cinq ans à compter du jour où la délibération est exécutoire.\n\nPar dérogation au premier alinéa du même article L. 210-1, le droit de préemption institué dans les conditions prévues au présent article peut être exercé en vue de la relocalisation d'activités industrielles, commerciales, artisanales ou de services ainsi que pour le relogement d'occupants définitivement évincés d'un bien à usage d'habitation ou mixte en raison de la réalisation de travaux nécessaires à l'une des opérations d'aménagement définies au livre III du présent code."
+    },
+    {
+     "num": "L211-1-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "L'autorité compétente peut, par délibération motivée, délimiter au sein du plan local d'urbanisme, du document en tenant lieu ou de la carte communale des secteurs prioritaires à mobiliser qui présentent un potentiel foncier majeur pour favoriser l'atteinte des objectifs de lutte contre l'artificialisation des sols prévus en application de l'article L. 151-5, à l'intérieur desquels est institué le droit de préemption urbain prévu au présent chapitre. Les articles L. 210-1 et L. 213-1 à L. 213-18 s'appliquent également.\n\nCes secteurs prioritaires peuvent couvrir en particulier :\n\n1° Des terrains contribuant à la préservation ou à la restauration de la nature en ville, notamment lorsqu'il s'agit de surfaces végétalisées ou naturelles situées au sein des espaces urbanisés ;\n\n2° Des zones présentant un fort potentiel en matière de renaturation, en particulier dans le cadre de la préservation ou de la restauration des continuités écologiques, et qui peuvent notamment être les zones préférentielles pour la renaturation identifiées dans le schéma de cohérence territoriale, mentionnées à l'article L. 141-10 ;\n\n3° Des terrains susceptibles de contribuer au renouvellement urbain, à l'optimisation de la densité des espaces urbanisés ou à la réhabilitation des friches mentionnées à l'article L. 111-26."
+    },
+    {
+     "num": "L211-2",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Lorsque la commune fait partie d'un établissement public de coopération intercommunale y ayant vocation, elle peut, en accord avec cet établissement, lui déléguer tout ou partie des compétences qui lui sont attribuées par le présent chapitre.\n\nToutefois, la compétence d'un établissement public de coopération intercommunale à fiscalité propre, d'un établissement public territorial créé en application de l'article L. 5219-2 du code général des collectivités territoriales, ainsi que celle de la métropole de Lyon en matière de plan local d'urbanisme, emporte leur compétence de plein droit en matière de droit de préemption urbain. La métropole du Grand Paris est compétente de plein droit en matière de droit de préemption urbain, dans les périmètres fixés par le conseil de la métropole, pour la mise en œuvre des opérations d'aménagement d'intérêt métropolitain mentionnées à l'article L. 5219-1 du même code. Dans les périmètres ainsi identifiés, les aliénations nécessaires à la réalisation des opérations d'aménagement d'intérêt métropolitain mentionnées au même article L. 5219-1 ne sont plus soumises aux droits de préemption urbains de la commune de Paris et des établissements publics territoriaux créés en application de l'article L. 5219-2 du même code.\n\nLe titulaire du droit de préemption urbain peut déléguer son droit à une société d'économie mixte agréée mentionnée à l'article L. 481-1 du code de la construction et de l'habitation, à l'un des organismes d'habitations à loyer modéré prévus à l'article L. 411-2 du même code, à un organisme de foncier solidaire mentionné à l'article L. 329-1 dudit code, pour les biens nécessaires à son objet principal, ou à l'un des organismes agréés mentionnés à l'article L. 365-2 du même code. Leur organe délibérant peut déléguer l'exercice de ce droit, dans des conditions définies par décret en Conseil d'Etat. Par dérogation à l'article L. 213-11 du présent code, les biens acquis par exercice du droit de préemption en application du présent alinéa ne peuvent être utilisés qu'en vue de la réalisation d'opérations d'aménagement ou de construction permettant la réalisation des objectifs fixés dans le programme local de l'habitat ou déterminés en application du premier alinéa de l'article L. 302-8 du code de la construction et de l'habitation ainsi qu'en vue de la réalisation d'opérations programmées d'amélioration de l'habitat prévues à l'article L. 303-1 du même code, de plans de sauvegarde prévus à l'article L. 615-1 dudit code ou d'opérations de requalification de copropriétés dégradées prévues à l'article L. 741-1 du même code.\n\nDans le périmètre d'une grande opération d'urbanisme au sens de l'article L. 312-3 du présent code, le droit de préemption prévu au présent chapitre est exercé par la collectivité territoriale ou l'établissement public cocontractant mentionné au même article L. 312-3. La collectivité territoriale ou l'établissement public peut déléguer l'exercice de ce droit à un établissement public y ayant vocation ou au concessionnaire d'une opération d'aménagement."
+    },
+    {
+     "num": "L211-2-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Dans les départements et régions d'outre-mer, le titulaire du droit de préemption peut également déléguer son droit à un organisme d'habitations à loyer modéré prévu à l'article L. 411-2 du code de la construction et de l'habitation. Cette délégation ne peut être accordée qu'à l'occasion de l'aliénation d'un bien nécessaire à la réalisation des missions mentionnées au même article L. 411-2."
+    },
+    {
+     "num": "L211-2-2",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "En Guadeloupe et en Martinique, le titulaire du droit de préemption peut également déléguer son droit aux agences pour la mise en valeur des espaces urbains de la zone dite des cinquante pas géométriques mentionnées à l'article 4 de la loi n° 96-1241 du 30 décembre 1996 relative à l'aménagement, la protection et la mise en valeur de la zone dite des cinquante pas géométriques dans les départements d'outre-mer. Cette délégation ne peut être accordée que dans les espaces urbains et des secteurs occupés par une urbanisation diffuse délimités conformément aux articles L. 5112-1 et L. 5112-2 du code général de la propriété des personnes publiques."
+    },
+    {
+     "num": "L211-2-3",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Le titulaire du droit de préemption urbain peut déléguer ce droit à une personne y ayant vocation et à laquelle a été confiée, en application de l'article L. 300-9, la réalisation d'actions ou d'opérations prévues aux 6°, 8° et 9° du III de l'article L. 303-2 du code de la construction et de l'habitation dans les secteurs d'intervention délimités d'une opération de revitalisation de territoire mentionnée au même article L. 303-2 ou la réalisation d'actions ou d'opérations ayant pour objet de favoriser la diversité, le maintien ou le développement d'activités artisanales et commerciales de proximité dans des espaces urbains dans le périmètre délimité en application de l'article L. 214-1 du présent code.\n\nLe droit de préemption ainsi délégué peut, le cas échéant, porter sur les aliénations et cessions mentionnées à l'article L. 211-4, dans les conditions prévues aux deux derniers alinéas du même article L. 211-4.\n\nLes biens ainsi acquis entrent dans le patrimoine du délégataire."
+    },
+    {
+     "num": "L211-2-4",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "I.-Le droit de préemption institué dans les conditions prévues au présent chapitre peut être exercé en vue de la réalisation d'une opération programmée d'amélioration de l'habitat prévue à l'article L. 303-1 du code de la construction et de l'habitation, d'un plan de sauvegarde prévu à l'article L. 615-1 du même code ou d'une opération de requalification de copropriétés dégradées prévue à l'article L. 741-1 dudit code.\n\nII.-Pour la réalisation des actions ou des opérations mentionnées au I du présent article, le titulaire du droit de préemption urbain peut déléguer ce droit au concessionnaire d'une opération d'aménagement mentionnée à l'article L. 300-4 ou d'actions mentionnées à l'article L. 300-10.\n\nLe droit de préemption ainsi délégué peut, le cas échéant, porter sur les aliénations et cessions mentionnées à l'article L. 211-4.\n\nLes biens ainsi acquis entrent dans le patrimoine du délégataire."
+    },
+    {
+     "num": "L211-3",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Le droit de préemption urbain n'est pas applicable aux aliénations de biens et droits immobiliers ayant fait l'objet de la notification prévue par l'article L. 240-3 du présent code, ni à l'aliénation de terrains au profit du preneur à bail à construction conclu à l'occasion d'une opération d'accession sociale à la propriété, prévue au dernier alinéa de l'article L. 251-1 du code de la construction et de l'habitation."
+    },
+    {
+     "num": "L211-4",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Ce droit de préemption n'est pas applicable :\n\na) A l'aliénation d'un ou plusieurs lots constitués soit par un seul local à usage d'habitation, à usage professionnel ou à usage professionnel et d'habitation, soit par un tel local et ses locaux accessoires, soit par un ou plusieurs locaux accessoires d'un tel local, compris dans un bâtiment effectivement soumis, à la date du projet d'aliénation, au régime de la copropriété, soit à la suite du partage total ou partiel d'une société d'attribution, soit depuis dix années au moins dans les cas où la mise en copropriété ne résulte pas d'un tel partage, la date de publication du règlement de copropriété au fichier immobilier constituant le point de départ de ce délai ;\n\nb) A la cession de parts ou d'actions de sociétés visées aux titres II et III de la loi n° 71-579 du 16 juillet 1971 et donnant vocation à l'attribution d'un local d'habitation, d'un local professionnel ou d'un local mixte et des locaux qui lui sont accessoires ;\n\nc) A l'aliénation d'un immeuble bâti, pendant une période de quatre ans à compter de son achèvement.\n\nToutefois, par délibération motivée, la commune peut décider d'appliquer ce droit de préemption aux aliénations et cessions mentionnées au présent article sur la totalité ou certaines parties du territoire soumis à ce droit.\n\nPour la mise en œuvre du deuxième alinéa de l'article L. 210-1, le représentant de l'Etat dans le département peut également décider, par arrêté motivé, d'appliquer le droit de préemption aux aliénations et cessions mentionnées au présent article sur la totalité ou sur certaines parties du territoire soumis à ce droit."
+    },
+    {
+     "num": "L211-5",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Tout propriétaire d'un bien soumis au droit de préemption peut proposer au titulaire de ce droit l'acquisition de ce bien, en indiquant le prix qu'il en demande. Le titulaire doit se prononcer dans un délai de deux mois à compter de ladite proposition dont copie doit être transmise par le maire au directeur départemental des finances publiques.\n\nA défaut d'accord amiable, le prix est fixé par la juridiction compétente en matière d'expropriation selon les règles mentionnées à l'article L. 213-4.\n\nEn cas d'acquisition, l'article L. 213-14 est applicable.\n\nEn cas de refus ou à défaut de réponse du titulaire du droit de préemption dans le délai de deux mois prévu à l'alinéa premier, le propriétaire bénéficie des dispositions de l'article L. 213-8.\n\nLes dispositions des articles L. 213-11 et L. 213-12 ne sont pas applicables à un bien acquis dans les conditions prévues par le présent article."
+    },
+    {
+     "num": "L211-7",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Un décret en Conseil d'Etat détermine, en tant que de besoin, les conditions d'application du présent chapitre."
+    },
+    {
+     "num": "L213-1-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Sont également soumis au droit de préemption les immeubles ou ensembles de droits sociaux mentionnés au 1° de l'article L. 213-1 lorsqu'ils font l'objet d'une donation entre vifs, sauf si celle-ci est effectuée :\n\n1° Entre ascendants et descendants ;\n\n2° Entre collatéraux jusqu'au sixième degré ;\n\n3° Entre époux ou partenaires d'un pacte civil de solidarité ;\n\n4° Entre une personne et les descendants de son conjoint ou de son partenaire de pacte civil de solidarité, ou entre ces descendants.\n\nLe présent chapitre est applicable aux aliénations mentionnées au premier alinéa. Toutefois, par dérogation au premier alinéa de l'article L. 213-2, la déclaration adressée à la mairie ne mentionne pas le prix. La décision du titulaire du droit de préemption d'acquérir le bien indique l'estimation de celui-ci par les services fiscaux."
+    },
+    {
+     "num": "L213-1-2",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Sont également soumis au droit de préemption les immeubles ou ensembles de droits sociaux mentionnés au 1° de l'article L. 213-1 lorsqu'ils constituent un apport en nature au sein d'une société civile immobilière. La déclaration d'intention d'aliéner est alors accompagnée d'un état de la situation sociale, financière et patrimoniale de la société civile immobilière."
+    },
+    {
+     "num": "L213-2",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Toute aliénation visée à l'article L. 213-1 est subordonnée, à peine de nullité, à une déclaration préalable faite par le propriétaire à la mairie de la commune où se trouve situé le bien. Cette déclaration comporte obligatoirement l'indication du prix et des conditions de l'aliénation projetée ou, en cas d'adjudication, l'estimation du bien ou sa mise à prix, ainsi que les informations dues au titre de l'article L. 514-20 du code de l'environnement. Le titulaire du droit de préemption peut, dans le délai de deux mois prévu au troisième alinéa du présent article, adresser au propriétaire une demande unique de communication des documents permettant d'apprécier la consistance et l'état de l'immeuble, ainsi que, le cas échéant, la situation sociale, financière et patrimoniale de la société civile immobilière. La liste des documents susceptibles d'être demandés est fixée limitativement par décret en Conseil d'Etat. La déclaration d'intention d'aliéner peut être dématérialisée. Le cas échéant, cette déclaration comporte également les informations dues au titre des articles L. 303-2 et L. 741-1 du code de la construction et de l'habitation.\n\nLorsque la contrepartie de l'aliénation fait l'objet d'un paiement en nature, la déclaration doit mentionner le prix d'estimation de cette contrepartie.\n\nLorsque le droit de préemption est exercé par le représentant de l'Etat dans le département dans les conditions prévues au deuxième alinéa de l'article L. 210-1, la déclaration est transmise à ce dernier par le maire, dans un délai de sept jours ouvrés à compter de la date de sa réception. A défaut, le représentant de l'Etat dans le département peut informer le maire de son intention d'en faire dresser procès-verbal, par lettre recommandée avec demande d'avis de réception. Le maire dispose d'un délai de sept jours à compter de la réception de la lettre du représentant de l'Etat dans le département pour faire part de ses observations. A l'issue de ce délai et au vu des observations du maire, le représentant de l'Etat dans le département peut décider de constater l'absence de transmission de la déclaration par procès-verbal. Il est alors procédé au recouvrement d'une amende forfaitaire de 1 000 €. Cette amende est redevable par la commune, par voie de titre de perception émis par le représentant de l'Etat dans le département, au profit du Fonds national des aides à la pierre mentionné à l'article L. 435-1 du code de la construction et de l'habitation, lorsque la commune se situe en métropole, ou au profit du fonds régional d'aménagement foncier et urbain mentionné à l'article L. 340-2 du présent code, lorsque la commune se situe dans un département d'outre-mer. L'avis de mise en recouvrement du titre de perception de l'amende forfaitaire reçu par le maire peut faire l'objet d'un recours de pleine juridiction.\n\nLe silence du titulaire du droit de préemption pendant deux mois à compter de la réception de la déclaration mentionnée au premier alinéa vaut renonciation à l'exercice du droit de préemption.\n\nLe délai est suspendu à compter de la réception de la demande mentionnée au premier alinéa ou de la demande de visite du bien. Il reprend à compter de la réception des documents par le titulaire du droit de préemption, du refus par le propriétaire de la visite du bien ou de la visite du bien par le titulaire du droit de préemption. Si le délai restant est inférieur à un mois, le titulaire dispose d'un mois pour prendre sa décision. Passés ces délais, son silence vaut renonciation à l'exercice du droit de préemption.\n\nLorsqu'il envisage d'acquérir le bien, le titulaire du droit de préemption transmet sans délai copie de la déclaration d'intention d'aliéner au responsable départemental des services fiscaux. La décision du titulaire fait l'objet d'une publication. Elle est notifiée au vendeur, au notaire et, le cas échéant, à la personne mentionnée dans la déclaration d'intention d'aliéner qui avait l'intention d'acquérir le bien. Le notaire la transmet aux titulaires de droits d'emphytéose, d'habitation ou d'usage, aux personnes bénéficiaires de servitudes, aux fermiers et aux locataires mentionnés dans la déclaration d'intention d'aliéner.\n\nLe titulaire du droit de préemption peut demander à visiter le bien dans des conditions fixées par décret.\n\nL'action en nullité prévue au premier alinéa se prescrit par cinq ans à compter de la publication de l'acte portant transfert de propriété."
+    },
+    {
+     "num": "L213-2-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Lorsque la réalisation d'une opération d'aménagement le justifie, le titulaire du droit de préemption peut décider d'exercer son droit pour acquérir la fraction d'une unité foncière comprise à l'intérieur d'une partie de commune soumise à un des droits de préemption institué en application du présent titre.\n\nDans ce cas, le propriétaire peut exiger que le titulaire du droit de préemption se porte acquéreur de l'ensemble de l'unité foncière."
+    },
+    {
+     "num": "L213-3",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Le titulaire du droit de préemption peut déléguer son droit à l'Etat, à une collectivité locale, à un établissement public y ayant vocation ou au concessionnaire d'une opération d'aménagement. Cette délégation peut porter sur une ou plusieurs parties des zones concernées ou être accordée à l'occasion de l'aliénation d'un bien. Les biens ainsi acquis entrent dans le patrimoine du délégataire.\n\nDans les articles L. 211-1 et suivants, L. 212-1 et suivants, L. 213-1 à L. 213-18 et L. 219-1 à L. 219-13, l'expression \" titulaire du droit de préemption \" s'entend également, s'il y a lieu, du délégataire en application du présent article."
+    },
+    {
+     "num": "L213-4",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "A défaut d'accord amiable, le prix d'acquisition est fixé par la juridiction compétente en matière d'expropriation ; ce prix est exclusif de toute indemnité accessoire, et notamment de l'indemnité de réemploi.\n\nLorsqu'il est fait application de l'article L. 213-2-1, le prix d'acquisition fixé par la juridiction compétente en matière d'expropriation tient compte de l'éventuelle dépréciation subie, du fait de la préemption partielle, par la fraction restante de l'unité foncière.\n\nLe prix est fixé, payé ou, le cas échéant, consigné selon les règles applicables en matière d'expropriation. Toutefois, dans ce cas :\n\na) La date de référence prévue à l'article L. 322-2 du code de l'expropriation pour cause d'utilité publique est :\n\n-pour les biens compris dans le périmètre d'une zone d'aménagement différé :\n\ni) la date de publication de l'acte délimitant le périmètre provisoire de la zone d'aménagement différé lorsque le bien est situé dans un tel périmètre ou lorsque l'acte créant la zone est publié dans le délai de validité d'un périmètre provisoire ;\n\nii) la date de publication de l'acte créant la zone d'aménagement différé si un périmètre provisoire de zone d'aménagement différé n'a pas été délimité ;\n\niii) dans tous les cas, la date du dernier renouvellement de l'acte créant la zone d'aménagement différé ;\n\n-pour les biens non compris dans une telle zone, la date à laquelle est devenu opposable aux tiers le plus récent des actes rendant public, approuvant, révisant ou modifiant le plan d'occupation des sols, ou approuvant, révisant ou modifiant le plan local d'urbanisme et délimitant la zone dans laquelle est situé le bien ;\n\nb) Les améliorations, les transformations ou les changements d'affectation opérés par le propriétaire postérieurement à la date mentionnée au a) ci-dessus ne sont pas présumés revêtir un caractère spéculatif ;\n\nc) A défaut de transactions amiables constituant des références suffisantes pour l'évaluation du bien dans la même zone, il pourra être tenu compte des mutations et accords amiables intervenus pour des biens de même qualification situés dans des zones comparables.\n\nLorsque la juridiction compétente en matière d'expropriation est appelée à fixer le prix d'un bien dont l'aliénation est envisagée sous forme de vente avec constitution de rente viagère, elle respecte les conditions de paiement proposées par le vendeur mais peut réviser le montant de cette rente et du capital éventuel."
+    },
+    {
+     "num": "L213-4-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Lorsque la juridiction compétente en matière d'expropriation a été saisie dans les cas prévus aux articles L. 211-5, L. 211-6, L. 212-3 et L. 213-4, le titulaire du droit de préemption doit consigner une somme égale à 15 % de l'évaluation faite par le directeur départemental des finances publiques.\n\nLa consignation s'opère au seul vu de l'acte par lequel la juridiction a été saisie et de l'évaluation du directeur départemental des finances publiques.\n\nA défaut de notification d'une copie du récépissé de consignation à la juridiction et au propriétaire dans le délai de trois mois à compter de la saisine de cette juridiction, le titulaire du droit de préemption est réputé avoir renoncé à l'acquisition ou à l'exercice du droit de préemption."
+    },
+    {
+     "num": "L213-4-2",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "La libération des fonds consignés en application de l'article L. 213-4-1 ne peut être effectuée que lorsque le titulaire du droit de préemption a renoncé à l'acquisition ou à l'exercice du droit de préemption ou après le transfert de propriété."
+    },
+    {
+     "num": "L213-5",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "En cas de déclaration d'utilité publique, l'exercice du droit de préemption produit les mêmes effets que l'accord amiable en matière d'expropriation en ce qui concerne l'extinction des droits réels et personnels si le titulaire du droit de préemption est également le bénéficiaire de la déclaration d'utilité publique.\n\nEn cas de déclaration d'utilité publique, la cession d'un bien au profit du bénéficiaire de cette déclaration n'est pas soumise au droit de préemption."
+    },
+    {
+     "num": "L213-6",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Lorsqu'un bien soumis au droit de préemption fait l'objet d'une expropriation pour cause d'utilité publique, la date de référence prévue à l'article L. 322-2 du code de l'expropriation pour cause d'utilité publique est celle prévue au a de l'article L. 213-4.\n\nLorsqu'un bien fait l'objet d'une expropriation pour cause d'utilité publique sur le fondement d'une déclaration d'utilité publique intervenue à une date à laquelle le bien était soumis, en application de l'article L. 212-2, au droit de préemption applicable dans le périmètre d'une zone d'aménagement différé, la date de référence prévue à l'article L. 322-2 du code de l'expropriation pour cause d'utilité publique est celle prévue au a de l'article L. 213-4 du présent code. En cas de prorogation de la déclaration d'utilité publique, cette date est déterminée en application de l'article L. 322-2 du code de l'expropriation pour cause d'utilité publique"
+    },
+    {
+     "num": "L213-7",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "A défaut d'accord sur le prix, tout propriétaire d'un bien soumis au droit de préemption, qui a manifesté son intention d'aliéner ledit bien, peut ultérieurement retirer son offre. De même, le titulaire du droit de préemption peut renoncer en cours de procédure à l'exercice de son droit à défaut d'accord sur le prix.\n\nEn cas de fixation judiciaire du prix, et pendant un délai de deux mois après que la décision juridictionnelle est devenue définitive, les parties peuvent accepter le prix fixé par la juridiction ou renoncer à la mutation. Le silence des parties dans ce délai vaut acceptation du prix fixé par le juge et transfert de propriété, à l'issue de ce délai, au profit du titulaire du droit de préemption."
+    },
+    {
+     "num": "L213-8",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Si le titulaire du droit de préemption a renoncé à l'exercice de son droit avant fixation judiciaire du prix, le propriétaire peut réaliser la vente de son bien au prix indiqué dans sa déclaration révisé, s'il y a lieu, en fonction des variations du coût de la construction constatées par l'Institut national de la statistique et des études économiques depuis la date de cette déclaration.\n\nSi le propriétaire n'a pas réalisé la vente de son bien sous forme authentique dans le délai de trois ans à compter de la renonciation au droit de préemption, il dépose une nouvelle déclaration préalable mentionnée à l'article L. 213-2.\n\nAu cas où le titulaire du droit de préemption a renoncé à l'exercice de son droit sur un bien dont le prix a été fixé judiciairement, il ne peut plus l'exercer à l'égard du même propriétaire pendant un délai de cinq ans à compter de la décision juridictionnelle devenue définitive si le propriétaire, dans ce délai, réalise la vente de ce bien au prix fixé par la juridiction révisé, s'il y a lieu, en fonction des variations du coût de la construction constatées par l'Institut national de la statistique et des études économiques depuis cette décision.\n\nLa vente sera considérée comme réalisée, au sens du deuxième alinéa du présent article, à la date de l'acte notarié ou de l'acte authentique en la forme administrative constatant le transfert de propriété.\n\nLorsque la décision par laquelle le titulaire du droit de préemption décide d'exercer son droit est annulée ou déclarée illégale par la juridiction administrative et qu'il n'y a pas eu transfert de propriété, ce titulaire ne peut exercer son droit à nouveau sur le bien en cause pendant un délai d'un an à compter de la décision juridictionnelle devenue définitive. Dans ce cas, le propriétaire n'est pas tenu par les prix et conditions qu'il avait mentionnés dans la déclaration d'intention d'aliéner."
+    },
+    {
+     "num": "L213-9",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Lorsque le titulaire du droit de préemption lui a notifié son intention d'acquérir le bien dans les conditions fixées aux articles L. 211-5 ou L. 212-3, le propriétaire est tenu d'informer les locataires, les preneurs ou les occupants de bonne foi du bien et de les faire connaître à ce titulaire.\n\nLes cinq premiers alinéas de l'article L. 145-46-1 du code de commerce ne sont pas applicables à l'occasion de l'exercice du droit de préemption sur ce bien."
+    },
+    {
+     "num": "L213-10",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Nonobstant toutes dispositions ou stipulations contraires, les preneurs de biens ruraux, les locataires ou occupants de bonne foi de locaux à usage d'habitation ainsi que les locataires de locaux à usage commercial, industriel ou artisanal situés dans un bien acquis par la voie de la préemption ou en application des articles L. 211-5 ou L. 212-3 ne peuvent s'opposer à l'exécution des travaux de restauration ou de transformation intérieure ni à la démolition de ces locaux.\n\nSi l'exécution des travaux l'exige, ils sont tenus d'évacuer tout ou partie de ces locaux ; le nouveau propriétaire du bien est alors tenu aux obligations prévues aux articles L. 314-1 et suivants.\n\nNonobstant toutes dispositions ou stipulations contraires, ils peuvent à tout moment déclarer au titulaire du droit de préemption leur intention de quitter les lieux et de résilier le bail. Celui-ci, qui ne peut ni s'y opposer ni leur réclamer une indemnité à ce titre, est tenu de leur verser les indemnités auxquelles ils peuvent prétendre, notamment celles qui peuvent leur être dues à raison des améliorations qu'ils ont apportées au fonds loué. En cas de litige, ces indemnités sont fixées par la juridiction compétente en matière d'expropriation."
+    },
+    {
+     "num": "L213-11",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Les biens acquis par exercice du droit de préemption doivent être utilisés ou aliénés pour l'un des objets mentionnés au premier alinéa de l'article L. 210-1, qui peut être différent de celui mentionné dans la décision de préemption. L'utilisation ou l'aliénation d'un bien au profit d'une personne privée autre que le concessionnaire d'une opération d'aménagement ou qu'une société d'habitations à loyer modéré doit faire l'objet d'une délibération motivée du conseil municipal ou, le cas échéant, d'une décision motivée du délégataire du droit de préemption.\n\nLes cinq premiers alinéas de l'article L. 145-46-1 du code de commerce ne sont pas applicables à l'occasion de l'aliénation d'un bien en application du premier alinéa du présent article.\n\nSi le titulaire du droit de préemption décide d'utiliser ou d'aliéner pour d'autres objets que ceux mentionnés au premier alinéa de l'article L. 210-1 un bien acquis depuis moins de cinq ans par exercice de ce droit, il doit informer de sa décision les anciens propriétaires ou leurs ayants cause universels ou à titre universel et leur proposer l'acquisition de ce bien en priorité.\n\nTout changement d'affectation du bien acquis par l'exercice du droit de préemption, dans la limite des objets prévus à l'article L. 210-1, doit faire l'objet d'une décision de l'organe délibérant de la collectivité.\n\nA défaut d'accord amiable, le prix est fixé par la juridiction compétente en matière d'expropriation, conformément aux règles mentionnées par l'article L. 213-4.\n\nA défaut d'acceptation dans le délai de trois mois à compter de la notification de la décision juridictionnelle devenue définitive, les anciens propriétaires ou leurs ayants cause universels ou à titre universel sont réputés avoir renoncé à l'acquisition.\n\nDans le cas où les anciens propriétaires ou leurs ayants cause universels ou à titre universel ont renoncé expressément ou tacitement à l'acquisition dans les conditions visées aux alinéas précédents, le titulaire du droit de préemption doit également proposer l'acquisition à la personne qui avait l'intention d'acquérir le bien.\n\nLe titulaire du droit de préemption n'est tenu de respecter cette procédure que lorsque le nom de l'acquéreur était inscrit dans la déclaration mentionnée à l'article L. 213-2."
+    },
+    {
+     "num": "L213-11-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Lorsque, après que le transfert de propriété a été effectué, la décision de préemption est annulée ou déclarée illégale par la juridiction administrative, le titulaire du droit de préemption propose aux anciens propriétaires ou à leurs ayants cause universels ou à titre universel l'acquisition du bien en priorité.\n\nLe prix proposé vise à rétablir, sans enrichissement injustifié de l'une des parties, les conditions de la transaction à laquelle l'exercice du droit de préemption a fait obstacle. A défaut d'accord amiable, le prix est fixé par la juridiction compétente en matière d'expropriation, conformément aux règles mentionnées à l'article L. 213-4.\n\nA défaut d'acceptation dans le délai de trois mois à compter de la notification de la décision juridictionnelle devenue définitive, les anciens propriétaires ou leurs ayants cause universels ou à titre universel sont réputés avoir renoncé à l'acquisition.\n\nDans le cas où les anciens propriétaires ou leurs ayants cause universels ou à titre universel ont renoncé expressément ou tacitement à l'acquisition dans les conditions mentionnées aux trois premiers alinéas du présent article, le titulaire du droit de préemption propose également l'acquisition à la personne qui avait l'intention d'acquérir le bien, lorsque son nom était inscrit dans la déclaration mentionnée à l'article L. 213-2."
+    },
+    {
+     "num": "L213-12",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "En cas de non-respect des obligations définies au deuxième alinéa de l'article L. 213-11 ou au premier alinéa de l'article L. 213-11-1, les anciens propriétaires ou leurs ayants cause universels ou à titre universel saisissent le tribunal de l'ordre judiciaire d'une action en dommages-intérêts contre le titulaire du droit de préemption.\n\nEn cas de non-respect des obligations définies au sixième alinéa de l'article L. 213-11 ou au dernier alinéa de l'article L. 213-11-1, la personne qui avait l'intention d'acquérir ce bien saisit le tribunal de l'ordre judiciaire d'une action en dommages-intérêts contre le titulaire du droit de préemption.\n\nDans les cas prévus aux articles L. 213-11 et L. 213-11-1, la renonciation à la rétrocession n'interdit pas de saisir le tribunal de l'ordre judiciaire d'une action en dommages et intérêts contre le titulaire du droit de préemption.\n\nL'action en dommages et intérêts se prescrit par cinq ans :\n\n1° Dans le cas prévu à l'article L. 213-11, à compter de la mention de l'affectation ou de l'aliénation du bien au registre mentionné à l'article L. 213-13 ;\n\n2° Dans le cas prévu à l'article L. 213-11-1, à compter de la décision de la juridiction administrative devenue définitive."
+    },
+    {
+     "num": "L213-13",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "La commune ouvre, dès institution ou création sur son territoire d'un droit de préemption en application du présent titre, un registre dans lequel sont inscrites toutes les acquisitions réalisées par exercice ou par délégation de ce droit, ainsi que l'utilisation effective des biens ainsi acquis.\n\nToute personne peut consulter ce registre ou en obtenir un extrait."
+    },
+    {
+     "num": "L213-14",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "En cas d'acquisition d'un bien par voie de préemption ou dans les conditions définies à l'article L. 211-5, le transfert de propriété intervient à la plus tardive des dates auxquelles seront intervenus le paiement et l'acte authentique.\n\nLe prix d'acquisition est payé ou, en cas d'obstacle au paiement, consigné dans les quatre mois qui suivent soit la décision d'acquérir le bien au prix indiqué par le vendeur ou accepté par lui, soit la décision définitive de la juridiction compétente en matière d'expropriation, soit la date de l'acte ou du jugement d'adjudication.\n\nEn cas de non-respect du délai prévu au deuxième alinéa du présent article, le vendeur peut aliéner librement son bien.\n\nLe propriétaire qui a repris son bien dans les conditions prévues au présent article peut alors l'aliéner librement."
+    },
+    {
+     "num": "L213-15",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "L'ancien propriétaire d'un bien acquis par voie de préemption conserve la jouissance de ce bien jusqu'au paiement intégral du prix."
+    },
+    {
+     "num": "L213-16",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Les dispositions de l'article L. 221-2 sont applicables aux biens acquis par exercice du droit de préemption."
+    },
+    {
+     "num": "L213-17",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Si un périmètre de zone d'aménagement différé ou un périmètre provisoire de zone d'aménagement différé est créé avant l'expiration du délai de deux mois prévu au quatrième alinéa de l'article L. 213-2, la déclaration d'intention d'aliéner doit être transmise par le maire au représentant de l'Etat dans le département qui l'instruit conformément aux dispositions des articles L. 212-1 et suivants.\n\nDans ce cas, le délai visé au premier alinéa du présent article court à compter de la date de publication de l'acte créant la zone d'aménagement différé ou le périmètre provisoire de zone d'aménagement différé."
+    },
+    {
+     "num": "L213-18",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires"
+     ],
+     "texte": "Un décret en Conseil d'Etat détermine, en tant que de besoin, les conditions d'application du présent chapitre."
+    },
+    {
+     "num": "A211-1",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Les demandes formulées en application des articles L. 211-5 et R. 211-7 doivent être établies conformément au modèle annexé à l'article A. 213-1."
+    },
+    {
+     "num": "A213-1",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain et aux zones d’aménagement différé"
+     ],
+     "texte": "Les déclarations prévues par les articles L. 213-2, R. 213-5 et R. 213-15 doivent être établies conformément au modèle annexé au présent article."
+    },
+    {
+     "num": "R211-2",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "La délibération par laquelle le conseil municipal ou l'organe délibérant de l'établissement public de coopération intercommunale compétent décide, en application de l'article L. 211-1, d'instituer ou de supprimer le droit de préemption urbain ou d'en modifier le champ d'application est affichée en mairie pendant un mois. Mention en est insérée dans deux journaux diffusés dans le département.\n\nLes effets juridiques attachés à la délibération mentionnée au premier alinéa ont pour point de départ l'exécution de l'ensemble des formalités de publicité mentionnées audit alinéa. Pour l'application du présent alinéa, la date à prendre en considération pour l'affichage en mairie est celle du premier jour où il est effectué."
+    },
+    {
+     "num": "R211-3",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Le maire ou, le cas échéant, le président de l'établissement public de coopération intercommunale compétent adresse sans délai au directeur départemental ou, le cas échéant, régional des finances publiques, à la chambre départementale des notaires, aux barreaux constitués près les tribunaux judiciaires dans le ressort desquels est institué le droit de préemption urbain et au greffe des mêmes tribunaux copie des actes ayant pour effet d'instituer ou de supprimer le droit de préemption urbain ou d'en modifier le champ d'application. Cette copie est accompagnée, s'il y a lieu, d'un plan précisant le champ d'application du droit de préemption urbain."
+    },
+    {
+     "num": "R211-4",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "La délibération prise en application du dernier alinéa de l'article L. 211-1 est affichée en mairie pendant un mois et prend effet le premier jour dudit affichage. Elle est notifiée, selon le cas, au lotisseur ou à la personne chargée de l'aménagement de la zone d'aménagement concerté. Copie en est en outre adressée aux organismes et services mentionnés à l'article R. 211-3.\n\nLa délibération prise en application du dernier alinéa de l'article L. 211-4 est affichée et publiée et prend effet dans les conditions prévues à l'article R. 211-2. Elle est adressée aux organismes et services mentionnés à l'article R. 211-3."
+    },
+    {
+     "num": "R211-5",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "L'exercice du droit de préemption urbain peut être délégué au président-directeur général, au président du directoire, au directeur général ou à l'un des directeurs par le conseil d'administration, le conseil de surveillance ou le directoire des sociétés ou organismes mentionnés au troisième alinéa de l'article L. 211-2, ainsi qu'aux directeurs des agences pour la mise en valeur des espaces urbains de la zone dite des cinquante pas géométriques mentionnées à l'article L. 211-2-2 par leur conseil d'administration. Cette délégation fait l'objet d'une publication de nature à la rendre opposable aux tiers.\n\nLorsqu'il exerce ce droit par délégation, le président-directeur général, le président du directoire, le directeur général ou le directeur rend compte, au moins une fois par an, de son action au conseil d'administration, au directoire ou au conseil de surveillance."
+    },
+    {
+     "num": "R211-7",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Toute proposition faite en application du premier alinéa de l'article L. 211-5 est établie dans les formes prescrites par l'arrêté prévu par l'article R. 213-5. Elle est adressée en quatre exemplaires par pli recommandé avec demande d'avis de réception ou déposée contre décharge à la mairie de la commune où se trouve situé le bien.\n\nDès réception de la proposition, le maire en transmet copie au directeur départemental ou, le cas échéant, régional des finances publiques en lui précisant si cette transmission vaut demande d'avis.\n\nLe maire transmet également copie de la proposition au délégataire éventuel du droit de préemption lorsque le titulaire de ce droit est la commune. Dans les autres cas, il transmet copie de la proposition au titulaire du droit de préemption, à charge pour ce dernier de la transmettre à son tour à l'éventuel délégataire.\n\nLes transmissions mentionnées aux deux alinéas précédents indiquent la date de l'avis de réception ou de la décharge de cette proposition.\n\nIl est alors procédé comme indiqué aux articles R. 213-7 à R. 213-12.\n\nEn cas de désaccord sur le prix et à défaut de saisine de la juridiction de l'expropriation dans le délai prévu à l'article R. 213-11, le titulaire du droit de préemption est réputé avoir renoncé à l'acquisition du bien."
+    },
+    {
+     "num": "R211-8",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Dans le cas où le bien est rétrocédé à l'ancien propriétaire en application des dispositions de l'avant-dernier alinéa de l'article L. 211-5, l'acte de rétrocession précise que l'ancien propriétaire peut disposer librement de son bien."
+    },
+    {
+     "num": "R*211-1",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre Ier : Droit de préemption urbain"
+     ],
+     "texte": "Les communes dotées d'un plan local d'urbanisme rendu public ou approuvé peuvent, par délibération, instituer un droit de préemption urbain sur tout ou partie des zones urbaines et des zones d'urbanisation future délimitées par ce plan ou par un plan de sauvegarde et de mise en valeur rendu public ou approuvé en application de l'article L. 313-1, lorsqu'il n'a pas été créé de zone d'aménagement différé ou de périmètre provisoire de zone d'aménagement différé sur ces territoires."
+    },
+    {
+     "num": "R213-1",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 1 : Délégation du droit de préemption"
+     ],
+     "texte": "La délégation du droit de préemption prévue par l'article L. 213-3 résulte d'une délibération de l'organe délibérant du titulaire du droit de préemption.\n\nCette délibération précise, le cas échéant, les conditions auxquelles la délégation est subordonnée.\n\nCette délégation peut être retirée par une délibération prise dans les mêmes formes."
+    },
+    {
+     "num": "R213-2",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 1 : Délégation du droit de préemption"
+     ],
+     "texte": "La délégation peut également résulter de l'insertion d'une clause particulière dans un traité de concession d'aménagement. Dans ce cas, la délégation produit effet à compter de la date à laquelle le traité de concession est exécutoire."
+    },
+    {
+     "num": "R213-3",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 1 : Délégation du droit de préemption"
+     ],
+     "texte": "Dans les articles R. 211-1 à R. 211-8, R. 212-1 à R. 212-6, R. 213-4 à R. 213-30 et R. 219-3 à D. 219-5, l'expression “ titulaire du droit de préemption ” s'entend également, s'il y a lieu, du délégataire de ce droit."
+    },
+    {
+     "num": "D213-13-1",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "La demande de la visite du bien prévue à l'article L. 213-2 est faite par écrit.\n\nElle est notifiée par le titulaire du droit de préemption au propriétaire ou à son mandataire ainsi qu'au notaire mentionnés dans la déclaration prévue au même article, dans les conditions fixées à l'article R. 213-25.\n\nLe délai mentionné au quatrième alinéa de l'article L. 213-2 reprend à compter de la visite du bien ou à compter du refus exprès ou tacite de la visite du bien par le propriétaire."
+    },
+    {
+     "num": "D213-13-2",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "L'acceptation de la visite par le propriétaire est écrite.\n\nElle est notifiée au titulaire du droit de préemption dans les conditions prévues à l'article R. 213-25 et dans le délai de huit jours à compter de la date de réception de la demande de visite.\n\nLa visite du bien se déroule dans le délai de quinze jours calendaires à compter de la date de la réception de l'acceptation de la visite, en dehors des samedis, dimanches et jours fériés.\n\nLe propriétaire, son mandataire ou le notaire est tenu d'informer de l'acceptation de la visite les occupants de l'immeuble mentionnés dans la déclaration d'intention d'aliéner.\n\nUn constat contradictoire précisant la date de visite et les noms et qualité des personnes présentes est établi le jour de la visite et signé par le propriétaire ou son représentant et par le titulaire du droit de préemption ou une personne mandatée par ce dernier.\n\nL'absence de visite dans le délai prévu au troisième alinéa vaut soit refus de visite, soit renonciation à la demande de visite. Dans ce cas, le délai suspendu en application du cinquième alinéa de l'article L. 213-2 reprend son cours."
+    },
+    {
+     "num": "D213-13-3",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "Le propriétaire peut refuser la visite du bien.\n\nLe refus est notifié au titulaire du droit de préemption dans les conditions prévues à l'article R. 213-25 et dans le délai de huit jours à compter de la date de réception de la demande de visite. En l'absence de réponse dans ce délai, le refus est tacite."
+    },
+    {
+     "num": "D213-13-4",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "La demande de la visite du bien visée à l'article D. 213-13-1 indique les références de la déclaration prévue à l'article L. 213-2. Cette demande reproduit, en caractères apparents, les dispositions de l'article L. 213-2 et celles des articles D. 213-13-2 et D. 213-13-3.\n\nElle mentionne le nom et les coordonnées de la ou des personnes que le propriétaire, son mandataire ou le notaire peut contacter pour déterminer les modalités de la visite.\n\nElle indique que la visite doit être faite en présence du propriétaire ou de son représentant et du titulaire du droit de préemption ou de la personne mandatée par ce dernier."
+    },
+    {
+     "num": "R213-4",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "Les dispositions de la présente sous-section sont applicables à toutes les aliénations volontaires à titre onéreux sous quelque forme que ce soit de biens soumis au droit de préemption à l'exception de celles qui sont réalisées sous la forme des adjudications soumises aux dispositions des articles R. 213-14 et R. 213-15."
+    },
+    {
+     "num": "R213-5",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "La déclaration par laquelle le propriétaire d'un bien soumis au droit de préemption manifeste l'intention d'aliéner ce bien est établie dans les formes prescrites par un arrêté du ministre chargé de l'urbanisme.\n\nCette déclaration doit être présentée en quatre exemplaires et indiquer les prix et conditions de l'aliénation projetée y compris, s'il y a lieu, le prix d'estimation de l'immeuble ou du droit offert en contrepartie.\n\nElle est adressée à la mairie de la commune où se trouve situé le bien, par pli recommandé avec demande d'avis de réception postal, déposée contre décharge, ou adressée par voie électronique en un seul exemplaire dans les conditions prévues par les articles L. 112-11 et L. 112-12 du code des relations entre le public et l'administration."
+    },
+    {
+     "num": "R213-6",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "Dès réception de la déclaration, le maire en transmet copie au directeur départemental ou, le cas échéant, régional des finances publiques en lui précisant si cette transmission vaut demande d'avis.\n\nLe maire transmet également copie de la déclaration au délégataire éventuel du droit de préemption lorsque le titulaire de ce droit est la commune. Dans les autres cas, il transmet copie de la déclaration au titulaire du droit de préemption, à charge pour ce dernier de la transmettre à son tour à l'éventuel délégataire.\n\nLes transmissions visées aux deux alinéas précédents, qui peuvent être effectuées par voie électronique, indiquent la date de l'avis de réception postal, du premier des accusés de réception ou d'enregistrement délivré en application des articles L. 112-11 et L. 112-12 du code des relations entre le public et l'administration ou de la décharge de la déclaration."
+    },
+    {
+     "num": "R213-7",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "I.-Le silence gardé par le titulaire du droit de préemption dans le délai de deux mois qui lui est imparti par l'article L. 213-2 vaut renonciation à l'exercice de ce droit.\n\nCe délai court à compter de la date de l'avis de réception postal du premier des accusés de réception ou d'enregistrement délivré en application des articles L. 112-11 et L. 112-12 du code des relations entre le public et l'administration, ou de la décharge de la déclaration faite en application de l'article R. 213-5.\n\nII.-Il est suspendu, en application de l'article L. 213-2, à compter de la réception par le propriétaire de la demande unique formée par le titulaire du droit de préemption en vue d'obtenir la communication de l'un ou de plusieurs des documents suivants :\n\n1° Le dossier mentionné à l'article L. 271-4 du code de la construction et de l'habitation ;\n\n2° S'il y a lieu, l'information prévue au IV de l'article L. 125-5 du code de l'environnement ;\n\n3° S'il y a lieu, le diagnostic technique prévu à l'article L. 111-6-2 du code de la construction et de l'habitation ou, à compter du 1er janvier 2017, s'il existe, celui prévu à l'article L. 731-1 du même code dans sa rédaction issue du II de l'article 58 de la loi n° 2014-366 du 24 mars 2014 pour l'accès au logement et un urbanisme rénové ;\n\n4° S'il y a lieu et s'ils existent, les documents dont la transmission à l'acquéreur est prévue aux articles L. 125-7 et L. 512-18 du code de l'environnement ;\n\n5° L'indication de la superficie des locaux prévue par l'article 46 de la loi n° 65-557 du 10 juillet 1965 et par l'article 4-1 du décret n° 67-223 du 17 mars 1967 relatif à l'application de la loi n° 65-557 du 10 juillet 1965 précitée ou, s'il existe, le mesurage effectué par un professionnel ;\n\n6° Les extraits de l'avant-contrat de vente contenant les éléments significatifs relatifs à la consistance et l'état de l'immeuble ;\n\n7° Sous réserve qu'ils soient mentionnés dans la déclaration prévue à l'article L. 213-2 :\n\n-la convention ou le bail constitutif de droits réels et, si elles existent, ses annexes, notamment les plans et état des lieux ;\n\n-la convention ou le bail constitutif de droits personnels et, si elles existent, ses annexes, notamment les plans et état des lieux ;\n\n8° Sous réserve qu'il soit mentionné dans la déclaration prévue à l'article L. 213-2 et qu'il ait été publié au registre de la publicité foncière, l'acte constitutif de la servitude et, si elles existent, ses annexes, notamment les plans et état des lieux ;\n\n9° Les statuts à jour de la société civile immobilière dont les parts sont cédées ;\n\n10° Les livres et les documents établis pour le dernier exercice social clos mentionnés à l'article 1855 du code civil ;\n\n11° Le rapport de reddition de compte établi pour le dernier exercice social clos mentionné à l'article 1856 du code civil ;\n\n12° A défaut des documents mentionnés aux 10° et 11° du présent II, un état certifié par le gérant établissant la composition de l'actif ainsi que du passif de la société civile immobilière et précisant le bénéfice du dernier exercice social clos."
+    },
+    {
+     "num": "R213-8",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "Lorsque l'aliénation est envisagée sous forme de vente de gré à gré ne faisant pas l'objet d'une contrepartie en nature, le titulaire du droit de préemption notifie au propriétaire :\n\na) Soit sa décision de renoncer à l'exercice du droit de préemption ;\n\nb) Soit sa décision d'acquérir aux prix et conditions proposés, y compris dans le cas de versement d'une rente viagère ;\n\nc) Soit son offre d'acquérir à un prix proposé par lui et, à défaut d'acceptation de cette offre, son intention de faire fixer le prix du bien par la juridiction compétente en matière d'expropriation ; ce prix est exclusif de toute indemnité accessoire, et notamment de l'indemnité de réemploi. Dans le cas d'une vente envisagée moyennant le versement d'une rente viagère, le titulaire du droit de préemption et, le cas échéant, la juridiction doivent respecter les conditions de paiements proposées par le vendeur. Toutefois, le titulaire peut proposer, et la juridiction fixer, la révision du montant de cette rente et du capital éventuel."
+    },
+    {
+     "num": "R213-9",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "Lorsque l'aliénation est envisagée sous une forme ou une modalité autre que celle prévue à l'article précédent, le titulaire du droit de préemption notifie au propriétaire :\n\na) Soit sa décision de renoncer à l'exercice du droit de préemption ;\n\nb) Soit son offre d'acquérir le bien à un prix qu'il propose et, à défaut d'acceptation de cette offre, son intention de faire fixer le prix du bien par la juridiction compétente en matière d'expropriation ; ce prix est exclusif de toute indemnité accessoire, et notamment de l'indemnité de réemploi. En cas de vente envisagée moyennant le paiement d'une rente viagère et une contrepartie en nature, le titulaire du droit de préemption et, le cas échéant, la juridiction compétente en matière d'expropriation doivent respecter les conditions de paiement proposées. Toutefois, le titulaire peut proposer, et la juridiction fixer, la révision du montant de cette rente et du capital éventuel."
+    },
+    {
+     "num": "R213-10",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "A compter de la réception de l'offre d'acquérir faite en application des articles R. 213-8 (c) ou R. 213-9 (b), le propriétaire dispose d'un délai de deux mois pour notifier au titulaire du droit de préemption :\n\na) Soit qu'il accepte le prix ou les nouvelles modalités proposés en application des articles R. 213-8 (c) ou R. 213-9 (b) ;\n\nb) Soit qu'il maintient le prix ou l'estimation figurant dans sa déclaration et accepte que le prix soit fixé par la juridiction compétente en matière d'expropriation ;\n\nc) Soit qu'il renonce à l'aliénation.\n\nLe silence du propriétaire dans le délai de deux mois mentionné au présent article équivaut à une renonciation d'aliéner."
+    },
+    {
+     "num": "R213-11",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "Si le titulaire du droit de préemption estime que le prix mentionné à l'article R. 213-10 (b) est exagéré, il peut, dans le délai de quinze jours à compter de la réception de la réponse du propriétaire, saisir la juridiction compétente en matière d'expropriation par lettre recommandée adressée au secrétariat de cette juridiction. Une copie, en double exemplaire, du mémoire du titulaire du droit de préemption est jointe à la lettre adressée au secrétariat de la juridiction. Le propriétaire doit en être informé simultanément.\n\nIl est ensuite procédé comme il est dit aux articles R. 311-9 à R. 311-32 du code de l'expropriation pour cause d'utilité publique.\n\nA défaut de saisine de la juridiction dans le délai fixé par le présent article, le titulaire du droit de préemption est réputé avoir renoncé à l'exercice de son droit.\n\nEn cas d'application de l'article L. 213-4-1, copie du récépissé de la consignation doit être adressée au propriétaire et à la juridiction."
+    },
+    {
+     "num": "R213-12",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "En cas d'accord sur le prix indiqué par le propriétaire ou sur le prix offert par le titulaire du droit de préemption, un acte authentique est dressé dans un délai de trois mois à compter de cet accord pour constater le transfert de propriété.\n\nDans le cas où le prix a été fixé par décision de justice et où les parties n'ont pas fait usage de la faculté de renonciation ouverte par l'article L. 213-7 (alinéa 2), un acte de même nature est dressé dans un délai de trois mois à compter de la décision judiciaire devenue définitive."
+    },
+    {
+     "num": "R213-13",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 1 : Cas général"
+     ],
+     "texte": "Lorsque le titulaire du droit de préemption a renoncé à l'exercice de son droit sur un bien dont le prix a été fixé par décision de justice, les indices du coût de la construction à retenir pour les variations prévues au troisième alinéa de l'article L. 213-8 sont les derniers indices publiés respectivement à la date à laquelle la décision de la juridiction de l'expropriation est devenue définitive et à la date de l'acte authentique constatant le transfert de propriété.\n\nLe propriétaire informe le titulaire du droit de préemption du prix auquel la vente a été réalisée."
+    },
+    {
+     "num": "R213-14",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 2 : Cas de ventes par adjudication lorsque cette procédure est rendue obligatoire de par la loi ou le règlement"
+     ],
+     "texte": "Les dispositions de la présente sous-section sont applicables à toute vente par adjudication d'un bien soumis au droit de préemption lorsque cette procédure est rendue obligatoire par une disposition législative ou réglementaire, à l'exclusion de la vente mettant fin à une indivision créée volontairement et ne résultant pas d'une donation-partage."
+    },
+    {
+     "num": "R213-15",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 2 : Procédure de préemption",
+      "Sous-section 2 : Cas de ventes par adjudication lorsque cette procédure est rendue obligatoire de par la loi ou le règlement"
+     ],
+     "texte": "Les ventes soumises aux dispositions de la présente sous-section doivent être précédées d'une déclaration du greffier de la juridiction ou du notaire chargé de procéder à la vente faisant connaître la date et les modalités de la vente. Cette déclaration est établie dans les formes prescrites par l'arrêté prévu par l'article R. 213-5.\n\nElle est adressée au maire trente jours au moins avant la date fixée pour la vente par lettre recommandée avec demande d'avis de réception ou par voie électronique dans les conditions prévues aux articles L. 112-11 et L. 112-12 du code des relations entre le public et l'administration. La déclaration fait l'objet des communications et transmissions mentionnées à l'article R. 213-6.\n\nLe titulaire dispose d'un délai de trente jours à compter de l'adjudication pour informer le greffier ou le notaire de sa décision de se substituer à l'adjudicataire.\n\nLa substitution ne peut intervenir qu'au prix de la dernière enchère ou de la surenchère.\n\nLa décision de se substituer à l'adjudicataire est notifiée au greffier ou au notaire par lettre recommandée avec demande d'avis de réception ou par voie électronique dans les conditions prévues aux articles L. 112-11 et L. 112-12 du code des relations entre le public et l'administration.\n\nCopie de cette décision est annexée au jugement ou à l'acte d'adjudication et publiée au fichier immobilier en même temps que celui-ci."
+    },
+    {
+     "num": "R213-16",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 3 : Utilisation des biens acquis par la voie de la préemption"
+     ],
+     "texte": "Lorsque l'identité et le domicile de l'ancien propriétaire ou de ses ayants cause universels ou à titre universel sont connus, l'offre de rétrocession formulée en application de l'article L. 213-11 (alinéa 2) ou de l'article L. 212-2-2 leur est notifiée individuellement par lettre recommandée avec demande d'avis de réception. Elle doit contenir l'indication d'un prix.\n\nLes anciens propriétaires ou leurs ayants cause universels ou à titre universel disposent d'un délai de deux mois à compter de la date d'avis de réception de la notification pour faire connaître :\n\na) Soit qu'ils acceptent de racheter le bien au prix proposé par le titulaire du droit de préemption ;\n\nb) Soit qu'ils renoncent au rachat du bien ;\n\nc) Soit qu'ils demandent de racheter le bien à un prix qu'ils proposent et que, à défaut d'accord du titulaire du droit de préemption, le prix soit fixé par le juge compétent en matière d'expropriation.\n\nLe défaut de réponse dans le délai indiqué équivaut à une renonciation au rachat du bien."
+    },
+    {
+     "num": "R213-17",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 3 : Utilisation des biens acquis par la voie de la préemption"
+     ],
+     "texte": "A compter de la notification de la réponse faite en application de l'article R. 213-16 (c), le titulaire du droit de préemption dispose d'un délai de deux mois :\n\na) Soit pour notifier qu'il accepte de rétrocéder le bien au prix proposé ;\n\nb) Soit pour saisir le juge compétent en matière d'expropriation pour faire fixer le prix. Il est alors procédé comme il est dit à l'article R. 213-11, le défaut de saisine de la juridiction compétente équivalant à une acceptation du prix proposé par l'ancien propriétaire ou ses ayants cause universels ou à titre universel.\n\nAinsi qu'il est dit à l'article L. 213-11 (alinéa 4), à défaut d'acceptation dans le délai de trois mois à compter de la décision juridictionnelle devenue définitive, les anciens propriétaires ou leurs ayants cause universels ou à titre universel sont réputés avoir renoncé à l'acquisition."
+    },
+    {
+     "num": "R213-18",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 3 : Utilisation des biens acquis par la voie de la préemption"
+     ],
+     "texte": "Lorsque l'identité ou le domicile des anciens propriétaires ou de leurs ayants cause universels ou à titre universel est inconnu du titulaire du droit de préemption, un avis publié par voie d'affiche dans la commune de situation des biens indique les parcelles que ce titulaire a l'intention d'utiliser ou d'aliéner, ainsi que l'estimation de ces parcelles. Cet avis indique également que la vente des parcelles sera consentie par priorité à l'ancien propriétaire du bien ou à ses ayants cause universels ou à titre universel qui en feront la demande à l'autorité désignée.\n\nL'accomplissement de cette mesure de publicité est certifiée par le maire de la commune intéressée.\n\nLe même avis est inséré dans un des journaux diffusés dans le département.\n\nLes avis et l'affiche précités doivent obligatoirement comporter la mention de la déchéance que les intéressés s'exposent à encourir.\n\nDans le délai de trois mois à compter de l'accomplissement de la plus récente des deux formalités prévues ci-dessus, les intéressés qui désirent exercer les droits mentionnés à l'article L. 213-11 (alinéa 2) sont tenus, à peine de déchéance, de le déclarer à l'autorité désignée en procédant alors comme il est dit aux articles R. 213-16 et R. 213-17."
+    },
+    {
+     "num": "R213-19",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 3 : Utilisation des biens acquis par la voie de la préemption"
+     ],
+     "texte": "Lorsque le nom de la personne qui avait l'intention d'acquérir le bien était mentionné dans la déclaration d'intention d'aliéner et lorsque l'ancien propriétaire ou ses ayants cause universels ou à titre universel ont renoncé à racheter le bien, le titulaire du droit de préemption propose ce bien à cette personne. Il est alors procédé comme il est dit aux articles R. 213-16 et R. 213-17."
+    },
+    {
+     "num": "R213-20",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 3 : Utilisation des biens acquis par la voie de la préemption"
+     ],
+     "texte": "Le titulaire du droit de préemption notifie sans délai au maire de la commune de situation du bien les éléments d'information à transcrire sur le registre prévu par l'article L. 213-13."
+    },
+    {
+     "num": "R213-21",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 4 : Dispositions diverses"
+     ],
+     "texte": "Le titulaire du droit de préemption doit recueillir l'avis du service des domaines sur le prix de l'immeuble dont il envisage de faire l'acquisition dès lors que le prix ou l'estimation figurant dans la déclaration d'intention d'aliéner ou que le prix que le titulaire envisage de proposer excède le montant fixé par l'arrêté du ministre chargé du domaine prévu à l'article R. 1211-2 du code général de la propriété des personnes publiques.\n\nDans les zones d'aménagement différé, les périmètres provisoires de zone d'aménagement différé et dans les secteurs ayant fait l'objet de la délibération prévue par le quatrième alinéa de l'article L. 211-4, le directeur départemental ou, le cas échéant, régional des finances publiques doit être consulté, quel que soit le prix figurant dans la déclaration d'intention d'aliéner.\n\nL'avis du directeur départemental ou, le cas échéant, régional des finances publiques doit être formulé dans le délai d'un mois à compter de la date de réception de la demande d'avis. Passé ce délai, il peut être procédé librement à l'acquisition.\n\nL'avis du service des domaines, obtenu avant la transmission de la déclaration d'intention d'aliéner, émis sur le même bien dans les mêmes conditions et encore en cours de validité, satisfait à l'obligation prévue au premier alinéa.\n\nLes dispositions du présent article s'appliquent également aux propositions faites en application des articles L. 211-5 et L. 212-3."
+    },
+    {
+     "num": "R213-24",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 4 : Dispositions diverses"
+     ],
+     "texte": "Pour l'application des articles L. 211-4 (c) et L. 213-1 (c), la date d'achèvement de l'immeuble est celle de la déclaration d'achèvement intervenue en application de l'article R. 460-1.\n\nEn l'absence de déclaration, la preuve de la date de l'achèvement peut être apportée par tous moyens, et notamment dans les conditions définies aux articles R. 261-1 et R. 261-2 du code de la construction et de l'habitation."
+    },
+    {
+     "num": "R213-25",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 4 : Dispositions diverses"
+     ],
+     "texte": "Les demandes, offres et décisions du titulaire du droit de préemption et des propriétaires prévues par le présent titre sont notifiées par lettre recommandée avec demande d'avis de réception, par acte d'huissier, par dépôt contre décharge ou par voie électronique dans les conditions prévues aux articles L. 112-11 et L. 112-12 du code des relations entre le public et l'administration."
+    },
+    {
+     "num": "R213-26",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 4 : Dispositions diverses"
+     ],
+     "texte": "L'action en nullité prévue à l'article L. 213-2 s'exerce devant le tribunal judiciaire du lieu de situation du bien."
+    },
+    {
+     "num": "R213-27",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 5 : Dispositions particulières applicables aux communes de Paris, Marseille et Lyon ainsi qu’aux communes issues d’une fusion comportant création d’une ou plusieurs communes associées"
+     ],
+     "texte": "Lorsque, par application des dispositions de l'article 9 modifié de la loi n° 82-1169 du 31 décembre 1982 relative à l'organisation administrative de Paris, Marseille et Lyon et des établissements publics de coopération intercommunale, il y a lieu à la consultation des conseils d'arrondissements des communes de Paris, Marseille et Lyon sur l'institution ou la suppression du droit de préemption urbain ou la modification de son champ d'application, le maire de la commune consulte, avant les délibérations correspondantes du conseil municipal, le ou les conseils d'arrondissement dans le ressort territorial desquels s'applique, en tout ou en partie, le droit mentionné au présent article."
+    },
+    {
+     "num": "R213-28",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 5 : Dispositions particulières applicables aux communes de Paris, Marseille et Lyon ainsi qu’aux communes issues d’une fusion comportant création d’une ou plusieurs communes associées"
+     ],
+     "texte": "Le conseil d'arrondissement émet son avis dans le délai fixé par le maire de la commune. Ce délai ne peut être inférieur à quinze jours à compter de la saisine du conseil d'arrondissement.\n\nCet avis est réputé favorable s'il n'intervient pas dans le délai prévu."
+    },
+    {
+     "num": "R213-29",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 5 : Dispositions particulières applicables aux communes de Paris, Marseille et Lyon ainsi qu’aux communes issues d’une fusion comportant création d’une ou plusieurs communes associées"
+     ],
+     "texte": "La demande d'avis est accompagnée des documents au vu desquels le conseil municipal sera appelé à délibérer.\n\nL'avis du conseil d'arrondissement ou, à défaut, le document justifiant qu'il a été saisi dans les délais nécessaires est joint au projet de délibération et annexé à la délibération du conseil municipal."
+    },
+    {
+     "num": "R213-30",
+     "chemin": [
+      "Partie réglementaire - Décrets en Conseil d’Etat",
+      "Livre II : Préemption et réserves foncières",
+      "Titre Ier : Droits de préemption",
+      "Chapitre III : Dispositions communes au droit de préemption urbain, aux zones d’aménagement différé et aux périmètres provisoires",
+      "Section 5 : Dispositions particulières applicables aux communes de Paris, Marseille et Lyon ainsi qu’aux communes issues d’une fusion comportant création d’une ou plusieurs communes associées"
+     ],
+     "texte": "Les dispositions des articles R. 213-27 à R. 213-29 sont applicables dans les communes issues d'une fusion comportant création d'une ou plusieurs communes associées et dans les communes nouvelles comportant la création d'une ou plusieurs communes déléguées lorsqu'il y a lieu à la consultation des conseils ou commissions consultatifs en application des articles L. 2113-17 à L. 2113-20 du code général des collectivités territoriales dans leur rédaction antérieure à la loi n° 2010-1563 du 16 décembre 2010 de réforme des collectivités territoriales ou de l'article L. 2113-17 du même code issu de même loi."
+    }
+   ]
+  }
+ ]
+}
