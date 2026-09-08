@@ -64,9 +64,9 @@ export const LIMITES: Paragraphe[] = [
       'Il ne connaît de votre dossier que ce que vous lui en dites, il ne peut ni vous représenter, ni signer, ni agir avant l’expiration d’un délai. L’ADIL de votre département renseigne gratuitement sur le logement, et un point-justice reçoit sans condition de ressources pour un premier conseil.',
   },
   {
-    amorce: 'Il ne cite pas de numéros d’article.',
+    amorce: 'Il ne cite que ce qu’il a sous les yeux.',
     suite:
-      'C’est délibéré : une référence inexacte a l’apparence exacte d’une vraie et se retrouve recopiée dans un courrier. Il nomme les textes, il ne les numérote pas.',
+      'Les textes officiels de sa spécialité lui sont joints à chaque question, tirés du fonds LEGI. Il en cite le passage exact et l’article, et le numéro affiché vient du fonds, pas de sa mémoire. Sur tout le reste — jurisprudence, règlement de copropriété, délibération de votre commune —, il nomme la source sans la numéroter : une référence inexacte a l’apparence exacte d’une vraie, et se retrouve recopiée dans un courrier.',
   },
 ];
 

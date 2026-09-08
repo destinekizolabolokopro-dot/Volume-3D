@@ -32,6 +32,7 @@ connexion le dit au lieu de laisser un compte orphelin.
 | `npm run typecheck` | vérification des types |
 | `npm run verify` | les deux précédents |
 | `npm run corpus -- --fonds` | télécharge le fonds LEGI et reconstruit `corpus/` |
+| `npm run page` | produit `standalone/droit-immobilier.html`, le fichier unique |
 
 La clé du modèle n'a pas à être dans `.env.local` : posez `ADMIN_PASSWORD`, puis
 collez-la depuis `/reglages`. Voir plus bas.
@@ -39,6 +40,38 @@ collez-la depuis `/reglages`. Voir plus bas.
 `corpus` est à part : elle télécharge 2,4 Go et prend une heure. Son résultat
 est versionné, donc on ne la relance que quand la loi bouge sur une matière
 suivie, ou quand la sélection de `lib/corpus-choix.ts` change.
+
+## La page unique : `standalone/droit-immobilier.html`
+
+`npm run page` produit **un seul fichier HTML de 166 Ko** qui s'ouvre par
+double-clic. Pas de serveur, pas d'installation, et — vérifié au navigateur —
+**zéro requête réseau** : la police est embarquée, tout le reste est du texte.
+
+C'est ce qu'on tend à un agent immobilier en rendez-vous, ce qu'on met sur une
+clé USB, ce qu'on ouvre dans un train. Un site déployé demande une adresse, un
+hébergeur et une clé d'API ; un fichier ne demande rien.
+
+Elle contient l'accueil, les chiffres du corpus, un échange donné en exemple, et
+les dix fiches complètes — délais, aide-mémoire, périmètre, renvois, textes,
+questions types — navigables d'un clic.
+
+Rien n'y est réécrit pour l'occasion : les fiches viennent de `lib/domaines.ts`,
+la copie de `lib/copie.ts`, les chiffres de `corpus/index.json`. Si le site
+change, la page change avec lui — c'est la raison de la produire plutôt que de
+l'écrire.
+
+Deux choses qu'elle assume. Elle **ne répond à aucune question** : il n'y a pas
+de modèle derrière un fichier, et l'échange qu'elle montre est marqué « échange
+enregistré · cette page ne répond pas », en toutes lettres à l'écran. Une
+démonstration qui laisse croire qu'elle répond en direct est un mensonge qu'on
+découvre à la deuxième question, devant la personne qu'on voulait convaincre.
+
+Et les **articles cités y sont réels** : leur numéro, leur place dans le plan et
+leur texte sont lus dans `corpus/*.json` au moment de la construction, pas
+écrits à la main. Montrer une citation inventée pour vanter un produit dont
+l'argument est de ne pas en inventer serait difficile à défendre.
+
+---
 
 ## L'espace de réglages : `/reglages`
 
