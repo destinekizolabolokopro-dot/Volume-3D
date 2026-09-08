@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Barre } from '@/components/juridique/Barre';
 import { Portail } from '@/components/juridique/Portail';
-import { currentAccount } from '@/lib/accounts';
+import { currentAccount, sessionsConfigurees } from '@/lib/accounts';
+import { isLocalStore } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +14,26 @@ export const metadata: Metadata = {
 
 type Params = { searchParams: Promise<{ mode?: string }> };
 
+/**
+ * Ce qui manque à l'hébergement pour qu'un compte tienne, ou une chaîne vide.
+ *
+ * Dit avant le formulaire plutôt qu'après l'envoi : proposer un champ de mot
+ * de passe qu'on sait inopérant est la définition d'un piège.
+ */
+function obstacle(): string {
+  if (!sessionsConfigurees()) {
+    return 'Ce site n’est pas encore configuré pour tenir des comptes : la variable AUTH_SECRET est absente. L’assistant, les fiches et les délais restent accessibles sans compte.';
+  }
+  if (isLocalStore() && process.env.NODE_ENV === 'production') {
+    return 'Ce site n’est pas encore relié à une base de données : un compte créé ici serait perdu au premier redéploiement. L’assistant reste accessible sans compte.';
+  }
+  return '';
+}
+
 export default async function Connexion({ searchParams }: Params) {
   if (await currentAccount()) redirect('/juridique/compte');
   const { mode } = await searchParams;
+  const empeche = obstacle();
 
   return (
     <>
@@ -30,7 +48,18 @@ export default async function Connexion({ searchParams }: Params) {
           que votre nom et une adresse.
         </p>
 
-        <Portail depart={mode === 'inscription' ? 'inscription' : 'connexion'} />
+        {empeche ? (
+          <div className="jur-portail">
+            <p className="jur-erreur" role="status">
+              {empeche}
+            </p>
+            <a className="btn btn-accent btn-block" href="/juridique">
+              Poser une question sans compte
+            </a>
+          </div>
+        ) : (
+          <Portail depart={mode === 'inscription' ? 'inscription' : 'connexion'} />
+        )}
       </main>
     </>
   );

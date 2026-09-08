@@ -6,6 +6,7 @@ import { estFormuleId, formuleDuCompte } from '@/lib/abonnements';
 import {
   OWNER_COOKIE,
   createAccount,
+  sessionsConfigurees,
   currentAccount,
   findAccountByEmail,
   issueOwnerToken,
@@ -13,7 +14,7 @@ import {
   verifyPassword,
 } from '@/lib/accounts';
 import { QUESTIONS } from '@/lib/profils';
-import { getStore } from '@/lib/store';
+import { getStore, isLocalStore } from '@/lib/store';
 import { ValidationError, email as champEmail, text } from '@/lib/validation';
 
 /**
@@ -44,8 +45,34 @@ async function executer(fn: () => Promise<Resultat>): Promise<Resultat> {
   }
 }
 
+/**
+ * Ce que l'hébergement doit fournir pour qu'un compte existe.
+ *
+ * La vérification a lieu AVANT la moindre écriture, et c'est tout l'intérêt :
+ * sans elle, `createAccount` écrivait la ligne puis la signature du jeton
+ * levait, laissant un compte orphelin en base et un message générique à
+ * l'écran. La personne réessayait et s'entendait répondre qu'elle avait déjà
+ * un compte — sans jamais pouvoir y entrer.
+ *
+ * Le message nomme la variable manquante. C'est un site qu'on installe
+ * soi-même : celui qui le lit est aussi celui qui peut la poser.
+ */
+function verifierHebergement(): void {
+  if (!sessionsConfigurees()) {
+    throw new ValidationError(
+      'Ce site n’est pas encore configuré pour tenir des comptes : la variable AUTH_SECRET est absente ou trop courte. Les fiches, les délais et le tableau des diagnostics restent consultables sans compte.',
+    );
+  }
+  if (isLocalStore() && process.env.NODE_ENV === 'production') {
+    throw new ValidationError(
+      'Ce site n’est pas encore relié à une base de données : les comptes créés seraient perdus au premier redéploiement. Renseignez SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY, puis rejouez supabase/schema.sql.',
+    );
+  }
+}
+
 export async function connexion(_precedent: Resultat | null, formData: FormData): Promise<Resultat> {
   return executer(async () => {
+    verifierHebergement();
     const adresse = champEmail(formData.get('email'));
     const motDePasse = String(formData.get('password') ?? '');
     const account = await findAccountByEmail(adresse);
@@ -68,6 +95,7 @@ export async function connexion(_precedent: Resultat | null, formData: FormData)
 
 export async function inscription(_precedent: Resultat | null, formData: FormData): Promise<Resultat> {
   return executer(async () => {
+    verifierHebergement();
     const adresse = champEmail(formData.get('email'));
     const motDePasse = String(formData.get('password') ?? '');
     if (motDePasse.length < 10) {

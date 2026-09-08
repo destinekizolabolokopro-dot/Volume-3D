@@ -25,6 +25,19 @@ const SESSION_DAYS = 30;
  * empreintes différentes.
  */
 
+/**
+ * Les sessions sont-elles seulement possibles ?
+ *
+ * `secret()` lève, et c'est ce qu'on veut au moment de signer un jeton. Mais
+ * une page qui veut savoir si elle peut proposer un formulaire de connexion
+ * n'a pas à attraper une exception pour l'apprendre — d'où cette lecture qui
+ * ne lève jamais.
+ */
+export function sessionsConfigurees(): boolean {
+  const valeur = process.env.AUTH_SECRET;
+  return Boolean(valeur && valeur.length >= 16);
+}
+
 function secret(): string {
   const value = process.env.AUTH_SECRET;
   if (!value || value.length < 16) {
