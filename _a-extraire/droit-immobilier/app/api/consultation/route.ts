@@ -191,7 +191,7 @@ async function evaluerQuota(
 
 export async function POST(request: Request) {
   try {
-    if (!estJuristeConfigure()) {
+    if (!(await estJuristeConfigure())) {
       return NextResponse.json(
         { error: 'L’assistant n’est pas configuré sur ce site (clé ANTHROPIC_API_KEY manquante).' },
         { status: 503 },

@@ -33,9 +33,55 @@ connexion le dit au lieu de laisser un compte orphelin.
 | `npm run verify` | les deux précédents |
 | `npm run corpus -- --fonds` | télécharge le fonds LEGI et reconstruit `corpus/` |
 
+La clé du modèle n'a pas à être dans `.env.local` : posez `ADMIN_PASSWORD`, puis
+collez-la depuis `/reglages`. Voir plus bas.
+
 `corpus` est à part : elle télécharge 2,4 Go et prend une heure. Son résultat
 est versionné, donc on ne la relance que quand la loi bouge sur une matière
 suivie, ou quand la sélection de `lib/corpus-choix.ts` change.
+
+## L'espace de réglages : `/reglages`
+
+La clé du modèle se colle depuis le site, sans redéployer. La page n'est liée
+depuis nulle part et ne figure dans aucun plan de site — ce n'est pas ce qui la
+protège, une adresse finit toujours par circuler, mais il n'y a aucune raison
+de la publier.
+
+Ce qui la protège est `ADMIN_PASSWORD`, **douze caractères au minimum**, sinon
+la porte refuse de s'ouvrir pour tout le monde. Ce mot de passe est
+volontairement distinct des comptes clients : un compte client se crée
+librement, et si l'un d'eux était compromis, la clé partirait avec.
+
+Ce qui arrive à la clé, dans l'ordre :
+
+1. elle doit commencer par `sk-ant-` — sinon elle est refusée sans appel réseau ;
+2. elle est **essayée** auprès d'Anthropic (`models.list`, un appel authentifié
+   qui ne produit aucun jeton, donc gratuit). Une clé fausse n'est jamais
+   enregistrée, et le message le dit — 401, 403 et panne réseau donnent trois
+   phrases différentes ;
+3. elle est **chiffrée** (AES-256-GCM, clé dérivée d'`AUTH_SECRET` par scrypt,
+   sel tiré au hasard à chaque écriture) puis écrite dans la table `reglages` ;
+4. elle n'est **jamais réaffichée**. La page ne montre que ses huit derniers
+   caractères : assez pour reconnaître la sienne et vérifier qu'une rotation a
+   eu lieu, pas assez pour s'en servir.
+
+`ANTHROPIC_API_KEY`, si elle est posée sur l'hébergeur, **l'emporte** sur celle
+des réglages, et la page le dit. C'est le moyen standard, celui que connaissent
+les outils de rotation de secrets ; le voir silencieusement écrasé par une
+valeur en base est le genre de surprise qu'on met une journée à comprendre.
+
+Ce que le chiffrement protège : une fuite de la base seule. Un vidage de table
+ne donne rien sans `AUTH_SECRET`, qui vit dans l'environnement. Ce qu'il ne
+protège pas : une compromission du serveur — qui exécute du code chez vous lit
+`AUTH_SECRET` et déchiffre. Aucun chiffrement applicatif n'y change rien, et
+prétendre le contraire serait pire que ne rien chiffrer. La vraie parade est
+ailleurs : la clé ne part jamais vers le navigateur, n'est jamais journalisée,
+et se révoque en une minute chez Anthropic.
+
+Si `AUTH_SECRET` change, la clé enregistrée devient illisible. La page le dit et
+propose de la ressaisir, plutôt que de laisser croire qu'une clé est en place.
+
+---
 
 ## Ce que contient le dépôt
 
@@ -45,8 +91,8 @@ components/   le fil, le composeur, les sources, la barre
 lib/          le catalogue des spécialités, l'aiguillage, le modèle, le corpus
 corpus/       2 133 articles en vigueur, versionnés (2,6 Mo)
 scripts/      la construction du corpus depuis le fonds DILA
-supabase/     trois tables, et rien d'autre
-tests/        55 assertions, aucune n'appelle le réseau
+supabase/     quatre tables, et rien d'autre
+tests/        62 assertions, aucune n'appelle le réseau
 ```
 
 ---

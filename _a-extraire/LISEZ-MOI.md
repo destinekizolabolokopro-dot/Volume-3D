@@ -35,12 +35,19 @@ Retirer `app/juridique/`, `app/api/juridique/`, `components/juridique/`,
 du README. Rien d'autre du site n'en dépend : `lib/sessions.ts` reste utile aux
 comptes Volume3D, et `lib/accounts.ts` ne porte plus aucun champ juridique.
 
+## L'espace de réglages
+
+`/reglages` permet de coller la clé d'API depuis le site, sans redéployer. Il
+faut poser `ADMIN_PASSWORD` (douze caractères au minimum) sur l'hébergeur ; la
+clé, elle, est essayée auprès d'Anthropic avant d'être enregistrée, puis
+chiffrée en base et jamais réaffichée. Voir la section correspondante du README.
+
 ## Vérifié avant d'être posé ici
 
 ```
 npx tsc --noEmit     aucune erreur
-npm test             55 tests, 55 passent
-npm run build        11 routes, toutes à la racine
+npm test             62 tests, 62 passent
+npm run build        12 routes, toutes à la racine
 ```
 
 Les routes ont changé d'adresse : `/juridique/bail-habitation` est devenu

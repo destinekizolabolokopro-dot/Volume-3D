@@ -1408,7 +1408,11 @@
   gap: calc(var(--pas) * 2.5);
 }
 
-.jur-form .hint {
+/* Le décalage négatif rattrape l'écart de la grille pour une mention posée
+   ENTRE deux champs. Il ne doit pas s'appliquer à une mention placée dans un
+   `.field`, sous son champ : là il n'y a pas d'écart à rattraper, et le texte
+   passait par-dessus la bordure de l'entrée. Le `>` est tout le correctif. */
+.jur-form > .hint {
   margin-top: calc(var(--pas) * -1);
 }
 

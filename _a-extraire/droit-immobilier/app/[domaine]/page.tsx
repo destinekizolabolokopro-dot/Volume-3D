@@ -41,7 +41,7 @@ export default async function PageDomaine({ params, searchParams }: Params) {
   const fiche = domaine(id);
   const { q } = await searchParams;
   const compte = await compteCourant();
-  const actif = estJuristeConfigure();
+  const actif = await estJuristeConfigure();
 
   return (
     <>
