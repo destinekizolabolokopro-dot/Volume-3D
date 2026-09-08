@@ -2,8 +2,8 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { currentAccount } from '@/lib/accounts';
-import { effacerConsultation } from '@/lib/consultations';
+import { compteCourant } from '@/lib/juridique/comptes';
+import { effacerConsultation } from '@/lib/juridique/consultations';
 
 /**
  * Effacer une consultation.
@@ -14,11 +14,11 @@ import { effacerConsultation } from '@/lib/consultations';
  * disparaître d'un geste, pas en traversant une boîte de dialogue.
  */
 export async function effacer(formData: FormData): Promise<void> {
-  const account = await currentAccount();
-  if (!account) redirect('/espace/connexion');
+  const compte = await compteCourant();
+  if (!compte) redirect('/espace/connexion');
 
   const id = String(formData.get('id') ?? '');
-  if (id) await effacerConsultation(id, account.id);
+  if (id) await effacerConsultation(id, compte.id);
 
   revalidatePath('/juridique/dossiers');
   redirect('/juridique/dossiers');

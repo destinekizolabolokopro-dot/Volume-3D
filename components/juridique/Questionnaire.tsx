@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { enregistrerProfil } from '@/app/juridique/compte/actions';
-import { QUESTIONS, estProfessionnel } from '@/lib/profils';
+import { QUESTIONS, estProfessionnel } from '@/lib/juridique/profils';
 
 /**
  * Les trois questions d'entrée.

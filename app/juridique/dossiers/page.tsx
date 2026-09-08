@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { Barre } from '@/components/juridique/Barre';
-import { currentAccount } from '@/lib/accounts';
-import { consultationsDuCompte } from '@/lib/consultations';
-import { domaineOuNull } from '@/lib/domaines';
-import { DOSSIERS } from '@/lib/juridique-copie';
+import { compteCourant } from '@/lib/juridique/comptes';
+import { consultationsDuCompte } from '@/lib/juridique/consultations';
+import { domaineOuNull } from '@/lib/juridique/domaines';
+import { DOSSIERS } from '@/lib/juridique/copie';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +23,9 @@ const JOUR = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', y
  * ou un licenciement. La page le dit plutôt que de faire semblant d'être vide.
  */
 export default async function Dossiers() {
-  const account = await currentAccount();
+  const compte = await compteCourant();
 
-  if (!account) {
+  if (!compte) {
     return (
       <>
         <Barre retour={{ href: '/juridique', label: 'Toutes les spécialités' }} />
@@ -43,7 +43,7 @@ export default async function Dossiers() {
     );
   }
 
-  const fils = await consultationsDuCompte(account.id);
+  const fils = await consultationsDuCompte(compte.id);
 
   return (
     <>

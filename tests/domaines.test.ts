@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mots } from '../lib/aiguillage.ts';
-import { DOMAINES, domaine, domaineOuNull, estDomaineId } from '../lib/domaines.ts';
-import { ACCUEIL, DOSSIERS, LIMITES, ORIENTATION, SPECIALISTE } from '../lib/juridique-copie.ts';
+import { mots } from '../lib/juridique/aiguillage.ts';
+import { DOMAINES, domaine, domaineOuNull, estDomaineId } from '../lib/juridique/domaines.ts';
+import { ACCUEIL, DOSSIERS, LIMITES, ORIENTATION, SPECIALISTE } from '../lib/juridique/copie.ts';
 
 /**
  * Le catalogue est du contenu, mais il obéit à des règles que rien d'autre ne

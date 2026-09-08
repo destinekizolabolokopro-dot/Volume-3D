@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { rassemblerLesReferences } from '../lib/citations.ts';
-import { nommerArticle, planDuCorpus, type Corpus } from '../lib/corpus.ts';
+import { rassemblerLesReferences } from '../lib/juridique/citations.ts';
+import { nommerArticle, planDuCorpus, type Corpus } from '../lib/juridique/corpus.ts';
 
 /**
  * Une référence est la seule chose de ce projet qui sera recopiée telle quelle

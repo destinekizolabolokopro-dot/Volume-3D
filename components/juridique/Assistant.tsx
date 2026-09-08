@@ -6,7 +6,7 @@ import { Composeur } from '@/components/juridique/Composeur';
 import { Fil } from '@/components/juridique/Fil';
 import { Question } from '@/components/juridique/Question';
 import { useConsultation } from '@/components/juridique/useConsultation';
-import { ACCUEIL, ORIENTATION } from '@/lib/juridique-copie';
+import { ACCUEIL, ORIENTATION } from '@/lib/juridique/copie';
 
 /**
  * L'accueil : la conversation EST la page.

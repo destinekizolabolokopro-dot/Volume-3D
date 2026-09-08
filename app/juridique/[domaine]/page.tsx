@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Barre } from '@/components/juridique/Barre';
 import { Consultation } from '@/components/juridique/Consultation';
-import { currentAccount } from '@/lib/accounts';
-import { CALENDRIER_ENERGIE, DIAGNOSTICS } from '@/lib/diagnostics';
-import { domaine, domaineOuNull, estDomaineId } from '@/lib/domaines';
-import { SPECIALISTE } from '@/lib/juridique-copie';
-import { estJuristeConfigure } from '@/lib/juriste';
+import { compteCourant } from '@/lib/juridique/comptes';
+import { CALENDRIER_ENERGIE, DIAGNOSTICS } from '@/lib/juridique/diagnostics';
+import { domaine, domaineOuNull, estDomaineId } from '@/lib/juridique/domaines';
+import { SPECIALISTE } from '@/lib/juridique/copie';
+import { estJuristeConfigure } from '@/lib/juridique/juriste';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +40,7 @@ export default async function PageDomaine({ params, searchParams }: Params) {
 
   const fiche = domaine(id);
   const { q } = await searchParams;
-  const account = await currentAccount();
+  const compte = await compteCourant();
   const actif = estJuristeConfigure();
 
   return (
@@ -60,7 +60,7 @@ export default async function PageDomaine({ params, searchParams }: Params) {
               label={fiche.label}
               exemples={fiche.exemples}
               questionInitiale={q ?? ''}
-              connecte={Boolean(account)}
+              connecte={Boolean(compte)}
               actif={actif}
             />
           </div>

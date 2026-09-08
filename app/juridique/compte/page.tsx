@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Barre } from '@/components/juridique/Barre';
-import { formuleDuCompte, paiementConfigure, prixLisible, quotaLisible } from '@/lib/abonnements';
-import { currentAccount } from '@/lib/accounts';
-import { consultationsDuCompte, questionsDuMois } from '@/lib/consultations';
+import { formuleDuCompte, paiementConfigure, prixLisible, quotaLisible } from '@/lib/juridique/abonnements';
+import { compteCourant } from '@/lib/juridique/comptes';
+import { consultationsDuCompte, questionsDuMois } from '@/lib/juridique/consultations';
 import { deconnexion } from '@/app/juridique/compte/actions';
 
 export const dynamic = 'force-dynamic';
@@ -24,13 +24,13 @@ const MOIS = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }
  * honnête de proposer une formule supérieure.
  */
 export default async function Compte() {
-  const account = await currentAccount();
-  if (!account) redirect('/juridique/compte/connexion');
+  const compte = await compteCourant();
+  if (!compte) redirect('/juridique/compte/connexion');
 
-  const formule = formuleDuCompte(account.abonnement);
+  const formule = formuleDuCompte(compte.abonnement);
   const [utilisees, fils] = await Promise.all([
-    questionsDuMois(account.id),
-    consultationsDuCompte(account.id),
+    questionsDuMois(compte.id),
+    consultationsDuCompte(compte.id),
   ]);
 
   const illimite = !Number.isFinite(formule.quota);
@@ -43,8 +43,8 @@ export default async function Compte() {
 
       <main className="jur-page jur-etroit">
         <p className="jur-oeil">Mon compte</p>
-        <h1 className="jur-h1 jur-h1-moyen">{account.name || account.email}</h1>
-        <p className="jur-lede">{account.email}</p>
+        <h1 className="jur-h1 jur-h1-moyen">{compte.nom || compte.email}</h1>
+        <p className="jur-lede">{compte.email}</p>
 
         <section className="jur-carte-compte">
           <div className="jur-carte-compte-tete">

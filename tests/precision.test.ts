@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { MAX_OPTIONS, lirePrecision, texteDeLaQuestion } from '../lib/precision.ts';
+import { MAX_OPTIONS, lirePrecision, texteDeLaQuestion } from '../lib/juridique/precision.ts';
 
 /**
  * Ce que le modèle renvoie par un outil est déclaré conforme au schéma, mais

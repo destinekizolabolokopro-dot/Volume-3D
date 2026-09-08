@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { MAX_PIECE_BYTES } from '@/lib/piece';
+import { MAX_PIECE_BYTES } from '@/lib/juridique/piece';
 
 /**
  * Le champ où l'on écrit, et le seul endroit d'où part une question.

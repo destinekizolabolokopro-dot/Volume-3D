@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { aiguiller, mots } from '../lib/aiguillage.ts';
-import { DOMAINES, type DomaineId } from '../lib/domaines.ts';
+import { aiguiller, mots } from '../lib/juridique/aiguillage.ts';
+import { DOMAINES, type DomaineId } from '../lib/juridique/domaines.ts';
 
 /**
  * L'aiguillage se juge sur des questions écrites comme on les écrit vraiment :

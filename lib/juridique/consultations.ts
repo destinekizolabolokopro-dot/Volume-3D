@@ -1,7 +1,7 @@
 import 'server-only';
-import { randomId } from './ids';
-import { getStore } from './store';
-import type { Consultation, ConsultationTour } from './types';
+import { randomId } from '../ids';
+import { getStore } from '../store';
+import type { Consultation, ConsultationTour } from '../types';
 
 /**
  * L'historique des consultations.
@@ -11,7 +11,7 @@ import type { Consultation, ConsultationTour } from './types';
  * page, et c'est préférable à un identifiant déposé dans un cookie pour
  * rattacher après coup des questions sur un divorce ou une garde à vue.
  *
- * Toutes les lectures passent par `accountId`. Aucune fonction de ce fichier
+ * Toutes les lectures passent par `compteId`. Aucune fonction de ce fichier
  * ne renvoie une consultation sans vérifier à qui elle appartient : c'est la
  * seule barrière entre deux comptes, elle doit donc être unique et non
  * contournable.
@@ -25,14 +25,14 @@ function titrer(question: string): string {
 }
 
 export async function ouvrirConsultation(
-  accountId: string,
+  compteId: string,
   domaine: string,
   premiereQuestion: string,
 ): Promise<Consultation> {
   const maintenant = new Date().toISOString();
   const consultation: Consultation = {
     id: randomId(),
-    accountId,
+    compteId,
     domaine,
     titre: titrer(premiereQuestion),
     createdAt: maintenant,
@@ -45,10 +45,10 @@ export async function ouvrirConsultation(
 /** La consultation, seulement si elle appartient bien à ce compte. */
 export async function consultationDuCompte(
   id: string,
-  accountId: string,
+  compteId: string,
 ): Promise<Consultation | null> {
   const consultation = await getStore().get('consultations', id);
-  return consultation && consultation.accountId === accountId ? consultation : null;
+  return consultation && consultation.compteId === compteId ? consultation : null;
 }
 
 export async function ajouterTour(
@@ -70,8 +70,8 @@ export async function ajouterTour(
 }
 
 /** Les fils du compte, du plus récemment actif au plus ancien. */
-export async function consultationsDuCompte(accountId: string): Promise<Consultation[]> {
-  const fils = await getStore().list('consultations', { accountId });
+export async function consultationsDuCompte(compteId: string): Promise<Consultation[]> {
+  const fils = await getStore().list('consultations', { compteId });
   return fils.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
@@ -85,8 +85,8 @@ export async function toursDeConsultation(consultationId: string): Promise<Consu
  * Efface un fil et tous ses messages. Le compte doit être le sien — la
  * vérification est refaite ici et ne se délègue pas à l'appelant.
  */
-export async function effacerConsultation(id: string, accountId: string): Promise<boolean> {
-  const consultation = await consultationDuCompte(id, accountId);
+export async function effacerConsultation(id: string, compteId: string): Promise<boolean> {
+  const consultation = await consultationDuCompte(id, compteId);
   if (!consultation) return false;
   const store = getStore();
   await store.remove('consultationTours', { consultationId: id });
@@ -108,10 +108,10 @@ export async function effacerConsultation(id: string, accountId: string): Promis
  * que cela se voie. Si cela devait changer, c'est ici qu'on ajouterait un
  * index par mois.
  */
-export async function questionsDuMois(accountId: string, maintenant = new Date()): Promise<number> {
+export async function questionsDuMois(compteId: string, maintenant = new Date()): Promise<number> {
   const debut = new Date(Date.UTC(maintenant.getUTCFullYear(), maintenant.getUTCMonth(), 1)).toISOString();
   const store = getStore();
-  const fils = await store.list('consultations', { accountId });
+  const fils = await store.list('consultations', { compteId });
   if (fils.length === 0) return 0;
 
   const miens = new Set(fils.map((fil) => fil.id));

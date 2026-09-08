@@ -1,4 +1,4 @@
-import { decouper } from '@/lib/mise-en-forme';
+import { decouper } from '@/lib/juridique/mise-en-forme';
 
 /**
  * Une réponse du spécialiste, mise en forme.

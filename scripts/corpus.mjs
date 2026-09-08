@@ -32,7 +32,7 @@ import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, rm
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { CHOIX, PLAFOND_CARACTERES } from '../lib/corpus-choix.ts';
+import { CHOIX, PLAFOND_CARACTERES } from '../lib/juridique/corpus-choix.ts';
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE = join(RACINE, '.legi');

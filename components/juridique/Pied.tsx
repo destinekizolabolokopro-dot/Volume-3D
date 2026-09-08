@@ -1,4 +1,4 @@
-import { ACCUEIL } from '@/lib/juridique-copie';
+import { ACCUEIL } from '@/lib/juridique/copie';
 
 /**
  * Le pied de page.
@@ -17,7 +17,6 @@ export function Pied() {
           <a href="/juridique">L’assistant</a>
           <a href="/juridique/abonnement">Formules</a>
           <a href="/juridique/compte">Mon compte</a>
-          <a href="/">Volume3D</a>
         </nav>
       </div>
     </footer>

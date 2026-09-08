@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { decouper } from '../lib/mise-en-forme.ts';
+import { decouper } from '../lib/juridique/mise-en-forme.ts';
 
 /**
  * Ce qui est testé ici, ce n'est pas un rendu : c'est la promesse que rien

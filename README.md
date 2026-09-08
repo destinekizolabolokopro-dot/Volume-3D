@@ -315,7 +315,7 @@ npm run corpus              # reconstruit à partir de ce qui est déjà dans .l
 
 Elle n'est pas dans `verify` et n'a pas à l'être : son résultat est versionné.
 On la relance quand la loi bouge sur une matière suivie, ou quand la sélection
-de `lib/corpus-choix.ts` change. Le fonds brut reste dans `.legi/`, ignoré par
+de `lib/juridique/corpus-choix.ts` change. Le fonds brut reste dans `.legi/`, ignoré par
 git ; seul `corpus/` est commité.
 
 Trois autres commandes ne vérifient pas du code mais des **images**, et elles
@@ -452,17 +452,32 @@ clé, le bouton ne s'affiche pas et le reste du site fonctionne normalement.
 
 ## L'assistant juridique immobilier
 
-`/juridique` est une seconde zone publique, indépendante des visites : on y
-pose une question de droit en français, et elle part vers le spécialiste
-compétent. Dix spécialités, toutes internes au droit immobilier — bail
+**C'est un second produit, pas une rubrique du premier.** Deux marques, deux
+clientèles, deux abonnements, deux tables de comptes, deux plans de site : un
+compte Volume3D n'ouvre pas de session ici, et un compte d'ici n'ouvre rien
+là-bas. Aucune page du juridique ne renvoie vers les visites 3D, et
+réciproquement. Le code partage un dépôt et un déploiement — ce qui ne se voit
+pas de l'extérieur et évite d'entretenir deux configurations d'hébergement —
+mais il est rangé à part : `lib/juridique/`, `components/juridique/`,
+`app/juridique/`, `corpus/`.
+
+La seule chose que les deux services ont en commun est `lib/sessions.ts` : le
+scrypt et le HMAC. Ce n'est pas du produit, c'est de l'arithmétique, et deux
+copies d'un code de sécurité dont une seule serait corrigée le jour venu
+seraient la mauvaise sorte de séparation. La portée (`v3d`, `juridique`) entre
+dans la signature du jeton, ce qui garantit qu'un cookie de l'un ne vaut rien
+pour l'autre — c'est l'invariant que vérifie `tests/sessions.test.ts`.
+
+`/juridique` est donc une zone publique à part entière : on y pose une question
+de droit en français, et elle part vers le spécialiste compétent. Dix spécialités, toutes internes au droit immobilier — bail
 d'habitation, location courte durée, copropriété, achat-vente, travaux et
 malfaçons, urbanisme, voisinage, fiscalité du bien, sinistres et assurances,
 et le métier de l'agent immobilier lui-même.
 
 ### Deux publics, et le spécialiste reconnaît lequel lui parle
 
-**Les propriétaires** d'abord — c'est le public de Volume3D : bailleurs,
-loueurs en meublé de tourisme, copropriétaires. Ça ne change pas le droit, ça
+**Les propriétaires** d'abord : bailleurs, loueurs en meublé de tourisme,
+copropriétaires. Ça ne change pas le droit, ça
 change le point de vue : « puis-je donner congé ? » et « mon propriétaire
 peut-il me donner congé ? » appellent la même règle et deux réponses
 différentes. Un locataire qui pose sa question obtient quand même une réponse
@@ -489,14 +504,14 @@ et c'est celui sur lequel il est attaqué.
 Il n'y a pas dix modèles : il y a un modèle et dix consignes. Ce qui
 spécialise, c'est ce qu'on met devant lui — le périmètre exact, les textes
 mobilisables, les délais à signaler, et ce qu'il doit refuser de traiter. Ces
-quatre choses vivent dans **un seul fichier**, `lib/domaines.ts`, qui sert à la
+quatre choses vivent dans **un seul fichier**, `lib/juridique/domaines.ts`, qui sert à la
 fois d'aiguillage, de consigne et de contenu affiché. Un spécialiste dont la
 consigne serait écrite à deux endroits finirait par en appliquer une
 troisième.
 
 ### L'aiguillage se fait sans modèle, sauf quand il hésite
 
-`lib/aiguillage.ts` est du calcul pur : mots normalisés (sans accents ni
+`lib/juridique/aiguillage.ts` est du calcul pur : mots normalisés (sans accents ni
 apostrophes), mots décisifs pesés quatre fois plus que le champ lexical,
 expressions de plusieurs mots pesées davantage que les mots seuls. Une question
 sur trois se range d'elle-même — « décennale », « dépôt de garantie »,
@@ -597,7 +612,7 @@ Trois décisions méritent d'être dites.
 **On choisit par le nom et par le plan, jamais par des numéros.** Une liste de
 numéros d'articles écrite à la main est exactement le risque que ce dispositif
 existe pour supprimer — et les numéros bougent : le code de la construction a
-été renuméroté en entier en 2021. `lib/corpus-choix.ts` déclare « la loi du
+été renuméroté en entier en 2021. `lib/juridique/corpus-choix.ts` déclare « la loi du
 6 juillet 1989 » en entier, ou « le chapitre du louage dans le code civil ». Ça
 reste juste quand les articles se déplacent.
 
@@ -667,7 +682,7 @@ jour-là, et de renvoyer l'historique au modèle sans reconstituer un appel
 d'outil resté sans réponse. À l'écran, la bulle ne porte que ce qui précède la
 question — l'afficher aux deux endroits la ferait lire deux fois.
 
-`lib/precision.ts` est la porte entre les deux : un schéma valide ne garantit
+`lib/juridique/precision.ts` est la porte entre les deux : un schéma valide ne garantit
 pas une question affichable. Une question vide n'en est pas une, une option
 unique n'offre aucun choix, huit options font un formulaire — les trois cas
 sont ramenés à quelque chose d'utilisable, et testés.
@@ -685,7 +700,7 @@ consigne de réclamer la pièce manquante au lieu de supposer qu'elle existe.
 
 **Le tableau des diagnostics.** Douze lignes, leur condition d'exigibilité et
 leur durée de validité, plus le calendrier des interdictions de louer selon la
-classe énergie. Il vit dans `lib/diagnostics.ts` et non dans la tête du modèle,
+classe énergie. Il vit dans `lib/juridique/diagnostics.ts` et non dans la tête du modèle,
 et la raison tient en une phrase : une durée de validité est un fait
 vérifiable, pas une appréciation. Un modèle qui l'invente produit une réponse
 crédible et fausse ; un tableau se relit et se corrige. Il n'est donné qu'aux
@@ -801,7 +816,7 @@ au spécialiste qu'il a déjà validé n'importe quoi.
 
 ### Pourquoi la copie des pages vit dans `lib/`
 
-`lib/juridique-copie.ts` tient les textes affichés, et ce n'est pas un goût de
+`lib/juridique/copie.ts` tient les textes affichés, et ce n'est pas un goût de
 l'indirection. La ponctuation double française prend une espace fine
 insécable (U+202F) — et U+202F porte la propriété Unicode `White_Space`. Le
 texte libre d'un élément JSX est normalisé à la compilation : l'espace fine y

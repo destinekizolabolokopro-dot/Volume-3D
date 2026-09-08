@@ -1,6 +1,6 @@
 'use client';
 
-import type { Precision } from '@/lib/precision';
+import type { Precision } from '@/lib/juridique/precision';
 
 /**
  * La question que le spécialiste pose avant de répondre.

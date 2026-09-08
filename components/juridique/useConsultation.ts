@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import type { Reference } from '@/lib/citations';
-import type { Precision } from '@/lib/precision';
+import type { Reference } from '@/lib/juridique/citations';
+import type { Precision } from '@/lib/juridique/precision';
 
 /**
  * L'état d'une conversation avec un spécialiste.

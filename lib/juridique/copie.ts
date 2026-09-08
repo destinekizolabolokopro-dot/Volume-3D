@@ -21,6 +21,26 @@ export interface Paragraphe {
   suite: string;
 }
 
+/**
+ * Le nom du service, à un seul endroit.
+ *
+ * L'assistant juridique et Volume3D sont deux produits distincts : deux
+ * clientèles, deux abonnements, deux tables de comptes. Rien ici ne renvoie
+ * vers l'autre, et rien là-bas ne renvoie ici — quelqu'un qui arrive pour
+ * savoir s'il peut donner congé n'a pas à comprendre ce qu'est une visite 3D
+ * pour se sentir au bon endroit.
+ *
+ * Le nom vit dans cette constante parce qu'il apparaît dans la barre, le pied
+ * de page, le titre d'onglet et le gabarit des titres de page : le changer
+ * ailleurs qu'ici laisserait une occurrence en arrière, et c'est toujours
+ * celle-là qu'un client remarque.
+ */
+export const MARQUE = {
+  nom: 'Droit immobilier',
+  /* Sous le nom, en petit : ce que c'est, pas qui l'édite. */
+  accroche: 'dix spécialités, une réponse sourcée',
+} as const;
+
 export const ACCUEIL = {
   oeil: 'Assistant juridique · droit immobilier',
   titre: 'Une question sur votre bien ? Elle ira au bon spécialiste.',

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { CALENDRIER_ENERGIE, DIAGNOSTICS, diagnosticsPourLeModele } from '../lib/diagnostics.ts';
-import { DOMAINES } from '../lib/domaines.ts';
+import { CALENDRIER_ENERGIE, DIAGNOSTICS, diagnosticsPourLeModele } from '../lib/juridique/diagnostics.ts';
+import { DOMAINES } from '../lib/juridique/domaines.ts';
 
 /**
  * Le tableau des diagnostics est le seul endroit de cette zone où l'on

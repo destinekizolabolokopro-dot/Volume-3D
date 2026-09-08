@@ -1,10 +1,10 @@
 import { Assistant } from '@/components/juridique/Assistant';
 import { Barre } from '@/components/juridique/Barre';
 import { Pied } from '@/components/juridique/Pied';
-import { currentAccount } from '@/lib/accounts';
-import { DOMAINES, domaine } from '@/lib/domaines';
-import { ACCUEIL, LIMITES } from '@/lib/juridique-copie';
-import { estJuristeConfigure } from '@/lib/juriste';
+import { compteCourant } from '@/lib/juridique/comptes';
+import { DOMAINES, domaine } from '@/lib/juridique/domaines';
+import { ACCUEIL, LIMITES } from '@/lib/juridique/copie';
+import { estJuristeConfigure } from '@/lib/juridique/juriste';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +26,7 @@ export const dynamic = 'force-dynamic';
  * serveur.
  */
 export default async function AccueilJuridique() {
-  const account = await currentAccount();
+  const compte = await compteCourant();
 
   const fiches = DOMAINES.map((fiche) => ({
     id: fiche.id,
@@ -52,7 +52,7 @@ export default async function AccueilJuridique() {
       <Assistant
         fiches={fiches}
         exemples={exemples}
-        connecte={Boolean(account)}
+        connecte={Boolean(compte)}
         actif={estJuristeConfigure()}
       >
         <section className="jur-section">

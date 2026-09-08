@@ -2,29 +2,29 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { estFormuleId, formuleDuCompte } from '@/lib/abonnements';
+import { estFormuleId, formuleDuCompte } from '@/lib/juridique/abonnements';
 import {
-  OWNER_COOKIE,
-  createAccount,
+  COOKIE,
+  compteCourant,
+  creerCompte,
+  emettreSession,
+  optionsSession,
   sessionsConfigurees,
-  currentAccount,
-  findAccountByEmail,
-  issueOwnerToken,
-  ownerCookieOptions,
+  trouverParEmail,
   verifyPassword,
-} from '@/lib/accounts';
-import { QUESTIONS } from '@/lib/profils';
+} from '@/lib/juridique/comptes';
+import { QUESTIONS } from '@/lib/juridique/profils';
 import { getStore, isLocalStore } from '@/lib/store';
 import { ValidationError, email as champEmail, text } from '@/lib/validation';
 
 /**
  * Le compte, vu depuis l'assistant juridique.
  *
- * Les comptes sont ceux de Volume3D — même table, même cookie, même
- * empreinte scrypt. Ce qui change ici, c'est où l'on revient après :
- * quelqu'un qui s'inscrit pour poser une question de droit n'a rien à faire
- * dans l'espace des visites 3D, et le renvoyer là-bas serait le meilleur
- * moyen de le perdre.
+ * Ces comptes ne sont PAS ceux de Volume3D : table à part, cookie à part,
+ * signature à part. Quelqu'un qui s'inscrit pour poser une question de droit
+ * n'ouvre pas un espace de visites 3D, et un client des visites 3D qui arrive
+ * ici doit créer son compte comme n'importe qui. Ce sont deux abonnements, et
+ * ils se vendent, se résilient et s'effacent séparément.
  */
 
 export interface Resultat {
@@ -49,7 +49,7 @@ async function executer(fn: () => Promise<Resultat>): Promise<Resultat> {
  * Ce que l'hébergement doit fournir pour qu'un compte existe.
  *
  * La vérification a lieu AVANT la moindre écriture, et c'est tout l'intérêt :
- * sans elle, `createAccount` écrivait la ligne puis la signature du jeton
+ * sans elle, `creerCompte` écrivait la ligne puis la signature du jeton
  * levait, laissant un compte orphelin en base et un message générique à
  * l'écran. La personne réessayait et s'entendait répondre qu'elle avait déjà
  * un compte — sans jamais pouvoir y entrer.
@@ -75,20 +75,20 @@ export async function connexion(_precedent: Resultat | null, formData: FormData)
     verifierHebergement();
     const adresse = champEmail(formData.get('email'));
     const motDePasse = String(formData.get('password') ?? '');
-    const account = await findAccountByEmail(adresse);
+    const compte = await trouverParEmail(adresse);
 
     /* Le même message dans les deux cas : dire « cette adresse n'existe pas »
        révèle qui est client, et une question de droit dit déjà beaucoup de
        celui qui la pose. */
-    if (!account || !(await verifyPassword(motDePasse, account.passwordHash))) {
+    if (!compte || !(await verifyPassword(motDePasse, compte.passwordHash))) {
       throw new ValidationError('Adresse ou mot de passe incorrect.');
     }
-    if (account.status !== 'active') {
+    if (compte.statut !== 'active') {
       throw new ValidationError('Ce compte est suspendu. Écrivez-nous.');
     }
 
     const jar = await cookies();
-    jar.set(OWNER_COOKIE, issueOwnerToken(account.id), ownerCookieOptions);
+    jar.set(COOKIE, emettreSession(compte.id), optionsSession);
     redirect('/juridique/compte');
   });
 }
@@ -101,25 +101,18 @@ export async function inscription(_precedent: Resultat | null, formData: FormDat
     if (motDePasse.length < 10) {
       throw new ValidationError('Choisissez un mot de passe d’au moins dix caractères.');
     }
-    if (await findAccountByEmail(adresse)) {
+    if (await trouverParEmail(adresse)) {
       throw new ValidationError('Un compte existe déjà avec cette adresse. Connectez-vous.');
     }
 
-    const account = await createAccount({
+    const compte = await creerCompte({
       email: adresse,
-      password: motDePasse,
-      name: text(formData.get('name'), 'nom', { max: 140 }),
-      company: text(formData.get('company'), 'société', { max: 140, required: false }),
-      phone: '',
-      /* La formule des visites 3D n'est pas choisie ici : le compte est ouvert
-         pour le droit, et l'autre produit reste à son entrée de gamme tant que
-         personne n'y touche. */
-      plan: 'essentiel',
-      abonnement: 'decouverte',
+      motDePasse,
+      nom: text(formData.get('name'), 'nom', { max: 140 }),
     });
 
     const jar = await cookies();
-    jar.set(OWNER_COOKIE, issueOwnerToken(account.id), ownerCookieOptions);
+    jar.set(COOKIE, emettreSession(compte.id), optionsSession);
     /* Le profil se demande juste après, sur son propre écran : trois questions
        de plus dans le formulaire d'inscription feraient trois occasions
        d'abandonner avant d'avoir vu la première réponse. */
@@ -134,8 +127,8 @@ export async function inscription(_precedent: Resultat | null, formData: FormDat
  * ce formulaire ne garde pas la porte, il renseigne le spécialiste.
  */
 export async function enregistrerProfil(formData: FormData): Promise<void> {
-  const account = await currentAccount();
-  if (!account) redirect('/juridique/compte/connexion');
+  const compte = await compteCourant();
+  if (!compte) redirect('/juridique/compte/connexion');
 
   const reponses: Record<string, string> = {};
   for (const question of QUESTIONS) {
@@ -144,13 +137,13 @@ export async function enregistrerProfil(formData: FormData): Promise<void> {
     reponses[question.cle] = valide ? String(donnee) : '';
   }
 
-  await getStore().update('accounts', account.id, reponses);
+  await getStore().update('comptesJuridiques', compte.id, reponses);
   redirect('/juridique/compte');
 }
 
 export async function deconnexion(): Promise<void> {
   const jar = await cookies();
-  jar.delete(OWNER_COOKIE);
+  jar.delete(COOKIE);
   redirect('/juridique');
 }
 
@@ -167,14 +160,14 @@ export async function deconnexion(): Promise<void> {
  * les formules, les quotas et leur application sont déjà en place.
  */
 export async function changerFormule(formData: FormData): Promise<void> {
-  const account = await currentAccount();
-  if (!account) redirect('/juridique/compte/connexion');
+  const compte = await compteCourant();
+  if (!compte) redirect('/juridique/compte/connexion');
 
   const demandee = formData.get('formule');
   if (!estFormuleId(demandee)) redirect('/juridique/abonnement');
 
-  if (formuleDuCompte(account.abonnement).id !== demandee) {
-    await getStore().update('accounts', account.id, {
+  if (formuleDuCompte(compte.abonnement).id !== demandee) {
+    await getStore().update('comptesJuridiques', compte.id, {
       abonnement: demandee,
       abonnementDepuis: new Date().toISOString(),
     });

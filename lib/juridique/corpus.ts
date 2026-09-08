@@ -96,7 +96,7 @@ export async function corpusDuDomaine(id: DomaineId): Promise<Corpus | null> {
 
   let corpus: Corpus | null = null;
   try {
-    const module = await import(`../corpus/${id}.json`);
+    const module = await import(`../../corpus/${id}.json`);
     corpus = (module.default ?? module) as Corpus;
   } catch {
     corpus = null;

@@ -1,4 +1,4 @@
-import type { Reference } from '@/lib/citations';
+import type { Reference } from '@/lib/juridique/citations';
 
 /**
  * Ce sur quoi la réponse s'appuie.

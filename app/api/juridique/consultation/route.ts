@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { QUOTA_ANONYME, formuleDuCompte } from '@/lib/abonnements';
-import { currentAccount } from '@/lib/accounts';
+import { QUOTA_ANONYME, formuleDuCompte } from '@/lib/juridique/abonnements';
+import { compteCourant } from '@/lib/juridique/comptes';
 import { cadence, origine } from '@/lib/cadence';
 import {
   ajouterTour,
@@ -8,11 +8,11 @@ import {
   ouvrirConsultation,
   questionsDuMois,
   toursDeConsultation,
-} from '@/lib/consultations';
-import { domaine as ficheDomaine, estDomaineId, type DomaineId } from '@/lib/domaines';
-import { estJuristeConfigure, orienter, repondre, type Echange } from '@/lib/juriste';
-import { PieceRefusee, lirePiece, type Piece } from '@/lib/piece';
-import type { Account } from '@/lib/types';
+} from '@/lib/juridique/consultations';
+import { domaine as ficheDomaine, estDomaineId, type DomaineId } from '@/lib/juridique/domaines';
+import { estJuristeConfigure, orienter, repondre, type Echange } from '@/lib/juridique/juriste';
+import { PieceRefusee, lirePiece, type Piece } from '@/lib/juridique/piece';
+import type { CompteJuridique } from '@/lib/types';
 import { ValidationError, text } from '@/lib/validation';
 
 /**
@@ -130,11 +130,11 @@ interface Verdict {
  * fait perdre la personne au lieu de lui vendre quelque chose.
  */
 async function evaluerQuota(
-  account: Account | null,
+  compte: CompteJuridique | null,
   request: Request,
   avecPiece: boolean,
 ): Promise<Verdict> {
-  if (!account) {
+  if (!compte) {
     if (avecPiece) {
       return {
         restant: null,
@@ -159,7 +159,7 @@ async function evaluerQuota(
     return { restant: null };
   }
 
-  const formule = formuleDuCompte(account.abonnement);
+  const formule = formuleDuCompte(compte.abonnement);
 
   if (avecPiece && !formule.pieces) {
     return {
@@ -174,7 +174,7 @@ async function evaluerQuota(
 
   if (!Number.isFinite(formule.quota)) return { restant: null };
 
-  const utilisees = await questionsDuMois(account.id);
+  const utilisees = await questionsDuMois(compte.id);
   if (utilisees >= formule.quota) {
     return {
       restant: 0,
@@ -205,9 +205,9 @@ export async function POST(request: Request) {
     }
 
     const demande = await lireDemande(request);
-    const account = await currentAccount();
+    const compte = await compteCourant();
 
-    const quota = await evaluerQuota(account, request, Boolean(demande.piece));
+    const quota = await evaluerQuota(compte, request, Boolean(demande.piece));
     if (quota.refus) {
       return NextResponse.json(
         { error: quota.refus.message, abonnement: quota.refus.abonnement },
@@ -217,11 +217,11 @@ export async function POST(request: Request) {
 
     /* Le fil de référence : la base si la personne est connectée et que la
        consultation lui appartient, sinon ce que le navigateur a gardé. */
-    let consultation = account && demande.consultationId
-      ? await consultationDuCompte(demande.consultationId, account.id)
+    let consultation = compte && demande.consultationId
+      ? await consultationDuCompte(demande.consultationId, compte.id)
       : null;
 
-    if (account && demande.consultationId && !consultation) {
+    if (compte && demande.consultationId && !consultation) {
       return NextResponse.json({ error: 'Consultation introuvable.' }, { status: 404 });
     }
 
@@ -272,11 +272,11 @@ export async function POST(request: Request) {
       demande.domaine = orientation.domaine;
     }
 
-    const reponse = await repondre(demande.domaine, historique, demande.piece, account);
+    const reponse = await repondre(demande.domaine, historique, demande.piece, compte);
 
-    if (account) {
+    if (compte) {
       if (!consultation) {
-        consultation = await ouvrirConsultation(account.id, demande.domaine, demande.question);
+        consultation = await ouvrirConsultation(compte.id, demande.domaine, demande.question);
       }
       await ajouterTour(consultation, {
         role: 'user',

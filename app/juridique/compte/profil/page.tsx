@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Barre } from '@/components/juridique/Barre';
 import { Questionnaire } from '@/components/juridique/Questionnaire';
-import { currentAccount } from '@/lib/accounts';
+import { compteCourant } from '@/lib/juridique/comptes';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Profil() {
-  const account = await currentAccount();
-  if (!account) redirect('/juridique/compte/connexion');
+  const compte = await compteCourant();
+  if (!compte) redirect('/juridique/compte/connexion');
 
   return (
     <>
@@ -30,9 +30,9 @@ export default async function Profil() {
 
         <Questionnaire
           profil={{
-            metier: account.metier ?? '',
-            volume: account.volume ?? '',
-            usage: account.usage ?? '',
+            metier: compte.metier ?? '',
+            volume: compte.volume ?? '',
+            usage: compte.usage ?? '',
           }}
         />
       </main>

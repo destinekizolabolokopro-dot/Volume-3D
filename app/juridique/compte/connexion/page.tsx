@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Barre } from '@/components/juridique/Barre';
 import { Portail } from '@/components/juridique/Portail';
-import { currentAccount, sessionsConfigurees } from '@/lib/accounts';
+import { compteCourant, sessionsConfigurees } from '@/lib/juridique/comptes';
 import { isLocalStore } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
@@ -31,7 +31,7 @@ function obstacle(): string {
 }
 
 export default async function Connexion({ searchParams }: Params) {
-  if (await currentAccount()) redirect('/juridique/compte');
+  if (await compteCourant()) redirect('/juridique/compte');
   const { mode } = await searchParams;
   const empeche = obstacle();
 

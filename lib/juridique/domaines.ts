@@ -13,8 +13,8 @@
  *
  * ── À qui il parle ──────────────────────────────────────────────────────────
  * À des propriétaires : bailleurs, loueurs en meublé de tourisme,
- * copropriétaires, conciergeries. C'est le public de Volume3D, et ça change
- * tout — pas le droit, mais le point de vue. « Puis-je donner congé ? » et
+ * copropriétaires, conciergeries — et aux professionnels qui les
+ * accompagnent. Ça change tout, pas le droit mais le point de vue. « Puis-je donner congé ? » et
  * « mon propriétaire peut-il me donner congé ? » appellent la même règle et
  * deux réponses différentes. Les exemples, le vocabulaire et les délais sont
  * écrits du côté du propriétaire. Un locataire qui pose sa question obtient

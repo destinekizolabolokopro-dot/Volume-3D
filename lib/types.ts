@@ -44,18 +44,38 @@ export interface Account {
   /** 'active' | 'suspended' — un compte suspendu ne peut plus publier. */
   status: string;
   createdAt: string;
-  /**
-   * Formule de l'assistant juridique — voir `FormuleId` dans lib/abonnements.ts.
-   *
-   * Elle est distincte de `plan`, qui plafonne le nombre de biens du service
-   * de visites : les deux produits se vendent séparément, et un client peut
-   * n'avoir que l'un des deux. Un champ vide vaut « Découverte ».
-   */
+}
+
+/**
+ * Compte de l'assistant juridique.
+ *
+ * Il n'a rien à voir avec `Account`, et c'est le point. Les deux services se
+ * vendent séparément, à des gens qui ne se recoupent qu'accidentellement : un
+ * bailleur qui veut savoir s'il peut donner congé n'a aucune raison d'avoir
+ * un compte de visites 3D, et l'inverse est tout aussi vrai. Deux tables, deux
+ * cookies, deux facturations — une adresse peut exister des deux côtés sans
+ * que l'un ouvre l'autre.
+ *
+ * La duplication de `email` et `passwordHash` est le prix de cette séparation,
+ * et il est bas. Le prix de l'autre choix — une table commune — se paierait le
+ * jour d'une revente, d'une fermeture ou d'une demande d'effacement portant
+ * sur un seul des deux services.
+ */
+export interface CompteJuridique {
+  id: string;
+  email: string;
+  /** Empreinte scrypt du mot de passe, au format « sel:empreinte ». */
+  passwordHash: string;
+  nom: string;
+  /** 'active' | 'suspended'. */
+  statut: string;
+  createdAt: string;
+  /** Formule — voir `FormuleId` dans lib/juridique/abonnements.ts. Vide vaut « Découverte ». */
   abonnement: string;
   /** Date du dernier changement de formule, en ISO. Vide si jamais changée. */
   abonnementDepuis: string;
   /**
-   * Le profil déclaré à l'ouverture du compte — voir lib/profils.ts.
+   * Le profil déclaré à l'ouverture — voir lib/juridique/profils.ts.
    *
    * Il sert au spécialiste, qui doit savoir de quel côté du bail se tient
    * celui qui lui écrit. Les trois champs sont facultatifs : un profil faux
@@ -305,7 +325,8 @@ export interface Lead {
 /** Un fil de consultation, rattaché à un compte et à une spécialité. */
 export interface Consultation {
   id: string;
-  accountId: string;
+  /** Le compte juridique propriétaire du fil — jamais un compte Volume3D. */
+  compteId: string;
   /** Identifiant de spécialité — voir `DomaineId` dans lib/domaines.ts. */
   domaine: string;
   /** La première question, telle qu'elle a été posée. Sert de titre. */
@@ -338,6 +359,7 @@ export type { Appointment, RoomAttention };
 
 export interface Database {
   accounts: Account[];
+  comptesJuridiques: CompteJuridique[];
   properties: Property[];
   scenes: Scene[];
   hotspots: Hotspot[];
@@ -360,6 +382,7 @@ export interface Database {
 
 export const EMPTY_DB: Database = {
   accounts: [],
+  comptesJuridiques: [],
   properties: [],
   scenes: [],
   hotspots: [],

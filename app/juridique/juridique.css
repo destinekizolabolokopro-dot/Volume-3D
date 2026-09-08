@@ -1620,8 +1620,8 @@
 }
 
 /* Sous 560 px, la barre porte quatre entrées et une marque en deux mots : la
-   signature « l'assistant de Volume3D » est ce qui saute en premier, parce
-   qu'elle est la seule à ne rien faire faire. */
+   signature sous le nom est ce qui saute en premier, parce qu'elle est la
+   seule à ne rien faire faire. */
 @media (max-width: 560px) {
   .jur-bar {
     gap: calc(var(--pas) * 2);

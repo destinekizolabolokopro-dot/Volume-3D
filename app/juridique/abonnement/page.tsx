@@ -7,8 +7,8 @@ import {
   formuleDuCompte,
   paiementConfigure,
   prixLisible,
-} from '@/lib/abonnements';
-import { currentAccount } from '@/lib/accounts';
+} from '@/lib/juridique/abonnements';
+import { compteCourant } from '@/lib/juridique/comptes';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
  * devrait faire choisir.
  */
 export default async function Abonnement() {
-  const account = await currentAccount();
-  const actuelle = account ? formuleDuCompte(account.abonnement) : null;
+  const compte = await compteCourant();
+  const actuelle = compte ? formuleDuCompte(compte.abonnement) : null;
 
   return (
     <>
@@ -74,7 +74,7 @@ export default async function Abonnement() {
                   ))}
                 </ul>
 
-                {!account ? (
+                {!compte ? (
                   <a
                     className={`btn btn-block ${formule.recommandee ? 'btn-accent' : 'btn-ghost'}`}
                     href={`/juridique/compte/connexion?mode=inscription`}

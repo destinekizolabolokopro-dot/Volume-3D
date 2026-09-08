@@ -3,9 +3,9 @@ import { notFound, redirect } from 'next/navigation';
 import { effacer } from '@/app/juridique/dossiers/actions';
 import { Barre } from '@/components/juridique/Barre';
 import { Consultation, type Tour } from '@/components/juridique/Consultation';
-import { currentAccount } from '@/lib/accounts';
-import { consultationDuCompte, toursDeConsultation } from '@/lib/consultations';
-import { domaineOuNull } from '@/lib/domaines';
+import { compteCourant } from '@/lib/juridique/comptes';
+import { consultationDuCompte, toursDeConsultation } from '@/lib/juridique/consultations';
+import { domaineOuNull } from '@/lib/juridique/domaines';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,11 +25,11 @@ type Params = { params: Promise<{ id: string }> };
  * pour qu'ils soient relus.
  */
 export default async function PageConsultation({ params }: Params) {
-  const account = await currentAccount();
-  if (!account) redirect('/espace/connexion');
+  const compte = await compteCourant();
+  if (!compte) redirect('/espace/connexion');
 
   const { id } = await params;
-  const consultation = await consultationDuCompte(id, account.id);
+  const consultation = await consultationDuCompte(id, compte.id);
   if (!consultation) notFound();
 
   const fiche = domaineOuNull(consultation.domaine);

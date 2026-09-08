@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import { MARQUE } from '@/lib/juridique/copie';
 import './juridique.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Assistant juridique immobilier — neuf spécialités, pour les propriétaires',
-    template: '%s · Droit immobilier',
+    default: `${MARQUE.nom} — dix spécialités, pour les propriétaires et les professionnels`,
+    template: `%s · ${MARQUE.nom}`,
   },
   description:
     'Bail, location courte durée, copropriété, achat-vente, travaux, urbanisme, voisinage, fiscalité, sinistres : posez votre question, elle va au bon spécialiste. Information juridique, pas consultation d’avocat.',
