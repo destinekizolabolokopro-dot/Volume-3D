@@ -1104,10 +1104,42 @@ sort moins dans les filtres. Couvert par `tests/floorplan-svg.test.ts` et
    | `SUPABASE_BUCKET` | `tours` |
    | `NEXT_PUBLIC_SITE_URL` | l'URL finale du site |
    | `NEXT_PUBLIC_CONTACT_EMAIL` | votre email de contact |
-   | `ANTHROPIC_API_KEY` | pour l'assistant des visites |
+   | `ANTHROPIC_API_KEY` | pour l'assistant des visites **et l'assistant juridique** |
    | `GOOGLE_AI_API_KEY` | facultatif, pour les aperçus IA |
+   | `STRIPE_SECRET_KEY` | facultatif, formules juridiques — voir plus bas |
 
 4. **Deploy**. Connectez ensuite votre nom de domaine dans **Settings → Domains**.
+
+### 3. Ce que la mise en ligne suppose, et ce qu'elle ne fait pas
+
+**GitHub Pages ne peut pas servir ce site.** Pages ne sert que des fichiers,
+et le site tient sur cinq routes d'API, des actions serveur, une
+authentification par cookie et une base. Ce qui est publié sur Pages, ce sont
+les deux versions autonomes de `docs/` — la démonstration et ORIEL — et elles
+seules. L'assistant juridique, l'espace client et le back-office ont besoin
+d'un hébergeur qui exécute du Node : c'est le rôle de Vercel ci-dessus.
+
+**Sans `ANTHROPIC_API_KEY`**, la zone juridique s'affiche entièrement — les
+fiches, les délais, l'aide-mémoire, le tableau des diagnostics n'ont besoin
+d'aucun modèle — mais le champ de question s'éteint et le dit. Rien ne casse ;
+rien ne répond non plus.
+
+**Sans Supabase**, les données vont dans `.data/db.json`, à côté du code. Ce
+fichier disparaît à chaque redéploiement et à chaque redémarrage du conteneur :
+les comptes créés, les consultations et les abonnements seraient perdus sans
+prévenir. C'est acceptable en développement, jamais en ligne.
+
+**Le schéma doit être rejoué après cette version**, même sur une base déjà en
+place : `supabase/schema.sql` ajoute deux tables — `consultations` et
+`consultationTours` — et cinq colonnes à `accounts` (`abonnement`,
+`abonnementDepuis`, `metier`, `volume`, `usage`). Le script est écrit pour être
+repassé sans risque : tout y est en `create table if not exists` et
+`add column if not exists`.
+
+**Sans `STRIPE_SECRET_KEY`**, les formules payantes s'activent immédiatement et
+gratuitement, et les deux écrans qui les proposent l'écrivent en toutes
+lettres. C'est un état assumé, pas un oubli : voir « Compte, formules, et le
+quota qui se voit descendre ».
 
 > La clé `service_role` contourne toutes les règles d'accès de Supabase. Ne la
 > préfixez jamais `NEXT_PUBLIC_` et ne la collez jamais dans du code client.
