@@ -9,10 +9,9 @@
  * point d'interrogation. Le titre de l'accueil commençait ainsi une ligne par
  * « ? Elle ira au bon spécialiste ».
  *
- * Dans une chaîne de caractères, rien n'est normalisé. C'est déjà la raison
- * pour laquelle la copie de `/residence` vit dans `lib/residence.ts` plutôt
- * que dans ses composants ; ce fichier suit la même règle, et le même test la
- * vérifie.
+ * Dans une chaîne de caractères, rien n'est normalisé. C'est la raison pour
+ * laquelle la copie affichée vit ici plutôt que dans ses composants, et
+ * `tests/domaines.test.ts` le vérifie.
  */
 
 /** Paragraphe à amorce grasse : « Il ne remplace pas un avocat. Il ne connaît… » */
