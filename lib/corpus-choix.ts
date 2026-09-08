@@ -70,15 +70,20 @@ export interface Selection {
  * qu'un spécialiste à qui l'on en donne quarante. Quand le plafond est
  * atteint, la réponse n'est pas de l'augmenter : c'est de resserrer les
  * `parties`.
+ *
+ * Le chiffre vient de la copropriété, le plus gros domaine : la loi de 1965 et
+ * son décret de 1967 pèsent ensemble trois cent trente-cinq mille caractères,
+ * et ne se coupent pas en deux — c'est la matière entière. Tout le reste tient
+ * en dessous, la plupart des domaines à moins de la moitié.
  */
-export const PLAFOND_CARACTERES = 320_000;
+export const PLAFOND_CARACTERES = 340_000;
 
 const CODE_CIVIL = /^Code civil$/;
 const CCH = /^Code de la construction et de l’habitation$/;
 const URBANISME = /^Code de l’urbanisme$/;
 const TOURISME = /^Code du tourisme$/;
 const ASSURANCES = /^Code des assurances$/;
-const CGI = /^Code général des impôts, CGI\.$/;
+const CGI = /^Code général des impôts$/;
 const PROCEDURES = /^Code des procédures civiles d’exécution$/;
 
 const LOI_1989 = /^Loi n°\s*89-462 du 6 juillet 1989/;
@@ -95,14 +100,17 @@ export const CHOIX: Record<DomaineId, Selection[]> = {
     { texte: LOI_1989, nom: 'loi du 6 juillet 1989' },
     { texte: REPARATIONS, nom: 'décret du 26 août 1987 sur les réparations locatives' },
     { texte: CHARGES, nom: 'décret du 26 août 1987 sur les charges récupérables' },
-    { texte: CODE_CIVIL, nom: 'code civil', parties: [/louage/i] },
-    { texte: PROCEDURES, nom: 'code des procédures civiles d’exécution', parties: [/expulsion/i] },
+    { texte: CODE_CIVIL, nom: 'code civil', parties: [/Du contrat de louage/i] },
+    { texte: PROCEDURES, nom: 'code des procédures civiles d’exécution', parties: [/EXPULSION/i] },
   ],
 
   'courte-duree': [
-    { texte: TOURISME, nom: 'code du tourisme', parties: [/meublés de tourisme/i, /chambres d’hôtes/i, /^.*classement.*hébergement/i] },
-    { texte: CCH, nom: 'code de la construction et de l’habitation', parties: [/changement(s)? d’usage/i, /usage des locaux d’habitation/i] },
-    { texte: LOI_1965, nom: 'loi du 10 juillet 1965', parties: [/destination de l’immeuble/i] },
+    { texte: TOURISME, nom: 'code du tourisme', parties: [/Meublés de tourisme et chambres d’hôtes/i] },
+    {
+      texte: CCH,
+      nom: 'code de la construction et de l’habitation',
+      parties: [/Changements? d’usage/i, /Accession à la propriété et autres cessions/i],
+    },
   ],
 
   copropriete: [
@@ -111,22 +119,32 @@ export const CHOIX: Record<DomaineId, Selection[]> = {
   ],
 
   'achat-vente': [
-    { texte: CODE_CIVIL, nom: 'code civil', parties: [/de la vente/i, /promesse/i, /^.*obligation.*information.*$/i] },
-    { texte: CCH, nom: 'code de la construction et de l’habitation', parties: [/protection de l’acquéreur/i, /diagnostic/i] },
-    { texte: URBANISME, nom: 'code de l’urbanisme', parties: [/droit(s)? de préemption/i] },
+    { texte: CODE_CIVIL, nom: 'code civil', parties: [/:\s*De la vente$/i] },
+    { texte: CCH, nom: 'code de la construction et de l’habitation', parties: [/Protection de l’acquéreur immobilier/i] },
+    { texte: URBANISME, nom: 'code de l’urbanisme', parties: [/Droit de préemption urbain/i] },
   ],
 
   travaux: [
-    { texte: CODE_CIVIL, nom: 'code civil', parties: [/contrat d’entreprise/i, /devis et marchés/i, /architectes.*entrepreneurs/i] },
-    { texte: ASSURANCES, nom: 'code des assurances', parties: [/assurance(s)? (des )?travaux/i, /assurance construction/i, /obligation(s)? d’assurance/i] },
-    { texte: CCH, nom: 'code de la construction et de l’habitation', parties: [/construction d’une maison individuelle/i] },
+    { texte: CODE_CIVIL, nom: 'code civil', parties: [/Du louage d’ouvrage et d’industrie/i] },
+    { texte: ASSURANCES, nom: 'code des assurances', parties: [/L’assurance des travaux de bâtiment/i] },
+    { texte: CCH, nom: 'code de la construction et de l’habitation', parties: [/Construction d’une maison individuelle/i] },
   ],
 
   urbanisme: [
     {
       texte: URBANISME,
       nom: 'code de l’urbanisme',
-      parties: [/permis de construire/i, /déclaration préalable/i, /certificat d’urbanisme/i, /contentieux/i, /infractions/i],
+      /* Le livre IV entier ferait six cent cinquante articles, dont les
+         lotissements, les enseignes et les remontées mécaniques. On garde ce
+         qu'un propriétaire ou un agent rencontre : l'autorisation, son
+         instruction, son affichage, son contrôle, et le recours. */
+      parties: [
+        /Certificat d’urbanisme/i,
+        /Dispositions communes aux diverses autorisations/i,
+        /Dispositions propres aux constructions/i,
+        /Dispositions relatives aux contrôles/i,
+        /contentieux de l’urbanisme/i,
+      ],
     },
   ],
 
@@ -134,7 +152,12 @@ export const CHOIX: Record<DomaineId, Selection[]> = {
     {
       texte: CODE_CIVIL,
       nom: 'code civil',
-      parties: [/servitude/i, /mitoyenneté/i, /distance/i, /trouble(s)? anormal/i, /de la propriété/i],
+      parties: [
+        /Des servitudes ou services fonciers/i,
+        /:\s*De la propriété$/i,
+        /De la distinction des biens/i,
+        /La responsabilité extracontractuelle/i,
+      ],
     },
   ],
 
@@ -142,7 +165,19 @@ export const CHOIX: Record<DomaineId, Selection[]> = {
     {
       texte: CGI,
       nom: 'code général des impôts',
-      parties: [/revenus fonciers/i, /plus-values? immobilières/i, /location(s)? meublée/i, /logements vacants/i],
+      /* Le code général des impôts ne range pas la location meublée sous un
+         intitulé qui la nomme : elle vit dans les bénéfices industriels et
+         commerciaux, dont la section entière ferait cent dix articles pour
+         une dizaine d'utiles. On prend donc les trois rubriques exactes où
+         elle se décide — la définition, le micro, et le cumul de catégories. */
+      parties: [
+        /:\s*Revenus fonciers$/i,
+        /Plus-values de cession à titre onéreux de biens ou de droits de toute nature/i,
+        /Taxe annuelle sur les logements vacants/i,
+        /Définition des bénéfices industriels et commerciaux/i,
+        /Régime des micro-entreprises/i,
+        /Contribuables disposant de revenus professionnels ressortissant à des catégories différentes/i,
+      ],
     },
   ],
 
@@ -150,9 +185,13 @@ export const CHOIX: Record<DomaineId, Selection[]> = {
     {
       texte: ASSURANCES,
       nom: 'code des assurances',
-      parties: [/déclaration.*sinistre/i, /règles relatives aux assurances de dommages/i, /catastrophes naturelles/i, /obligation(s)? d’assurance/i],
+      parties: [
+        /Règles communes aux assurances de dommages et aux assurances de personnes/i,
+        /Règles relatives aux assurances de dommages/i,
+        /L’assurance des risques de catastrophes naturelles/i,
+      ],
     },
-    { texte: CODE_CIVIL, nom: 'code civil', parties: [/responsabilité extracontractuelle/i, /délits et.*quasi-délits/i] },
+    { texte: CODE_CIVIL, nom: 'code civil', parties: [/La responsabilité extracontractuelle/i] },
   ],
 
   profession: [

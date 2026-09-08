@@ -306,6 +306,18 @@ npm run typecheck  # vérification des types
 npm run verify     # les trois ci-dessus qui n'ont besoin de rien d'autre
 ```
 
+Une commande à part, parce qu'elle télécharge 2,4 Go et prend une heure :
+
+```bash
+npm run corpus -- --fonds   # le fonds LEGI, puis corpus/<domaine>.json
+npm run corpus              # reconstruit à partir de ce qui est déjà dans .legi/
+```
+
+Elle n'est pas dans `verify` et n'a pas à l'être : son résultat est versionné.
+On la relance quand la loi bouge sur une matière suivie, ou quand la sélection
+de `lib/corpus-choix.ts` change. Le fonds brut reste dans `.legi/`, ignoré par
+git ; seul `corpus/` est commité.
+
 Trois autres commandes ne vérifient pas du code mais des **images**, et elles
 sont le contrôle qualité réel de ce projet. Les deux dernières demandent un
 serveur en marche, parce qu'elles mesurent ce que le navigateur affiche pour de
@@ -541,12 +553,13 @@ périmètre donné au modèle) pèse cinq fois plus et ne sert qu'au serveur.
 
 ### Deux règles avant toutes les autres
 
-- **Aucune référence inventée.** Le spécialiste nomme les textes — « la loi de
-  1989 sur les baux d'habitation », « la loi de 1965 sur la copropriété » — et
-  ne les numérote jamais. Un numéro d'article faux ne se voit pas : il a la
-  forme exacte d'un vrai, il sera recopié dans un courrier, puis lu par un
-  juge. Une réponse sans référence est utile ; une réponse avec une fausse
-  référence est un piège.
+- **Aucune référence inventée.** Un numéro d'article faux ne se voit pas : il a
+  la forme exacte d'un vrai, il sera recopié dans un courrier, puis lu par un
+  juge. Le spécialiste ne cite donc un numéro que s'il a le texte sous les
+  yeux — voir *Le texte est joint* plus bas. Tout le reste, il le nomme sans le
+  numéroter : « la loi de 1989 sur les baux d'habitation », « la loi de 1965
+  sur la copropriété ». Une réponse sans référence est utile ; une réponse avec
+  une fausse référence est un piège.
 - **Le délai d'abord.** C'est la seule chose qu'on ne rattrape pas : une
   mauvaise argumentation se corrige à l'audience, un délai expiré ne se corrige
   nulle part. Chaque fiche porte ses délais couperets, ils sont affichés
@@ -560,6 +573,68 @@ pas sortir du droit immobilier** — une question de travail ou de famille est
 déclinée franchement —, et nommer l'interlocuteur réel : ADIL, point-justice,
 conciliateur, commissaire de justice, notaire, géomètre-expert, service
 urbanisme.
+
+### Le texte est joint
+
+Interdire la référence protégeait de l'invention, mais privait la réponse de ce
+qui la rend vérifiable. On a changé de méthode, pas de principe : au lieu
+d'interdire, on **fournit le texte**.
+
+`npm run corpus` télécharge le fonds LEGI publié par la DILA — le même qui
+alimente Légifrance, en licence ouverte —, en tire les matières de chaque
+spécialité et écrit `corpus/<domaine>.json`. Ces fichiers sont versionnés avec
+le code : le site ne rappelle jamais la DILA, et une réponse ne dépend donc pas
+de la disponibilité d'un serveur tiers au moment où quelqu'un pose sa question.
+
+Le fonds se compose d'une archive globale figée (1,1 Go) et d'une archive par
+jour depuis. Le script pose la première, déroule les secondes dans l'ordre, et
+applique les suppressions : sans les quotidiennes, le corpus aurait plus d'un
+an de retard, et un texte périmé présenté comme en vigueur est pire que pas de
+texte du tout.
+
+Trois décisions méritent d'être dites.
+
+**On choisit par le nom et par le plan, jamais par des numéros.** Une liste de
+numéros d'articles écrite à la main est exactement le risque que ce dispositif
+existe pour supprimer — et les numéros bougent : le code de la construction a
+été renuméroté en entier en 2021. `lib/corpus-choix.ts` déclare « la loi du
+6 juillet 1989 » en entier, ou « le chapitre du louage dans le code civil ». Ça
+reste juste quand les articles se déplacent.
+
+**Un article, un bloc.** Chaque texte devient un document et chaque article un
+bloc à l'intérieur. C'est ce découpage qui rend la citation exploitable :
+l'API renvoie l'indice du bloc cité, donc l'article exact. Le numéro affiché
+sous une réponse est **lu dans le fonds**, jamais produit par le modèle.
+
+**Une citation qui ne tombe sur rien est jetée.** Pas rapprochée de l'article
+voisin, pas rendue approximativement. Une pièce jointe déposée par le visiteur
+est un document elle aussi et prend l'indice suivant : la rendre comme un
+article du corpus ferait dire à la loi ce qu'elle ne dit pas. C'est le seul
+défaut que ce projet ne peut pas se permettre, et `tests/citations.test.ts`
+décrit surtout ce qui est refusé.
+
+À l'écran, les articles cités vivent sous la réponse, repliés. Quelqu'un qui
+demande s'il peut donner congé veut d'abord la réponse ; le texte est là pour
+celui qui doute, celui qui doit écrire un courrier, et le professionnel qui
+engage sa responsabilité.
+
+Au 8 septembre 2026, le corpus tient en **2 133 articles en vigueur** répartis
+sur quinze textes — la loi de 1989 et ses deux décrets, la loi de 1965 et le
+décret de 1967, la loi Hoguet et son décret, le code de déontologie, et des
+parties choisies du code civil, du code de la construction, de l'urbanisme, du
+tourisme, des assurances, des procédures civiles d'exécution et du code général
+des impôts. Le plus petit domaine (voisinage) en reçoit 165, le plus gros
+(urbanisme) 480.
+
+Le corpus est **borné** : un domaine qui dépasse le plafond fait échouer la
+construction. Ce n'est pas une limite technique — la fenêtre tiendrait dix fois
+plus — mais un spécialiste à qui l'on donne trois cents articles pour en
+utiliser deux répond moins bien qu'un spécialiste à qui l'on en donne quarante.
+La réponse au plafond est de resserrer la sélection, pas de le relever.
+
+Un dépôt fraîchement cloné n'a pas de `corpus/` : c'est un état normal. Le
+spécialiste répond alors comme avant, en nommant les textes sans les numéroter,
+et n'affiche aucune source.
 
 ### Le spécialiste demande avant de répondre
 

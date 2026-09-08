@@ -129,13 +129,28 @@ function enTexte(html) {
     .trim();
 }
 
+/**
+ * Les intitulés — titre d'un texte, titre d'une subdivision — sont ramenés à
+ * une seule forme avant d'être comparés ou affichés. Le fonds écrit
+ * l'apostrophe droite ; le site, et donc `lib/corpus-choix.ts`, écrit
+ * l'apostrophe typographique. Sans ce passage, « Code de la construction et de
+ * l'habitation » ne reconnaîtrait pas « Code de la construction et de
+ * l’habitation », et la sélection ne trouverait rien.
+ *
+ * Le TEXTE des articles, lui, n'est jamais touché : on le copie tel qu'il est
+ * publié.
+ */
+function normaliserIntitule(valeur) {
+  return valeur.replace(/'/g, '\u2019').replace(/\s+/g, ' ').trim();
+}
+
 /** Le chemin dans le plan du texte, limité aux subdivisions encore ouvertes. */
 function cheminDesTitres(xml, aujourdhui) {
   const chemin = [];
   for (const trouve of xml.matchAll(/<TITRE_TM[^>]*debut="([^"]*)"[^>]*fin="([^"]*)"[^>]*>([\s\S]*?)<\/TITRE_TM>/g)) {
     const [, debut, fin, titre] = trouve;
     if (debut > aujourdhui || fin < aujourdhui) continue;
-    const propre = enTexte(titre);
+    const propre = normaliserIntitule(enTexte(titre));
     if (propre && !chemin.includes(propre)) chemin.push(propre);
   }
   return chemin;
@@ -163,7 +178,7 @@ function titreDuTexte(dossier) {
   if (!existsSync(version)) return '';
   for (const nom of readdirSync(version)) {
     const xml = readFileSync(join(version, nom), 'utf8');
-    const titre = enTexte(balise(xml, 'TITREFULL') || balise(xml, 'TITRE_TXT') || balise(xml, 'TITRE'));
+    const titre = normaliserIntitule(enTexte(balise(xml, 'TITREFULL') || balise(xml, 'TITRE_TXT') || balise(xml, 'TITRE')));
     if (titre) return titre;
   }
   return '';
@@ -245,6 +260,43 @@ function construireDocument(selection, dossier, aujourdhui) {
 
 /* ================================================================== la course === */
 
+/**
+ * Fait correspondre chaque sélection à un identifiant de texte, par son nom.
+ *
+ * Renvoie aussi ce qui n'a pas été trouvé, au lieu de s'arrêter : l'appelant
+ * décide alors s'il déplie les quotidiennes ou s'il abandonne. Un texte
+ * introuvable est toujours une erreur de sélection ou un fonds incomplet,
+ * jamais quelque chose qu'on contourne en devinant.
+ */
+function resoudre() {
+  const dossiers = dossiersDeTexte();
+  const titres = new Map();
+  for (const [cid, dossier] of dossiers) titres.set(cid, titreDuTexte(dossier));
+
+  const retenus = new Set();
+  const manquants = [];
+
+  for (const [domaineId, selections] of Object.entries(CHOIX)) {
+    for (const selection of selections) {
+      const trouves = [...titres.entries()].filter(([, titre]) => selection.texte.test(titre));
+      if (trouves.length === 0) {
+        manquants.push(`${domaineId} : ${selection.nom} (${selection.texte})`);
+        continue;
+      }
+      /* Plusieurs versions d'un même texte peuvent coexister ; le titre le plus
+         long est celui du texte consolidé courant, les autres sont des
+         abrégés. */
+      const [cid] = trouves.sort((a, b) => b[1].length - a[1].length)[0];
+      retenus.add(cid);
+      selection.cid = cid;
+    }
+  }
+
+  return { titres, retenus, manquants };
+}
+
+
+
 async function principal() {
   const options = new Set(process.argv.slice(2));
   const aujourdhui = new Date().toISOString().slice(0, 10);
@@ -270,50 +322,40 @@ async function principal() {
     extraire(global, [`*/${EN_VIGUEUR}/*/texte/version/*.xml`]);
     writeFileSync(indexPose, aujourdhui);
   }
-  for (const delta of deltas) {
-    const marque = join(FONDS, `.index-${delta}`);
-    if (existsSync(marque)) continue;
-    extraire(delta, [`*/${EN_VIGUEUR}/*/texte/version/*.xml`], { strip: 1 });
-    writeFileSync(marque, aujourdhui);
-  }
-
-  const dossiers = dossiersDeTexte();
-  console.log(`  ${dossiers.size} textes en vigueur repérés`);
-
-  const titres = new Map();
-  for (const [cid, dossier] of dossiers) titres.set(cid, titreDuTexte(dossier));
 
   /* On résout chaque sélection en identifiants avant de sortir le moindre
      article : une expression qui ne trouve rien doit se voir tout de suite, pas
      après vingt minutes d'extraction. */
-  const voulus = new Map();
-  const manquants = [];
-  for (const [domaineId, selections] of Object.entries(CHOIX)) {
-    for (const selection of selections) {
-      const trouves = [...titres.entries()].filter(([, titre]) => selection.texte.test(titre));
-      if (trouves.length === 0) {
-        manquants.push(`${domaineId} : ${selection.nom} (${selection.texte})`);
-        continue;
-      }
-      /* Plusieurs versions d'un même texte peuvent coexister ; la plus longue
-         table des matières est celle du texte consolidé courant. */
-      const [cid] = trouves.sort((a, b) => b[1].length - a[1].length)[0];
-      voulus.set(cid, titres.get(cid));
-      selection.cid = cid;
+  let voulus = resoudre();
+  if (voulus.manquants.length > 0) {
+    /* Un texte introuvable dans l'archive globale a pu naître depuis. On ne
+       déplie l'index des quotidiennes QUE dans ce cas : quatre cent vingt
+       archives coûtent vingt minutes, et les textes suivis ici existaient tous
+       avant. */
+    console.log(`${voulus.manquants.length} texte(s) absent(s) du global — index des quotidiennes…`);
+    for (const delta of deltas) {
+      const marque = join(FONDS, `.index-${delta}`);
+      if (existsSync(marque)) continue;
+      extraire(delta, [`*/${EN_VIGUEUR}/*/texte/version/*.xml`], { strip: 1 });
+      writeFileSync(marque, aujourdhui);
     }
+    voulus = resoudre();
   }
 
-  if (manquants.length > 0) {
+  if (voulus.manquants.length > 0) {
     console.error('\nTextes introuvables dans le fonds :');
-    for (const ligne of manquants) console.error(`  — ${ligne}`);
+    for (const ligne of voulus.manquants) console.error(`  — ${ligne}`);
     process.exit(1);
   }
 
+  const { titres, retenus } = voulus;
+  console.log(`  ${retenus.size} textes retenus`);
+
   /* Second passage : les articles, pour les seuls textes retenus. */
-  const motifs = [...voulus.keys()].map((cid) => motifDuTexte(cid, 'article/*'));
+  const motifs = [...retenus].map((cid) => motifDuTexte(cid, 'article/*'));
   const articlesPoses = join(FONDS, '.articles-pose');
   if (!existsSync(articlesPoses)) {
-    console.log(`Articles (${voulus.size} textes)…`);
+    console.log(`Articles (${retenus.size} textes)…`);
     extraire(global, motifs);
     writeFileSync(articlesPoses, aujourdhui);
   }
