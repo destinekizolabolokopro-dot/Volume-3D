@@ -1700,3 +1700,89 @@
   border-style: dashed;
   color: var(--ink-soft);
 }
+
+/* ------------------------------------------------------------------ sources
+   Ce sur quoi la réponse s'appuie.
+
+   Replié par défaut, et discret : la réponse est ce qu'on vient chercher, le
+   texte est ce qu'on vient vérifier. Ouvert, il ressemble à ce qu'il est —
+   une citation, en retrait, avec son filet à gauche. */
+
+.jur-sources {
+  margin-top: calc(var(--pas) * 2);
+  border-top: 1px solid var(--line-soft);
+  padding-top: calc(var(--pas) * 1.5);
+}
+
+.jur-sources > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--pas) * 0.75);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.jur-sources > summary::-webkit-details-marker {
+  display: none;
+}
+
+.jur-sources > summary::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 160ms ease;
+}
+
+.jur-sources[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+.jur-sources > summary:hover {
+  color: var(--accent);
+}
+
+.jur-sources ul {
+  list-style: none;
+  margin: calc(var(--pas) * 1.75) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pas) * 2);
+}
+
+.jur-source-titre {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+
+.jur-source-texte {
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+
+.jur-source-chemin {
+  margin: calc(var(--pas) * 0.25) 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+.jur-sources blockquote {
+  margin: calc(var(--pas) * 0.875) 0 0;
+  padding-left: calc(var(--pas) * 1.5);
+  border-left: 2px solid var(--accent-wash);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 66ch;
+}

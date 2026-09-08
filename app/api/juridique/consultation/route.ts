@@ -302,6 +302,10 @@ export async function POST(request: Request) {
       /* Ce qui s'affiche dans la bulle quand une question est posée : la
          question, elle, a son propre encadré juste en dessous. */
       preambule: reponse.preambule ?? '',
+      /* Les textes sur lesquels la réponse s'appuie, tels que l'API les a
+         rattachés au corpus officiel. Une liste vide n'est pas une panne :
+         toutes les questions ne se tranchent pas sur un article. */
+      references: reponse.references ?? [],
       /* Ce qu'il reste après cette question. La page l'affiche sous le champ :
          un compteur qu'on découvre au moment du refus est une mauvaise
          surprise, un compteur qu'on voit descendre est une information. */

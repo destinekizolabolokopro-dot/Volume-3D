@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import type { Reference } from '@/lib/citations';
 import type { Precision } from '@/lib/precision';
 
 /**
@@ -21,6 +22,11 @@ export interface Tour {
   role: 'user' | 'assistant';
   content: string;
   piece?: string;
+  /* Les articles cités par cette réponse-là, attachés au tour et non à l'état
+     de la page : dans un fil de six questions, chaque réponse a les siens.
+     Ils vivent le temps de la séance — une consultation rouverte depuis la
+     base montre le texte des réponses, où les articles cités figurent déjà. */
+  references?: Reference[];
 }
 
 /** Une autre spécialité plausible, renvoyée par l'aiguillage du serveur. */
@@ -50,6 +56,8 @@ interface Reponse {
   precision?: Precision | null;
   /** Ce qui précède la question, sans elle. Vide quand il n'y a que la question. */
   preambule?: string;
+  /** Les articles du corpus officiel sur lesquels la réponse s'appuie. */
+  references?: Reference[];
   error?: string;
   /** Vrai quand le refus vient d'un quota : la page propose alors une issue. */
   abonnement?: boolean;
@@ -152,7 +160,11 @@ export function useConsultation({
            précède — la question a son encadré. Et s'il n'y a rien avant, il
            n'y a pas de bulle du tout : une bulle vide se voit. */
         const bulle = corps.precision ? (corps.preambule ?? '') : (corps.reponse ?? '');
-        setTours(bulle ? [...suite, { role: 'assistant', content: bulle }] : suite);
+        setTours(
+          bulle
+            ? [...suite, { role: 'assistant', content: bulle, references: corps.references ?? [] }]
+            : suite,
+        );
       } catch (cause) {
         /* La question reste dans le fil : la retirer donnerait l'impression
            qu'elle n'a jamais été posée, et il faudrait la retaper. */

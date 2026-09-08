@@ -1,6 +1,8 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import { aiguiller, type Aiguillage } from './aiguillage';
+import { rassemblerLesReferences, type CitationBrute, type Reference } from './citations';
+import { corpusDuDomaine, nommerArticle, planDuCorpus, type PlanCorpus } from './corpus';
 import { diagnosticsPourLeModele } from './diagnostics';
 import { domaine, estDomaineId, type Domaine, type DomaineId } from './domaines';
 import { MAX_OPTIONS, lirePrecision, texteDeLaQuestion, type Precision } from './precision';
@@ -70,7 +72,9 @@ const SOCLE = [
   '',
   'RÈGLES ABSOLUES',
   '',
-  '1. Aucune référence inventée. Tu ne cites jamais un numéro d’article, une date d’arrêt, un nom de décision ou un numéro de pourvoi dont tu n’es pas certain. Tu nommes le texte — « la loi de 1989 sur les baux d’habitation », « la loi de 1965 sur la copropriété » — sans le numéroter. Une référence fausse a l’apparence exacte d’une vraie : elle sera recopiée dans un courrier et opposée à un juge. Il vaut mieux écrire « la loi impose un préavis » que d’inventer l’article qui le dit.',
+  '1. Aucune référence inventée. Tu ne cites un numéro d’article QUE s’il figure dans les textes officiels joints à la conversation. Tout le reste — jurisprudence, doctrine, règlement local, texte non joint —, tu le nommes sans le numéroter : « la loi de 1989 sur les baux d’habitation », « la loi de 1965 sur la copropriété ». Tu n’inventes jamais une date d’arrêt, un nom de décision ni un numéro de pourvoi. Une référence fausse a l’apparence exacte d’une vraie : elle sera recopiée dans un courrier et opposée à un juge. Il vaut mieux écrire « la loi impose un préavis » que d’inventer l’article qui le dit.',
+  '',
+  'Quand un texte joint répond, cite-le : le passage exact entre guillemets, puis l’article. Quand aucun ne répond, dis-le — les textes joints ne couvrent pas tout, et une lacune annoncée vaut mieux qu’une lacune comblée.',
   '',
   '2. Le délai d’abord. Si la situation est enfermée dans un délai, tu le dis tôt et clairement, avant les explications. Tu précises à partir de quand il court. Si tu n’es pas certain du délai applicable, tu dis qu’il en existe un, qu’il est court, et qu’il faut vérifier la mention des voies de recours portée sur le document lui-même — c’est elle qui fait foi.',
   '',
@@ -236,6 +240,12 @@ export interface ReponseJuriste {
    * bulle la ferait lire deux fois.
    */
   preambule?: string;
+  /**
+   * Les articles sur lesquels la réponse s'appuie réellement, tels que l'API
+   * les a rattachés au corpus. Vide quand le corpus n'est pas construit, ou
+   * quand la réponse n'a rien cité — ce qui arrive, et qui doit se voir.
+   */
+  references?: Reference[];
 }
 
 /** Construit le message du visiteur, avec la pièce jointe s'il y en a une. */
@@ -281,6 +291,74 @@ function messageAvecPiece(question: string, piece: Piece | null): Anthropic.Mess
   });
 
   return { role: 'user', content: blocs };
+}
+
+/* ================================================================== le corpus === */
+
+/**
+ * Les textes officiels joints à la consultation.
+ *
+ * Un document par texte, un bloc par article. Ce découpage n'est pas
+ * cosmétique : il est ce qui permet à l'API de dire QUEL article a servi, et
+ * donc à la page d'afficher un numéro qui vient du fonds LEGI et non de la
+ * mémoire du modèle.
+ *
+ * La consigne de lecture ferme la série et porte le point de mise en cache. Le
+ * corpus d'un domaine ne change pas d'un message à l'autre : écrit une fois,
+ * relu à chaque tour sans être refacturé.
+ */
+async function blocsDuCorpus(
+  id: DomaineId,
+): Promise<{ blocs: Anthropic.ContentBlockParam[]; plan: PlanCorpus | null }> {
+  const corpus = await corpusDuDomaine(id);
+  if (!corpus || corpus.documents.length === 0) return { blocs: [], plan: null };
+
+  const blocs: Anthropic.ContentBlockParam[] = corpus.documents.map((document) => ({
+    type: 'document',
+    source: {
+      type: 'content',
+      content: document.articles.map((article) => ({
+        type: 'text' as const,
+        text: `${nommerArticle(article.num)}\n${article.texte}`,
+      })),
+    },
+    title: document.titre,
+    /* Le contexte n'est pas citable : il situe le document, il n'a pas
+       vocation à être recopié dans une réponse. */
+    context: `${document.nom} — texte officiel, fonds LEGI arrêté au ${corpus.arrete}.`,
+    citations: { enabled: true },
+  }));
+
+  blocs.push({
+    type: 'text',
+    text: [
+      `Textes officiels ci-dessus (${corpus.documents.map((d) => d.nom).join(', ')}), en vigueur au ${corpus.arrete}.`,
+      'Appuie-toi dessus en priorité, et cite le passage exact quand il répond.',
+      'Ils ne contiennent ni jurisprudence, ni doctrine, ni règlement local, ni délibération communale, ni règlement de copropriété : sur ces points-là, nomme la source sans la numéroter.',
+      'Ils peuvent aussi ne pas couvrir la question posée. Dis-le alors franchement, au lieu de rapprocher un article qui parle d’autre chose.',
+    ].join('\n'),
+    /* Le corpus est identique à chaque tour : mis en cache ici, il n'est
+       facturé qu'une fois pour toute la consultation. */
+    cache_control: { type: 'ephemeral' },
+  });
+
+  return { blocs, plan: planDuCorpus(corpus) };
+}
+
+/** Pose les textes en tête du premier message, là où ils resteront identiques. */
+function poserLeCorpus(
+  messages: Anthropic.MessageParam[],
+  blocs: Anthropic.ContentBlockParam[],
+): Anthropic.MessageParam[] {
+  if (blocs.length === 0 || messages.length === 0) return messages;
+
+  const premier = messages[0];
+  const contenu =
+    typeof premier.content === 'string'
+      ? [{ type: 'text' as const, text: premier.content }]
+      : premier.content;
+
+  return [{ ...premier, content: [...blocs, ...contenu] }, ...messages.slice(1)];
 }
 
 /* ================================================================== l'outil === */
@@ -346,6 +424,7 @@ export async function repondre(
 ): Promise<ReponseJuriste> {
   const fiche = domaine(id);
   const client = new Anthropic();
+  const { blocs, plan } = await blocsDuCorpus(id);
 
   const precedents = historique.slice(0, -1).map<Anthropic.MessageParam>((echange) => ({
     role: echange.role,
@@ -378,7 +457,12 @@ export async function repondre(
         ? [{ type: 'text' as const, text: profilPourLeModele(profil) }]
         : []),
     ],
-    messages: [...precedents, messageAvecPiece(derniere?.content ?? '', piece)],
+    /* L'outil est déclaré à chaque tour, jamais imposé : c'est au spécialiste
+       de juger s'il lui manque un fait, et le forcer produirait des questions
+       de formulaire. */
+    tools: [OUTIL_PRECISER],
+    tool_choice: { type: 'auto' },
+    messages: poserLeCorpus([...precedents, messageAvecPiece(derniere?.content ?? '', piece)], blocs),
   });
 
   if (response.stop_reason === 'refusal') {
@@ -395,6 +479,19 @@ export async function repondre(
     .join('\n')
     .trim();
 
+  /* Les citations viennent de l'API, pas du texte : on ne relit pas la réponse
+     pour y deviner des numéros d'article, on prend ceux que le modèle a
+     réellement rattachés au corpus. Une réponse qui ne cite rien affiche zéro
+     référence — c'est une information, pas un défaut à masquer. */
+  const references = plan
+    ? rassemblerLesReferences(
+        response.content
+          .filter((bloc): bloc is Anthropic.TextBlock => bloc.type === 'text')
+          .flatMap((bloc) => (bloc.citations ?? []) as CitationBrute[]),
+        plan,
+      )
+    : [];
+
   /* La question passe par l'outil ; le reste du tour, s'il y en a un, reste du
      texte. Les deux peuvent coexister — le spécialiste commence parfois par
      situer le sujet avant de réclamer la pièce qui lui manque. */
@@ -409,6 +506,7 @@ export async function repondre(
       refus: false,
       precision,
       preambule: texte,
+      references,
     };
   }
 
@@ -417,5 +515,6 @@ export async function repondre(
       texte ||
       'Je n’ai pas réussi à formuler de réponse. Reformulez votre question en précisant votre situation : la date des faits, ce que vous avez reçu, et ce que vous cherchez à obtenir.',
     refus: false,
+    references,
   };
 }

@@ -1,4 +1,5 @@
 import { Reponse } from '@/components/juridique/Reponse';
+import { Sources } from '@/components/juridique/Sources';
 import type { Tour } from '@/components/juridique/useConsultation';
 
 /**
@@ -28,6 +29,7 @@ export function Fil({
             </span>
           )}
           {tour.role === 'assistant' ? <Reponse texte={tour.content} /> : <p>{tour.content}</p>}
+          {tour.role === 'assistant' && <Sources references={tour.references ?? []} />}
         </div>
       ))}
 
