@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import type { Precision } from '@/lib/precision';
 
 /**
  * L'état d'une conversation avec un spécialiste.
@@ -45,6 +46,10 @@ interface Reponse {
   consultationId?: string;
   /** Ce qu'il reste de questions ce mois-ci. `null` quand c'est illimité. */
   restant?: number | null;
+  /** La question posée par le spécialiste avant de répondre, s'il en pose une. */
+  precision?: Precision | null;
+  /** Ce qui précède la question, sans elle. Vide quand il n'y a que la question. */
+  preambule?: string;
   error?: string;
   /** Vrai quand le refus vient d'un quota : la page propose alors une issue. */
   abonnement?: boolean;
@@ -63,6 +68,9 @@ export function useConsultation({
   const [specialite, setSpecialite] = useState({ id: domaine, label });
   const [pistes, setPistes] = useState<Piste[]>([]);
   const [restant, setRestant] = useState<number | null>(null);
+  /* La question en attente. Elle n'est pas dans `tours` : le fil garde le
+     texte, l'état garde les boutons. Répondre l'efface. */
+  const [precision, setPrecision] = useState<Precision | null>(null);
   /* Vrai quand la dernière erreur est un quota atteint plutôt qu'une panne :
      la page montre alors la sortie au lieu d'un simple message rouge. */
   const [quotaAtteint, setQuotaAtteint] = useState(false);
@@ -101,6 +109,7 @@ export function useConsultation({
       setPending(true);
       setErreur('');
       setPistes([]);
+      setPrecision(null);
       setQuotaAtteint(false);
 
       try {
@@ -137,7 +146,13 @@ export function useConsultation({
         if (corps.domaine) setSpecialite({ id: corps.domaine, label: corps.label ?? '' });
         setPistes(corps.pistes ?? []);
         setRestant(corps.restant ?? null);
-        setTours([...suite, { role: 'assistant', content: corps.reponse ?? '' }]);
+        setPrecision(corps.precision ?? null);
+
+        /* Quand une question est posée, la bulle ne porte que ce qui la
+           précède — la question a son encadré. Et s'il n'y a rien avant, il
+           n'y a pas de bulle du tout : une bulle vide se voit. */
+        const bulle = corps.precision ? (corps.preambule ?? '') : (corps.reponse ?? '');
+        setTours(bulle ? [...suite, { role: 'assistant', content: bulle }] : suite);
       } catch (cause) {
         /* La question reste dans le fil : la retirer donnerait l'impression
            qu'elle n'a jamais été posée, et il faudrait la retaper. */
@@ -153,6 +168,7 @@ export function useConsultation({
   const recommencer = useCallback(() => {
     setTours([]);
     setPistes([]);
+    setPrecision(null);
     setErreur('');
     setQuotaAtteint(false);
     setConsultationId('');
@@ -166,6 +182,7 @@ export function useConsultation({
     setErreur,
     quotaAtteint,
     restant,
+    precision,
     consultationId,
     specialite,
     pistes,

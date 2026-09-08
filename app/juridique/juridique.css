@@ -1641,3 +1641,62 @@
     font-size: 13.5px;
   }
 }
+
+/* ------------------------------------------------- la question du spécialiste
+
+   Elle se pose entre la dernière réponse et le champ, à l'endroit exact où le
+   regard descend. Encadrée, mais pas alarmante : ce n'est ni une erreur ni un
+   avertissement, c'est un tour de conversation.
+   ------------------------------------------------------------------------- */
+
+.jur-question-posee {
+  background: #fff;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 2.5) calc(var(--pas) * 2.75);
+  margin-bottom: calc(var(--pas) * 2);
+  box-shadow: var(--pose);
+}
+
+.jur-question-posee .jur-oeil {
+  margin-bottom: calc(var(--pas) * 1.25);
+}
+
+.jur-question-texte {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink-strong);
+  line-height: 1.4;
+  max-width: 52ch;
+}
+
+.jur-question-pourquoi {
+  margin: calc(var(--pas) * 0.75) 0 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 60ch;
+}
+
+.jur-question-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pas);
+  margin-top: calc(var(--pas) * 2);
+}
+
+.jur-question-options .jur-chip {
+  border-radius: 999px;
+  padding: calc(var(--pas) * 1) calc(var(--pas) * 2);
+  font-size: 14px;
+  color: var(--ink-strong);
+}
+
+/* « Je ne sais pas » n'est pas une réponse de second rang : c'en est une, et
+   souvent la vraie. Elle est simplement distinguée des choix du spécialiste. */
+.jur-chip-neutre {
+  border-style: dashed;
+  color: var(--ink-soft);
+}

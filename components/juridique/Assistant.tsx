@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Alerte } from '@/components/juridique/Alerte';
 import { Composeur } from '@/components/juridique/Composeur';
 import { Fil } from '@/components/juridique/Fil';
+import { Question } from '@/components/juridique/Question';
 import { useConsultation } from '@/components/juridique/useConsultation';
 import { ACCUEIL, ORIENTATION } from '@/lib/juridique-copie';
 
@@ -45,8 +46,18 @@ interface Props {
 }
 
 export function Assistant({ fiches, exemples, connecte, actif, children }: Props) {
-  const { tours, pending, erreur, quotaAtteint, restant, specialite, pistes, demander, recommencer } =
-    useConsultation({});
+  const {
+    tours,
+    pending,
+    erreur,
+    quotaAtteint,
+    restant,
+    precision,
+    specialite,
+    pistes,
+    demander,
+    recommencer,
+  } = useConsultation({});
   const [delaisOuverts, setDelaisOuverts] = useState(false);
   const finRef = useRef<HTMLDivElement>(null);
   /* La dernière question posée, pour pouvoir la reposer à un autre
@@ -171,6 +182,14 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
             </button>
           ))}
         </p>
+      )}
+
+      {precision && !pending && (
+        <Question
+          precision={precision}
+          actif={actif}
+          onRepondre={(reponse) => void demander(reponse)}
+        />
       )}
 
       {erreur && <Alerte message={erreur} quota={quotaAtteint} />}

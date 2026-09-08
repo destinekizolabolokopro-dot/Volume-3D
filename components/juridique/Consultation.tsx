@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { Alerte } from '@/components/juridique/Alerte';
 import { Composeur } from '@/components/juridique/Composeur';
 import { Fil } from '@/components/juridique/Fil';
+import { Question } from '@/components/juridique/Question';
 import { useConsultation, type Tour } from '@/components/juridique/useConsultation';
 
 export type { Tour };
@@ -46,7 +47,7 @@ export function Consultation({
   connecte,
   actif = true,
 }: Props) {
-  const { tours, pending, erreur, quotaAtteint, restant, demander } = useConsultation({
+  const { tours, pending, erreur, quotaAtteint, restant, precision, demander } = useConsultation({
     domaine,
     label,
     consultationInitiale,
@@ -87,6 +88,14 @@ export function Consultation({
 
       <Fil tours={tours} pending={pending} attente={`${label} examine votre question…`} />
       <div ref={finRef} />
+
+      {precision && !pending && (
+        <Question
+          precision={precision}
+          actif={actif}
+          onRepondre={(reponse) => void demander(reponse)}
+        />
+      )}
 
       {erreur && <Alerte message={erreur} quota={quotaAtteint} />}
 

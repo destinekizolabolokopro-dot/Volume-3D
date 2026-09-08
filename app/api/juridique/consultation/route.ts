@@ -296,6 +296,12 @@ export async function POST(request: Request) {
       /* Le nom du fichier est renvoyé pour que la page l'affiche dans le fil ;
          il n'y a rien d'autre à en garder. */
       piece: demande.piece?.nom ?? '',
+      /* La question que le spécialiste pose avant de répondre, s'il en pose
+         une. Le tour enregistré, lui, reste du texte : voir lib/precision.ts. */
+      precision: reponse.precision ?? null,
+      /* Ce qui s'affiche dans la bulle quand une question est posée : la
+         question, elle, a son propre encadré juste en dessous. */
+      preambule: reponse.preambule ?? '',
       /* Ce qu'il reste après cette question. La page l'affiche sous le champ :
          un compteur qu'on découvre au moment du refus est une mauvaise
          surprise, un compteur qu'on voit descendre est une information. */

@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { aiguiller, type Aiguillage } from './aiguillage';
 import { diagnosticsPourLeModele } from './diagnostics';
 import { domaine, estDomaineId, type Domaine, type DomaineId } from './domaines';
+import { MAX_OPTIONS, lirePrecision, texteDeLaQuestion, type Precision } from './precision';
 import { profilPourLeModele, type Profil } from './profils';
 import type { Piece } from './piece';
 
@@ -75,7 +76,11 @@ const SOCLE = [
   '',
   '3. Tu informes, tu ne plaides pas. Tu expliques ce que dit la règle et ce qu’il est possible de faire. Tu ne promets jamais une issue : ni « vous allez gagner », ni « c’est perdu d’avance ». Le résultat dépend des preuves et du juge, pas de ton avis.',
   '',
-  '4. Tu ne devines pas les faits. Si la réponse dépend d’un élément que la personne n’a pas donné — la date des faits, le type de bail, la commune du bien, la date de réception des travaux, ce qui est écrit au règlement de copropriété —, tu poses la question au lieu de supposer. Une seule question à la fois, celle qui change le plus la réponse.',
+  '4. Tu ne devines pas les faits. Quand la règle applicable dépend d’un élément que la personne n’a pas donné — la date des faits, le type de bail, la commune du bien, la date de réception des travaux, le régime fiscal choisi, ce qui est écrit au règlement de copropriété —, appelle l’outil « preciser » AU LIEU de répondre à moitié. C’est ce qui sépare une réponse d’une devinette bien tournée.',
+  '',
+  'Trois garde-fous sur cette question. Une seule à la fois, celle qui change le plus la réponse. Jamais deux tours de suite : si la personne ne sait pas, ou répond à côté, tu réponds en distinguant les cas au lieu de redemander. Et jamais pour du confort — une question dont la réponse ne changerait rien fait perdre un tour à tout le monde, et donne l’impression d’un formulaire.',
+  '',
+  'Quand les réponses possibles s’énumèrent, donne-les : « vide ou meublé », « avant ou après 2023 ». Un bouton se clique, une phrase se retape.',
   '',
   '5. Tu restes dans ta spécialité. Si la question relève d’une autre spécialité immobilière, tu le dis en une phrase et tu nommes celle qui convient, puis tu réponds quand même sur la part qui te concerne, s’il y en a une.',
   '',
@@ -216,6 +221,21 @@ export interface ReponseJuriste {
   texte: string;
   /** Vrai si le modèle a refusé de répondre : la page le dit sans le maquiller. */
   refus: boolean;
+  /**
+   * Renseigné quand le spécialiste réclame un fait avant de répondre. La page
+   * affiche alors la question et ses boutons ; le fil, lui, n’enregistre que
+   * du texte (voir `texteDeLaQuestion`).
+   */
+  precision?: Precision | null;
+  /**
+   * Ce qui précède la question, sans elle.
+   *
+   * `texte` porte les deux, parce que c'est lui qu'on enregistre : rouverte
+   * dans six mois, la consultation doit montrer ce qui a été demandé. Mais à
+   * l'écran, la question est déjà dans son encadré — l'afficher aussi dans la
+   * bulle la ferait lire deux fois.
+   */
+  preambule?: string;
 }
 
 /** Construit le message du visiteur, avec la pièce jointe s'il y en a une. */
@@ -262,6 +282,57 @@ function messageAvecPiece(question: string, piece: Piece | null): Anthropic.Mess
 
   return { role: 'user', content: blocs };
 }
+
+/* ================================================================== l'outil === */
+
+/**
+ * L'outil par lequel le spécialiste réclame ce qui lui manque.
+ *
+ * Pourquoi un outil plutôt qu'une phrase dans la réponse : parce qu'une
+ * question rendue en texte oblige la personne à retaper une réponse que le
+ * modèle connaissait déjà — « vide ou meublé ? » appelle deux boutons, pas un
+ * paragraphe. Le format structuré permet de les afficher, et rend la question
+ * reconnaissable par la page au lieu d'être devinée dans un flot de texte.
+ *
+ * `strict` garantit que les arguments valident le schéma : sans lui, une
+ * réponse mal formée passerait et il faudrait la rattraper à la lecture.
+ */
+const OUTIL_PRECISER: Anthropic.Tool = {
+  name: 'preciser',
+  description: [
+    'Réclame LA information manquante qui change la réponse, au lieu de répondre à moitié.',
+    '',
+    'À utiliser quand la règle applicable dépend d’un fait que la personne n’a pas donné :',
+    'le type de bail, la date des faits, la commune, le régime fiscal choisi, la nature du',
+    'congé, la date de réception des travaux. N’appelle pas cet outil pour du confort — une',
+    'question qui ne changerait pas la réponse fait perdre un tour à tout le monde.',
+    '',
+    'Une seule question à la fois, et jamais deux tours de suite : si la personne ne sait pas,',
+    'réponds en distinguant les cas plutôt qu’en redemandant.',
+  ].join('\n'),
+  strict: true,
+  input_schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['question', 'pourquoi', 'options'],
+    properties: {
+      question: {
+        type: 'string',
+        description: 'La question, en une phrase, sans jargon. Exemple : « Le bail est-il vide ou meublé ? »',
+      },
+      pourquoi: {
+        type: 'string',
+        description:
+          'En une phrase : ce que la réponse change. Exemple : « Le préavis du bailleur est de six mois pour un vide, trois pour un meublé. »',
+      },
+      options: {
+        type: 'array',
+        items: { type: 'string' },
+        description: `Les réponses possibles, de deux à ${MAX_OPTIONS}, quand elles s’énumèrent. Tableau vide pour une date, un montant ou une adresse.`,
+      },
+    },
+  },
+};
 
 /**
  * Pose la question au spécialiste. L'historique est renvoyé entier : l'API est
@@ -323,6 +394,23 @@ export async function repondre(
     .map((bloc) => bloc.text)
     .join('\n')
     .trim();
+
+  /* La question passe par l'outil ; le reste du tour, s'il y en a un, reste du
+     texte. Les deux peuvent coexister — le spécialiste commence parfois par
+     situer le sujet avant de réclamer la pièce qui lui manque. */
+  const appel = response.content.find(
+    (bloc): bloc is Anthropic.ToolUseBlock => bloc.type === 'tool_use' && bloc.name === 'preciser',
+  );
+  const precision = appel ? lirePrecision(appel.input) : null;
+
+  if (precision) {
+    return {
+      texte: texte ? `${texte}\n\n${texteDeLaQuestion(precision)}` : texteDeLaQuestion(precision),
+      refus: false,
+      precision,
+      preambule: texte,
+    };
+  }
 
   return {
     texte:

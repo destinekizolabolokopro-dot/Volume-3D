@@ -561,6 +561,42 @@ déclinée franchement —, et nommer l'interlocuteur réel : ADIL, point-justic
 conciliateur, commissaire de justice, notaire, géomètre-expert, service
 urbanisme.
 
+### Le spécialiste demande avant de répondre
+
+« Puis-je donner congé ? » n'a pas de réponse : elle en a quatre, selon que le
+bail est vide ou meublé et que le congé soit pour vente, pour reprise ou pour
+motif légitime. Un assistant qui choisit tout seul l'une des quatre a une
+chance sur quatre d'avoir raison, et aucune de le savoir.
+
+Quand la règle applicable dépend d'un fait qui n'a pas été donné, le
+spécialiste ne répond donc pas à moitié : il **réclame ce qui manque**, par un
+outil (`preciser`) et non par une phrase noyée dans sa réponse. La différence
+est visible à l'écran — la question arrive dans son propre encadré, avec ses
+réponses en boutons. « Vide » ou « Meublé » se clique ; retapé, le même mot
+serait une phrase à interpréter.
+
+Trois garde-fous, parce qu'un assistant qui interroge sans fin est pire que
+celui qui devine :
+
+- **une seule question**, celle qui change le plus la réponse ;
+- **jamais deux tours de suite** — si la personne ne sait pas, la réponse
+  distingue les cas au lieu de redemander. Le bouton « Je ne sais pas » n'est
+  pas une réponse de second rang, c'est souvent la vraie ;
+- **jamais pour du confort** : une question dont la réponse ne changerait rien
+  fait perdre un tour à tout le monde et transforme la conversation en
+  formulaire.
+
+Le fil, lui, n'enregistre que du texte. C'est ce qui permet de rouvrir une
+consultation six mois plus tard sans dépendre de la forme que l'outil avait ce
+jour-là, et de renvoyer l'historique au modèle sans reconstituer un appel
+d'outil resté sans réponse. À l'écran, la bulle ne porte que ce qui précède la
+question — l'afficher aux deux endroits la ferait lire deux fois.
+
+`lib/precision.ts` est la porte entre les deux : un schéma valide ne garantit
+pas une question affichable. Une question vide n'en est pas une, une option
+unique n'offre aucun choix, huit options font un formulaire — les trois cas
+sont ramenés à quelque chose d'utilisable, et testés.
+
 ### Deux choses qu'un professionnel rouvre plusieurs fois par semaine
 
 **L'aide-mémoire.** Chaque spécialité porte, à côté de ses délais, la liste de
@@ -1207,6 +1243,7 @@ components/
   juridique/Questionnaire.tsx  les trois questions d'entrée
   juridique/Pied.tsx           le pied de page et sa mention
   juridique/Alerte.tsx         l'erreur du fil, avec la sortie quand c'est un quota
+  juridique/Question.tsx       la question du spécialiste, et ses réponses en boutons
   juridique/Consultation.tsx   le fil sur la fiche d'un spécialiste, ou repris
   juridique/useConsultation.ts l'état d'une conversation, partagé par les deux
   juridique/Composeur.tsx      le champ, la pièce jointe, l'état éteint
@@ -1241,6 +1278,7 @@ lib/
   consultations.ts             les fils enregistrés, cloisonnés par compte
   piece.ts                     lecture d'un document déposé — et rien de plus, il n'est pas stocké
   mise-en-forme.ts             découpage d'une réponse en titres, paragraphes, énumérations
+  precision.ts                 la question posée avant de répondre, et ce qui la rend affichable
   cadence.ts                   frein sur les rafales, partagé par les routes juridiques
   storage.ts / paths.ts        envoi de fichiers et sécurité des chemins
   sphere.ts                    conversions yaw/pitch ↔ vecteurs
