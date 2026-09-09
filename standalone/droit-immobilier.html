@@ -2264,27 +2264,166 @@ body {
 }
 
 
-/* ---- propre à la page unique : elle n'a ni serveur ni navigation ---- */
-.page-unique { max-width: 960px; margin: 0 auto; padding: 0 calc(var(--pas) * 3) calc(var(--pas) * 10); }
-.grille { display: grid; gap: calc(var(--pas) * 2); grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-.carte { text-align: left; display: flex; flex-direction: column; gap: calc(var(--pas) * 0.75);
-  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
-  padding: calc(var(--pas) * 2.5); cursor: pointer; font: inherit;
-  transition: border-color .15s ease, box-shadow .15s ease; }
-.carte:hover { border-color: var(--accent); box-shadow: var(--pose); }
-.carte-titre { font-size: 16px; font-weight: 600; color: var(--ink-strong); }
-.carte-resume { font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
-.carte-chiffre { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); margin-top: auto; }
-.retour { background: none; border: 0; font: inherit; color: var(--accent); cursor: pointer;
-  padding: 0; margin-bottom: calc(var(--pas) * 2); }
-.deux { display: grid; gap: calc(var(--pas) * 2); }
-@media (min-width: 760px) { .deux { grid-template-columns: 1fr 1fr; } }
-.enregistre { display: inline-block; font-size: 12px; letter-spacing: .05em; text-transform: uppercase;
-  color: var(--ink-on-dark-soft); background: var(--dark); border-radius: 999px;
-  padding: calc(var(--pas) * .5) calc(var(--pas) * 1.5); margin-bottom: calc(var(--pas) * 2); }
-.chiffres { display: flex; flex-wrap: wrap; gap: calc(var(--pas) * 4); margin: calc(var(--pas) * 3) 0 0; }
-.chiffre strong { display: block; font-size: 30px; letter-spacing: -.02em; color: var(--ink-strong); }
-.chiffre span { font-size: 13px; color: var(--ink-soft); }
+/* =========================================================================
+   Propre à la page unique.
+
+   Tout ce qui précède vient du site, sans retouche. Ce qui suit ne concerne
+   que ce fichier : il n'a ni serveur, ni navigation, ni champ à remplir, et
+   il porte deux choses que le site n'a pas — les chiffres du corpus et un
+   échange donné en exemple.
+   ========================================================================= */
+
+/* Les exemples ont leur propre section : la marge basse prévue pour les
+   séparer du reste s'ajouterait à celle de la section suivante, et deux
+   espacements empilés font un trou. */
+.jur-suggestions-accueil {
+  margin-bottom: 0;
+}
+
+/* Les puces d'exemples ne sont pas cliquables ici : elles montrent le niveau
+   de précision utile, elles ne lancent rien. Elles perdent donc l'affordance
+   du bouton — un curseur en main sur ce qui ne réagit pas est une promesse
+   qu'on ne tient pas. */
+.jur-chip-fige {
+  cursor: default;
+}
+
+.jur-chip-fige:hover {
+  border-color: var(--line);
+  background: #fff;
+  color: inherit;
+}
+
+/* Les chiffres du corpus : l'argument central de ce produit, donc le seul
+   endroit de la page où l'on parle en grand. */
+.chiffres {
+  display: grid;
+  /* Deux, puis quatre. Jamais trois : auto-fit en donnait trois et laissait
+     le quatrième chiffre seul sur une ligne, ce qui ouvre un trou au milieu de
+     la page et fait passer une rangée de chiffres pour un accident. */
+  grid-template-columns: repeat(2, 1fr);
+  gap: calc(var(--pas) * 3.5) calc(var(--pas) * 3);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: calc(var(--pas) * 3.5) 0;
+}
+
+@media (min-width: 760px) {
+  .chiffres {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.chiffre strong {
+  display: block;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: calc(var(--pas) * 1);
+}
+
+.chiffre span {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  display: block;
+  max-width: 26ch;
+}
+
+/* L'échange en exemple. L'étiquette est posée SUR le fil et non à côté :
+   quelqu'un qui fait défiler doit rencontrer l'avertissement avant la
+   réponse, pas après. */
+.exemple {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+
+.exemple-etiquette {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pas) * 1.25);
+  padding: calc(var(--pas) * 1.5) calc(var(--pas) * 2.5);
+  background: var(--dark);
+  color: var(--ink-on-dark-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.exemple-etiquette::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-on-dark);
+  flex: none;
+}
+
+.exemple .jur-fil {
+  padding: calc(var(--pas) * 3) calc(var(--pas) * 3) calc(var(--pas) * 2);
+}
+
+.exemple .hint {
+  margin: 0;
+  padding: 0 calc(var(--pas) * 3) calc(var(--pas) * 3);
+  max-width: 78ch;
+}
+
+/* Le nombre d'articles joints, en pied de carte : c'est ce qui distingue une
+   fiche de spécialité d'un simple intitulé. */
+.carte-corpus {
+  margin-top: auto;
+  padding-top: calc(var(--pas) * 1.5);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.jur-card:hover .carte-corpus {
+  color: var(--accent);
+}
+
+/* La fiche : les blocs du site, en deux colonnes dès qu'il y a la place. */
+.fiche-colonnes {
+  display: grid;
+  gap: calc(var(--pas) * 2);
+  margin-top: calc(var(--pas) * 2);
+}
+
+@media (min-width: 820px) {
+  .fiche-colonnes {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.jur-retour {
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  margin: 0 0 calc(var(--pas) * 3);
+}
+
+.jur-retour:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+.fiche .jur-bloc h3 {
+  margin-top: 0;
+}
 </style>
 </head>
 <body>
@@ -2292,116 +2431,122 @@ body {
 
 <header class="jur-bar">
   <span class="jur-bar-brand">Droit immobilier<small>dix spécialités, une réponse sourcée</small></span>
+  <span class="jur-bar-link" style="margin-left:auto">Fichier de démonstration</span>
 </header>
 
-<div class="page-unique">
+<main class="jur-page jur-accueil" id="accueil">
+  <p class="jur-oeil">Assistant juridique · droit immobilier</p>
+  <h1 class="jur-h1"><span>Une question sur votre bien ?</span><span>Elle ira au bon spécialiste.</span></h1>
+  <p class="jur-lede">Dix spécialités du droit immobilier, pour ceux qui en vivent : propriétaires bailleurs, loueurs en meublé de tourisme, copropriétaires — et les professionnels qui les accompagnent, agents, mandataires, gestionnaires. Chacune avec son périmètre, ses délais couperets et son aide-mémoire. Racontez votre situation comme vous la raconteriez à quelqu’un.</p>
 
-<main id="accueil">
-  <section class="jur-page">
-    <p class="jur-oeil">Assistant juridique · droit immobilier</p>
-    <h1 class="jur-h1">Une question sur votre bien ?<br>Elle ira au bon spécialiste.</h1>
-    <p class="jur-lede">Dix spécialités du droit immobilier, pour ceux qui en vivent : propriétaires bailleurs, loueurs en meublé de tourisme, copropriétaires — et les professionnels qui les accompagnent, agents, mandataires, gestionnaires. Chacune avec son périmètre, ses délais couperets et son aide-mémoire. Racontez votre situation comme vous la raconteriez à quelqu’un.</p>
+  <div class="chiffres"><div class="chiffre"><strong>10</strong><span>spécialités</span></div><div class="chiffre"><strong>2 133</strong><span>articles en vigueur, joints aux réponses</span></div><div class="chiffre"><strong>423</strong><span>mises à jour du fonds appliquées</span></div><div class="chiffre"><strong>12</strong><span>diagnostics et leurs durées</span></div></div>
 
-    <div class="chiffres">
-      <div class="chiffre"><strong>10</strong><span>spécialités</span></div>
-      <div class="chiffre"><strong>2 133</strong><span>articles en vigueur joints aux réponses</span></div>
-      <div class="chiffre"><strong>423</strong><span>mises à jour du fonds appliquées</span></div>
-      <div class="chiffre"><strong>12</strong><span>diagnostics et leurs durées</span></div>
-    </div>
-  </section>
+  <section class="jur-section">
+    <h2 class="jur-h2">Ce qu’une réponse donne</h2>
+    <p class="jur-sub">Le délai d’abord, puis la règle, puis ce qu’il y a à faire — et les articles sur lesquels tout cela s’appuie, cités à la fin.</p>
 
-  <section class="jur-page">
-    <span class="enregistre">Échange enregistré · cette page ne répond pas</span>
-    <div class="jur-fil">
-      <div class="jur-tour jur-de-vous"><p>Je veux vendre mon appartement, qui est loué vide depuis 2021. Le bail arrive à échéance en mars. Comment donner congé ?</p></div>
-      <div class="jur-tour jur-de-lui">
-        <p class="jur-intertitre">Le délai</p><p>Six mois avant l’échéance, pour un logement vide. Si le bail se termine en mars, le congé doit être reçu par le locataire au plus tard fin septembre. Un jour de retard et il ne vaut rien : le bail se reconduit pour trois ans.</p><p class="jur-intertitre">Ce que dit la règle</p><p>Le congé pour vendre doit indiquer le motif, le prix et les conditions de la vente. Il vaut offre de vente au profit du locataire, qui dispose de deux mois pour l’accepter. Ce n’est pas une formalité : un congé qui omet le prix est nul, et la nullité se soulève des années plus tard.</p><p class="jur-intertitre">Ce que vous pouvez faire</p><ul class="jur-liste"><li>compter six mois pleins depuis la date d’échéance portée au contrat, pas depuis la signature ;</li><li>faire délivrer le congé par commissaire de justice — la preuve de réception est ce qui se conteste le plus ;</li><li>y porter le prix et les conditions, faute de quoi il est nul.</li></ul><p class="jur-intertitre">Quand il faut un professionnel</p><p>Si le locataire a plus de soixante-cinq ans et des ressources modestes, la protection légale peut vous interdire le congé sauf à lui proposer un relogement. C’est le cas où une erreur coûte trois ans : faites vérifier la situation avant d’envoyer quoi que ce soit.</p>
-        <details class="jur-sources" open>
-          <summary>Les 2 textes cités</summary>
-          <ul>
-    <li>
-      <p class="jur-source-titre">Article 15<span class="jur-source-texte"> — loi du 6 juillet 1989</span></p>
-      <p class="jur-source-chemin">Titre Ier : Des rapports entre bailleurs et locataires › Chapitre II : De la durée du contrat de location.</p>
-      <blockquote>I. - Lorsque le bailleur donne congé à son locataire, ce congé doit être justifié soit par sa décision de reprendre ou de vendre le logement, soit par un motif légitime et sérieux, notamment l'inexécution par le locataire de l'une des obligations lui incombant. A peine de nullité, le congé donné par le bailleur doit indiquer le motif allé…</blockquote>
-    </li>
-    <li>
-      <p class="jur-source-titre">Article 1743<span class="jur-source-texte"> — code civil</span></p>
-      <p class="jur-source-chemin">Livre III : Des différentes manières dont on acquiert la propriété › Titre VIII : Du contrat de louage › Chapitre II : Du louage des choses. › Section 1 : Des règles communes aux baux des maisons et des biens ruraux.</p>
-      <blockquote>Si le bailleur vend la chose louée, l'acquéreur ne peut expulser le fermier, le métayer ou le locataire qui a un bail authentique ou dont la date est certaine.…</blockquote>
-    </li></ul>
-        </details>
+    <div class="exemple">
+      <p class="exemple-etiquette">Échange enregistré · ce fichier ne répond pas</p>
+      <div class="jur-fil">
+        <div class="jur-tour jur-de-vous"><p>Je veux vendre mon appartement, qui est loué vide depuis 2021. Le bail arrive à échéance en mars. Comment donner congé ?</p></div>
+        <div class="jur-tour jur-de-lui">
+          <p class="jur-intertitre">Le délai</p><p>Six mois avant l’échéance, pour un logement vide. Si le bail se termine en mars, le congé doit être reçu par le locataire au plus tard fin septembre. Un jour de retard et il ne vaut rien : le bail se reconduit pour trois ans.</p><p class="jur-intertitre">Ce que dit la règle</p><p>Le congé pour vendre doit indiquer le motif, le prix et les conditions de la vente. Il vaut offre de vente au profit du locataire, qui dispose de deux mois pour l’accepter. Ce n’est pas une formalité : un congé qui omet le prix est nul, et la nullité se soulève des années plus tard.</p><p class="jur-intertitre">Ce que vous pouvez faire</p><ul class="jur-liste"><li>compter six mois pleins depuis la date d’échéance portée au contrat, pas depuis la signature ;</li><li>faire délivrer le congé par commissaire de justice — la preuve de réception est ce qui se conteste le plus ;</li><li>y porter le prix et les conditions, faute de quoi il est nul.</li></ul><p class="jur-intertitre">Quand il faut un professionnel</p><p>Si le locataire a plus de soixante-cinq ans et des ressources modestes, la protection légale peut vous interdire le congé sauf à lui proposer un relogement. C’est le cas où une erreur coûte trois ans : faites vérifier la situation avant d’envoyer quoi que ce soit.</p>
+          <details class="jur-sources" open>
+            <summary>Les 2 textes cités</summary>
+            <ul>
+          <li>
+            <p class="jur-source-titre">Article 15<span class="jur-source-texte"> — loi du 6 juillet 1989</span></p>
+            <p class="jur-source-chemin">Titre Ier : Des rapports entre bailleurs et locataires › Chapitre II : De la durée du contrat de location.</p>
+            <blockquote>I. - Lorsque le bailleur donne congé à son locataire, ce congé doit être justifié soit par sa décision de reprendre ou de vendre le logement, soit par un motif légitime et sérieux, notamment l'inexécution par le locataire de l'une des obligations lui incombant. A peine de nullité, le congé donné par le bailleur doit indiquer le motif allé…</blockquote>
+          </li>
+          <li>
+            <p class="jur-source-titre">Article 1743<span class="jur-source-texte"> — code civil</span></p>
+            <p class="jur-source-chemin">Livre III : Des différentes manières dont on acquiert la propriété › Titre VIII : Du contrat de louage › Chapitre II : Du louage des choses. › Section 1 : Des règles communes aux baux des maisons et des biens ruraux.</p>
+            <blockquote>Si le bailleur vend la chose louée, l'acquéreur ne peut expulser le fermier, le métayer ou le locataire qui a un bail authentique ou dont la date est certaine.…</blockquote>
+          </li></ul>
+          </details>
+        </div>
       </div>
+      <p class="hint">Ces réponses sont une information juridique, pas une consultation d’avocat. Elles ne tiennent compte que de ce que vous avez écrit, et rien n’y remplace la lecture de vos documents par un professionnel. En cas de délai en cours, prenez conseil sans attendre : l’ADIL de votre département renseigne gratuitement sur le logement, un point-justice reçoit sans condition de ressources, et l’aide juridictionnelle peut prendre en charge un avocat.</p>
     </div>
-    <p class="hint">Ces réponses sont une information juridique, pas une consultation d’avocat. Elles ne tiennent compte que de ce que vous avez écrit, et rien n’y remplace la lecture de vos documents par un professionnel. En cas de délai en cours, prenez conseil sans attendre : l’ADIL de votre département renseigne gratuitement sur le logement, un point-justice reçoit sans condition de ressources, et l’aide juridictionnelle peut prendre en charge un avocat.</p>
   </section>
 
-  <section class="jur-page">
+  <section class="jur-section">
+    <h2 class="jur-h2">Des questions qu’on lui pose</h2>
+    <p class="jur-sub">Prises dans quatre spécialités différentes. Elles montrent l’étendue du périmètre autant que le niveau de précision utile.</p>
+    <div class="jur-suggestions jur-suggestions-accueil"><span class="jur-chip jur-chip-fige">Mon locataire est parti en laissant deux mois de loyer : par quoi je commence ?</span><span class="jur-chip jur-chip-fige">Ma ville impose un numéro d’enregistrement : que se passe-t-il si j’ai loué sans ?</span><span class="jur-chip jur-chip-fige">Des fissures sont apparues deux ans après la fin des travaux : qui paie ?</span><span class="jur-chip jur-chip-fige">Mon mandat exclusif expire dans un mois et le vendeur traite en direct avec un acquéreur que j’ai présenté.</span></div>
+  </section>
+
+  <section class="jur-section">
     <h2 class="jur-h2">Ou choisissez directement</h2>
-    <p class="jur-lede">Chaque fiche indique ce que le spécialiste traite, ce qu’il ne traite pas, les délais à ne pas manquer et les pièces à réunir avant d’agir.</p>
-    <div class="grille">
-    <button class="carte" data-ouvre="bail-habitation">
-      <span class="carte-titre">Bail d’habitation</span>
-      <span class="carte-resume">Louer à l’année, vide ou meublé : loyer, congé, dépôt, impayés.</span>
-      <span class="carte-chiffre">263 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="courte-duree">
-      <span class="carte-titre">Location courte durée</span>
-      <span class="carte-resume">Airbnb et meublés de tourisme : déclaration, quotas, taxe, litiges.</span>
-      <span class="carte-chiffre">151 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="copropriete">
-      <span class="carte-titre">Copropriété</span>
-      <span class="carte-resume">Assemblée générale, syndic, charges, travaux, règlement.</span>
-      <span class="carte-chiffre">346 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="achat-vente">
-      <span class="carte-titre">Achat et vente</span>
-      <span class="carte-resume">Compromis, conditions suspensives, diagnostics, vices cachés.</span>
-      <span class="carte-chiffre">213 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="travaux">
-      <span class="carte-titre">Travaux et malfaçons</span>
-      <span class="carte-resume">Devis, artisans, réception, garanties, chantier abandonné.</span>
-      <span class="carte-chiffre">82 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="urbanisme">
-      <span class="carte-titre">Urbanisme et autorisations</span>
-      <span class="carte-resume">Permis, déclaration préalable, PLU, recours, conformité.</span>
-      <span class="carte-chiffre">480 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="voisinage">
-      <span class="carte-titre">Voisinage et limites</span>
-      <span class="carte-resume">Bruit, vues, mitoyenneté, bornage, plantations, servitudes.</span>
-      <span class="carte-chiffre">165 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="fiscalite">
-      <span class="carte-titre">Fiscalité du bien</span>
-      <span class="carte-resume">LMNP, revenus fonciers, plus-value, taxe foncière, contrôle.</span>
-      <span class="carte-chiffre">47 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="sinistres">
-      <span class="carte-titre">Sinistres et assurances</span>
-      <span class="carte-resume">Dégât des eaux, incendie, expertise, indemnisation, recours.</span>
-      <span class="carte-chiffre">239 articles joints</span>
-    </button>
-    <button class="carte" data-ouvre="profession">
-      <span class="carte-titre">Métier de l’agent immobilier</span>
-      <span class="carte-resume">Mandat, honoraires, annonces, carte professionnelle, responsabilité.</span>
-      <span class="carte-chiffre">147 articles joints</span>
-    </button></div>
+    <p class="jur-sub">Chaque fiche indique ce que le spécialiste traite, ce qu’il ne traite pas, les délais à ne pas manquer et les pièces à réunir avant d’agir.</p>
+    <div class="jur-grid">
+      <a class="jur-card" href="#bail-habitation" data-ouvre="bail-habitation">
+        <h3>Bail d’habitation</h3>
+        <p>Louer à l’année, vide ou meublé : loyer, congé, dépôt, impayés.</p>
+        <span class="carte-corpus">263 articles joints</span>
+      </a>
+      <a class="jur-card" href="#courte-duree" data-ouvre="courte-duree">
+        <h3>Location courte durée</h3>
+        <p>Airbnb et meublés de tourisme : déclaration, quotas, taxe, litiges.</p>
+        <span class="carte-corpus">151 articles joints</span>
+      </a>
+      <a class="jur-card" href="#copropriete" data-ouvre="copropriete">
+        <h3>Copropriété</h3>
+        <p>Assemblée générale, syndic, charges, travaux, règlement.</p>
+        <span class="carte-corpus">346 articles joints</span>
+      </a>
+      <a class="jur-card" href="#achat-vente" data-ouvre="achat-vente">
+        <h3>Achat et vente</h3>
+        <p>Compromis, conditions suspensives, diagnostics, vices cachés.</p>
+        <span class="carte-corpus">213 articles joints</span>
+      </a>
+      <a class="jur-card" href="#travaux" data-ouvre="travaux">
+        <h3>Travaux et malfaçons</h3>
+        <p>Devis, artisans, réception, garanties, chantier abandonné.</p>
+        <span class="carte-corpus">82 articles joints</span>
+      </a>
+      <a class="jur-card" href="#urbanisme" data-ouvre="urbanisme">
+        <h3>Urbanisme et autorisations</h3>
+        <p>Permis, déclaration préalable, PLU, recours, conformité.</p>
+        <span class="carte-corpus">480 articles joints</span>
+      </a>
+      <a class="jur-card" href="#voisinage" data-ouvre="voisinage">
+        <h3>Voisinage et limites</h3>
+        <p>Bruit, vues, mitoyenneté, bornage, plantations, servitudes.</p>
+        <span class="carte-corpus">165 articles joints</span>
+      </a>
+      <a class="jur-card" href="#fiscalite" data-ouvre="fiscalite">
+        <h3>Fiscalité du bien</h3>
+        <p>LMNP, revenus fonciers, plus-value, taxe foncière, contrôle.</p>
+        <span class="carte-corpus">47 articles joints</span>
+      </a>
+      <a class="jur-card" href="#sinistres" data-ouvre="sinistres">
+        <h3>Sinistres et assurances</h3>
+        <p>Dégât des eaux, incendie, expertise, indemnisation, recours.</p>
+        <span class="carte-corpus">239 articles joints</span>
+      </a>
+      <a class="jur-card" href="#profession" data-ouvre="profession">
+        <h3>Métier de l’agent immobilier</h3>
+        <p>Mandat, honoraires, annonces, carte professionnelle, responsabilité.</p>
+        <span class="carte-corpus">147 articles joints</span>
+      </a></div>
   </section>
 
-  <section class="jur-page">
-    <h2 class="jur-h2">Ce que cet assistant est, et ce qu’il n’est pas</h2>
-    <p class="jur-lede">Trois limites, dites avant plutôt qu’après.</p>
-    <p><strong>Il donne une information juridique.</strong> Ce que dit la règle, ce que vous pouvez faire, dans quel délai, et vers qui vous tourner. C’est utile pour comprendre une situation, préparer un rendez-vous, ou savoir s’il y a urgence.</p><p><strong>Il ne remplace pas un avocat.</strong> Il ne connaît de votre dossier que ce que vous lui en dites, il ne peut ni vous représenter, ni signer, ni agir avant l’expiration d’un délai. L’ADIL de votre département renseigne gratuitement sur le logement, et un point-justice reçoit sans condition de ressources pour un premier conseil.</p><p><strong>Il ne cite que ce qu’il a sous les yeux.</strong> Les textes officiels de sa spécialité lui sont joints à chaque question, tirés du fonds LEGI. Il en cite le passage exact et l’article, et le numéro affiché vient du fonds, pas de sa mémoire. Sur tout le reste — jurisprudence, règlement de copropriété, délibération de votre commune —, il nomme la source sans la numéroter : une référence inexacte a l’apparence exacte d’une vraie, et se retrouve recopiée dans un courrier.</p>
+  <section class="jur-section jur-bande">
+    <p class="jur-oeil">Ce qu’il faut savoir</p>
+    <h2>Ce que cet assistant est, et ce qu’il n’est pas</h2>
+    <p class="jur-bande-sous">Trois limites, dites avant plutôt qu’après.</p>
+    <div class="jur-limites">
+      <div class="jur-limite"><p><strong>Il donne une information juridique.</strong> Ce que dit la règle, ce que vous pouvez faire, dans quel délai, et vers qui vous tourner. C’est utile pour comprendre une situation, préparer un rendez-vous, ou savoir s’il y a urgence.</p></div><div class="jur-limite"><p><strong>Il ne remplace pas un avocat.</strong> Il ne connaît de votre dossier que ce que vous lui en dites, il ne peut ni vous représenter, ni signer, ni agir avant l’expiration d’un délai. L’ADIL de votre département renseigne gratuitement sur le logement, et un point-justice reçoit sans condition de ressources pour un premier conseil.</p></div><div class="jur-limite"><p><strong>Il ne cite que ce qu’il a sous les yeux.</strong> Les textes officiels de sa spécialité lui sont joints à chaque question, tirés du fonds LEGI. Il en cite le passage exact et l’article, et le numéro affiché vient du fonds, pas de sa mémoire. Sur tout le reste — jurisprudence, règlement de copropriété, délibération de votre commune —, il nomme la source sans la numéroter : une référence inexacte a l’apparence exacte d’une vraie, et se retrouve recopiée dans un courrier.</p></div>
+    </div>
   </section>
 </main>
 
 <div id="fiches">
-<article class="fiche" id="fiche-bail-habitation" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Bail d’habitation</h2>
+<main class="jur-page fiche" id="fiche-bail-habitation" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Bail d’habitation</h1>
   <p class="jur-lede">Louer à l’année, vide ou meublé : loyer, congé, dépôt, impayés.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2410,35 +2555,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>le bail écrit avec la notice d’information annexée, et l’état des lieux dressé le même jour en double exemplaire</li><li>le dossier de diagnostics à jour : DPE, état des risques, plomb, gaz, électricité selon le bien</li><li>la surface habitable au sens de la loi Boutin, portée au bail</li><li>le dépôt de garantie : un mois de loyer hors charges pour un vide, deux au plus pour un meublé</li><li>en zone d’encadrement : le loyer de référence majoré, et le complément de loyer justifié par écrit</li><li>pour un meublé : l’inventaire du mobilier, et la liste des équipements exigés</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>rédaction et contenu du bail : durée, clauses, annexes obligatoires</li><li>loyer : fixation, révision annuelle, encadrement dans les zones concernées</li><li>charges : provisions, régularisation annuelle, ce qui est récupérable</li><li>dépôt de garantie, état des lieux d’entrée et de sortie, réparations locatives</li><li>congé donné par le bailleur : reprise, vente, motif légitime et sérieux</li><li>impayés : relance, commandement de payer, clause résolutoire, expulsion</li><li>garant, caution solidaire, assurance loyers impayés, colocation</li><li>obligations du bailleur : logement décent, entretien, travaux à sa charge</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>une location à la nuit ou à la semaine, un meublé de tourisme → « Location courte durée »</li><li>les charges votées en assemblée générale de l’immeuble → « Copropriété »</li><li>l’imposition des loyers encaissés → « Fiscalité du bien »</li><li>un dégât des eaux ou un sinistre à faire indemniser → « Sinistres et assurances »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>le bail écrit avec la notice d’information annexée, et l’état des lieux dressé le même jour en double exemplaire</li><li>le dossier de diagnostics à jour : DPE, état des risques, plomb, gaz, électricité selon le bien</li><li>la surface habitable au sens de la loi Boutin, portée au bail</li><li>le dépôt de garantie : un mois de loyer hors charges pour un vide, deux au plus pour un meublé</li><li>en zone d’encadrement : le loyer de référence majoré, et le complément de loyer justifié par écrit</li><li>pour un meublé : l’inventaire du mobilier, et la liste des équipements exigés</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>rédaction et contenu du bail : durée, clauses, annexes obligatoires</li><li>loyer : fixation, révision annuelle, encadrement dans les zones concernées</li><li>charges : provisions, régularisation annuelle, ce qui est récupérable</li><li>dépôt de garantie, état des lieux d’entrée et de sortie, réparations locatives</li><li>congé donné par le bailleur : reprise, vente, motif légitime et sérieux</li><li>impayés : relance, commandement de payer, clause résolutoire, expulsion</li><li>garant, caution solidaire, assurance loyers impayés, colocation</li><li>obligations du bailleur : logement décent, entretien, travaux à sa charge</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>une location à la nuit ou à la semaine, un meublé de tourisme — Location courte durée</li><li>les charges votées en assemblée générale de l’immeuble — Copropriété</li><li>l’imposition des loyers encaissés — Fiscalité du bien</li><li>un dégât des eaux ou un sinistre à faire indemniser — Sinistres et assurances</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>la loi du 6 juillet 1989 sur les rapports locatifs</li><li>le décret sur les charges récupérables et celui sur les réparations locatives</li><li>le code civil, pour le louage et la responsabilité</li><li>le code des procédures civiles d’exécution, pour l’expulsion</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>la loi du 6 juillet 1989 sur les rapports locatifs</li><li>le décret sur les charges récupérables et celui sur les réparations locatives</li><li>le code civil, pour le louage et la responsabilité</li><li>le code des procédures civiles d’exécution, pour l’expulsion</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>Mon locataire est parti en laissant deux mois de loyer : par quoi je commence ?</li><li>Je veux reprendre mon appartement pour y loger ma fille : quand donner congé ?</li><li>Puis-je retenir le dépôt de garantie pour des trous dans les murs ?</li><li>J’ai oublié de réviser le loyer l’an dernier : puis-je rattraper ?</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-courte-duree" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Location courte durée</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>Mon locataire est parti en laissant deux mois de loyer : par quoi je commence ?</li><li>Je veux reprendre mon appartement pour y loger ma fille : quand donner congé ?</li><li>Puis-je retenir le dépôt de garantie pour des trous dans les murs ?</li><li>J’ai oublié de réviser le loyer l’an dernier : puis-je rattraper ?</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-courte-duree" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Location courte durée</h1>
   <p class="jur-lede">Airbnb et meublés de tourisme : déclaration, quotas, taxe, litiges.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2447,35 +2575,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>le numéro d’enregistrement affiché sur chaque annonce, dans les communes qui l’imposent</li><li>ce que dit le règlement de copropriété : clause d’habitation bourgeoise, interdiction d’activité commerciale</li><li>la déclaration en mairie, et l’autorisation de changement d’usage si le bien n’est pas votre résidence principale</li><li>le classement du meublé de tourisme : il change l’abattement fiscal et la taxe de séjour</li><li>l’assurance : la garantie « location saisonnière » ne figure pas dans un contrat d’habitation ordinaire</li><li>un état des lieux photographique daté à chaque départ, pris avant l’arrivée suivante</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>déclaration en mairie et numéro d’enregistrement, selon la commune</li><li>changement d’usage, autorisation, compensation dans les villes concernées</li><li>limite annuelle de location d’une résidence principale</li><li>taxe de séjour : collecte, reversement, part de la plateforme</li><li>ce que le règlement de copropriété autorise ou interdit</li><li>relations avec les plateformes : annulation, blocage de compte, commissions</li><li>litiges voyageurs : dégradations, dépôt de garantie, avis, nuisances</li><li>obligations d’information, contrat de location saisonnière, assurance</li><li>mandat de conciergerie et gestion déléguée</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>une location à l’année, vide ou meublée → « Bail d’habitation »</li><li>une décision d’assemblée générale qui veut interdire la location → « Copropriété »</li><li>le régime LMNP, le micro-BIC ou l’abattement applicable → « Fiscalité du bien »</li><li>un dégât causé par un voyageur, à faire prendre en charge → « Sinistres et assurances »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>le numéro d’enregistrement affiché sur chaque annonce, dans les communes qui l’imposent</li><li>ce que dit le règlement de copropriété : clause d’habitation bourgeoise, interdiction d’activité commerciale</li><li>la déclaration en mairie, et l’autorisation de changement d’usage si le bien n’est pas votre résidence principale</li><li>le classement du meublé de tourisme : il change l’abattement fiscal et la taxe de séjour</li><li>l’assurance : la garantie « location saisonnière » ne figure pas dans un contrat d’habitation ordinaire</li><li>un état des lieux photographique daté à chaque départ, pris avant l’arrivée suivante</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>déclaration en mairie et numéro d’enregistrement, selon la commune</li><li>changement d’usage, autorisation, compensation dans les villes concernées</li><li>limite annuelle de location d’une résidence principale</li><li>taxe de séjour : collecte, reversement, part de la plateforme</li><li>ce que le règlement de copropriété autorise ou interdit</li><li>relations avec les plateformes : annulation, blocage de compte, commissions</li><li>litiges voyageurs : dégradations, dépôt de garantie, avis, nuisances</li><li>obligations d’information, contrat de location saisonnière, assurance</li><li>mandat de conciergerie et gestion déléguée</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>une location à l’année, vide ou meublée — Bail d’habitation</li><li>une décision d’assemblée générale qui veut interdire la location — Copropriété</li><li>le régime LMNP, le micro-BIC ou l’abattement applicable — Fiscalité du bien</li><li>un dégât causé par un voyageur, à faire prendre en charge — Sinistres et assurances</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>le code du tourisme et le code de la construction et de l’habitation</li><li>la loi du 19 novembre 2024 sur les meublés de tourisme</li><li>la délibération de votre commune : c’est elle qui fixe l’enregistrement, la compensation et la taxe de séjour</li><li>le règlement de copropriété de l’immeuble</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>le code du tourisme et le code de la construction et de l’habitation</li><li>la loi du 19 novembre 2024 sur les meublés de tourisme</li><li>la délibération de votre commune : c’est elle qui fixe l’enregistrement, la compensation et la taxe de séjour</li><li>le règlement de copropriété de l’immeuble</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>Ma ville impose un numéro d’enregistrement : que se passe-t-il si j’ai loué sans ?</li><li>Un copropriétaire veut faire interdire la location courte durée en assemblée générale.</li><li>Un voyageur a cassé du mobilier : comment me faire indemniser ?</li><li>Puis-je louer ma résidence secondaire toute l’année sans autorisation ?</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-copropriete" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Copropriété</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>Ma ville impose un numéro d’enregistrement : que se passe-t-il si j’ai loué sans ?</li><li>Un copropriétaire veut faire interdire la location courte durée en assemblée générale.</li><li>Un voyageur a cassé du mobilier : comment me faire indemniser ?</li><li>Puis-je louer ma résidence secondaire toute l’année sans autorisation ?</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-copropriete" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Copropriété</h1>
   <p class="jur-lede">Assemblée générale, syndic, charges, travaux, règlement.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2484,35 +2595,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>la convocation reçue vingt et un jours avant, avec les pièces exigées pour chaque résolution</li><li>votre position au procès-verbal : seuls les opposants et les absents peuvent contester</li><li>la majorité applicable à la résolution — c’est elle qui décide de la validité du vote</li><li>le règlement de copropriété et l’état descriptif de division, avant toute interprétation</li><li>les tantièmes de votre lot pour la clé de répartition en cause</li><li>le carnet d’entretien et le dernier diagnostic technique global</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>assemblée générale : convocation, ordre du jour, majorités, procès-verbal</li><li>contester une décision votée, ou faire inscrire une résolution</li><li>charges de copropriété : répartition, tantièmes, appels de fonds, impayés</li><li>travaux sur parties communes, fonds de travaux, ravalement, ascenseur</li><li>syndic : mandat, mise en concurrence, révocation, carences</li><li>règlement de copropriété : ce qu’il autorise, comment il se modifie</li><li>parties communes et privatives, jouissance exclusive, empiètement</li><li>conseil syndical, immatriculation, diagnostic technique global</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>ce qui se passe à l’intérieur du logement loué → « Bail d’habitation »</li><li>l’interdiction de louer en meublé de tourisme → « Location courte durée »</li><li>des malfaçons sur un chantier déjà réceptionné → « Travaux et malfaçons »</li><li>une autorisation d’urbanisme pour modifier la façade → « Urbanisme et autorisations »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>la convocation reçue vingt et un jours avant, avec les pièces exigées pour chaque résolution</li><li>votre position au procès-verbal : seuls les opposants et les absents peuvent contester</li><li>la majorité applicable à la résolution — c’est elle qui décide de la validité du vote</li><li>le règlement de copropriété et l’état descriptif de division, avant toute interprétation</li><li>les tantièmes de votre lot pour la clé de répartition en cause</li><li>le carnet d’entretien et le dernier diagnostic technique global</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>assemblée générale : convocation, ordre du jour, majorités, procès-verbal</li><li>contester une décision votée, ou faire inscrire une résolution</li><li>charges de copropriété : répartition, tantièmes, appels de fonds, impayés</li><li>travaux sur parties communes, fonds de travaux, ravalement, ascenseur</li><li>syndic : mandat, mise en concurrence, révocation, carences</li><li>règlement de copropriété : ce qu’il autorise, comment il se modifie</li><li>parties communes et privatives, jouissance exclusive, empiètement</li><li>conseil syndical, immatriculation, diagnostic technique global</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>ce qui se passe à l’intérieur du logement loué — Bail d’habitation</li><li>l’interdiction de louer en meublé de tourisme — Location courte durée</li><li>des malfaçons sur un chantier déjà réceptionné — Travaux et malfaçons</li><li>une autorisation d’urbanisme pour modifier la façade — Urbanisme et autorisations</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>la loi du 10 juillet 1965 et son décret d’application de 1967</li><li>le règlement de copropriété et l’état descriptif de division de votre immeuble</li><li>le code civil, pour la propriété et la responsabilité</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>la loi du 10 juillet 1965 et son décret d’application de 1967</li><li>le règlement de copropriété et l’état descriptif de division de votre immeuble</li><li>le code civil, pour la propriété et la responsabilité</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>L’assemblée a voté un ravalement que je conteste : quel recours et dans quel délai ?</li><li>Le syndic ne répond plus depuis six mois : que puis-je faire ?</li><li>La répartition des charges d’ascenseur me semble fausse pour mon lot.</li><li>Puis-je faire inscrire une résolution à l’ordre du jour ?</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-achat-vente" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Achat et vente</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>L’assemblée a voté un ravalement que je conteste : quel recours et dans quel délai ?</li><li>Le syndic ne répond plus depuis six mois : que puis-je faire ?</li><li>La répartition des charges d’ascenseur me semble fausse pour mon lot.</li><li>Puis-je faire inscrire une résolution à l’ordre du jour ?</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-achat-vente" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Achat et vente</h1>
   <p class="jur-lede">Compromis, conditions suspensives, diagnostics, vices cachés.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2521,35 +2615,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>le dossier de diagnostics complet et en cours de validité, chaque rapport portant sa date</li><li>le titre de propriété, la surface Carrez en copropriété, et les servitudes publiées</li><li>pour un lot de copropriété : les trois derniers procès-verbaux d’assemblée, le pré-état daté, les travaux votés</li><li>l’état des risques daté de moins de six mois</li><li>les conditions suspensives : leur délai, leur forme de notification, et qui doit notifier</li><li>l’existence d’un droit de préemption : commune, locataire en place, indivisaires</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>offre d’achat, compromis ou promesse : portée, rétractation, séquestre</li><li>conditions suspensives, notamment de prêt : rédaction, délais, mise en jeu</li><li>diagnostics obligatoires, surface, informations dues à l’acquéreur</li><li>vices cachés découverts après la vente, action contre le vendeur</li><li>refus de signer, retard du notaire, clause pénale</li><li>droit de préemption de la commune, du locataire, des indivisaires</li><li>vente d’un bien loué, congé pour vente, droit de préemption du locataire</li><li>mandat d’agence, commission, exclusivité</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>le congé donné au locataire en place et son préavis → « Bail d’habitation »</li><li>des malfaçons sur des travaux récents encore garantis → « Travaux et malfaçons »</li><li>la plus-value ou les frais à payer sur la vente → « Fiscalité du bien »</li><li>la conformité du bien aux autorisations d’urbanisme → « Urbanisme et autorisations »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>le dossier de diagnostics complet et en cours de validité, chaque rapport portant sa date</li><li>le titre de propriété, la surface Carrez en copropriété, et les servitudes publiées</li><li>pour un lot de copropriété : les trois derniers procès-verbaux d’assemblée, le pré-état daté, les travaux votés</li><li>l’état des risques daté de moins de six mois</li><li>les conditions suspensives : leur délai, leur forme de notification, et qui doit notifier</li><li>l’existence d’un droit de préemption : commune, locataire en place, indivisaires</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>offre d’achat, compromis ou promesse : portée, rétractation, séquestre</li><li>conditions suspensives, notamment de prêt : rédaction, délais, mise en jeu</li><li>diagnostics obligatoires, surface, informations dues à l’acquéreur</li><li>vices cachés découverts après la vente, action contre le vendeur</li><li>refus de signer, retard du notaire, clause pénale</li><li>droit de préemption de la commune, du locataire, des indivisaires</li><li>vente d’un bien loué, congé pour vente, droit de préemption du locataire</li><li>mandat d’agence, commission, exclusivité</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>le congé donné au locataire en place et son préavis — Bail d’habitation</li><li>des malfaçons sur des travaux récents encore garantis — Travaux et malfaçons</li><li>la plus-value ou les frais à payer sur la vente — Fiscalité du bien</li><li>la conformité du bien aux autorisations d’urbanisme — Urbanisme et autorisations</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>le code civil, pour la vente, la garantie des vices cachés et l’obligation d’information</li><li>le code de la construction et de l’habitation</li><li>la loi Hoguet, pour les agents immobiliers</li><li>le code de l’urbanisme, pour le droit de préemption</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>le code civil, pour la vente, la garantie des vices cachés et l’obligation d’information</li><li>le code de la construction et de l’habitation</li><li>la loi Hoguet, pour les agents immobiliers</li><li>le code de l’urbanisme, pour le droit de préemption</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>L’acquéreur refuse de signer l’acte alors que le compromis est signé.</li><li>J’ai découvert une infiltration trois mois après avoir vendu : suis-je responsable ?</li><li>Mon acheteur n’a pas notifié son refus de prêt dans les délais.</li><li>Je vends un appartement loué : quelle procédure pour le locataire ?</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-travaux" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Travaux et malfaçons</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>L’acquéreur refuse de signer l’acte alors que le compromis est signé.</li><li>J’ai découvert une infiltration trois mois après avoir vendu : suis-je responsable ?</li><li>Mon acheteur n’a pas notifié son refus de prêt dans les délais.</li><li>Je vends un appartement loué : quelle procédure pour le locataire ?</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-travaux" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Travaux et malfaçons</h1>
   <p class="jur-lede">Devis, artisans, réception, garanties, chantier abandonné.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2558,35 +2635,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>l’attestation d’assurance décennale de l’entreprise, valable à la date d’ouverture du chantier</li><li>le devis signé : nature des travaux, prix ferme ou révisable, délai, échéancier</li><li>la dommages-ouvrage souscrite AVANT le premier coup de pioche</li><li>le procès-verbal de réception, avec les réserves écrites le jour même</li><li>des photos datées avant, pendant et après — elles valent preuve</li><li>pour une aide à la rénovation : la mention RGE portée sur le devis, et non seulement sur le site de l’entreprise</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>devis et marché de travaux : contenu, prix, avenants, acomptes</li><li>réception des travaux, réserves, procès-verbal</li><li>garanties du constructeur : parfait achèvement, bon fonctionnement, décennale</li><li>assurance dommages-ouvrage : souscription, déclaration, délais de réponse</li><li>malfaçons, désordres, expertise amiable ou judiciaire</li><li>abandon de chantier, retard de livraison, pénalités</li><li>artisan non assuré, sous-traitance, paiement direct</li><li>rénovation énergétique, aides, entreprises RGE</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>des travaux votés et payés par la copropriété → « Copropriété »</li><li>une autorisation à demander avant de commencer → « Urbanisme et autorisations »</li><li>des dégâts causés au voisin par le chantier → « Voisinage et limites »</li><li>un sinistre à déclarer à l’assurance du bien → « Sinistres et assurances »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>l’attestation d’assurance décennale de l’entreprise, valable à la date d’ouverture du chantier</li><li>le devis signé : nature des travaux, prix ferme ou révisable, délai, échéancier</li><li>la dommages-ouvrage souscrite AVANT le premier coup de pioche</li><li>le procès-verbal de réception, avec les réserves écrites le jour même</li><li>des photos datées avant, pendant et après — elles valent preuve</li><li>pour une aide à la rénovation : la mention RGE portée sur le devis, et non seulement sur le site de l’entreprise</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>devis et marché de travaux : contenu, prix, avenants, acomptes</li><li>réception des travaux, réserves, procès-verbal</li><li>garanties du constructeur : parfait achèvement, bon fonctionnement, décennale</li><li>assurance dommages-ouvrage : souscription, déclaration, délais de réponse</li><li>malfaçons, désordres, expertise amiable ou judiciaire</li><li>abandon de chantier, retard de livraison, pénalités</li><li>artisan non assuré, sous-traitance, paiement direct</li><li>rénovation énergétique, aides, entreprises RGE</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>des travaux votés et payés par la copropriété — Copropriété</li><li>une autorisation à demander avant de commencer — Urbanisme et autorisations</li><li>des dégâts causés au voisin par le chantier — Voisinage et limites</li><li>un sinistre à déclarer à l’assurance du bien — Sinistres et assurances</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>le code civil, pour le contrat d’entreprise et les garanties légales de construction</li><li>le code des assurances, pour la dommages-ouvrage et la responsabilité décennale</li><li>le code de la construction et de l’habitation, pour le contrat de construction de maison individuelle</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>le code civil, pour le contrat d’entreprise et les garanties légales de construction</li><li>le code des assurances, pour la dommages-ouvrage et la responsabilité décennale</li><li>le code de la construction et de l’habitation, pour le contrat de construction de maison individuelle</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>Des fissures sont apparues deux ans après la fin des travaux : qui paie ?</li><li>L’artisan a encaissé l’acompte et ne revient plus sur le chantier.</li><li>Je vais réceptionner les travaux : que dois-je écrire au procès-verbal ?</li><li>Mon entreprise n’avait pas d’assurance décennale, je viens de le découvrir.</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-urbanisme" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Urbanisme et autorisations</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>Des fissures sont apparues deux ans après la fin des travaux : qui paie ?</li><li>L’artisan a encaissé l’acompte et ne revient plus sur le chantier.</li><li>Je vais réceptionner les travaux : que dois-je écrire au procès-verbal ?</li><li>Mon entreprise n’avait pas d’assurance décennale, je viens de le découvrir.</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-urbanisme" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Urbanisme et autorisations</h1>
   <p class="jur-lede">Permis, déclaration préalable, PLU, recours, conformité.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2595,35 +2655,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>la règle applicable à votre parcelle dans le PLU, et non la règle générale de la commune</li><li>le seuil de surface qui décide entre déclaration préalable et permis</li><li>le panneau d’affichage sur le terrain, photographié et daté dès le premier jour</li><li>le certificat d’urbanisme, qui fige les règles applicables pendant dix-huit mois</li><li>en secteur protégé : l’avis de l’architecte des bâtiments de France, qui allonge l’instruction</li><li>la déclaration attestant l’achèvement, et le délai de contestation de la conformité</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>quelle autorisation pour quel projet : déclaration préalable ou permis</li><li>instruction du dossier, pièces manquantes, majoration de délai</li><li>refus de permis, retrait, recours gracieux et contentieux</li><li>recours d’un tiers contre votre permis, affichage sur le terrain</li><li>plan local d’urbanisme, zonage, règles de hauteur et d’implantation</li><li>changement de destination d’un local, division d’un logement</li><li>achèvement des travaux, conformité, contrôle de la mairie</li><li>construction sans autorisation, régularisation, prescription</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>l’exécution du chantier et les malfaçons → « Travaux et malfaçons »</li><li>une autorisation de l’assemblée générale pour modifier la façade → « Copropriété »</li><li>un litige de limite ou de vue avec le voisin → « Voisinage et limites »</li><li>le changement d’usage pour louer en meublé de tourisme → « Location courte durée »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>la règle applicable à votre parcelle dans le PLU, et non la règle générale de la commune</li><li>le seuil de surface qui décide entre déclaration préalable et permis</li><li>le panneau d’affichage sur le terrain, photographié et daté dès le premier jour</li><li>le certificat d’urbanisme, qui fige les règles applicables pendant dix-huit mois</li><li>en secteur protégé : l’avis de l’architecte des bâtiments de France, qui allonge l’instruction</li><li>la déclaration attestant l’achèvement, et le délai de contestation de la conformité</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>quelle autorisation pour quel projet : déclaration préalable ou permis</li><li>instruction du dossier, pièces manquantes, majoration de délai</li><li>refus de permis, retrait, recours gracieux et contentieux</li><li>recours d’un tiers contre votre permis, affichage sur le terrain</li><li>plan local d’urbanisme, zonage, règles de hauteur et d’implantation</li><li>changement de destination d’un local, division d’un logement</li><li>achèvement des travaux, conformité, contrôle de la mairie</li><li>construction sans autorisation, régularisation, prescription</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>l’exécution du chantier et les malfaçons — Travaux et malfaçons</li><li>une autorisation de l’assemblée générale pour modifier la façade — Copropriété</li><li>un litige de limite ou de vue avec le voisin — Voisinage et limites</li><li>le changement d’usage pour louer en meublé de tourisme — Location courte durée</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>le code de l’urbanisme</li><li>le plan local d’urbanisme de votre commune, qui prime sur les généralités</li><li>le code de justice administrative, pour les recours</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>le code de l’urbanisme</li><li>le plan local d’urbanisme de votre commune, qui prime sur les généralités</li><li>le code de justice administrative, pour les recours</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>La mairie a refusé mon permis pour une extension : quel recours ?</li><li>Un voisin attaque mon permis : mon affichage était-il valable ?</li><li>Puis-je transformer mon garage en studio à louer ?</li><li>J’ai construit un abri sans déclaration il y a quatre ans : que risque-t-on ?</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-voisinage" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Voisinage et limites</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>La mairie a refusé mon permis pour une extension : quel recours ?</li><li>Un voisin attaque mon permis : mon affichage était-il valable ?</li><li>Puis-je transformer mon garage en studio à louer ?</li><li>J’ai construit un abri sans déclaration il y a quatre ans : que risque-t-on ?</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-voisinage" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Voisinage et limites</h1>
   <p class="jur-lede">Bruit, vues, mitoyenneté, bornage, plantations, servitudes.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2632,35 +2675,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>des preuves datées : photos, constat de commissaire de justice, témoignages écrits et signés</li><li>le titre de propriété et le plan cadastral, avant de discuter d’une limite</li><li>les usages locaux de votre département : ils l’emportent parfois sur les distances générales</li><li>la tentative amiable préalable — sans elle, la demande est déclarée irrecevable</li><li>l’existence d’une servitude publiée au service de la publicité foncière</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>troubles anormaux de voisinage : bruit, odeurs, fumées, vis-à-vis</li><li>limites de propriété, bornage amiable ou judiciaire, empiètement</li><li>mur mitoyen, clôture, participation aux frais</li><li>plantations : distances, hauteurs, élagage, branches et racines</li><li>vues et jours : distances à respecter pour une fenêtre ou une terrasse</li><li>servitudes : passage, écoulement des eaux, canalisation</li><li>nuisances causées par des locataires ou des voyageurs</li><li>conciliation, constat, mise en demeure, action en justice</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>une autorisation de construire contestée → « Urbanisme et autorisations »</li><li>un bruit venant des parties communes ou d’un autre lot → « Copropriété »</li><li>des dégâts matériels à faire indemniser par une assurance → « Sinistres et assurances »</li><li>des nuisances causées par vos propres voyageurs → « Location courte durée »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>des preuves datées : photos, constat de commissaire de justice, témoignages écrits et signés</li><li>le titre de propriété et le plan cadastral, avant de discuter d’une limite</li><li>les usages locaux de votre département : ils l’emportent parfois sur les distances générales</li><li>la tentative amiable préalable — sans elle, la demande est déclarée irrecevable</li><li>l’existence d’une servitude publiée au service de la publicité foncière</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>troubles anormaux de voisinage : bruit, odeurs, fumées, vis-à-vis</li><li>limites de propriété, bornage amiable ou judiciaire, empiètement</li><li>mur mitoyen, clôture, participation aux frais</li><li>plantations : distances, hauteurs, élagage, branches et racines</li><li>vues et jours : distances à respecter pour une fenêtre ou une terrasse</li><li>servitudes : passage, écoulement des eaux, canalisation</li><li>nuisances causées par des locataires ou des voyageurs</li><li>conciliation, constat, mise en demeure, action en justice</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>une autorisation de construire contestée — Urbanisme et autorisations</li><li>un bruit venant des parties communes ou d’un autre lot — Copropriété</li><li>des dégâts matériels à faire indemniser par une assurance — Sinistres et assurances</li><li>des nuisances causées par vos propres voyageurs — Location courte durée</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>le code civil, pour la propriété, les servitudes, la mitoyenneté et les plantations</li><li>le principe jurisprudentiel du trouble anormal de voisinage, désormais inscrit dans le code civil</li><li>le code de la santé publique, pour les bruits de voisinage</li><li>les usages locaux de votre département, qui priment parfois sur les distances générales</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>le code civil, pour la propriété, les servitudes, la mitoyenneté et les plantations</li><li>le principe jurisprudentiel du trouble anormal de voisinage, désormais inscrit dans le code civil</li><li>le code de la santé publique, pour les bruits de voisinage</li><li>les usages locaux de votre département, qui priment parfois sur les distances générales</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>Les arbres du voisin dépassent sur mon terrain : puis-je les couper ?</li><li>Mon voisin a construit une terrasse qui donne directement chez moi.</li><li>Il conteste la limite entre nos deux terrains : comment faire borner ?</li><li>Mes locataires se plaignent du bruit du voisin : est-ce mon affaire ?</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-fiscalite" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Fiscalité du bien</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>Les arbres du voisin dépassent sur mon terrain : puis-je les couper ?</li><li>Mon voisin a construit une terrasse qui donne directement chez moi.</li><li>Il conteste la limite entre nos deux terrains : comment faire borner ?</li><li>Mes locataires se plaignent du bruit du voisin : est-ce mon affaire ?</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-fiscalite" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Fiscalité du bien</h1>
   <p class="jur-lede">LMNP, revenus fonciers, plus-value, taxe foncière, contrôle.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2669,35 +2695,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>le régime réellement appliqué l’an dernier, et l’année où l’option a été exercée</li><li>le montant exact des recettes encaissées : les seuils se jouent à l’euro près</li><li>les charges déductibles justifiées, factures à l’appui et au nom du propriétaire</li><li>pour un meublé : le numéro SIRET et la déclaration au guichet unique</li><li>la date de mise en recouvrement portée sur l’avis : c’est elle qui ouvre le délai de réclamation</li><li>le classement du meublé de tourisme, qui change l’abattement applicable</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>louer en meublé : LMNP, LMP, micro-BIC ou régime réel, amortissement</li><li>louer vide : revenus fonciers, micro-foncier, régime réel, déficit foncier</li><li>meublé de tourisme : abattements applicables, classement, seuils</li><li>plus-value à la revente : abattements, exonérations, résidence principale</li><li>taxe foncière, taxe d’habitation sur résidence secondaire, surtaxe</li><li>cotisation foncière des entreprises et TVA sur les locations</li><li>déclaration d’activité, guichet unique, obligations comptables</li><li>contrôle fiscal, proposition de rectification, réclamation</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>la rédaction du bail ou un litige avec le locataire → « Bail d’habitation »</li><li>la déclaration en mairie et les quotas de location → « Location courte durée »</li><li>la vente elle-même et ses conditions → « Achat et vente »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>le régime réellement appliqué l’an dernier, et l’année où l’option a été exercée</li><li>le montant exact des recettes encaissées : les seuils se jouent à l’euro près</li><li>les charges déductibles justifiées, factures à l’appui et au nom du propriétaire</li><li>pour un meublé : le numéro SIRET et la déclaration au guichet unique</li><li>la date de mise en recouvrement portée sur l’avis : c’est elle qui ouvre le délai de réclamation</li><li>le classement du meublé de tourisme, qui change l’abattement applicable</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>louer en meublé : LMNP, LMP, micro-BIC ou régime réel, amortissement</li><li>louer vide : revenus fonciers, micro-foncier, régime réel, déficit foncier</li><li>meublé de tourisme : abattements applicables, classement, seuils</li><li>plus-value à la revente : abattements, exonérations, résidence principale</li><li>taxe foncière, taxe d’habitation sur résidence secondaire, surtaxe</li><li>cotisation foncière des entreprises et TVA sur les locations</li><li>déclaration d’activité, guichet unique, obligations comptables</li><li>contrôle fiscal, proposition de rectification, réclamation</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>la rédaction du bail ou un litige avec le locataire — Bail d’habitation</li><li>la déclaration en mairie et les quotas de location — Location courte durée</li><li>la vente elle-même et ses conditions — Achat et vente</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>le code général des impôts</li><li>le livre des procédures fiscales</li><li>la doctrine publiée au BOFiP, opposable à l’administration</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>le code général des impôts</li><li>le livre des procédures fiscales</li><li>la doctrine publiée au BOFiP, opposable à l’administration</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>Micro-BIC ou réel pour un meublé qui rapporte 18 000 € par an ?</li><li>Puis-je amortir le bien et déduire les travaux en LMNP ?</li><li>Comment est calculée la plus-value sur un bien détenu depuis douze ans ?</li><li>J’ai reçu une proposition de rectification sur mes revenus locatifs.</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-sinistres" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Sinistres et assurances</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>Micro-BIC ou réel pour un meublé qui rapporte 18 000 € par an ?</li><li>Puis-je amortir le bien et déduire les travaux en LMNP ?</li><li>Comment est calculée la plus-value sur un bien détenu depuis douze ans ?</li><li>J’ai reçu une proposition de rectification sur mes revenus locatifs.</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-sinistres" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Sinistres et assurances</h1>
   <p class="jur-lede">Dégât des eaux, incendie, expertise, indemnisation, recours.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2706,35 +2715,18 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>la date exacte du sinistre : c’est elle qui fait courir la prescription de deux ans</li><li>les garanties, plafonds et franchises de votre contrat, lus avant d’appeler</li><li>des photos datées, et la conservation des éléments endommagés jusqu’à l’expertise</li><li>des devis de remise en état obtenus avant le passage de l’expert</li><li>le constat amiable de dégât des eaux, signé des deux parties</li><li>la déclaration à l’assureur dans les cinq jours ouvrés, deux pour un vol</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>déclaration d’un sinistre : forme, délais, pièces à fournir</li><li>dégât des eaux : recherche de fuite, convention entre assureurs, franchise</li><li>incendie, tempête, catastrophe naturelle, sécheresse et fissures</li><li>assurance propriétaire non occupant, multirisque, garanties utiles</li><li>expertise : contre-expertise, désaccord sur le montant</li><li>recours contre le locataire, le voisin, la copropriété ou l’artisan</li><li>garantie loyers impayés : conditions, mise en jeu, refus de prise en charge</li><li>défaut d’assurance du locataire, résiliation du contrat par l’assureur</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>l’obligation d’assurance du locataire inscrite au bail → « Bail d’habitation »</li><li>un sinistre dont l’origine est dans les parties communes → « Copropriété »</li><li>un désordre relevant de la garantie décennale d’un artisan → « Travaux et malfaçons »</li><li>un dommage causé par le voisin lui-même → « Voisinage et limites »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>la date exacte du sinistre : c’est elle qui fait courir la prescription de deux ans</li><li>les garanties, plafonds et franchises de votre contrat, lus avant d’appeler</li><li>des photos datées, et la conservation des éléments endommagés jusqu’à l’expertise</li><li>des devis de remise en état obtenus avant le passage de l’expert</li><li>le constat amiable de dégât des eaux, signé des deux parties</li><li>la déclaration à l’assureur dans les cinq jours ouvrés, deux pour un vol</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>déclaration d’un sinistre : forme, délais, pièces à fournir</li><li>dégât des eaux : recherche de fuite, convention entre assureurs, franchise</li><li>incendie, tempête, catastrophe naturelle, sécheresse et fissures</li><li>assurance propriétaire non occupant, multirisque, garanties utiles</li><li>expertise : contre-expertise, désaccord sur le montant</li><li>recours contre le locataire, le voisin, la copropriété ou l’artisan</li><li>garantie loyers impayés : conditions, mise en jeu, refus de prise en charge</li><li>défaut d’assurance du locataire, résiliation du contrat par l’assureur</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>l’obligation d’assurance du locataire inscrite au bail — Bail d’habitation</li><li>un sinistre dont l’origine est dans les parties communes — Copropriété</li><li>un désordre relevant de la garantie décennale d’un artisan — Travaux et malfaçons</li><li>un dommage causé par le voisin lui-même — Voisinage et limites</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>le code des assurances</li><li>le contrat d’assurance et ses conditions générales, qui fixent garanties et franchises</li><li>la convention IRSI, appliquée entre assureurs pour les dégâts des eaux courants</li><li>le code civil, pour la responsabilité et les recours</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>le code des assurances</li><li>le contrat d’assurance et ses conditions générales, qui fixent garanties et franchises</li><li>la convention IRSI, appliquée entre assureurs pour les dégâts des eaux courants</li><li>le code civil, pour la responsabilité et les recours</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>Une fuite chez mon locataire a abîmé l’appartement du dessous : qui déclare ?</li><li>Mon assureur refuse d’indemniser en invoquant un défaut d’entretien.</li><li>L’expert propose 2 000 € pour un sinistre qui en coûte 7 000 : que faire ?</li><li>La garantie loyers impayés refuse de jouer parce que le dossier était incomplet.</li></ul>
-  </section>
-</article>
-<article class="fiche" id="fiche-profession" hidden>
-  <button class="retour" data-retour>← Toutes les spécialités</button>
-  <h2 class="jur-h1 jur-h1-moyen">Métier de l’agent immobilier</h2>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>Une fuite chez mon locataire a abîmé l’appartement du dessous : qui déclare ?</li><li>Mon assureur refuse d’indemniser en invoquant un défaut d’entretien.</li><li>L’expert propose 2 000 € pour un sinistre qui en coûte 7 000 : que faire ?</li><li>La garantie loyers impayés refuse de jouer parce que le dossier était incomplet.</li></ul></section>
+</main>
+<main class="jur-page fiche" id="fiche-profession" hidden>
+  <button class="jur-retour" data-retour>← Toutes les spécialités</button>
+  <h1 class="jur-h1">Métier de l’agent immobilier</h1>
   <p class="jur-lede">Mandat, honoraires, annonces, carte professionnelle, responsabilité.</p>
 
   <section class="jur-bloc jur-delais">
@@ -2743,38 +2735,20 @@ body {
     <p class="hint">Si un document reçu ou votre contrat mentionne un autre délai, c’est lui qui fait foi.</p>
   </section>
 
-  <section class="jur-bloc">
-    <h3>À réunir avant d’agir</h3>
-    <ul><li>le mandat écrit, daté, numéroté au registre, et le double effectivement remis au client</li><li>la durée du mandat, sa clause d’exclusivité et sa date d’expiration exacte</li><li>le barème d’honoraires affiché, et l’annonce qui indique clairement qui les paie</li><li>la carte professionnelle, la garantie financière et l’assurance de responsabilité, toutes en cours de validité</li><li>la vigilance anti-blanchiment : identité du client vérifiée, origine des fonds, dossier conservé</li><li>la trace écrite du devoir de conseil — ce que vous avez dit, à qui, et quand</li></ul>
-  </section>
-
-  <div class="deux">
-    <section class="jur-bloc">
-      <h3>Ce qu’il traite</h3>
-      <ul><li>mandat de vente, de recherche ou de gestion : forme, mentions, registre, durée</li><li>clause d’exclusivité, dénonciation, renouvellement tacite</li><li>honoraires : montant, qui les paie, exigibilité, barème affiché</li><li>annonces et publicité : mentions obligatoires, prix, classe énergie, honoraires</li><li>carte professionnelle, garantie financière, assurance de responsabilité, formation continue</li><li>devoir de conseil et d’information : ce qu’il faut dire, écrire et conserver</li><li>lutte anti-blanchiment : vigilance, identité du client, déclaration à Tracfin</li><li>délégation de mandat, réseaux de mandataires, agents commerciaux</li><li>litiges d’honoraires : vente hors mandat, acquéreur présenté, mandat expiré</li></ul>
-    </section>
-    <section class="jur-bloc">
-      <h3>Ce qu’il ne traite pas</h3>
-      <ul><li>le contrat de vente lui-même et ses conditions → « Achat et vente »</li><li>la rédaction d’un bail ou un litige avec le locataire → « Bail d’habitation »</li><li>la location en meublé de tourisme et ses autorisations → « Location courte durée »</li><li>la fiscalité du bien géré → « Fiscalité du bien »</li></ul>
-    </section>
+  <div class="fiche-colonnes">
+    <section class="jur-bloc"><h3>À vérifier avant d’agir</h3><ul><li>le mandat écrit, daté, numéroté au registre, et le double effectivement remis au client</li><li>la durée du mandat, sa clause d’exclusivité et sa date d’expiration exacte</li><li>le barème d’honoraires affiché, et l’annonce qui indique clairement qui les paie</li><li>la carte professionnelle, la garantie financière et l’assurance de responsabilité, toutes en cours de validité</li><li>la vigilance anti-blanchiment : identité du client vérifiée, origine des fonds, dossier conservé</li><li>la trace écrite du devoir de conseil — ce que vous avez dit, à qui, et quand</li></ul></section>
+    <section class="jur-bloc"><h3>Ce que ce spécialiste traite</h3><ul><li>mandat de vente, de recherche ou de gestion : forme, mentions, registre, durée</li><li>clause d’exclusivité, dénonciation, renouvellement tacite</li><li>honoraires : montant, qui les paie, exigibilité, barème affiché</li><li>annonces et publicité : mentions obligatoires, prix, classe énergie, honoraires</li><li>carte professionnelle, garantie financière, assurance de responsabilité, formation continue</li><li>devoir de conseil et d’information : ce qu’il faut dire, écrire et conserver</li><li>lutte anti-blanchiment : vigilance, identité du client, déclaration à Tracfin</li><li>délégation de mandat, réseaux de mandataires, agents commerciaux</li><li>litiges d’honoraires : vente hors mandat, acquéreur présenté, mandat expiré</li></ul></section>
+    <section class="jur-bloc"><h3>Ce qui relève d’un autre</h3><ul><li>le contrat de vente lui-même et ses conditions — Achat et vente</li><li>la rédaction d’un bail ou un litige avec le locataire — Bail d’habitation</li><li>la location en meublé de tourisme et ses autorisations — Location courte durée</li><li>la fiscalité du bien géré — Fiscalité du bien</li></ul></section>
+    <section class="jur-bloc"><h3>Textes de référence</h3><ul><li>la loi Hoguet du 2 janvier 1970 et son décret d’application de 1972</li><li>la loi ALUR, pour la formation continue et les règles de déontologie</li><li>le code de la consommation, pour la publicité et le démarchage</li><li>le code monétaire et financier, pour la lutte anti-blanchiment</li><li>le code civil, pour le mandat et la responsabilité contractuelle</li></ul></section>
   </div>
 
-  <section class="jur-bloc">
-    <h3>Textes de référence</h3>
-    <ul><li>la loi Hoguet du 2 janvier 1970 et son décret d’application de 1972</li><li>la loi ALUR, pour la formation continue et les règles de déontologie</li><li>le code de la consommation, pour la publicité et le démarchage</li><li>le code monétaire et financier, pour la lutte anti-blanchiment</li><li>le code civil, pour le mandat et la responsabilité contractuelle</li></ul>
-  </section>
-
-  <section class="jur-bloc">
-    <h3>Des questions qu’on lui pose</h3>
-    <ul><li>Mon mandat exclusif expire dans un mois et le vendeur traite en direct avec un acquéreur que j’ai présenté.</li><li>Quelles mentions sont obligatoires sur une annonce de vente ?</li><li>Le vendeur refuse de payer mes honoraires après la signature chez le notaire.</li><li>Que dois-je vérifier avant de faire signer un compromis à mes clients ?</li></ul>
-  </section>
-</article></div>
+  <section class="jur-bloc"><h3>Des questions qu’on lui pose</h3><ul><li>Mon mandat exclusif expire dans un mois et le vendeur traite en direct avec un acquéreur que j’ai présenté.</li><li>Quelles mentions sont obligatoires sur une annonce de vente ?</li><li>Le vendeur refuse de payer mes honoraires après la signature chez le notaire.</li><li>Que dois-je vérifier avant de faire signer un compromis à mes clients ?</li></ul></section>
+</main></div>
 
 <footer class="jur-pied">
   <div class="jur-pied-corps"><p>Information juridique, et non consultation d’avocat. Les réponses ne tiennent compte que de ce qui est écrit dans la conversation. En cas de délai en cours, prenez conseil sans attendre : l’ADIL renseigne gratuitement sur le logement, un point-justice reçoit sans condition de ressources.</p></div>
 </footer>
 
-</div>
 </div>
 
 <script>
@@ -2790,15 +2764,15 @@ body {
       f.hidden = f.id !== 'fiche-' + id;
     });
     window.scrollTo(0, 0);
-    location.hash = id ? id : '';
   }
 
   document.addEventListener('click', function (ev) {
     var ouvre = ev.target.closest('[data-ouvre]');
-    if (ouvre) return montrer(ouvre.getAttribute('data-ouvre'));
-    if (ev.target.closest('[data-retour]')) return montrer('');
+    if (ouvre) { ev.preventDefault(); location.hash = ouvre.getAttribute('data-ouvre'); return; }
+    if (ev.target.closest('[data-retour]')) { ev.preventDefault(); location.hash = ''; }
   });
 
+  window.addEventListener('hashchange', function () { montrer(location.hash.slice(1)); });
   if (location.hash) montrer(location.hash.slice(1));
 })();
 </script>
