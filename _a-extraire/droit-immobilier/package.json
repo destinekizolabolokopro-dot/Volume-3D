@@ -8,9 +8,10 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.ts",
-    "verify": "npm run typecheck && npm test",
+    "verify": "npm run typecheck && npm test && npm run contraste",
     "corpus": "node --experimental-strip-types scripts/corpus.mjs",
-    "page": "node --experimental-strip-types scripts/page-unique.mjs"
+    "page": "node --experimental-strip-types scripts/page-unique.mjs",
+    "contraste": "node --experimental-strip-types scripts/contraste.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

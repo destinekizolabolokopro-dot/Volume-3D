@@ -36,8 +36,8 @@
 
   /* Surfaces sombres : mêmes neutres, tirés vers la teinte de l'accent, pour
      que l'ensemble reste une seule famille. */
-  --dark: #151f1d;
-  --dark-alt: #1e2b28;
+  --dark: #131b28;
+  --dark-alt: #1d2739;
 
   /* ---------------------------------------------------------------- encres
      Chaque valeur est mesurée contre les trois fonds. `--ink-faint` porte le
@@ -48,21 +48,30 @@
   --ink-muted: #544e46; /* 8,2 */
   --ink-soft: #655e55; /* 6,4 */
   --ink-faint: #726b60; /* 5,3 — AA sur blanc et sur le fond alterné */
-  --ink-on-dark: #e9edeb; /* 14,3 sur --dark */
-  --ink-on-dark-soft: #a9b6b3; /* 8,1 */
+  --ink-on-dark: #e8ecf2; /* 14,5 sur --dark */
+  --ink-on-dark-soft: #a7b3c4; /* 7,7 */
 
   /* ---------------------------------------------------------------- accent
-     Un pétrole profond : l'encre bleu-vert du dessin d'architecture. Il tient
-     6,1 dans les deux sens — texte accentué sur blanc, et texte blanc sur
-     aplat — ce qui autorise le même ton pour un lien et pour un bouton plein.
-     Il est réservé à ce sur quoi on peut agir. */
-  --accent: #0e6e66;
-  --accent-strong: #0a564f;
-  --accent-wash: #e2f0ee;
+     Un bleu marine : la couleur que le secteur emploie pour dire sérieux et
+     stabilité, et celle de l'encre d'un acte. Il tient 10,8 sur blanc, dans
+     les deux sens — texte accentué sur blanc, et texte blanc sur aplat —, ce
+     qui autorise le même ton pour un lien et pour un bouton plein. Il est
+     réservé à ce sur quoi on peut agir.
+
+     Il est volontairement PROFOND plutôt que vif : un bleu clair passe pour
+     un lien d'administration, un bleu électrique pour une application. Celui-
+     ci, à L 26, se lit comme de l'encre.
+
+     Les neutres restent CHAUDS, et c'est ce qui fait tenir l'ensemble : ils
+     sont à 174° du marine sur la roue, soit l'écart maximal. Papier chaud,
+     encre froide — la combinaison de la papeterie, pas celle d'un tableur. */
+  --accent: #173d73;
+  --accent-strong: #102b52;
+  --accent-wash: #e7edf7;
   --accent-ink: #ffffff;
-  /* Sur fond sombre, le pétrole profond tombe à 2,8 : il faut sa version
+  /* Sur fond sombre, le marine profond tombe à 1,5 : il faut sa version
      claire, sans quoi le nom de la marque y devient illisible. */
-  --accent-on-dark: #4fb3a6;
+  --accent-on-dark: #8ab0e6;
 
   /* ------------------------------------------------------------- les sens
      Distinctes de l'accent, et jamais employées à sa place : une couleur qui
