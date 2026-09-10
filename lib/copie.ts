@@ -34,6 +34,25 @@ export const MARQUE = {
   accroche: 'dix spécialités, une réponse sourcée',
 } as const;
 
+/**
+ * La mention qui ne quitte jamais l'écran.
+ *
+ * Elle est affichée en haut de CHAQUE page, sous la barre, et pas seulement
+ * en pied. C'est une exigence de fond avant d'être une précaution : en France,
+ * la consultation juridique est une activité réglementée (loi du 31 décembre
+ * 1971), et ce service donne un avis pratique sans être un cabinet. Quelqu'un
+ * qui arrive par un moteur de recherche sur une fiche, lit une réponse et
+ * repart n'aura peut-être jamais vu le pied de page.
+ *
+ * Elle est écrite pour être lue, pas pour couvrir : trois choses concrètes
+ * qu'il ne fait pas, plutôt qu'une formule juridique que personne ne finit.
+ */
+export const MENTION = {
+  court: 'Ce service ne fait pas le travail d’un avocat.',
+  long:
+    'Il donne une information et un avis pratique. Il n’analyse pas votre dossier, ne vous représente pas et ne signe rien à votre place. Sur un enjeu important ou un délai qui court, voyez un avocat : l’ADIL renseigne gratuitement sur le logement, un point-justice reçoit sans condition de ressources, et l’aide juridictionnelle peut prendre en charge les honoraires.',
+} as const;
+
 export const ACCUEIL = {
   oeil: 'Assistant juridique · droit immobilier',
   titre: 'Une question sur votre bien ? Elle ira au bon spécialiste.',

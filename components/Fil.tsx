@@ -1,5 +1,6 @@
 import { Reponse } from '@/components/Reponse';
 import { Sources } from '@/components/Sources';
+import { Lecture } from '@/components/Voix';
 import type { Tour } from '@/components/useConsultation';
 
 /**
@@ -30,6 +31,7 @@ export function Fil({
           )}
           {tour.role === 'assistant' ? <Reponse texte={tour.content} /> : <p>{tour.content}</p>}
           {tour.role === 'assistant' && <Sources references={tour.references ?? []} />}
+          {tour.role === 'assistant' && <Lecture texte={tour.content} />}
         </div>
       ))}
 

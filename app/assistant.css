@@ -1857,3 +1857,232 @@
   padding-top: calc(var(--pas) * 2.5);
   border-top: 1px solid var(--line-soft);
 }
+
+/* ----------------------------------------------------------------- mention
+   La première ligne du site, avant la marque.
+
+   Elle dit ce que ce service ne fait pas. Ce n'est pas une alerte et elle n'en
+   a pas la couleur : un bandeau rouge en haut d'un site qu'on vient d'ouvrir
+   se ferme sans être lu. Un filet, un gris, et la place qu'il faut pour être
+   lue en entier — c'est ce qui la rend efficace, pas le rouge. */
+
+.jur-mention {
+  margin: 0;
+  padding: calc(var(--pas) * 1.5) calc(var(--pas) * 3);
+  background: var(--bg-sunk);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.jur-mention strong {
+  color: var(--ink-strong);
+  font-weight: 600;
+}
+
+/* Sur large, elle se cale sur la colonne de lecture plutôt que de traverser
+   l'écran : une ligne de cent vingt caractères ne se lit pas. */
+@media (min-width: 900px) {
+  .jur-mention {
+    padding-left: max(calc(var(--pas) * 3), calc(50vw - 460px));
+    padding-right: max(calc(var(--pas) * 3), calc(50vw - 460px));
+  }
+}
+
+/* ------------------------------------------------------------------- voix
+   Écouter la réponse, dicter la question.
+
+   Les deux commandes sont discrètes à dessein : la voix est un confort pour
+   qui en a besoin — les yeux ailleurs, un écran de téléphone au volant d'une
+   visite, une vue qui fatigue — et une distraction pour les autres. Elles ne
+   prennent donc jamais le pas sur la réponse elle-même. */
+
+.jur-voix {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--pas) * 1.5);
+  margin-top: calc(var(--pas) * 2);
+  padding-top: calc(var(--pas) * 1.5);
+  border-top: 1px solid var(--line-soft);
+}
+
+.jur-voix-bouton,
+.jur-dictee {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--pas) * 0.875);
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: calc(var(--pas) * 0.75) calc(var(--pas) * 1.75);
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.jur-voix-bouton:hover:not(:disabled),
+.jur-dictee:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.jur-voix-bouton span,
+.jur-dictee span {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.jur-voix-choix select {
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 0.625) calc(var(--pas) * 1.25);
+  max-width: 24ch;
+}
+
+.jur-voix-choix select:disabled {
+  opacity: 0.55;
+}
+
+/* Le micro en écoute : le seul endroit du site où une couleur pulse. Elle dit
+   « ça tourne », et c'est la seule information qui compte à ce moment-là. */
+.jur-dictee-active {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.jur-dictee-active span {
+  animation: jur-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes jur-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jur-dictee-active span {
+    animation: none;
+  }
+}
+
+.jur-dictee:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------- documents
+   Le catalogue, puis le courrier produit.
+
+   Le courrier s'affiche comme un courrier — Times, justifié, signature à
+   droite — et non comme une réponse de chat. C'est ce qui permet de juger
+   s'il est présentable avant même de le télécharger. */
+
+.jur-card-delai {
+  margin-top: auto;
+  padding-top: calc(var(--pas) * 1.5);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--warning);
+}
+
+/* Ce qui annule un document : le seul bloc de la page qui doit inquiéter. */
+.jur-pieges {
+  border-color: var(--danger);
+  background: var(--danger-wash);
+}
+
+.jur-pieges h3 {
+  color: var(--danger);
+}
+
+.jur-redaction-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--pas) * 1.5);
+}
+
+.jur-redaction-actions .btn {
+  margin-left: auto;
+}
+
+.jur-courrier {
+  margin-top: calc(var(--pas) * 2.5);
+}
+
+.jur-courrier-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--pas) * 2);
+  flex-wrap: wrap;
+  margin-bottom: calc(var(--pas) * 2);
+}
+
+.jur-courrier-tete h3 {
+  margin: 0;
+}
+
+/* Le courrier, tel qu'il sortira de l'imprimante. */
+.jur-courrier-corps {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--pas) * 4) calc(var(--pas) * 4.5);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+  text-align: justify;
+}
+
+.jur-courrier-corps p {
+  margin: 0 0 calc(var(--pas) * 2);
+}
+
+.jur-courrier-objet {
+  font-weight: 700;
+}
+
+.jur-courrier-signature {
+  text-align: right;
+  margin-top: calc(var(--pas) * 4) !important;
+  margin-bottom: 0 !important;
+  color: var(--ink-faint);
+}
+
+/* Ce qu'il reste à compléter : posé APRÈS le courrier, parce qu'on ne le
+   comprend qu'en ayant vu les blancs entre crochets. */
+.jur-avant-envoi {
+  margin-top: calc(var(--pas) * 2.5);
+  padding: calc(var(--pas) * 2.25) calc(var(--pas) * 2.5);
+  background: var(--warning-wash);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-sm);
+}
+
+.jur-avant-envoi .jur-oeil {
+  color: var(--warning);
+  margin-bottom: calc(var(--pas) * 1.25);
+}
+
+.jur-avant-envoi ul {
+  margin: 0;
+  padding-left: calc(var(--pas) * 2.5);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.jur-avant-envoi li + li {
+  margin-top: calc(var(--pas) * 0.75);
+}

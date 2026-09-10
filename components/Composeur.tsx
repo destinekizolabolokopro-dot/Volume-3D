@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { Dictee } from '@/components/Voix';
 import { MAX_PIECE_BYTES } from '@/lib/piece';
 
 /**
@@ -98,6 +99,12 @@ export function Composeur({
           <span aria-hidden="true">📎</span>
           {fichier ? fichier.name : 'Joindre un document'}
         </label>
+
+        {/* La dictée écrit dans le même brouillon que le clavier : on peut
+            commencer à la voix et finir en tapant, ce qui est exactement ce
+            qu'on fait quand un mot ne passe pas. Absente sur les navigateurs
+            qui ne la proposent pas — voir components/Voix.tsx. */}
+        <Dictee onTexte={setBrouillon} actif={actif && !pending} />
 
         <p className="jur-hint">
           {connecte
