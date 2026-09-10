@@ -53,7 +53,10 @@ export async function compteCourant(): Promise<CompteJuridique | null> {
     const id = lireSession(jar.get(COOKIE)?.value);
     if (!id) return null;
     const compte = await getStore().get('comptesJuridiques', id);
-    return compte && compte.statut !== 'deleted' ? compte : null;
+    /* Seul 'active' ouvre. Un compte suspendu garde son cookie trente jours :
+       le tester par la négative — « tout sauf supprimé » — laissait la
+       suspension sans effet jusqu'à l'expiration, c'est-à-dire sans effet. */
+    return compte && compte.statut === 'active' ? compte : null;
   } catch {
     return null;
   }

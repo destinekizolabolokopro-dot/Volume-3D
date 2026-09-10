@@ -1,10 +1,10 @@
 /**
  * Ce que la base contient, et rien d'autre.
  *
- * Quatre tables. C'est la mesure de ce service : des comptes, des fils de
- * consultation, les messages de ces fils, et une poignée de réglages. Pas de logements, pas de
- * panoramas, pas de rendez-vous — ce sont d'autres produits, dans d'autres
- * dépôts.
+ * Cinq tables. C'est la mesure de ce service : des comptes, des fils de
+ * consultation, les messages de ces fils, la trace des documents rédigés, et
+ * une poignée de réglages. Pas de logements, pas de panoramas, pas de
+ * rendez-vous — ce sont d'autres produits, dans d'autres dépôts.
  *
  * Ce que ces tables NE contiennent PAS compte autant que le reste : les
  * documents déposés pendant une consultation (bail, compromis, procès-verbal
@@ -25,7 +25,11 @@ export interface CompteJuridique {
   /** Empreinte scrypt du mot de passe, au format « sel:empreinte ». */
   passwordHash: string;
   nom: string;
-  /** 'active' | 'suspended'. */
+  /**
+   * 'active' | 'suspended'. Seul 'active' ouvre l'accès : la comparaison se
+   * fait par le positif, pour qu'un statut ajouté plus tard ferme par défaut
+   * au lieu d'ouvrir par oubli.
+   */
   statut: string;
   createdAt: string;
   /** Formule — voir `FormuleId` dans lib/abonnements.ts. Vide vaut « Découverte ». */
@@ -75,6 +79,26 @@ export interface ConsultationTour {
 }
 
 /**
+ * La trace d'un document rédigé.
+ *
+ * Trois champs, et pas un de plus : qui, quel modèle, quand. Le courrier
+ * lui-même n'est jamais écrit — une mise en demeure pour loyers impayés nomme
+ * des gens et raconte une histoire, il n'y a aucune raison d'en garder copie.
+ *
+ * Cette ligne existe pour une seule raison : le quota. L'écran annonce qu'un
+ * document compte pour une question ; sans elle, la phrase était fausse et
+ * la rédaction — l'appel le plus coûteux du service — restait gratuite à
+ * l'infini.
+ */
+export interface DocumentRedige {
+  id: string;
+  compteId: string;
+  /** Identifiant du modèle — voir `ModeleId` dans lib/documents.ts. */
+  modele: string;
+  createdAt: string;
+}
+
+/**
  * Un réglage, posé depuis l'espace du propriétaire.
  *
  * Une seule ligne existe aujourd'hui : `cle-modele`, la clé d'API. Sa
@@ -99,6 +123,7 @@ export interface Database {
   reglages: Reglage[];
   consultations: Consultation[];
   consultationTours: ConsultationTour[];
+  documentsRediges: DocumentRedige[];
 }
 
 export const EMPTY_DB: Database = {
@@ -106,4 +131,5 @@ export const EMPTY_DB: Database = {
   reglages: [],
   consultations: [],
   consultationTours: [],
+  documentsRediges: [],
 };

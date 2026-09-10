@@ -179,7 +179,23 @@ function reconnaissance(): (new () => SpeechRecognition) | null {
   return fenetre.SpeechRecognition ?? fenetre.webkitSpeechRecognition ?? null;
 }
 
-export function Dictee({ onTexte, actif }: { onTexte: (texte: string) => void; actif: boolean }) {
+/**
+ * Le bouton de dictée.
+ *
+ * `onTexte` reçoit une FONCTION de mise à jour, pas un texte : la dictée
+ * s'ajoute à ce qui est déjà écrit au lieu de l'effacer. C'est ce que fait
+ * quelqu'un qui a tapé trois lignes, bute sur une phrase et appuie sur le
+ * micro pour la finir — recevoir un texte tout fait lui aurait pris les trois
+ * lignes. `setState` de React accepte cette forme telle quelle, donc l'appel
+ * reste `onTexte={setBrouillon}`.
+ */
+export function Dictee({
+  onTexte,
+  actif,
+}: {
+  onTexte: (maj: (precedent: string) => string) => void;
+  actif: boolean;
+}) {
   const disponible = useDisponible(() => reconnaissance() !== null);
   const [ecoute, setEcoute] = useState(false);
   const [refus, setRefus] = useState('');
@@ -205,6 +221,12 @@ export function Dictee({ onTexte, actif }: { onTexte: (texte: string) => void; a
     session.interimResults = true;
 
     let acquis = '';
+    /* Ce qui était écrit avant qu'on parle, saisi au premier résultat et non
+       à l'ouverture : le champ peut encore changer entre les deux. Retenu
+       ensuite pour toute la session, sans quoi chaque résultat provisoire se
+       recollerait derrière le précédent. */
+    let socle: string | null = null;
+
     session.onresult = (evenement) => {
       let provisoire = '';
       for (let i = evenement.resultIndex; i < evenement.results.length; i += 1) {
@@ -212,7 +234,11 @@ export function Dictee({ onTexte, actif }: { onTexte: (texte: string) => void; a
         if (evenement.results[i].isFinal) acquis += morceau;
         else provisoire += morceau;
       }
-      onTexte((acquis + provisoire).trim());
+      const dicte = (acquis + provisoire).trim();
+      onTexte((precedent) => {
+        if (socle === null) socle = precedent.trimEnd();
+        return socle ? `${socle} ${dicte}` : dicte;
+      });
     };
 
     session.onerror = (evenement) => {

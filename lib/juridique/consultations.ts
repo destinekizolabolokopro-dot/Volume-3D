@@ -114,7 +114,12 @@ export async function questionsDuMois(compteId: string, maintenant = new Date())
   const fils = await store.list('consultations', { compteId });
   if (fils.length === 0) return 0;
 
-  const miens = new Set(fils.map((fil) => fil.id));
-  const tours = await store.list('consultationTours', { role: 'user' });
-  return tours.filter((tour) => miens.has(tour.consultationId) && tour.createdAt >= debut).length;
+  /* Les messages sont lus FIL PAR FIL. La nuance décide de la justesse du
+     compte : une liste renvoie au plus mille lignes côté Postgres, si bien
+     que demander tous les messages du site pour n'en garder que les siens
+     revenait, passé le millier, à sous-compter sans que rien ne le signale. */
+  const parFil = await Promise.all(
+    fils.map((fil) => store.list('consultationTours', { consultationId: fil.id, role: 'user' })),
+  );
+  return parFil.flat().filter((tour) => tour.createdAt >= debut).length;
 }

@@ -15,8 +15,17 @@
  * relue plus tard : il est assumé.
  */
 
-/** Huit mégaoctets : un bail scanné en fait deux, un dossier complet rarement plus. */
-export const MAX_PIECE_BYTES = 8 * 1024 * 1024;
+/**
+ * Quatre mégaoctets — un bail scanné en fait deux, un dossier complet rarement
+ * plus.
+ *
+ * Le chiffre n'est pas seulement confortable, il est CONTRAINT : une fonction
+ * sans serveur refuse le corps de requête au-delà de quatre mégaoctets et
+ * demi, avant que le code de ce dépôt ne soit atteint. Un plafond annoncé plus
+ * haut ne rendait pas les gros fichiers acceptés — il rendait leur refus
+ * muet, à mi-téléversement, sans la phrase qui explique quoi faire.
+ */
+export const MAX_PIECE_BYTES = 4 * 1024 * 1024;
 
 const PDF = 'application/pdf';
 const TEXTES = new Set(['text/plain', 'text/markdown', 'text/csv']);

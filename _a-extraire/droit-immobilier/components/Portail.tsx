@@ -96,10 +96,13 @@ export function Portail({ depart = 'connexion' }: { depart?: 'connexion' | 'insc
             />
             <p className="hint">Dix caractères au minimum.</p>
           </div>
-          <div className="field">
-            <label htmlFor="ouvre-societe">Société ou agence (facultatif)</label>
-            <input id="ouvre-societe" name="company" maxLength={140} autoComplete="organization" />
-          </div>
+          {/* Il y avait ici un champ « Société ou agence ». Il est retiré : rien
+              ne le lisait, aucune colonne ne l'attendait, et il partait à la
+              poubelle à chaque création de compte. Demander une information
+              pour la jeter est pire que ne pas la demander — le formulaire
+              s'allonge, la personne renseigne, et le service n'en sait rien.
+              Ce qu'il faut savoir d'elle est demandé après, dans le profil :
+              voir lib/profils.ts. */}
 
           {etatOuverture?.error && (
             <p className="jur-erreur" role="alert">

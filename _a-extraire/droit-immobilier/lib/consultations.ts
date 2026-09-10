@@ -103,18 +103,51 @@ export async function effacerConsultation(id: string, compteId: string): Promise
  * fait foi. Ici la question est comptée là où elle est écrite, et effacer une
  * consultation rend vraiment ses questions.
  *
- * Le filtrage se fait en mémoire : la couche de stockage ne sait comparer que
- * des égalités, et à cette échelle un compte n'a pas assez de messages pour
- * que cela se voie. Si cela devait changer, c'est ici qu'on ajouterait un
- * index par mois.
+ * Les messages sont lus FIL PAR FIL, et non en une seule liste filtrée après
+ * coup. La nuance décide de la justesse du compte : `list` renvoie au plus
+ * mille lignes côté Postgres, si bien que demander tous les messages du site
+ * pour n'en garder que les siens revenait, passé le millier de lignes, à
+ * compter les questions de quelqu'un d'autre — et à sous-compter les siennes
+ * sans que rien ne le signale. Un compte a peu de fils ; un fil a au plus
+ * vingt-quatre tours.
+ *
+ * Les documents rédigés entrent dans le même compte. L'écran l'annonce
+ * — « un document compte pour une question » — et un courrier coûte au moins
+ * autant qu'une réponse.
+ *
+ * Le filtrage par mois se fait en mémoire : la couche de stockage ne sait
+ * comparer que des égalités.
  */
+/**
+ * Note qu'un courrier a été rédigé, sans en garder une ligne.
+ *
+ * Appelée APRÈS la rédaction, jamais avant : une demande qui échoue ne doit
+ * rien coûter à personne. Une écriture perdue fait donc un courrier gratuit,
+ * ce qui est le bon sens de l'erreur.
+ */
+export async function noterDocument(compteId: string, modele: string): Promise<void> {
+  await getStore().insert('documentsRediges', {
+    id: randomId(),
+    compteId,
+    modele,
+    createdAt: new Date().toISOString(),
+  });
+}
+
 export async function questionsDuMois(compteId: string, maintenant = new Date()): Promise<number> {
   const debut = new Date(Date.UTC(maintenant.getUTCFullYear(), maintenant.getUTCMonth(), 1)).toISOString();
   const store = getStore();
-  const fils = await store.list('consultations', { compteId });
-  if (fils.length === 0) return 0;
 
-  const miens = new Set(fils.map((fil) => fil.id));
-  const tours = await store.list('consultationTours', { role: 'user' });
-  return tours.filter((tour) => miens.has(tour.consultationId) && tour.createdAt >= debut).length;
+  const [fils, documents] = await Promise.all([
+    store.list('consultations', { compteId }),
+    store.list('documentsRediges', { compteId }),
+  ]);
+
+  const parFil = await Promise.all(
+    fils.map((fil) => store.list('consultationTours', { consultationId: fil.id, role: 'user' })),
+  );
+
+  const questions = parFil.flat().filter((tour) => tour.createdAt >= debut).length;
+  const courriers = documents.filter((doc) => doc.createdAt >= debut).length;
+  return questions + courriers;
 }

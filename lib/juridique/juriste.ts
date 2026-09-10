@@ -254,17 +254,26 @@ function messageAvecPiece(question: string, piece: Piece | null): Anthropic.Mess
 
   const blocs: Anthropic.ContentBlockParam[] = [];
 
+  /* `citations` est joint ici comme il l'est sur le corpus, et ce n'est pas
+     un ornement : l'API refuse (400) une requête où certains documents
+     l'activent et d'autres non. Sans cette ligne, TOUTE pièce jointe en PDF
+     ou en texte faisait échouer la consultation dès que le corpus était
+     construit. Les extraits qui en sortent sont écartés à la relecture — leur
+     indice ne tombe sur aucun texte officiel, voir lib/citations.ts —, ce qui
+     est le comportement voulu : on ne cite pas un bail comme on cite la loi. */
   if (piece.nature === 'pdf') {
     blocs.push({
       type: 'document',
       source: { type: 'base64', media_type: 'application/pdf', data: piece.donnees },
       title: piece.nom,
+      citations: { enabled: true },
     });
   } else if (piece.nature === 'texte') {
     blocs.push({
       type: 'document',
       source: { type: 'text', media_type: 'text/plain', data: piece.donnees },
       title: piece.nom,
+      citations: { enabled: true },
     });
   } else {
     blocs.push({

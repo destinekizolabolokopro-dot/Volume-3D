@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { formuleDuCompte } from '@/lib/abonnements';
 import { cadence, origine } from '@/lib/cadence';
 import { compteCourant } from '@/lib/comptes';
-import { questionsDuMois } from '@/lib/consultations';
+import { noterDocument, questionsDuMois } from '@/lib/consultations';
 import { modeleOuNull } from '@/lib/documents';
 import { estJuristeConfigure } from '@/lib/juriste';
 import { redigerDocument } from '@/lib/redaction';
@@ -77,6 +77,21 @@ export async function POST(request: Request) {
     }
 
     const document = await redigerDocument(modele, situation);
+
+    /* Le courrier est décompté MAINTENANT, une fois rendu. Le quota était
+       lu plus haut mais rien n'était jamais écrit : la phrase « un document
+       compte pour une question » était donc fausse, et la rédaction — l'appel
+       le plus cher du service — restait gratuite sans limite. Ce qui est noté
+       tient en trois champs, et pas le courrier : voir lib/types.ts.
+
+       L'échec de cette écriture ne perd pas le courrier déjà rédigé : on le
+       rend, et le mois compte une unité de moins. */
+    try {
+      await noterDocument(compte.id, modele.id);
+    } catch (cause) {
+      console.error('[document] décompte non enregistré', cause);
+    }
+
     return NextResponse.json(document);
   } catch (cause) {
     if (cause instanceof ValidationError) {
