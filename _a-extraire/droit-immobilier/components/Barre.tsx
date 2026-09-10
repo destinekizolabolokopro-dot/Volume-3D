@@ -28,6 +28,10 @@ export async function Barre({ retour }: { retour?: { href: string; label: string
         </a>
       )}
 
+      <a className="jur-bar-link" href="/documents">
+        Documents
+      </a>
+
       <a className="jur-bar-link" href="/abonnement">
         Formules
       </a>

@@ -26,7 +26,7 @@ import type { Piece } from './piece';
  *  — `repondre` produit la réponse d'un spécialiste.
  */
 
-const MODEL = 'claude-opus-5';
+export const MODEL = 'claude-opus-5';
 
 /**
  * Le plafond n'est pas la longueur voulue : la longueur se demande dans la
@@ -35,7 +35,7 @@ const MODEL = 'claude-opus-5';
  * décompte du même budget : trop serré, il tronquerait la réponse au milieu
  * d'une phrase — le pire endroit possible pour un délai.
  */
-const MAX_TOKENS = 16000;
+export const MAX_TOKENS = 16000;
 
 /**
  * La clé vient de `lib/reglages.ts`, pas de l'environnement directement.
@@ -57,7 +57,7 @@ export async function estJuristeConfigure(): Promise<boolean> {
  * nature de l'échec : une panne d'authentification devient une absence de
  * configuration, que l'appelant sait expliquer en français.
  */
-async function client(): Promise<Anthropic | null> {
+export async function client(): Promise<Anthropic | null> {
   const apiKey = await cleDuModele();
   return apiKey ? new Anthropic({ apiKey }) : null;
 }
@@ -79,7 +79,7 @@ async function client(): Promise<Anthropic | null> {
  *    argumentation se corrige à l'audience, un délai expiré ne se corrige
  *    nulle part.
  */
-const SOCLE = [
+export const SOCLE = [
   'Tu es un assistant juridique français spécialisé en DROIT IMMOBILIER, et en rien d’autre.',
   '',
   'Tu t’adresses à deux publics, et tu reconnais lequel te parle dès les premiers mots.',
@@ -100,7 +100,9 @@ const SOCLE = [
   '',
   '2. Le délai d’abord. Si la situation est enfermée dans un délai, tu le dis tôt et clairement, avant les explications. Tu précises à partir de quand il court. Si tu n’es pas certain du délai applicable, tu dis qu’il en existe un, qu’il est court, et qu’il faut vérifier la mention des voies de recours portée sur le document lui-même — c’est elle qui fait foi.',
   '',
-  '3. Tu informes, tu ne plaides pas. Tu expliques ce que dit la règle et ce qu’il est possible de faire. Tu ne promets jamais une issue : ni « vous allez gagner », ni « c’est perdu d’avance ». Le résultat dépend des preuves et du juge, pas de ton avis.',
+  '3. Tu CONSEILLES, sans plaider ni promettre. Dis ce que tu ferais à sa place, et dans quel ordre : c’est ce qu’on attend de toi, et une réponse qui se contente d’exposer la règle laisse la personne exactement où elle était. Recommande, hiérarchise, tranche quand les faits le permettent. Mais tu ne promets jamais une issue : ni « vous allez gagner », ni « c’est perdu d’avance ». Le résultat dépend des preuves et du juge, pas de ton avis.',
+  '',
+  'Et tu ne prends jamais la place d’un avocat. Tu n’analyses pas un dossier que tu n’as pas, tu ne représentes personne, tu ne signes rien, et tu ne dis jamais à quelqu’un de renoncer à un recours. Dès qu’il y a une audience, une procédure engagée, un délai qui court ou une somme importante, tu dis que c’est le moment de voir un avocat — mais tu donnes d’abord ce que tu sais : se défausser sans rien dire n’aide personne.',
   '',
   '4. Tu ne devines pas les faits. Quand la règle applicable dépend d’un élément que la personne n’a pas donné — la date des faits, le type de bail, la commune du bien, la date de réception des travaux, le régime fiscal choisi, ce qui est écrit au règlement de copropriété —, appelle l’outil « preciser » AU LIEU de répondre à moitié. C’est ce qui sépare une réponse d’une devinette bien tournée.',
   '',
@@ -120,9 +122,9 @@ const SOCLE = [
   'FORME',
   'Écris en texte simple, sans balises ni Markdown, en paragraphes courts. Pour une question factuelle, réponds en quelques phrases. Pour une vraie situation, structure la réponse avec ces intertitres, chacun seul sur sa ligne et suivi de deux points :',
   'Ce que dit la règle :',
-  'Ce que vous pouvez faire :',
+  'Ce que je ferais à votre place :',
   'Le délai :',
-  'Quand il faut un professionnel :',
+  'Quand il faut un avocat :',
   'Les énumérations commencent par un tiret cadratin (—). N’emploie jamais d’astérisques ni de dièses.',
 ].join('\n');
 
@@ -331,7 +333,7 @@ function messageAvecPiece(question: string, piece: Piece | null): Anthropic.Mess
  * corpus d'un domaine ne change pas d'un message à l'autre : écrit une fois,
  * relu à chaque tour sans être refacturé.
  */
-async function blocsDuCorpus(
+export async function blocsDuCorpus(
   id: DomaineId,
 ): Promise<{ blocs: Anthropic.ContentBlockParam[]; plan: PlanCorpus | null }> {
   const corpus = await corpusDuDomaine(id);
@@ -370,7 +372,7 @@ async function blocsDuCorpus(
 }
 
 /** Pose les textes en tête du premier message, là où ils resteront identiques. */
-function poserLeCorpus(
+export function poserLeCorpus(
   messages: Anthropic.MessageParam[],
   blocs: Anthropic.ContentBlockParam[],
 ): Anthropic.MessageParam[] {
