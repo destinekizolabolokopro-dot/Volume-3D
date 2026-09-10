@@ -73,8 +73,14 @@ export function Redaction({ modele, titre, actif }: { modele: string; titre: str
     const lien = window.document.createElement('a');
     lien.href = url;
     lien.download = nomDeFichier(document.titre);
+    /* Le lien doit être DANS la page, et l'URL survivre au clic : Firefox
+       ignore un clic sur un ancrage détaché, et révoquer l'objet dans la
+       foulée coupe le téléchargement avant qu'il ait commencé. On rend donc
+       la main au navigateur, puis on nettoie au tour suivant. */
+    window.document.body.append(lien);
     lien.click();
-    URL.revokeObjectURL(url);
+    lien.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
   }
 
   return (

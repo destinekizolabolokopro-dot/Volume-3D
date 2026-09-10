@@ -1,8 +1,8 @@
 -- =============================================================================
 -- Le schéma, en entier.
 --
--- Quatre tables. C'est la mesure de ce service : des comptes, des fils de
--- consultation, et les messages de ces fils.
+-- Cinq tables. C'est la mesure de ce service : des comptes, des fils de
+-- consultation, les messages de ces fils, et la trace des documents rédigés.
 --
 -- Ce que ces tables NE contiennent PAS compte autant que le reste : les
 -- documents déposés pendant une consultation — bail, compromis, procès-verbal
@@ -56,6 +56,17 @@ create table if not exists "consultationTours" (
   "createdAt"      text not null
 );
 
+-- Qui a fait rédiger quoi, et quand. PAS le courrier : une mise en demeure
+-- pour loyers impayés nomme des gens et raconte une histoire. Cette table
+-- existe pour le quota, que l'écran annonce et qu'il faut donc tenir.
+create table if not exists "documentsRediges" (
+  id          text primary key,
+  "compteId"  text not null references "comptesJuridiques"(id) on delete cascade,
+  -- Identifiant du modèle — voir ModeleId dans lib/documents.ts.
+  modele      text not null,
+  "createdAt" text not null
+);
+
 -- Les réglages posés depuis /reglages. Une seule ligne existe aujourd'hui :
 -- « cle-modele », la clé d'API. Sa valeur est CHIFFRÉE (AES-256-GCM, clé
 -- dérivée d'AUTH_SECRET) : un vidage de cette table ne donne rien
@@ -68,9 +79,11 @@ create table if not exists reglages (
 
 create index if not exists consultations_compte on consultations("compteId");
 create index if not exists consultation_tours_fil on "consultationTours"("consultationId");
+create index if not exists documents_rediges_compte on "documentsRediges"("compteId");
 
 -- Rien n'est accessible sans la clé service_role : aucune politique n'est créée.
 alter table "comptesJuridiques"     enable row level security;
 alter table reglages                enable row level security;
 alter table consultations           enable row level security;
 alter table "consultationTours"     enable row level security;
+alter table "documentsRediges"      enable row level security;

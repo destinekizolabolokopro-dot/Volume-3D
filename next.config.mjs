@@ -6,10 +6,16 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    /* Un bail scanné en PDF dépasse largement la limite par défaut des Server
-       Actions (1 Mo). Le plafond réel des pièces jointes est fixé dans
-       lib/piece.ts ; celui-ci ne fait que ne pas s'y opposer. */
-    serverActions: { bodySizeLimit: '25mb' },
+    /* Les Server Actions refusent un corps de plus d'un mégaoctet par défaut.
+       Aucun formulaire de ce site n'en envoie autant aujourd'hui — les pièces
+       jointes passent par /api/consultation, une route, à qui ce réglage ne
+       s'applique PAS —, mais un mot de passe ou une situation racontée en
+       long ne doit pas buter sur une limite pensée pour des téléversements.
+
+       Le plafond qui compte pour les pièces est MAX_PIECE_BYTES, dans
+       lib/piece.ts, et il est calé sur ce qu'une fonction sans serveur
+       accepte réellement. */
+    serverActions: { bodySizeLimit: '2mb' },
   },
 
   /* Les fontes sont auto-hébergées et versionnées avec le dépôt : elles ne

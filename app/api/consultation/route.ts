@@ -73,12 +73,12 @@ async function lireDemande(request: Request): Promise<Demande> {
       domaine: domaineDe(form.get('domaine')),
       question: text(form.get('question'), 'question', { max: MAX_CARACTERES }),
       consultationId: text(form.get('consultationId'), 'consultation', { max: 40, required: false }),
-      historique: nettoyer(typeof brut === 'string' ? JSON.parse(brut) : []),
+      historique: nettoyer(typeof brut === 'string' ? jsonOuRefus(brut) : []),
       piece: fichier instanceof File ? await lirePiece(fichier) : null,
     };
   }
 
-  const body = (await request.json()) as Record<string, unknown>;
+  const body = objetOuRefus(await request.text());
   return {
     domaine: domaineDe(body.domaine),
     question: text(body.question, 'question', { max: MAX_CARACTERES }),
@@ -86,6 +86,31 @@ async function lireDemande(request: Request): Promise<Demande> {
     historique: nettoyer(body.historique),
     piece: null,
   };
+}
+
+/**
+ * Du JSON, ou un refus propre.
+ *
+ * Un corps mal formé est une requête invalide, pas une panne : sans ce
+ * garde-fou, `JSON.parse` levait et la page annonçait une erreur de serveur
+ * pour une virgule en trop. Ce qui en sort n'est pas encore de confiance,
+ * seulement du JSON — `nettoyer` et `text` se chargent du reste.
+ */
+function jsonOuRefus(brut: string): unknown {
+  try {
+    return JSON.parse(brut);
+  } catch {
+    throw new ValidationError('La demande est illisible.');
+  }
+}
+
+/** Un corps de requête doit être un objet : un tableau ou `null` n'en est pas un. */
+function objetOuRefus(brut: string): Record<string, unknown> {
+  const lu = jsonOuRefus(brut);
+  if (typeof lu !== 'object' || lu === null || Array.isArray(lu)) {
+    throw new ValidationError('La demande est illisible.');
+  }
+  return lu as Record<string, unknown>;
 }
 
 function domaineDe(value: unknown): DomaineId | '' {

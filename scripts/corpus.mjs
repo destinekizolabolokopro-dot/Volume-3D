@@ -28,6 +28,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -353,7 +354,20 @@ async function principal() {
 
   /* Second passage : les articles, pour les seuls textes retenus. */
   const motifs = [...retenus].map((cid) => motifDuTexte(cid, 'article/*'));
-  const articlesPoses = join(FONDS, '.articles-pose');
+
+  /* Les marqueurs portent l'empreinte de la SÉLECTION, pas seulement le nom
+     de l'archive. Sans elle, ajouter un texte à CHOIX ne changeait rien : le
+     marqueur posé la veille faisait sauter l'extraction, et la construction
+     échouait plus bas sur « aucun article retenu » — un message qui accuse la
+     sélection des parties alors que les fichiers n'ont simplement jamais été
+     sortis de l'archive. Changer la sélection change l'empreinte, et le
+     passage se refait pour tout le monde. */
+  const empreinteChoix = createHash('sha256')
+    .update([...retenus].sort().join(','))
+    .digest('hex')
+    .slice(0, 12);
+
+  const articlesPoses = join(FONDS, `.articles-pose-${empreinteChoix}`);
   if (!existsSync(articlesPoses)) {
     console.log(`Articles (${retenus.size} textes)…`);
     extraire(global, motifs);
@@ -362,7 +376,7 @@ async function principal() {
 
   console.log(`Mises à jour quotidiennes (${deltas.length})…`);
   for (const delta of deltas) {
-    const marque = join(FONDS, `.articles-${delta}`);
+    const marque = join(FONDS, `.articles-${empreinteChoix}-${delta}`);
     if (existsSync(marque)) continue;
     extraire(delta, motifs, { strip: 1 });
     appliquerLesSuppressions(delta);

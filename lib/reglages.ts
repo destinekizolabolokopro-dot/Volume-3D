@@ -2,6 +2,7 @@ import 'server-only';
 import { desceller, sceller } from './coffre';
 import { empreinte } from './reglages-empreinte';
 import { getStore } from './store';
+import type { Reglage } from './types';
 
 /**
  * Là où vit la clé du modèle, et d'où elle vient.
@@ -65,7 +66,18 @@ export async function etatDeLaCle(): Promise<EtatDeLaCle> {
     return { source: 'environnement', empreinte: empreinte(variable), depuis: '', illisible: false };
   }
 
-  const ligne = await getStore().get('reglages', CLE_MODELE);
+  /* La base est lue sous garde. /reglages est la page où l'on vient RÉPARER
+     ce qui ne va pas ; la voir tomber en erreur 500 parce que la base ne
+     répond pas ferme la porte au moment précis où il faut l'ouvrir. Une
+     lecture impossible se raconte donc comme une absence de clé, et la page
+     reste affichable. */
+  let ligne: Reglage | null = null;
+  try {
+    ligne = await getStore().get('reglages', CLE_MODELE);
+  } catch {
+    return { source: null, empreinte: '', depuis: '', illisible: false };
+  }
+
   if (!ligne) return { source: null, empreinte: '', depuis: '', illisible: false };
 
   const clair = desceller(ligne.valeur);

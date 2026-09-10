@@ -50,14 +50,19 @@ export default async function Reglages() {
         <FormulaireCle etat={etat} />
       </section>
 
-      {etat.source === 'reglages' && (
+      {/* Le retrait est offert aussi quand la clé est ILLISIBLE — `source` vaut
+          alors null, et la ligne n'en existe pas moins en base. Sans cette
+          seconde condition, une clé chiffrée avec un AUTH_SECRET disparu ne
+          pouvait plus qu'être écrasée, jamais enlevée. */}
+      {(etat.source === 'reglages' || etat.illisible) && (
         <form action={retirerLaCle} className="jur-retrait">
           <button className="btn btn-ghost btn-sm" type="submit">
             Retirer la clé enregistrée
           </button>
           <p className="hint">
-            L’assistant cesse aussitôt de répondre. La clé reste valable chez Anthropic : pour la
-            révoquer vraiment, il faut le faire depuis leur console.
+            {etat.illisible
+              ? 'La ligne enregistrée est effacée. Elle ne se déchiffrait plus, elle ne servait donc à rien — mais la clé, elle, reste valable chez Anthropic : pour la révoquer vraiment, il faut le faire depuis leur console.'
+              : 'L’assistant cesse aussitôt de répondre. La clé reste valable chez Anthropic : pour la révoquer vraiment, il faut le faire depuis leur console.'}
           </p>
         </form>
       )}
