@@ -19,5 +19,8 @@
     "paths": { "@/*": ["./*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  /* _a-extraire tient une application autonome, avec son propre tsconfig et
+     son propre alias « @/ ». La typer depuis ici ferait résoudre ses imports
+     contre l'arborescence de Volume3D, où ils n'existent pas. */
+  "exclude": ["node_modules", "_a-extraire"]
 }

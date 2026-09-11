@@ -13,3 +13,7 @@ next-env.d.ts
 
 # Captures d’écran produites par `npm run vues` et `npm run residence`.
 captures/
+
+# Le fonds LEGI brut téléchargé par `npm run corpus` : 2,4 Go d’archives
+# officielles. Ce qu’on en tire vit dans corpus/, et c’est cela qui est versionné.
+.legi/
