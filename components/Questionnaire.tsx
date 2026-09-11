@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { enregistrerProfil } from '@/app/compte/actions';
+import { enregistrerProfil } from '@/app/espace/actions';
 import { QUESTIONS, estProfessionnel } from '@/lib/profils';
 
 /**

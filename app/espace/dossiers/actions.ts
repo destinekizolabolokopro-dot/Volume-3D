@@ -15,11 +15,11 @@ import { effacerConsultation } from '@/lib/consultations';
  */
 export async function effacer(formData: FormData): Promise<void> {
   const compte = await compteCourant();
-  if (!compte) redirect('/compte/connexion');
+  if (!compte) redirect('/entrer');
 
   const id = String(formData.get('id') ?? '');
   if (id) await effacerConsultation(id, compte.id);
 
-  revalidatePath('/dossiers');
-  redirect('/dossiers');
+  revalidatePath('/espace/dossiers');
+  redirect('/espace/dossiers');
 }

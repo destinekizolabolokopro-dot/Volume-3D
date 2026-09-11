@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
-import { connexion, inscription, type Resultat } from '@/app/compte/actions';
+import { connexion, inscription, type Resultat } from '@/app/entrer/actions';
 
 /**
  * Entrer, ou ouvrir un compte.
@@ -15,7 +15,13 @@ import { connexion, inscription, type Resultat } from '@/app/compte/actions';
  * passe. Le téléphone et la société attendront : chaque champ de plus est un
  * abandon de plus, et rien ici n'a besoin d'eux.
  */
-export function Portail({ depart = 'connexion' }: { depart?: 'connexion' | 'inscription' }) {
+export function Portail({
+  depart = 'connexion',
+  repris = false,
+}: {
+  depart?: 'connexion' | 'inscription';
+  repris?: boolean;
+}) {
   const [mode, setMode] = useState<'connexion' | 'inscription'>(depart);
   const [etatEntree, actionEntree, entreeEnCours] = useActionState<Resultat | null, FormData>(
     connexion,
@@ -47,6 +53,15 @@ export function Portail({ depart = 'connexion' }: { depart?: 'connexion' | 'insc
         </button>
       </div>
 
+      {/* Au retour d'une réinitialisation. La session n'est volontairement pas
+          ouverte à ce moment-là — voir app/entrer/actions.ts —, donc il faut
+          dire pourquoi on redemande d'entrer. */}
+      {repris && mode === 'connexion' && (
+        <p className="jur-succes" role="status">
+          Votre mot de passe est changé. Connectez-vous avec le nouveau.
+        </p>
+      )}
+
       {mode === 'connexion' ? (
         <form action={actionEntree} className="jur-form">
           <div className="field">
@@ -73,6 +88,12 @@ export function Portail({ depart = 'connexion' }: { depart?: 'connexion' | 'insc
           <button className="btn btn-accent btn-block" type="submit" disabled={entreeEnCours}>
             {entreeEnCours ? 'Connexion…' : 'Entrer'}
           </button>
+
+          {/* Sous le bouton, et non en haut de page : on ne cherche ce lien
+              qu'après avoir essayé un mot de passe qui n'a pas marché. */}
+          <p className="jur-oubli">
+            <a href="/mot-de-passe-oublie">Mot de passe oublié ?</a>
+          </p>
         </form>
       ) : (
         <form action={actionOuverture} className="jur-form">

@@ -33,12 +33,18 @@ export interface Formule {
 }
 
 /**
- * Sans compte : trois questions par jour et par adresse. Assez pour juger de
- * la qualité d'une réponse, pas assez pour traiter un dossier. C'est le seul
- * quota qui se compte à la journée — il n'y a personne à qui rattacher un
- * mois.
+ * Sans compte : UNE question d'essai par jour et par adresse.
+ *
+ * C'était trois, et trois était une erreur commerciale autant qu'une erreur de
+ * produit. Assez pour traiter la plupart des situations d'un particulier, donc
+ * assez pour ne jamais créer de compte — et un service dont personne n'est
+ * client ne se construit pas. Une question suffit à juger : on voit la
+ * réponse, on voit les articles cités, on décide.
+ *
+ * C'est le seul quota qui se compte à la journée : il n'y a personne à qui
+ * rattacher un mois.
  */
-export const QUOTA_ANONYME = 3;
+export const QUOTA_ANONYME = 1;
 
 export const FORMULES: Formule[] = [
   {

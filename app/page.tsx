@@ -68,8 +68,13 @@ export default async function AccueilJuridique() {
         exemples={exemples}
         connecte={Boolean(compte)}
         actif={await estJuristeConfigure()}
+        essai={!compte}
         preuve={
-          <aside className="jur-preuve-carte" aria-label={RASSURANCE.oeil}>
+          /* La `key` sur ce cartouche : il part du serveur vers un composant
+             client, et arrive sans la marque qui dispense de clé les éléments
+             nés dans un JSX statique. Expliqué en détail dans
+             app/espace/page.tsx. */
+          <aside className="jur-preuve-carte" aria-label={RASSURANCE.oeil} key="cartouche">
             <p className="jur-oeil">{RASSURANCE.oeil}</p>
             <ul>
               {RASSURANCE.points.map((point) => (

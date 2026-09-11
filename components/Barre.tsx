@@ -38,15 +38,15 @@ export async function Barre({ retour }: { retour?: { href: string; label: string
 
       {compte ? (
         <>
-          <a className="jur-bar-link" href="/dossiers">
+          <a className="jur-bar-link" href="/espace/dossiers">
             Mes consultations
           </a>
-          <a className="jur-bar-link jur-bar-compte" href="/compte">
+          <a className="jur-bar-link jur-bar-compte" href="/espace/compte">
             {compte.nom?.split(' ')[0] || 'Mon compte'}
           </a>
         </>
       ) : (
-        <a className="jur-bar-link jur-bar-compte" href="/compte/connexion">
+        <a className="jur-bar-link jur-bar-compte" href="/entrer">
           Entrer
         </a>
       )}

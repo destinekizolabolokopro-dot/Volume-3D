@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type Params = { searchParams: Promise<{ mode?: string }> };
+type Params = { searchParams: Promise<{ mode?: string; repris?: string }> };
 
 /**
  * Ce qui manque à l'hébergement pour qu'un compte tienne, ou une chaîne vide.
@@ -32,8 +32,8 @@ function obstacle(): string {
 }
 
 export default async function Connexion({ searchParams }: Params) {
-  if (await compteCourant()) redirect('/compte');
-  const { mode } = await searchParams;
+  if (await compteCourant()) redirect('/espace');
+  const { mode, repris } = await searchParams;
   const empeche = obstacle();
 
   return (
@@ -45,8 +45,8 @@ export default async function Connexion({ searchParams }: Params) {
         <h1 className="jur-h1 jur-h1-moyen">Vos consultations, retrouvées.</h1>
         <p className="jur-lede">
           Un compte sert à trois choses : conserver vos échanges et les rouvrir, déposer un document
-          à faire lire, et lever la limite de trois questions par jour. Rien n’y est demandé de plus
-          que votre nom et une adresse.
+          à faire lire, et faire rédiger vos courriers. Rien n’y est demandé de plus que votre nom et
+          une adresse.
         </p>
 
         {empeche ? (

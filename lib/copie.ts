@@ -116,7 +116,7 @@ export const RASSURANCE = {
   points: [
     'La réponse cite l’article exact, avec son passage, tiré du fonds officiel.',
     'Le document que vous joignez est lu pendant la réponse, puis oublié. Rien n’en est conservé.',
-    'Aucune inscription, aucune carte bancaire pour poser votre première question.',
+    'Une question d’essai sans inscription et sans carte bancaire : vous jugez avant de décider.',
   ],
   pied: 'Fonds arrêté au',
 } as const;
@@ -169,9 +169,9 @@ export const PIED = {
     {
       titre: 'Votre espace',
       liens: [
-        { libelle: 'Mes consultations', href: '/dossiers' },
-        { libelle: 'Mon compte', href: '/compte' },
-        { libelle: 'Se connecter', href: '/compte/connexion' },
+        { libelle: 'Mes consultations', href: '/espace/dossiers' },
+        { libelle: 'Mon compte', href: '/espace/compte' },
+        { libelle: 'Se connecter', href: '/entrer' },
       ],
     },
   ],
@@ -199,6 +199,23 @@ export const LIMITES: Paragraphe[] = [
   },
 ];
 
+/**
+ * Ce que dit l'espace de travail, par opposition à la vitrine.
+ *
+ * Les mêmes pièces à l'écran — un surtitre, un titre, une amorce, une
+ * invite — mais pas le même propos. La vitrine convainc quelqu'un qui hésite ;
+ * ici, il a décidé, il a payé ou ouvert un compte, et il vient travailler.
+ * Lui resservir « Dix spécialités du droit immobilier, pour ceux qui en
+ * vivent… » chaque matin, c'est lui vendre ce qu'il a déjà.
+ */
+export const ESPACE = {
+  oeil: 'Votre espace · droit immobilier',
+  titreLignes: ['Que s’est-il passé ?'],
+  lede:
+    'Racontez la situation comme vous la raconteriez à quelqu’un : les faits, les dates, les montants. Elle ira au spécialiste qui en répond, avec ses textes.',
+  invite: 'Votre consultation est enregistrée : vous pourrez la rouvrir depuis « Mes consultations ».',
+} as const;
+
 export const SPECIALISTE = {
   /** Affiché quand aucune clé d'API n'est configurée. */
   inactif:
@@ -218,7 +235,7 @@ export const DOSSIERS = {
 } as const;
 
 export const ORIENTATION = {
-  invite: 'Aucune inscription n’est demandée pour poser une question.',
+  invite: 'Une question d’essai, sans inscription. Vous verrez la réponse et les articles cités avant de décider quoi que ce soit.',
   placeholder:
     'Racontez votre situation. Par exemple : mon locataire est parti en laissant deux mois de loyer, et je ne sais pas par quoi commencer.',
   autres: 'Ce n’est pas la bonne spécialité ?',

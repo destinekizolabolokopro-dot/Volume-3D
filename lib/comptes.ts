@@ -55,10 +55,24 @@ export async function compteCourant(): Promise<CompteJuridique | null> {
   }
 }
 
+/**
+ * Le compte portant cette adresse, ou null.
+ *
+ * La recherche est faite PAR LA BASE, sur l'égalité de l'adresse. Elle listait
+ * tous les comptes du site pour filtrer ensuite en mémoire, ce qui marche
+ * jusqu'au millier de lignes — le plafond d'une lecture Postgres — et se met
+ * alors à répondre « cette adresse est libre » à quelqu'un qui a déjà un
+ * compte. Deux comptes sur la même adresse, et personne ne comprend pourquoi
+ * la connexion échoue.
+ *
+ * L'adresse est écrite en minuscules à la création, et normalisée ici de la
+ * même façon : les deux valeurs comparées ont toujours la même forme.
+ */
 export async function trouverParEmail(email: string): Promise<CompteJuridique | null> {
   const normalise = email.trim().toLowerCase();
-  const comptes = await getStore().list('comptesJuridiques');
-  return comptes.find((compte) => compte.email.toLowerCase() === normalise) ?? null;
+  if (!normalise) return null;
+  const trouves = await getStore().list('comptesJuridiques', { email: normalise });
+  return trouves[0] ?? null;
 }
 
 export async function creerCompte(entree: {
@@ -77,6 +91,11 @@ export async function creerCompte(entree: {
        pour poser une première question. */
     abonnement: 'decouverte',
     abonnementDepuis: new Date().toISOString(),
+    /* L'adresse n'est pas confirmée, et cela n'empêche rien tout de suite :
+       l'espace gratuit s'ouvre, un bandeau rappelle de confirmer, et la
+       confirmation n'est exigée qu'au moment de prendre une formule payante.
+       Voir `emailVerifieA` dans lib/types.ts. */
+    emailVerifieA: '',
     /* Le profil est demandé juste après, sur un écran à lui : trois questions
        à l'inscription font trois occasions d'abandonner. */
     metier: '',

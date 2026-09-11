@@ -177,7 +177,8 @@ async function evaluerQuota(
         refus: {
           statut: 402,
           abonnement: true,
-          message: `Sans compte, l’assistant répond à ${QUOTA_ANONYME} questions par jour. Créez un compte gratuit pour en poser dix par mois, garder vos consultations, et les rouvrir plus tard.`,
+          message:
+            'Vous avez posé votre question d’essai. Créez un compte gratuit pour continuer : dix questions par mois, vos consultations conservées et rouvrables, et vos courriers rédigés. Sans carte bancaire.',
         },
       };
     }

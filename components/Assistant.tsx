@@ -50,11 +50,42 @@ interface Props {
    * client. Absent quand le corpus n'est pas construit.
    */
   preuve?: ReactNode;
+  /**
+   * Vrai sur la vitrine : une question, puis le mur.
+   *
+   * Ce n'est pas le quota qui change ici — il est tenu par le serveur, et un
+   * drapeau de navigateur ne garde aucune porte. C'est ce qu'on montre APRÈS
+   * la réponse : quelqu'un qui vient de lire un avis sourcé est exactement au
+   * moment où créer un compte a du sens, et lui laisser un champ qui répondra
+   * « quota atteint » gâcherait ce moment-là.
+   */
+  essai?: boolean;
+  /**
+   * Le surtitre, le titre et l'amorce, quand ce ne sont pas ceux de la
+   * vitrine. L'espace de travail a les siens : on n'y vend plus, on y
+   * travaille — voir `ESPACE` dans lib/copie.ts.
+   */
+  entete?: { oeil: string; titreLignes: readonly string[]; lede: string; invite: string };
   /** Ce qui n'a de sens qu'avant la première question : la grille, les limites. */
   children: ReactNode;
 }
 
-export function Assistant({ fiches, exemples, connecte, actif, preuve, children }: Props) {
+export function Assistant({
+  fiches,
+  exemples,
+  connecte,
+  actif,
+  preuve,
+  essai = false,
+  entete,
+  children,
+}: Props) {
+  const tete = entete ?? {
+    oeil: ACCUEIL.oeil,
+    titreLignes: ACCUEIL.titreLignes,
+    lede: ACCUEIL.lede,
+    invite: ORIENTATION.invite,
+  };
   const {
     tours,
     pending,
@@ -74,6 +105,8 @@ export function Assistant({ fiches, exemples, connecte, actif, preuve, children 
   const derniere = [...tours].reverse().find((tour) => tour.role === 'user')?.content ?? '';
 
   const enConversation = tours.length > 0;
+  /* Une réponse est arrivée, et pas seulement une question partie. */
+  const repondu = tours.some((tour) => tour.role === 'assistant');
   const fiche = fiches.find((entree) => entree.id === specialite.id) ?? null;
 
   useEffect(() => {
@@ -89,13 +122,13 @@ export function Assistant({ fiches, exemples, connecte, actif, preuve, children 
             sont alors repris en pleine section plus bas. */}
         <div className="jur-haut" id="poser">
           <div className="jur-haut-colonne">
-            <p className="jur-oeil">{ACCUEIL.oeil}</p>
+            <p className="jur-oeil">{tete.oeil}</p>
             <h1 className="jur-h1">
-              {ACCUEIL.titreLignes.map((ligne) => (
+              {tete.titreLignes.map((ligne) => (
                 <span key={ligne}>{ligne}</span>
               ))}
             </h1>
-            <p className="jur-lede">{ACCUEIL.lede}</p>
+            <p className="jur-lede">{tete.lede}</p>
 
             <Composeur
               onEnvoyer={(question, piece) => void demander(question, piece)}
@@ -107,7 +140,7 @@ export function Assistant({ fiches, exemples, connecte, actif, preuve, children 
               grand
             />
 
-            <p className="jur-invite">{ORIENTATION.invite}</p>
+            <p className="jur-invite">{tete.invite}</p>
 
             {erreur && (
               <div className="jur-erreur-ask">
@@ -218,15 +251,45 @@ export function Assistant({ fiches, exemples, connecte, actif, preuve, children 
 
       {erreur && <Alerte message={erreur} quota={quotaAtteint} />}
 
-      <Composeur
-        onEnvoyer={(question, piece) => void demander(question, piece)}
-        pending={pending}
-        actif={actif}
-        connecte={connecte}
-        placeholder="Précisez, ou posez la question suivante."
-      />
+      {/* Le mur de la vitrine : il remplace le champ, il ne s'ajoute pas à lui.
+          Laisser les deux reviendrait à proposer d'écrire une question dont on
+          sait déjà qu'elle sera refusée.
+          
+          Il attend une RÉPONSE, pas seulement une question posée. La question
+          entre dans le fil avant que le serveur ait répondu — c'est ce qui
+          fait qu'elle reste à l'écran si l'appel échoue, plutôt que d'être à
+          retaper. Sans cette condition, une panne passagère coûtait l'essai :
+          le champ disparaissait, le mur s'affichait, et quelqu'un qui n'avait
+          rien obtenu s'entendait dire qu'il venait de voir comment ça
+          répond. */}
+      {essai && repondu && !pending ? (
+        <section className="jur-mur">
+          <p className="jur-oeil">La suite</p>
+          <h2>Vous venez de voir comment il répond.</h2>
+          <p>
+            Cette question était votre essai. Un compte gratuit en donne dix par mois, conserve vos
+            consultations pour les rouvrir, et ouvre la rédaction de courriers. Sans carte bancaire.
+          </p>
+          <div className="jur-mur-actions">
+            <a className="btn btn-accent" href="/entrer?mode=inscription">
+              Créer un compte gratuit
+            </a>
+            <a className="btn btn-ghost" href="/entrer">
+              J’ai déjà un compte
+            </a>
+          </div>
+        </section>
+      ) : (
+        <Composeur
+          onEnvoyer={(question, piece) => void demander(question, piece)}
+          pending={pending}
+          actif={actif}
+          connecte={connecte}
+          placeholder="Précisez, ou posez la question suivante."
+        />
+      )}
 
-      {restant !== null && (
+      {!essai && restant !== null && (
         <p className="jur-restant">
           {restant > 0
             ? `Il vous reste ${restant} question${restant > 1 ? 's' : ''} ce mois-ci.`

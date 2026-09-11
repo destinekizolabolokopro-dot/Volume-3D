@@ -18,6 +18,24 @@ const nextConfig = {
     serverActions: { bodySizeLimit: '2mb' },
   },
 
+  /**
+   * Les adresses d'avant l'espace de travail.
+   *
+   * Elles ont circulé — dans un courriel, un favori, un lien envoyé à un
+   * confrère. Une adresse publiée ne se retire pas, elle se redirige :
+   * permanentes, pour que les moteurs suivent et que le favori d'un client
+   * continue de l'amener au bon endroit.
+   */
+  async redirects() {
+    return [
+      { source: '/compte/connexion', destination: '/entrer', permanent: true },
+      { source: '/compte/profil', destination: '/espace/compte/profil', permanent: true },
+      { source: '/compte', destination: '/espace/compte', permanent: true },
+      { source: '/dossiers', destination: '/espace/dossiers', permanent: true },
+      { source: '/dossiers/:id', destination: '/espace/dossiers/:id', permanent: true },
+    ];
+  },
+
   /* Les fontes sont auto-hébergées et versionnées avec le dépôt : elles ne
      changent que si on les remplace, donc elles peuvent être mises en cache
      définitivement par le navigateur et le CDN. */

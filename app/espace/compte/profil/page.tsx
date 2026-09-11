@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Barre } from '@/components/Barre';
-import { Pied } from '@/components/Pied';
 import { Questionnaire } from '@/components/Questionnaire';
 import { compteCourant } from '@/lib/comptes';
 
@@ -14,11 +12,10 @@ export const metadata: Metadata = {
 
 export default async function Profil() {
   const compte = await compteCourant();
-  if (!compte) redirect('/compte/connexion');
+  if (!compte) redirect('/entrer');
 
   return (
     <>
-      <Barre retour={{ href: '/compte', label: 'Mon compte' }} />
 
       <main className="jur-page jur-etroit">
         <p className="jur-oeil">Trois questions, une fois</p>
@@ -37,8 +34,6 @@ export default async function Profil() {
           }}
         />
       </main>
-
-      <Pied />
     </>
   );
 }

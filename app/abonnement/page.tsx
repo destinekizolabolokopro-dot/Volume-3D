@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { changerFormule } from '@/app/compte/actions';
+import { changerFormule } from '@/app/espace/actions';
 import { Barre } from '@/components/Barre';
 import { Pied } from '@/components/Pied';
 import {
   FORMULES,
-  QUOTA_ANONYME,
   formuleDuCompte,
   paiementConfigure,
   prixLisible,
@@ -43,9 +42,9 @@ export default async function Abonnement() {
           <p className="jur-oeil">Formules</p>
           <h1 className="jur-h1">Trois formules, sans engagement.</h1>
           <p className="jur-lede jur-lede-centree">
-            Sans compte, l’assistant répond à {QUOTA_ANONYME} questions par jour. Un compte gratuit
-            conserve vos consultations ; les formules payantes lèvent la limite et ouvrent le dépôt
-            de documents.
+            Sans compte, l’assistant répond à une question d’essai. Un compte gratuit en donne dix
+            par mois et conserve vos consultations ; les formules payantes lèvent la limite et
+            ouvrent le dépôt de documents.
           </p>
         </div>
 
@@ -78,7 +77,7 @@ export default async function Abonnement() {
                 {!compte ? (
                   <a
                     className={`btn btn-block ${formule.recommandee ? 'btn-accent' : 'btn-ghost'}`}
-                    href={`/compte/connexion?mode=inscription`}
+                    href={`/entrer?mode=inscription`}
                   >
                     {formule.prix === 0 ? 'Ouvrir un compte gratuit' : `Prendre ${formule.nom}`}
                   </a>

@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import { effacer } from '@/app/dossiers/actions';
-import { Barre } from '@/components/Barre';
-import { Pied } from '@/components/Pied';
+import { effacer } from '@/app/espace/dossiers/actions';
 import { Consultation, type Tour } from '@/components/Consultation';
 import { compteCourant } from '@/lib/comptes';
 import { consultationDuCompte, toursDeConsultation } from '@/lib/consultations';
@@ -27,7 +25,7 @@ type Params = { params: Promise<{ id: string }> };
  */
 export default async function PageConsultation({ params }: Params) {
   const compte = await compteCourant();
-  if (!compte) redirect('/compte/connexion');
+  if (!compte) redirect('/entrer');
 
   const { id } = await params;
   const consultation = await consultationDuCompte(id, compte.id);
@@ -45,7 +43,6 @@ export default async function PageConsultation({ params }: Params) {
 
   return (
     <>
-      <Barre retour={{ href: '/dossiers', label: 'Mes consultations' }} />
 
       <main className="jur-page jur-narrow">
         <h1 className="jur-h1 jur-h1-fil">{consultation.titre}</h1>
@@ -69,8 +66,6 @@ export default async function PageConsultation({ params }: Params) {
           </button>
         </form>
       </main>
-
-      <Pied />
     </>
   );
 }
