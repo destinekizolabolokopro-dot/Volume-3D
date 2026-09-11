@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { Alerte } from '@/components/Alerte';
 import { Composeur } from '@/components/Composeur';
 import { Fil } from '@/components/Fil';
+import { FournisseurVoix, InterrupteurVoix } from '@/components/Voix';
 import { Question } from '@/components/Question';
 import { useConsultation, type Tour } from '@/components/useConsultation';
 
@@ -22,6 +23,12 @@ interface Props {
   domaine: string;
   label: string;
   exemples: string[];
+  /**
+   * Propose le mode mains libres. Vrai dans l'espace de travail, faux sur la
+   * fiche publique d'une spécialité : on n'y est pas venu pour travailler à
+   * la voix, on y lit un périmètre et des délais.
+   */
+  mainsLibres?: boolean;
   /** Fil déjà enregistré qu'on reprend, s'il y en a un. */
   consultationInitiale?: string;
   toursInitiaux?: Tour[];
@@ -46,6 +53,7 @@ export function Consultation({
   questionInitiale = '',
   connecte,
   actif = true,
+  mainsLibres = false,
 }: Props) {
   const { tours, pending, erreur, quotaAtteint, restant, precision, demander } = useConsultation({
     domaine,
@@ -69,6 +77,7 @@ export function Consultation({
   }, [actif, questionInitiale, toursInitiaux.length, demander]);
 
   return (
+    <FournisseurVoix propose={mainsLibres}>
     <div>
       {tours.length === 0 && !pending && (
         <div className="jur-suggestions">
@@ -86,7 +95,14 @@ export function Consultation({
         </div>
       )}
 
-      <Fil tours={tours} pending={pending} attente={`${label} examine votre question…`} />
+      {mainsLibres && <InterrupteurVoix />}
+
+      <Fil
+        tours={tours}
+        pending={pending}
+        attente={`${label} examine votre question…`}
+        restaures={toursInitiaux.length}
+      />
       <div ref={finRef} />
 
       {precision && !pending && (
@@ -119,6 +135,7 @@ export function Consultation({
           <a href="/abonnement">Changer de formule</a>
         </p>
       )}
-    </div>
+      </div>
+    </FournisseurVoix>
   );
 }

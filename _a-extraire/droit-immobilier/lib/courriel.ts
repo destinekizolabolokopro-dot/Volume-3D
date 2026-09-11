@@ -1,7 +1,6 @@
 import 'server-only';
-import { desceller } from './coffre';
 import { MARQUE } from './copie';
-import { getStore } from './store';
+import { secret } from './reglages';
 
 /**
  * L'envoi des courriels.
@@ -28,25 +27,16 @@ import { getStore } from './store';
  * qu'hors production.
  */
 
-const CLE_COURRIEL = 'cle-courriel';
 const EXPEDITEUR_DEFAUT = 'onboarding@resend.dev';
 
 /**
  * La clé Resend : variable d'environnement d'abord, réglages ensuite.
  *
- * Le même ordre que pour la clé du modèle, et pour la même raison — voir
- * l'en-tête de lib/reglages.ts.
+ * Exactement la même mécanique que la clé du modèle, et c'est le même code
+ * qui la tient — voir `SECRETS` dans lib/reglages.ts.
  */
-export async function cleDuCourriel(): Promise<string | null> {
-  const variable = process.env.RESEND_API_KEY?.trim();
-  if (variable) return variable;
-
-  try {
-    const ligne = await getStore().get('reglages', CLE_COURRIEL);
-    return ligne ? desceller(ligne.valeur) : null;
-  } catch {
-    return null;
-  }
+export function cleDuCourriel(): Promise<string | null> {
+  return secret('cle-courriel');
 }
 
 export async function courrielConfigure(): Promise<boolean> {

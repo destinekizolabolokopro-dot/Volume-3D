@@ -2005,6 +2005,50 @@ body {
   max-width: 58ch;
 }
 
+/* Le décompte des branches attendues, dans les réglages. Trois colonnes et
+   un filet : c'est un relevé, pas un tableau de bord. */
+.jur-attente-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--pas) * 2);
+  padding: calc(var(--pas) * 1.75) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.jur-attente-nom {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  color: var(--ink-strong);
+}
+
+.jur-attente-nombre {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.jur-attente-date {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  min-width: 22ch;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .jur-attente-ligne {
+    flex-wrap: wrap;
+  }
+  .jur-attente-date {
+    min-width: 0;
+    text-align: left;
+    flex-basis: 100%;
+  }
+}
+
 /* ------------------------------------------------------ la branche à venir -
 
    Le bloc qui porte la demande d'être prévenu, et les deux listes qui disent
@@ -3240,6 +3284,207 @@ body {
   border-top: 1px solid var(--line-soft);
 }
 
+/* ============================================================= mains libres
+
+   L'interrupteur, le micro, et les ondes qui disent qu'on est entendu.
+
+   La voix était invisible : deux pastilles grises de treize pixels, l'une
+   sous la réponse, l'autre dans le champ, de la même couleur que le reste.
+   Une fonction qu'on vend ne peut pas se cacher dans le mobilier. */
+
+.jur-mains-libres {
+  margin: 0 0 calc(var(--pas) * 2.5);
+}
+
+.jur-bascule {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pas) * 2);
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 2.25);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.jur-bascule:hover {
+  border-color: var(--line-strong);
+}
+
+.jur-bascule-active {
+  background: var(--accent-wash);
+  border-color: var(--accent);
+}
+
+/* La piste et sa pastille : l'interrupteur physique que tout le monde
+   reconnaît. Elle ne bouge que de sa propre largeur, sans rebond — un
+   interrupteur qui fait un effet de ressort a l'air d'un jouet. */
+.jur-bascule-piste {
+  flex: none;
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  transition: background-color 0.15s ease;
+}
+
+.jur-bascule-active .jur-bascule-piste {
+  background: var(--accent);
+}
+
+.jur-bascule-pastille {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 18, 15, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.jur-bascule-active .jur-bascule-pastille {
+  transform: translateX(18px);
+}
+
+.jur-bascule-texte {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.jur-bascule-texte strong {
+  font-size: 14.5px;
+  letter-spacing: -0.01em;
+  color: var(--ink-strong);
+}
+
+.jur-bascule-texte span {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.jur-bascule:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+/* ------------------------------------------------------------- le micro --- */
+
+/* Plein, rond, de la couleur de l'accent. C'est le seul bouton du champ qui
+   en soit là : joindre un document est une commodité, dicter est une manière
+   de se servir du service. */
+.jur-micro {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--pas) * 1.125);
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: calc(var(--pas) * 0.875) calc(var(--pas) * 2);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.jur-micro:hover:not(:disabled) {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.jur-micro:disabled {
+  background: var(--bg-sunk);
+  border-color: var(--line);
+  color: var(--ink-faint);
+  cursor: not-allowed;
+}
+
+.jur-micro-icone {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* En écoute, le bouton prend le rouge de l'alerte : c'est la convention de
+   l'enregistrement, et elle vaut mieux qu'un libellé qu'on ne lit pas. */
+.jur-micro-actif,
+.jur-micro-actif:hover:not(:disabled) {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Trois barres qui respirent. Elles disent « on t'entend » sans mot, et
+   s'arrêtent net pour qui a demandé moins d'animation. */
+.jur-ondes {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+
+.jur-ondes i {
+  display: block;
+  width: 2px;
+  height: 5px;
+  border-radius: 1px;
+  background: currentColor;
+  animation: jur-onde 0.9s ease-in-out infinite;
+}
+
+.jur-ondes i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.jur-ondes i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes jur-onde {
+  0%,
+  100% {
+    height: 5px;
+  }
+  50% {
+    height: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jur-ondes i {
+    animation: none;
+    height: 10px;
+  }
+}
+
+/* La mention sous le champ : par où passe la dictée. Elle occupe toute la
+   largeur pour ne pas se glisser entre deux boutons. */
+.jur-micro-note {
+  /* Elle passe APRÈS le bouton d'envoi, pas entre les boutons et lui.
+     Posée à sa place dans l'ordre du balisage, elle ouvrait une seconde ligne
+     au milieu de la rangée et repoussait « Envoyer » sur le côté. `order` la
+     renvoie en dessous sans la déplacer dans le code, où elle appartient au
+     micro qu'elle explique. */
+  order: 2;
+  flex-basis: 100%;
+  margin: calc(var(--pas) * 1.25) 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-faint);
+  max-width: 62ch;
+}
+
 .jur-voix-bouton,
 .jur-dictee {
   display: inline-flex;
@@ -3260,6 +3505,19 @@ body {
 .jur-dictee:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* « Écouter la réponse » porte l'accent au repos, et non au seul survol : sur
+   une réponse de trente lignes, un bouton gris en bas de bulle ne se voit
+   pas. C'est la seule chose à faire d'une réponse en dehors de la lire. */
+.jur-voix-bouton {
+  color: var(--accent);
+  border-color: var(--accent);
+  font-weight: 500;
+}
+
+.jur-voix-bouton:hover:not(:disabled) {
+  background: var(--accent-wash);
 }
 
 .jur-voix-bouton span,

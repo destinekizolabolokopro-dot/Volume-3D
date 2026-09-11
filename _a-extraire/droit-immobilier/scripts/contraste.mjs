@@ -85,6 +85,8 @@ const PAIRES = [
   ['alerte sur son lavis', 'warning', 'warning-wash', 4.5],
   ['succès sur son lavis', 'positive', 'positive-wash', 4.5],
   ['erreur sur blanc', 'danger', 'bg', 4.5],
+  /* Le micro en écoute : blanc sur le rouge de l'enregistrement. */
+  ['blanc sur l’erreur (micro en écoute)', 'accent-ink', 'danger', 4.5],
 
   /* Bordures : 3,0 suffit, mais il faut le franchir. Un champ dont on ne
      distingue pas le bord du fond n'est pas un champ. */

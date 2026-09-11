@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cadence } from '@/lib/cadence';
-import { effacerLaCle, enregistrerLaCle } from '@/lib/reglages';
+import { effacerLeSecret, enregistrerLeSecret } from '@/lib/reglages';
 import {
   COOKIE,
   emettreSession,
@@ -97,12 +97,64 @@ export async function poserLaCle(_precedent: Resultat | null, formData: FormData
     };
   }
 
-  await enregistrerLaCle(cle);
+  await enregistrerLeSecret('cle-modele', cle);
   return { ok: true, message: 'Clé vérifiée auprès d’Anthropic et enregistrée. L’assistant répond dès maintenant.' };
 }
 
 export async function retirerLaCle(): Promise<void> {
   if (!(await estProprietaire())) redirect('/reglages');
-  await effacerLaCle();
+  await effacerLeSecret('cle-modele');
+  redirect('/reglages');
+}
+
+/**
+ * La clé d'envoi de courriels, essayée avant d'être gardée.
+ *
+ * Même principe que pour la clé du modèle, et pour la même raison : une clé
+ * fausse enregistrée sans contrôle ne se découvre qu'au moment où un client
+ * a perdu son mot de passe et n'arrive pas à le reprendre. `GET /domains`
+ * est un appel authentifié qui n'envoie aucun message et ne coûte rien.
+ */
+export async function poserLaCleCourriel(
+  _precedent: Resultat | null,
+  formData: FormData,
+): Promise<Resultat> {
+  if (!(await estProprietaire())) return { ok: false, error: 'Session expirée. Reconnectez-vous.' };
+
+  const cle = String(formData.get('cle') ?? '').trim();
+  if (!cle) return { ok: false, error: 'Collez la clé avant d’enregistrer.' };
+  if (!cle.startsWith('re_')) {
+    return { ok: false, error: 'Ce n’est pas une clé Resend : elles commencent toutes par « re_ ».' };
+  }
+
+  let reponse: Response;
+  try {
+    reponse = await fetch('https://api.resend.com/domains', {
+      headers: { Authorization: `Bearer ${cle}` },
+    });
+  } catch {
+    return {
+      ok: false,
+      error: 'Impossible de joindre Resend pour vérifier la clé. Elle n’a pas été enregistrée — réessayez dans un instant.',
+    };
+  }
+
+  if (reponse.status === 401 || reponse.status === 403) {
+    return { ok: false, error: 'Resend refuse cette clé. Vérifiez qu’elle a été copiée en entier et qu’elle n’a pas été révoquée.' };
+  }
+  if (!reponse.ok) {
+    return { ok: false, error: `Resend répond ${reponse.status}. La clé n’a pas été enregistrée.` };
+  }
+
+  await enregistrerLeSecret('cle-courriel', cle);
+  return {
+    ok: true,
+    message: 'Clé vérifiée auprès de Resend et enregistrée. Les confirmations d’adresse et les mots de passe oubliés partent dès maintenant.',
+  };
+}
+
+export async function retirerLaCleCourriel(): Promise<void> {
+  if (!(await estProprietaire())) redirect('/reglages');
+  await effacerLeSecret('cle-courriel');
   redirect('/reglages');
 }

@@ -25,7 +25,25 @@ import type { Reglage } from './types';
  * est la seule forme qui remonte à l'écran.
  */
 
-const CLE_MODELE = 'cle-modele';
+/**
+ * Les secrets que le propriétaire peut poser depuis l'écran, et leur variable
+ * d'environnement équivalente.
+ *
+ * Deux aujourd'hui : la clé du modèle, sans laquelle rien ne répond, et celle
+ * de l'envoi de courriels, sans laquelle un mot de passe perdu ne se reprend
+ * pas. Elles se comportent EXACTEMENT pareil — variable d'environnement
+ * d'abord, réglage chiffré ensuite, empreinte à l'écran, retrait possible — et
+ * c'est pour cela qu'elles partagent ce fichier plutôt que d'en avoir chacune
+ * une copie qui finirait par diverger sur le détail qui compte.
+ */
+export const SECRETS = {
+  'cle-modele': 'ANTHROPIC_API_KEY',
+  'cle-courriel': 'RESEND_API_KEY',
+} as const;
+
+export type SecretId = keyof typeof SECRETS;
+
+const CLE_MODELE: SecretId = 'cle-modele';
 
 export type Source = 'environnement' | 'reglages' | null;
 
@@ -45,12 +63,19 @@ export interface EtatDeLaCle {
 
 export { empreinte } from './reglages-empreinte';
 
-export async function cleDuModele(): Promise<string | null> {
-  const variable = process.env.ANTHROPIC_API_KEY?.trim();
+/**
+ * La valeur d'un secret, variable d'environnement d'abord.
+ *
+ * `process.env[nom]` est lu par un accès dynamique, ce qui suffit ici : ces
+ * deux variables sont lues côté serveur uniquement, jamais inlinées dans un
+ * paquet client — elles ne portent pas le préfixe `NEXT_PUBLIC_`.
+ */
+export async function secret(id: SecretId): Promise<string | null> {
+  const variable = process.env[SECRETS[id]]?.trim();
   if (variable) return variable;
 
   try {
-    const ligne = await getStore().get('reglages', CLE_MODELE);
+    const ligne = await getStore().get('reglages', id);
     if (!ligne) return null;
     return desceller(ligne.valeur);
   } catch {
@@ -60,8 +85,12 @@ export async function cleDuModele(): Promise<string | null> {
   }
 }
 
-export async function etatDeLaCle(): Promise<EtatDeLaCle> {
-  const variable = process.env.ANTHROPIC_API_KEY?.trim();
+export function cleDuModele(): Promise<string | null> {
+  return secret(CLE_MODELE);
+}
+
+export async function etatDuSecret(id: SecretId): Promise<EtatDeLaCle> {
+  const variable = process.env[SECRETS[id]]?.trim();
   if (variable) {
     return { source: 'environnement', empreinte: empreinte(variable), depuis: '', illisible: false };
   }
@@ -73,7 +102,7 @@ export async function etatDeLaCle(): Promise<EtatDeLaCle> {
      reste affichable. */
   let ligne: Reglage | null = null;
   try {
-    ligne = await getStore().get('reglages', CLE_MODELE);
+    ligne = await getStore().get('reglages', id);
   } catch {
     return { source: null, empreinte: '', depuis: '', illisible: false };
   }
@@ -86,14 +115,18 @@ export async function etatDeLaCle(): Promise<EtatDeLaCle> {
   return { source: 'reglages', empreinte: empreinte(clair), depuis: ligne.majAt, illisible: false };
 }
 
-export async function enregistrerLaCle(cle: string): Promise<void> {
+export function etatDeLaCle(): Promise<EtatDeLaCle> {
+  return etatDuSecret(CLE_MODELE);
+}
+
+export async function enregistrerLeSecret(id: SecretId, valeur: string): Promise<void> {
   const store = getStore();
-  const ligne = { id: CLE_MODELE, valeur: sceller(cle.trim()), majAt: new Date().toISOString() };
-  const existante = await store.get('reglages', CLE_MODELE);
-  if (existante) await store.update('reglages', CLE_MODELE, ligne);
+  const ligne = { id, valeur: sceller(valeur.trim()), majAt: new Date().toISOString() };
+  const existante = await store.get('reglages', id);
+  if (existante) await store.update('reglages', id, ligne);
   else await store.insert('reglages', ligne);
 }
 
-export async function effacerLaCle(): Promise<void> {
-  await getStore().remove('reglages', { id: CLE_MODELE });
+export async function effacerLeSecret(id: SecretId): Promise<void> {
+  await getStore().remove('reglages', { id });
 }

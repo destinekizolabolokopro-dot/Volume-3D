@@ -225,12 +225,17 @@ export const SPECIALISTE = {
     'Ces réponses sont une information juridique, pas une consultation d’avocat. Elles ne tiennent compte que de ce que vous avez écrit, et rien n’y remplace la lecture de vos documents par un professionnel. En cas de délai en cours, prenez conseil sans attendre : l’ADIL de votre département renseigne gratuitement sur le logement, un point-justice reçoit sans condition de ressources, et l’aide juridictionnelle peut prendre en charge un avocat.',
 } as const;
 
+/**
+ * Ce que dit l'écran des consultations.
+ *
+ * Il n'en reste qu'une phrase, et c'est normal : trois autres décrivaient
+ * l'écran d'avant, celui qu'on voyait sans être connecté. Depuis que les
+ * consultations vivent derrière la porte de l'espace, ce cas n'existe plus —
+ * le gabarit renvoie vers l'entrée avant que la page ne s'affiche. Des textes
+ * qu'aucune page ne lit finissent par être relus, traduits et corrigés pour
+ * rien.
+ */
 export const DOSSIERS = {
-  titre: 'Mes consultations',
-  anonyme:
-    'Vos échanges ne sont conservés que si vous avez un compte. Sans connexion, un fil vit le temps de l’onglet : rien n’est écrit, ni côté serveur, ni dans un cookie.',
-  inviteConnexion: 'Connectez-vous pour retrouver vos consultations passées.',
-  vide: 'Aucune consultation enregistrée pour l’instant.',
   inviteQuestion: 'Posez une première question pour ouvrir un dossier.',
 } as const;
 

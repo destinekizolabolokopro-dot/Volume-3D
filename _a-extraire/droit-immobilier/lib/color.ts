@@ -55,22 +55,6 @@ export function parseColor(value: string | number): Rgb {
   return { r: (number >> 16) & 255, g: (number >> 8) & 255, b: number & 255 };
 }
 
-export const toHex = ({ r, g, b }: Rgb): string =>
-  `#${[r, g, b].map((c) => Math.round(clamp(c, 0, 255)).toString(16).padStart(2, '0')).join('')}`;
-
-/**
- * Compose une couleur semi-transparente sur son fond.
- *
- * Indispensable : la moitié des couleurs d'une interface sont posées avec une
- * opacité, et mesurer la couleur nominale plutôt que celle qu'on voit revient à
- * mesurer autre chose que ce que lit l'utilisateur.
- */
-export const over = (top: Rgb, bottom: Rgb, alpha: number): Rgb => ({
-  r: top.r * alpha + bottom.r * (1 - alpha),
-  g: top.g * alpha + bottom.g * (1 - alpha),
-  b: top.b * alpha + bottom.b * (1 - alpha),
-});
-
 /* ============================================================== lumière === */
 
 /** Canal sRGB (0–255) vers sa valeur linéaire (0–1). */
@@ -128,79 +112,6 @@ export function toLch(rgb: Rgb): Lch {
 }
 
 /**
- * Écart perceptuel ΔE2000.
- *
- * L'implémentation est verbeuse parce que la formule l'est : c'est une suite de
- * corrections empiriques qui rattrapent les défauts de CIELAB, notamment dans
- * les bleus et pour les couleurs peu saturées. Elle vaut la peine — un simple
- * écart euclidien en Lab classerait comme « bien séparés » des gris que l'œil
- * confond.
- *
- * Repères d'usage : 1 est le seuil de perception dans des conditions idéales,
- * 2 à 3 est un écart qu'on voit côte à côte, au-delà de 10 ce sont deux
- * couleurs différentes.
- */
-export function deltaE(first: Rgb, second: Rgb): number {
-  const one = toLab(first);
-  const two = toLab(second);
-
-  const avgC = (Math.hypot(one.a, one.b) + Math.hypot(two.a, two.b)) / 2;
-  const g = 0.5 * (1 - Math.sqrt(avgC ** 7 / (avgC ** 7 + 25 ** 7)));
-
-  const a1 = (1 + g) * one.a;
-  const a2 = (1 + g) * two.a;
-  const c1 = Math.hypot(a1, one.b);
-  const c2 = Math.hypot(a2, two.b);
-
-  const angle = (a: number, b: number) => {
-    if (a === 0 && b === 0) return 0;
-    const degrees = (Math.atan2(b, a) * 180) / Math.PI;
-    return degrees < 0 ? degrees + 360 : degrees;
-  };
-  const h1 = angle(a1, one.b);
-  const h2 = angle(a2, two.b);
-
-  const dL = two.l - one.l;
-  const dC = c2 - c1;
-  let dh = 0;
-  if (c1 * c2 !== 0) {
-    dh = h2 - h1;
-    if (dh > 180) dh -= 360;
-    else if (dh < -180) dh += 360;
-  }
-  const dH = 2 * Math.sqrt(c1 * c2) * Math.sin((dh * Math.PI) / 360);
-
-  const avgL = (one.l + two.l) / 2;
-  const avgCp = (c1 + c2) / 2;
-  let avgH = h1 + h2;
-  if (c1 * c2 !== 0) {
-    if (Math.abs(h1 - h2) > 180) avgH += h1 + h2 < 360 ? 360 : -360;
-    avgH /= 2;
-  }
-
-  const t =
-    1 -
-    0.17 * Math.cos(((avgH - 30) * Math.PI) / 180) +
-    0.24 * Math.cos((2 * avgH * Math.PI) / 180) +
-    0.32 * Math.cos(((3 * avgH + 6) * Math.PI) / 180) -
-    0.2 * Math.cos(((4 * avgH - 63) * Math.PI) / 180);
-
-  const sL = 1 + (0.015 * (avgL - 50) ** 2) / Math.sqrt(20 + (avgL - 50) ** 2);
-  const sC = 1 + 0.045 * avgCp;
-  const sH = 1 + 0.015 * avgCp * t;
-  const rt =
-    -2 *
-    Math.sqrt(avgCp ** 7 / (avgCp ** 7 + 25 ** 7)) *
-    Math.sin((60 * Math.exp(-(((avgH - 275) / 25) ** 2)) * Math.PI) / 180);
-
-  return Math.sqrt(
-    (dL / sL) ** 2 + (dC / sC) ** 2 + (dH / sH) ** 2 + rt * (dC / sC) * (dH / sH),
-  );
-}
-
-/* ======================================================== rendu physique === */
-
-/**
  * La plage utile d'une couleur de base, en rendu.
  *
  * Convention admise en rendu physique : au-dessus de 240 en sRGB, une surface
@@ -216,24 +127,3 @@ export function hueGap(first: Rgb, second: Rgb): number {
   return gap > 180 ? 360 - gap : gap;
 }
 
-/**
- * Les couleurs d'un ensemble trop proches pour se distinguer.
- *
- * Renvoie les paires sous le seuil, la plus confondue en premier. Sert à
- * vérifier qu'un jeu de matériaux voisins — un sol, un mur, une plinthe — ne
- * s'effondre pas en un seul aplat.
- */
-export function tooClose(
-  palette: Record<string, string | number>,
-  threshold = 3,
-): { pair: [string, string]; delta: number }[] {
-  const names = Object.keys(palette);
-  const found: { pair: [string, string]; delta: number }[] = [];
-  for (let i = 0; i < names.length; i += 1) {
-    for (let j = i + 1; j < names.length; j += 1) {
-      const delta = deltaE(parseColor(palette[names[i]]), parseColor(palette[names[j]]));
-      if (delta < threshold) found.push({ pair: [names[i], names[j]], delta });
-    }
-  }
-  return found.sort((a, b) => a.delta - b.delta);
-}
