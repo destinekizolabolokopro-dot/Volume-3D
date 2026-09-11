@@ -1,9 +1,10 @@
 /**
  * Ce que la base contient, et rien d'autre.
  *
- * Cinq tables. C'est la mesure de ce service : des comptes, des fils de
- * consultation, les messages de ces fils, la trace des documents rédigés, et
- * une poignée de réglages. Pas de logements, pas de panoramas, pas de
+ * Sept tables. C'est la mesure de ce service : des comptes, des fils de
+ * consultation, les messages de ces fils, la trace des documents rédigés, les
+ * jetons envoyés par courriel, les branches que l'on attend, et une poignée de
+ * réglages. Pas de logements, pas de panoramas, pas de
  * rendez-vous — ce sont d'autres produits, dans d'autres dépôts.
  *
  * Ce que ces tables NE contiennent PAS compte autant que le reste : les
@@ -36,6 +37,16 @@ export interface CompteJuridique {
   abonnement: string;
   /** Date du dernier changement de formule, en ISO. Vide si jamais changée. */
   abonnementDepuis: string;
+  /**
+   * Date de confirmation de l'adresse, en ISO. Vide tant qu'elle ne l'est pas.
+   *
+   * Une adresse non confirmée n'empêche PAS d'entrer : l'espace gratuit
+   * s'ouvre tout de suite, parce qu'on perd la moitié des gens entre un
+   * formulaire et leur boîte mail. Elle est exigée au moment de prendre une
+   * formule payante — c'est là qu'une adresse fausse devient un problème, pour
+   * la facture comme pour la reprise en main du compte.
+   */
+  emailVerifieA: string;
   /**
    * Le profil déclaré à l'ouverture — voir lib/profils.ts.
    *
@@ -75,6 +86,55 @@ export interface ConsultationTour {
   role: string;
   content: string;
   piece: string;
+  createdAt: string;
+}
+
+/**
+ * Quelqu'un qui demande à être prévenu de l'ouverture d'une branche.
+ *
+ * Trois champs, et c'est déjà beaucoup : qui, quelle branche, quand. Cette
+ * table n'est pas une liste de diffusion — on n'y écrira qu'une fois, le jour
+ * où la branche ouvre, et le courriel le dit à l'inscription.
+ *
+ * Elle sert surtout à décider quoi construire ensuite. Ouvrir une branche
+ * coûte des jours de travail sur le fonds officiel ; choisir laquelle d'après
+ * ceux qui l'attendent vaut mieux que de le choisir d'après une intuition.
+ */
+export interface Attente {
+  id: string;
+  compteId: string;
+  /** Identifiant de branche — voir `BrancheId` dans lib/branches.ts. */
+  branche: string;
+  createdAt: string;
+}
+
+/**
+ * Un jeton à usage unique envoyé par courriel.
+ *
+ * Deux usages : confirmer une adresse, et reprendre la main sur un compte
+ * dont on a oublié le mot de passe.
+ *
+ * `empreinte` n'est PAS le jeton : c'est son SHA-256. Le jeton lui-même
+ * n'existe que dans le lien envoyé, et nulle part ailleurs. La différence
+ * décide de ce qu'une fuite de base permet — avec les jetons en clair, un
+ * vidage de table donne l'accès à tous les comptes qui ont une
+ * réinitialisation en cours ; avec des empreintes, il ne donne rien.
+ *
+ * `utiliseA` marque l'emploi plutôt que d'effacer la ligne : un lien cliqué
+ * deux fois — un antivirus qui préouvre, un client mail qui vérifie — doit
+ * pouvoir dire « ce lien a déjà servi » et non « ce lien n'existe pas ».
+ */
+export interface JetonCompte {
+  id: string;
+  compteId: string;
+  /** 'verification' | 'mot-de-passe'. */
+  usage: string;
+  /** SHA-256 du jeton, en hexadécimal. Jamais le jeton. */
+  empreinte: string;
+  /** Date d'expiration, en ISO. */
+  expireA: string;
+  /** Date d'emploi, en ISO. Vide tant qu'il n'a pas servi. */
+  utiliseA: string;
   createdAt: string;
 }
 
@@ -124,6 +184,8 @@ export interface Database {
   consultations: Consultation[];
   consultationTours: ConsultationTour[];
   documentsRediges: DocumentRedige[];
+  jetonsCompte: JetonCompte[];
+  attentes: Attente[];
 }
 
 export const EMPTY_DB: Database = {
@@ -132,4 +194,6 @@ export const EMPTY_DB: Database = {
   consultations: [],
   consultationTours: [],
   documentsRediges: [],
+  jetonsCompte: [],
+  attentes: [],
 };

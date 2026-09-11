@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Barre } from '@/components/Barre';
-import { Pied } from '@/components/Pied';
 import { formuleDuCompte, paiementConfigure, prixLisible, quotaLisible } from '@/lib/abonnements';
 import { compteCourant } from '@/lib/comptes';
 import { consultationsDuCompte, questionsDuMois } from '@/lib/consultations';
-import { deconnexion } from '@/app/compte/actions';
+import { deconnexion } from '@/app/espace/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +24,7 @@ const MOIS = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }
  */
 export default async function Compte() {
   const compte = await compteCourant();
-  if (!compte) redirect('/compte/connexion');
+  if (!compte) redirect('/entrer');
 
   const formule = formuleDuCompte(compte.abonnement);
   const [utilisees, fils] = await Promise.all([
@@ -40,7 +38,6 @@ export default async function Compte() {
 
   return (
     <>
-      <Barre retour={{ href: '/', label: 'L’assistant' }} />
 
       <main className="jur-page jur-etroit">
         <p className="jur-oeil">Mon compte</p>
@@ -77,7 +74,7 @@ export default async function Compte() {
             <a className="btn btn-accent btn-sm" href="/abonnement">
               {formule.id === 'cabinet' ? 'Voir les formules' : 'Changer de formule'}
             </a>
-            <a className="btn btn-ghost btn-sm" href="/dossiers">
+            <a className="btn btn-ghost btn-sm" href="/espace/dossiers">
               Mes consultations ({fils.length})
             </a>
           </div>
@@ -97,8 +94,6 @@ export default async function Compte() {
           </button>
         </form>
       </main>
-
-      <Pied />
     </>
   );
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { Barre } from '@/components/Barre';
-import { Pied } from '@/components/Pied';
+import { redirect } from 'next/navigation';
 import { compteCourant } from '@/lib/comptes';
 import { consultationsDuCompte } from '@/lib/consultations';
 import { domaineOuNull } from '@/lib/domaines';
@@ -24,33 +23,17 @@ const JOUR = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', y
  * ou un licenciement. La page le dit plutôt que de faire semblant d'être vide.
  */
 export default async function Dossiers() {
+  /* Le gabarit de /espace a déjà renvoyé vers /entrer si personne n'est
+     connecté : ici, le compte existe. La branche « pas de compte » qui vivait
+     à cet endroit est partie avec lui — deux gardes pour la même porte, c'est
+     une de trop, et c'est toujours la seconde qu'on oublie de mettre à jour. */
   const compte = await compteCourant();
-
-  if (!compte) {
-    return (
-      <>
-        <Barre retour={{ href: '/', label: 'Toutes les spécialités' }} />
-        <main className="jur-page jur-narrow">
-          <h1 className="jur-h1">Mes consultations</h1>
-          <p className="jur-lede">{DOSSIERS.anonyme}</p>
-          <div className="jur-vide">
-            <p>Connectez-vous pour retrouver vos consultations passées.</p>
-            <a className="btn btn-accent" href="/compte/connexion">
-              Se connecter
-            </a>
-          </div>
-        </main>
-
-        <Pied />
-      </>
-    );
-  }
+  if (!compte) redirect('/entrer');
 
   const fils = await consultationsDuCompte(compte.id);
 
   return (
     <>
-      <Barre retour={{ href: '/', label: 'Toutes les spécialités' }} />
       <main className="jur-page jur-narrow">
         <h1 className="jur-h1">Mes consultations</h1>
         <p className="jur-lede">
@@ -62,15 +45,15 @@ export default async function Dossiers() {
         {fils.length === 0 ? (
           <div className="jur-vide">
             <p>{DOSSIERS.inviteQuestion}</p>
-            <a className="btn btn-accent" href="/">
-              Choisir une spécialité
+            <a className="btn btn-accent" href="/espace">
+              Poser une question
             </a>
           </div>
         ) : (
           <ul className="jur-liste-fils">
             {fils.map((fil) => (
               <li key={fil.id}>
-                <a className="jur-fil-ligne" href={`/dossiers/${fil.id}`}>
+                <a className="jur-fil-ligne" href={`/espace/dossiers/${fil.id}`}>
                   <span className="jur-fil-titre">{fil.titre}</span>
                   <span className="jur-fil-meta">
                     {domaineOuNull(fil.domaine)?.label ?? fil.domaine} ·{' '}
@@ -82,8 +65,6 @@ export default async function Dossiers() {
           </ul>
         )}
       </main>
-
-      <Pied />
     </>
   );
 }

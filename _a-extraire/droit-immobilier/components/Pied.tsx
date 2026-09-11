@@ -1,4 +1,5 @@
 import { Mention } from '@/components/Mention';
+import { compteCourant } from '@/lib/comptes';
 import { MARQUE, PIED } from '@/lib/copie';
 
 /**
@@ -13,8 +14,13 @@ import { MARQUE, PIED } from '@/lib/copie';
  * la situation dépasse une information doit pouvoir les trouver sans lire un
  * paragraphe de précautions : c'est le seul endroit du site qui envoie
  * ailleurs, et il le fait clairement.
+ *
+ * Il lit la session pour une seule ligne : proposer « Se connecter » à
+ * quelqu'un qui l'est déjà est le genre de détail qui fait douter du reste.
  */
-export function Pied() {
+export async function Pied() {
+  const compte = await compteCourant();
+
   return (
     <footer className="jur-pied">
       <div className="jur-pied-corps">
@@ -27,11 +33,16 @@ export function Pied() {
           <nav className="jur-pied-colonne" key={colonne.titre} aria-label={colonne.titre}>
             <p className="jur-pied-titre">{colonne.titre}</p>
             <ul>
-              {colonne.liens.map((lien) => (
-                <li key={lien.href}>
-                  <a href={lien.href}>{lien.libelle}</a>
-                </li>
-              ))}
+              {colonne.liens.map((lien) => {
+                const connecte = lien.href === '/entrer' && compte;
+                return (
+                  <li key={lien.href}>
+                    <a href={connecte ? '/espace' : lien.href}>
+                      {connecte ? 'Mon espace' : lien.libelle}
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
         ))}

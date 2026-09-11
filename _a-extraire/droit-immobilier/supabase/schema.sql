@@ -1,8 +1,9 @@
 -- =============================================================================
 -- Le schéma, en entier.
 --
--- Cinq tables. C'est la mesure de ce service : des comptes, des fils de
--- consultation, les messages de ces fils, et la trace des documents rédigés.
+-- Sept tables. C'est la mesure de ce service : des comptes, des fils de
+-- consultation, les messages de ces fils, la trace des documents rédigés, les
+-- jetons à usage unique envoyés par courriel, et les branches attendues.
 --
 -- Ce que ces tables NE contiennent PAS compte autant que le reste : les
 -- documents déposés pendant une consultation — bail, compromis, procès-verbal
@@ -25,6 +26,9 @@ create table if not exists "comptesJuridiques" (
   -- Formule — voir FormuleId dans lib/abonnements.ts. Vide vaut « Découverte ».
   abonnement         text not null default 'decouverte',
   "abonnementDepuis" text not null default '',
+  -- Date de confirmation de l'adresse. Vide tant qu'elle ne l'est pas : une
+  -- adresse non confirmée n'empêche pas d'entrer, elle empêche de payer.
+  "emailVerifieA"    text not null default '',
   -- Le profil déclaré à l'ouverture : d'où la personne parle. Il sert au
   -- spécialiste, pas à un fichier commercial. Les trois champs sont
   -- facultatifs — un profil faux serait pire qu'un profil vide.
@@ -67,6 +71,32 @@ create table if not exists "documentsRediges" (
   "createdAt" text not null
 );
 
+-- Les jetons envoyés par courriel : confirmer une adresse, reprendre la main
+-- sur un compte. "empreinte" est le SHA-256 du jeton, jamais le jeton : un
+-- vidage de cette table ne donne accès à aucun compte. "utiliseA" marque
+-- l'emploi au lieu d'effacer la ligne, pour pouvoir répondre « ce lien a déjà
+-- servi » plutôt que « ce lien n'existe pas » quand un antivirus l'a préouvert.
+create table if not exists "jetonsCompte" (
+  id          text primary key,
+  "compteId"  text not null references "comptesJuridiques"(id) on delete cascade,
+  usage       text not null,
+  empreinte   text not null,
+  "expireA"   text not null,
+  "utiliseA"  text not null default '',
+  "createdAt" text not null
+);
+
+-- Qui attend quelle branche. Une ligne par compte et par branche : l'index
+-- unique l'impose, pour qu'un double clic ne compte pas deux personnes. Ce
+-- n'est pas une liste de diffusion — un seul message partira, le jour de
+-- l'ouverture.
+create table if not exists attentes (
+  id          text primary key,
+  "compteId"  text not null references "comptesJuridiques"(id) on delete cascade,
+  branche     text not null,
+  "createdAt" text not null
+);
+
 -- Les réglages posés depuis /reglages. Une seule ligne existe aujourd'hui :
 -- « cle-modele », la clé d'API. Sa valeur est CHIFFRÉE (AES-256-GCM, clé
 -- dérivée d'AUTH_SECRET) : un vidage de cette table ne donne rien
@@ -80,6 +110,11 @@ create table if not exists reglages (
 create index if not exists consultations_compte on consultations("compteId");
 create index if not exists consultation_tours_fil on "consultationTours"("consultationId");
 create index if not exists documents_rediges_compte on "documentsRediges"("compteId");
+-- La lecture se fait TOUJOURS par empreinte : c'est le seul chemin qu'emprunte
+-- un lien cliqué, et il doit rester constant quel que soit le nombre de jetons.
+create unique index if not exists jetons_compte_empreinte on "jetonsCompte"(empreinte);
+create index if not exists jetons_compte_compte on "jetonsCompte"("compteId", usage);
+create unique index if not exists attentes_compte_branche on attentes("compteId", branche);
 
 -- Rien n'est accessible sans la clé service_role : aucune politique n'est créée.
 alter table "comptesJuridiques"     enable row level security;
@@ -87,3 +122,5 @@ alter table reglages                enable row level security;
 alter table consultations           enable row level security;
 alter table "consultationTours"     enable row level security;
 alter table "documentsRediges"      enable row level security;
+alter table "jetonsCompte"          enable row level security;
+alter table attentes                enable row level security;

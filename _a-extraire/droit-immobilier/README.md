@@ -24,6 +24,20 @@ développer sans rien installer d'autre. En ligne, la base est obligatoire —
 sinon les comptes créés seraient perdus au premier redéploiement, et la page de
 connexion le dit au lieu de laisser un compte orphelin.
 
+Pour l'envoi des courriels — confirmation d'adresse, mot de passe oublié —,
+posez `RESEND_API_KEY` et `COURRIEL_EXPEDITEUR`. Sans elles, les comptes
+fonctionnent : on entre, on pose ses questions, on rédige ses courriers. Ce qui
+manque est la reprise en main d'un compte par courriel, et les écrans concernés
+le disent en nommant la variable absente. En développement, le lien est écrit
+dans la console du serveur, ce qui suffit à suivre le parcours de bout en bout
+sans compte chez personne.
+
+Le site a deux moitiés. La **vitrine** est publique : l'accueil, les fiches de
+spécialité, le catalogue des courriers, les formules, et une question d'essai
+sans inscription. L'**espace de travail**, sous `/espace`, demande un compte :
+c'est là que vivent l'assistant, les consultations passées, le compte, et les
+onglets des branches du droit.
+
 | commande | ce qu'elle fait |
 |---|---|
 | `npm run dev` | serveur de développement |

@@ -66,6 +66,10 @@ const PAIRES = [
   ['blanc sur l’accent (bouton plein)', 'accent-ink', 'accent', 4.5],
   ['blanc sur l’accent au survol', 'accent-ink', 'accent-strong', 4.5],
   ['accent foncé sur son lavis', 'accent-strong', 'accent-wash', 4.5],
+  /* La pastille « bientôt » d'un onglet de branche, et le bandeau qui demande
+     de confirmer son adresse : deux textes posés sur un lavis, mesurés là. */
+  ['accent sur son lavis (pastille)', 'accent', 'accent-wash', 4.5],
+  ['texte courant sur le lavis d’alerte', 'ink', 'warning-wash', 4.5],
   /* L'appel de fin de page : un aplat d'accent, un titre blanc, un texte
      d'accompagnement plus doux, et un bouton blanc dessus. */
   ['texte doux sur l’aplat d’accent', 'ink-on-accent-soft', 'accent', 4.5],
