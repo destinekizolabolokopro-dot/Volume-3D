@@ -54,6 +54,12 @@
   --accent-strong: #102b52;
   --accent-wash: #e7edf7;
   --accent-ink: #ffffff;
+  /* Sur un aplat d'accent, le titre prend le blanc franc et le texte qui
+     l'accompagne prend celui-ci. Un blanc rendu translucide aurait fait le
+     même effet de loin, et de près il aurait sali le texte au lieu de le
+     rendre secondaire : sur un marine aussi profond, la transparence laisse
+     remonter le fond. */
+  --ink-on-accent-soft: #dce6f6;
   /* Sur fond sombre, le marine profond tombe à 1,5 : il faut sa version
      claire, sans quoi le nom de la marque y devient illisible. */
   --accent-on-dark: #8ab0e6;
@@ -203,9 +209,16 @@ body {
   font-size: 14px;
 }
 
+/* Un bouton indisponible prend une couleur propre, il ne devient pas
+   translucide. La transparence laissait passer le marine en lavande pâle, et
+   l'appel principal de l'accueil — le seul bouton qu'on voit en arrivant, et
+   qui attend qu'on ait écrit quelque chose — avait l'air cassé plutôt
+   qu'en attente. */
 .btn[disabled],
 .btn[aria-disabled='true'] {
-  opacity: 0.5;
+  background: var(--bg-sunk);
+  color: var(--ink-faint);
+  border-color: var(--line);
   cursor: not-allowed;
 }
 

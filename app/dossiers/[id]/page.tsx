@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { effacer } from '@/app/dossiers/actions';
 import { Barre } from '@/components/Barre';
+import { Pied } from '@/components/Pied';
 import { Consultation, type Tour } from '@/components/Consultation';
 import { compteCourant } from '@/lib/comptes';
 import { consultationDuCompte, toursDeConsultation } from '@/lib/consultations';
@@ -68,6 +69,8 @@ export default async function PageConsultation({ params }: Params) {
           </button>
         </form>
       </main>
+
+      <Pied />
     </>
   );
 }

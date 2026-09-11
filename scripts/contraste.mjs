@@ -54,11 +54,22 @@ const PAIRES = [
   ['texte doux sur le fond alterné', 'ink-soft', 'bg-alt', 4.5],
   ['texte courant sur le fond creusé', 'ink', 'bg-sunk', 4.5],
 
+  /* Le pied de page et la section de preuve sont posés sur le fond creusé :
+     tout ce qui s'y écrit doit être mesuré là, pas sur du blanc. */
+  ['texte atténué sur le fond creusé', 'ink-muted', 'bg-sunk', 4.5],
+  ['texte doux sur le fond creusé', 'ink-soft', 'bg-sunk', 4.5],
+  ['mentions sur le fond creusé', 'ink-faint', 'bg-sunk', 4.5],
+  ['accent sur le fond creusé (lien de pied)', 'accent', 'bg-sunk', 4.5],
+
   ['accent sur blanc (lien)', 'accent', 'bg', 4.5],
   ['accent sur le fond alterné', 'accent', 'bg-alt', 4.5],
   ['blanc sur l’accent (bouton plein)', 'accent-ink', 'accent', 4.5],
   ['blanc sur l’accent au survol', 'accent-ink', 'accent-strong', 4.5],
   ['accent foncé sur son lavis', 'accent-strong', 'accent-wash', 4.5],
+  /* L'appel de fin de page : un aplat d'accent, un titre blanc, un texte
+     d'accompagnement plus doux, et un bouton blanc dessus. */
+  ['texte doux sur l’aplat d’accent', 'ink-on-accent-soft', 'accent', 4.5],
+  ['accent foncé sur le bouton blanc', 'accent-strong', 'accent-ink', 4.5],
   ['texte courant sur le lavis d’accent', 'ink', 'accent-wash', 4.5],
 
   ['texte clair sur fond sombre', 'ink-on-dark', 'dark', 4.5],

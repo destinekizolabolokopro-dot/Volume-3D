@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Barre } from '@/components/Barre';
+import { Pied } from '@/components/Pied';
 import { formuleDuCompte, paiementConfigure, prixLisible, quotaLisible } from '@/lib/abonnements';
 import { compteCourant } from '@/lib/comptes';
 import { consultationsDuCompte, questionsDuMois } from '@/lib/consultations';
@@ -96,6 +97,8 @@ export default async function Compte() {
           </button>
         </form>
       </main>
+
+      <Pied />
     </>
   );
 }

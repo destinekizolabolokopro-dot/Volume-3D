@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { changerFormule } from '@/app/compte/actions';
 import { Barre } from '@/components/Barre';
+import { Pied } from '@/components/Pied';
 import {
   FORMULES,
   QUOTA_ANONYME,
@@ -128,6 +129,8 @@ export default async function Abonnement() {
           </div>
         </div>
       </main>
+
+      <Pied />
     </>
   );
 }

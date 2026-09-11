@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Barre } from '@/components/Barre';
+import { Pied } from '@/components/Pied';
 import { Portail } from '@/components/Portail';
 import { compteCourant, sessionsConfigurees } from '@/lib/comptes';
 import { isLocalStore } from '@/lib/store';
@@ -61,6 +62,8 @@ export default async function Connexion({ searchParams }: Params) {
           <Portail depart={mode === 'inscription' ? 'inscription' : 'connexion'} />
         )}
       </main>
+
+      <Pied />
     </>
   );
 }

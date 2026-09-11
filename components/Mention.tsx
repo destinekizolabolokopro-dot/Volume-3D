@@ -1,18 +1,28 @@
 import { MENTION } from '@/lib/copie';
 
 /**
- * La mention, tout en haut de chaque page — avant même la marque.
+ * La mention, sous deux formes.
  *
- * Elle est dans le gabarit racine et non dans une page : quelqu'un qui arrive
- * par un moteur de recherche sur une fiche de spécialité, lit une réponse et
- * repart n'aura peut-être jamais fait défiler jusqu'au pied de page.
+ * Elle ne coiffe plus la page. Quatre lignes de petit texte gris avant même
+ * le nom du site coûtaient la première impression sans rien protéger de
+ * plus : une décharge qu'on tend avant de s'être présenté ne se lit pas. Elle
+ * est désormais posée là où elle est réellement lue — voir l'en-tête de
+ * `MENTION` dans lib/copie.ts.
  *
- * Elle n'est pas une alerte et n'en a pas la couleur — un bandeau rouge en
- * haut d'un site qu'on vient d'ouvrir se ferme sans être lu. Elle est un
- * filet et une nuance de gris : présente, calme, et impossible à manquer
- * puisqu'elle précède tout le reste.
+ * `entiere` sert au pied de page et aux fiches : le texte complet, avec les
+ * recours nommés. `rappel` sert au-dessus d'une conversation, c'est-à-dire à
+ * l'endroit exact où quelqu'un pourrait prendre une réponse pour un conseil
+ * d'avocat — une seule phrase, qui ne se met pas en travers du fil.
  */
-export function Mention() {
+export function Mention({ forme = 'entiere' }: { forme?: 'entiere' | 'rappel' }) {
+  if (forme === 'rappel') {
+    return (
+      <p className="jur-rappel" role="note">
+        {MENTION.court}
+      </p>
+    );
+  }
+
   return (
     <p className="jur-mention" role="note">
       <strong>{MENTION.court}</strong> {MENTION.long}

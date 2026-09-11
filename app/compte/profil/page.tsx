@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Barre } from '@/components/Barre';
+import { Pied } from '@/components/Pied';
 import { Questionnaire } from '@/components/Questionnaire';
 import { compteCourant } from '@/lib/comptes';
 
@@ -36,6 +37,8 @@ export default async function Profil() {
           }}
         />
       </main>
+
+      <Pied />
     </>
   );
 }

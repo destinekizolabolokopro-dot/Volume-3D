@@ -106,16 +106,21 @@ export function Composeur({
             qui ne la proposent pas — voir components/Voix.tsx. */}
         <Dictee onTexte={setBrouillon} actif={actif && !pending} />
 
-        <p className="jur-hint">
-          {connecte
-            ? 'Consultation enregistrée dans vos dossiers. Le document joint, lui, n’est jamais conservé.'
-            : 'Rien n’est conservé : en fermant cet onglet, le fil disparaît.'}
-        </p>
-
         <button className="btn btn-accent" type="submit" disabled={!actif || pending || !brouillon.trim()}>
           {pending ? 'En cours…' : action}
         </button>
       </div>
+
+      {/* Ce qu'il advient de ce qu'on écrit : sous la rangée d'actions, et non
+          entre elles. Placée au milieu, cette phrase séparait les boutons de
+          leur bouton d'envoi et le rejetait à la ligne dès que la place
+          manquait — la seule action de la page finissait sous les autres,
+          alignée à gauche, comme un bouton oublié. */}
+      <p className="jur-hint jur-composer-note">
+        {connecte
+          ? 'Consultation enregistrée dans vos dossiers. Le document joint, lui, n’est jamais conservé.'
+          : 'Rien n’est conservé : en fermant cet onglet, le fil disparaît.'}
+      </p>
     </form>
   );
 }
