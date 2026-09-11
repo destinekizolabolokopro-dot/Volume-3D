@@ -39,7 +39,7 @@ export default async function Compte() {
   return (
     <>
 
-      <main className="jur-page jur-etroit">
+      <main className="jur-page jur-espace-page">
         <p className="jur-oeil">Mon compte</p>
         <h1 className="jur-h1 jur-h1-moyen">{compte.nom || compte.email}</h1>
         <p className="jur-lede">{compte.email}</p>

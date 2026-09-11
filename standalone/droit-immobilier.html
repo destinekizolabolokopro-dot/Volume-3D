@@ -980,13 +980,24 @@ body {
 
 /* ---------------------------------------------------------- le composeur --- */
 
+/* Le champ ne COLLE PAS au bas de l'écran, et ce n'est pas un oubli.
+   
+   Il était `position: sticky; bottom: 16px`, ce qui marche pour un champ qui
+   ferme son conteneur de défilement. Ici, il ne le ferme pas : viennent après
+   lui le compteur de questions, le bouton d'effacement, puis le pied de page.
+   Le champ se posait donc EN TRAVERS de ce qui l'entoure, et sur un fil assez
+   court pour tenir à l'écran il recouvrait la fin de la dernière réponse —
+   les articles cités et le bouton « Écouter la réponse » disparaissaient
+   dessous, sans que rien n'indique qu'ils existaient.
+   
+   Ce qu'on perd est mince : le fil défile jusqu'au bas tout seul après chaque
+   réponse (voir components/Assistant.tsx), donc le champ est là où on regarde
+   déjà. Ce qu'on gagne est de pouvoir lire une réponse en entier. */
 .jur-composer {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: calc(var(--pas) * 1.75);
-  position: sticky;
-  bottom: calc(var(--pas) * 2);
   box-shadow: var(--shadow-soft);
 }
 
@@ -1258,7 +1269,6 @@ body {
    bordure franche, parce que c'est la seule chose qu'on demande de faire, et
    qu'un champ sans relief sur un fond chaud se lit comme un trou. */
 .jur-composer-grand {
-  position: static;
   box-shadow: var(--pose);
   padding: calc(var(--pas) * 2.75);
   border-color: var(--line-soft);
@@ -1976,11 +1986,19 @@ body {
   color: var(--warning);
 }
 
-/* Les pages de l'espace se calent sur la largeur des onglets : une colonne de
-   740 px sous une rangée de 1 060 px se lit comme un décalage, pas comme une
-   colonne de lecture. */
+/* Toutes les pages de l'espace partent du MÊME bord gauche que les onglets.
+   
+   Elles étaient centrées dans une colonne de 740 px sous une rangée de
+   1 060 px : deux repères horizontaux différents à l'écran, et l'œil lit un
+   décalage plutôt qu'une colonne. Le conteneur prend donc la largeur des
+   onglets, et c'est ce qu'il contient qui garde une mesure de lecture — la
+   colonne commence à gauche au lieu de flotter au milieu. */
 .jur-espace-page {
   max-width: 1060px;
+}
+
+.jur-espace-page > * {
+  max-width: 760px;
 }
 
 .jur-espace-page .jur-lede {

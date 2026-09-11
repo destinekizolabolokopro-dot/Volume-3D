@@ -34,7 +34,7 @@ export default async function Dossiers() {
 
   return (
     <>
-      <main className="jur-page jur-narrow">
+      <main className="jur-page jur-espace-page">
         <h1 className="jur-h1">Mes consultations</h1>
         <p className="jur-lede">
           {fils.length === 0

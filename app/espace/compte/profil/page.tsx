@@ -17,7 +17,7 @@ export default async function Profil() {
   return (
     <>
 
-      <main className="jur-page jur-etroit">
+      <main className="jur-page jur-espace-page">
         <p className="jur-oeil">Trois questions, une fois</p>
         <h1 className="jur-h1 jur-h1-moyen">D’où parlez-vous ?</h1>
         <p className="jur-lede">
