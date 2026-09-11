@@ -5,6 +5,7 @@ import { Alerte } from '@/components/Alerte';
 import { Composeur } from '@/components/Composeur';
 import { Fil } from '@/components/Fil';
 import { Mention } from '@/components/Mention';
+import { FournisseurVoix, InterrupteurVoix } from '@/components/Voix';
 import { Question } from '@/components/Question';
 import { useConsultation } from '@/components/useConsultation';
 import { ACCUEIL, ORIENTATION } from '@/lib/copie';
@@ -66,6 +67,12 @@ interface Props {
    * travaille — voir `ESPACE` dans lib/copie.ts.
    */
   entete?: { oeil: string; titreLignes: readonly string[]; lede: string; invite: string };
+  /**
+   * Propose le mode mains libres. Réservé à l'espace de travail : sur la
+   * vitrine, on pose UNE question d'essai, et un interrupteur pour travailler
+   * à la voix n'y sert personne.
+   */
+  mainsLibres?: boolean;
   /** Ce qui n'a de sens qu'avant la première question : la grille, les limites. */
   children: ReactNode;
 }
@@ -78,6 +85,7 @@ export function Assistant({
   preuve,
   essai = false,
   entete,
+  mainsLibres = false,
   children,
 }: Props) {
   const tete = entete ?? {
@@ -115,6 +123,7 @@ export function Assistant({
 
   if (!enConversation) {
     return (
+      <FournisseurVoix propose={mainsLibres}>
       <main className="jur-page jur-accueil">
         {/* Deux colonnes : ce qu'on demande de faire à gauche, d'où viennent
             les réponses à droite. Le cartouche disparaît sous 1040 px, où la
@@ -129,6 +138,8 @@ export function Assistant({
               ))}
             </h1>
             <p className="jur-lede">{tete.lede}</p>
+
+            {mainsLibres && <InterrupteurVoix />}
 
             <Composeur
               onEnvoyer={(question, piece) => void demander(question, piece)}
@@ -168,10 +179,12 @@ export function Assistant({
 
         {children}
       </main>
+      </FournisseurVoix>
     );
   }
 
   return (
+    <FournisseurVoix propose={mainsLibres}>
     <main className="jur-page jur-narrow jur-conversation">
       <div className="jur-sousbarre">
         <span className="jur-specialite">
@@ -199,6 +212,8 @@ export function Assistant({
           la première réponse, là où quelqu'un pourrait la prendre pour un
           conseil d'avocat. Le texte entier reste en pied de page. */}
       <Mention forme="rappel" />
+
+      {mainsLibres && <InterrupteurVoix />}
 
       {fiche && delaisOuverts && (
         <div className="jur-reperes">
@@ -298,5 +313,6 @@ export function Assistant({
         </p>
       )}
     </main>
+    </FournisseurVoix>
   );
 }

@@ -24,22 +24,6 @@ export function email(value: unknown, field = 'email'): string {
   return raw;
 }
 
-/** N'accepte qu'une URL http(s) : évite les javascript: et data: dans les iframes. */
-export function httpUrl(value: unknown, field: string, { required = true } = {}): string {
-  const raw = text(value, field, { max: 2000, required });
-  if (!raw) return '';
-  let parsed: URL;
-  try {
-    parsed = new URL(raw);
-  } catch {
-    throw new ValidationError(`Le champ « ${field} » doit être un lien complet (https://…).`);
-  }
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    throw new ValidationError(`Le champ « ${field} » doit commencer par https://`);
-  }
-  return parsed.toString();
-}
-
 export function number(value: unknown, field: string, { min = -Infinity, max = Infinity } = {}): number {
   const parsed = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(parsed)) throw new ValidationError(`Le champ « ${field} » doit être un nombre.`);

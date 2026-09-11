@@ -11,11 +11,22 @@ export function Fil({
   tours,
   pending,
   attente,
+  restaures = 0,
 }: {
   tours: Tour[];
   pending: boolean;
   /** Ce qui s'affiche pendant l'attente : « Bail d'habitation examine… ». */
   attente: string;
+  /**
+   * Combien de messages viennent de la base plutôt que de cette page.
+   *
+   * Sert au mode mains libres, et à lui seul : une réponse restaurée ne se lit
+   * pas toute seule. Rouvrir une consultation de la semaine dernière n'est pas
+   * demander à l'entendre — et le navigateur refuse de toute façon de parler
+   * sans un geste, si bien que la lecture aurait échoué en silence tout en
+   * armant le micro.
+   */
+  restaures?: number;
 }) {
   return (
     <div className="jur-fil">
@@ -31,7 +42,12 @@ export function Fil({
           )}
           {tour.role === 'assistant' ? <Reponse texte={tour.content} /> : <p>{tour.content}</p>}
           {tour.role === 'assistant' && <Sources references={tour.references ?? []} />}
-          {tour.role === 'assistant' && <Lecture texte={tour.content} />}
+          {tour.role === 'assistant' && (
+            <Lecture
+              texte={tour.content}
+              dernier={index === tours.length - 1 && index >= restaures}
+            />
+          )}
         </div>
       ))}
 

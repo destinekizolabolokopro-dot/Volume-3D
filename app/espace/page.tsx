@@ -59,6 +59,7 @@ export default async function Espace() {
       connecte
       actif={await estJuristeConfigure()}
       entete={ESPACE}
+      mainsLibres
       /* La `key` sur ce cartouche n'est pas une coquetterie.
       
          Il est rendu par le serveur, puis passé en PROPRIÉTÉ à un composant

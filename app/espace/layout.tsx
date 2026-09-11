@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation';
 import { BarreEspace } from '@/components/BarreEspace';
 import { Onglets } from '@/components/Onglets';
 import { Pied } from '@/components/Pied';
-import { BRANCHE_PAR_DEFAUT } from '@/lib/branches';
 import { compteCourant } from '@/lib/comptes';
 
 /**
@@ -37,7 +36,7 @@ export default async function GabaritEspace({ children }: { children: React.Reac
   return (
     <>
       <BarreEspace nom={compte.nom} verifie={Boolean(compte.emailVerifieA)} />
-      <Onglets active={BRANCHE_PAR_DEFAUT} />
+      <Onglets />
       {children}
       <Pied />
     </>

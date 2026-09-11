@@ -1,4 +1,7 @@
-import { BRANCHES, type BrancheId } from '@/lib/branches';
+'use client';
+
+import { usePathname } from 'next/navigation';
+import { BRANCHES } from '@/lib/branches';
 
 /**
  * Les onglets des branches, en tête de l'espace de travail.
@@ -11,8 +14,18 @@ import { BRANCHES, type BrancheId } from '@/lib/branches';
  * Une branche qui n'est pas ouverte est montrée, pas cachée, et porte la
  * mention « bientôt » à côté de son nom. Elle mène à sa page d'annonce, qui
  * dit ce qu'elle couvrira et sur quels textes — pas à un écran vide.
+ *
+ * ── L'onglet courant se lit dans l'adresse ─────────────────────────────────
+ * Il était passé en propriété depuis le gabarit, qui n'en connaît qu'une :
+ * celle par défaut. Résultat, « Droit immobilier » restait souligné même sur
+ * la page du droit du travail, et la rangée disait le contraire de la page.
+ * L'adresse, elle, sait toujours où l'on est.
  */
-export function Onglets({ active }: { active: BrancheId }) {
+export function Onglets() {
+  const chemin = usePathname() ?? '';
+  const surUneBranche = chemin.match(/^\/espace\/branches\/([^/]+)/);
+  const active = surUneBranche ? surUneBranche[1] : 'immobilier';
+
   return (
     <nav className="jur-onglets-branches" aria-label="Branches du droit">
       <ul>

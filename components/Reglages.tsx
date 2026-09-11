@@ -68,28 +68,56 @@ const JOUR = new Intl.DateTimeFormat('fr-FR', {
   minute: '2-digit',
 });
 
-export function FormulaireCle({ etat }: { etat: EtatDeLaCle }) {
-  const [resultat, action, enCours] = useActionState<Resultat | null, FormData>(poserLaCle, null);
+/**
+ * Ce qu'il faut savoir d'une clé pour l'afficher.
+ *
+ * Le formulaire était écrit pour la clé du modèle et ne parlait que d'elle —
+ * « Anthropic » en dur dans trois phrases. Une seconde clé aurait donné un
+ * second formulaire, et le premier détail corrigé dans l'un se serait perdu
+ * dans l'autre. La fiche décrit, le composant affiche.
+ */
+export interface FicheSecret {
+  /** « Clé d'API Anthropic ». */
+  titre: string;
+  /** Le fournisseur, tel qu'on le nomme dans les phrases : « Anthropic ». */
+  fournisseur: string;
+  /** Le début d'une clé valide, montré en exemple. */
+  exemple: string;
+  /** Le nom de la variable d'environnement qui l'emporte sur ce formulaire. */
+  variable: string;
+  /** Ce qui ne marche pas tant qu'elle manque. */
+  sansElle: string;
+}
+
+export function FormulaireCle({
+  fiche,
+  etat,
+  poser,
+}: {
+  fiche: FicheSecret;
+  etat: EtatDeLaCle;
+  poser: (precedent: Resultat | null, formData: FormData) => Promise<Resultat>;
+}) {
+  const [resultat, action, enCours] = useActionState<Resultat | null, FormData>(poser, null);
   const parVariable = etat.source === 'environnement';
+  const champ = `cle-${fiche.variable}`;
 
   return (
     <form action={action} className="jur-form">
       <div className="field">
-        <label htmlFor="cle">
-          {etat.source ? 'Remplacer la clé' : 'Clé d’API Anthropic'}
-        </label>
+        <label htmlFor={champ}>{etat.source ? 'Remplacer la clé' : fiche.titre}</label>
         <input
-          id="cle"
+          id={champ}
           name="cle"
           type="password"
           required
           autoComplete="off"
           spellCheck={false}
-          placeholder="sk-ant-api03-…"
+          placeholder={fiche.exemple}
         />
         <p className="hint">
-          Elle est essayée auprès d’Anthropic avant d’être enregistrée, puis chiffrée en base. Elle
-          ne sera jamais réaffichée : seuls ses huit derniers caractères le seront.
+          Elle est essayée auprès de {fiche.fournisseur} avant d’être enregistrée, puis chiffrée en
+          base. Elle ne sera jamais réaffichée : seuls ses huit derniers caractères le seront.
         </p>
       </div>
 
@@ -105,12 +133,12 @@ export function FormulaireCle({ etat }: { etat: EtatDeLaCle }) {
       )}
 
       <button className="btn btn-accent" type="submit" disabled={enCours || parVariable}>
-        {enCours ? 'Vérification auprès d’Anthropic…' : 'Vérifier et enregistrer'}
+        {enCours ? `Vérification auprès de ${fiche.fournisseur}…` : 'Vérifier et enregistrer'}
       </button>
 
       {parVariable && (
         <p className="hint">
-          Une variable ANTHROPIC_API_KEY est posée sur l’hébergeur, et elle l’emporte sur ce
+          Une variable {fiche.variable} est posée sur l’hébergeur, et elle l’emporte sur ce
           formulaire. Retirez-la si vous préférez gérer la clé ici.
         </p>
       )}
@@ -118,7 +146,7 @@ export function FormulaireCle({ etat }: { etat: EtatDeLaCle }) {
   );
 }
 
-export function EtatCle({ etat }: { etat: EtatDeLaCle }) {
+export function EtatCle({ fiche, etat }: { fiche: FicheSecret; etat: EtatDeLaCle }) {
   if (etat.illisible) {
     return (
       <div className="jur-erreur" role="alert">
@@ -133,7 +161,7 @@ export function EtatCle({ etat }: { etat: EtatDeLaCle }) {
   if (!etat.source) {
     return (
       <div className="jur-vide">
-        <p>Aucune clé n’est configurée : l’assistant ne peut répondre à personne.</p>
+        <p>{fiche.sansElle}</p>
       </div>
     );
   }
@@ -148,7 +176,7 @@ export function EtatCle({ etat }: { etat: EtatDeLaCle }) {
         <dt>Elle vient de</dt>
         <dd>
           {etat.source === 'environnement'
-            ? 'la variable ANTHROPIC_API_KEY de l’hébergeur'
+            ? `la variable ${fiche.variable} de l’hébergeur`
             : 'cet espace, chiffrée en base'}
         </dd>
       </div>

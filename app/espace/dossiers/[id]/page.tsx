@@ -56,6 +56,7 @@ export default async function PageConsultation({ params }: Params) {
           exemples={fiche.exemples}
           consultationInitiale={consultation.id}
           toursInitiaux={initiaux}
+          mainsLibres
           connecte
         />
 

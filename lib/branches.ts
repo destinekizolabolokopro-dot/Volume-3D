@@ -205,23 +205,3 @@ export function branche(id: BrancheId): Branche {
   if (!trouvee) throw new Error(`Branche inconnue : ${id}`);
   return trouvee;
 }
-
-/** La branche ouverte par défaut : celle où l'on atterrit en arrivant. */
-export const BRANCHE_PAR_DEFAUT: BrancheId = 'immobilier';
-
-/** Les branches où l'on peut réellement poser une question. */
-export function branchesOuvertes(): Branche[] {
-  return BRANCHES.filter((b) => b.ouverte);
-}
-
-/**
- * La branche d'une spécialité.
- *
- * Renvoie null pour une spécialité qui n'appartient à aucune branche ouverte,
- * ce qui ne devrait pas arriver — mais un fil enregistré sous une spécialité
- * retirée du catalogue doit pouvoir rester lisible plutôt que de faire tomber
- * la page qui l'affiche.
- */
-export function brancheDuDomaine(domaineId: string): Branche | null {
-  return BRANCHES.find((b) => (b.domaines as string[]).includes(domaineId)) ?? null;
-}
