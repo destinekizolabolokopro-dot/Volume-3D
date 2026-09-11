@@ -44,7 +44,7 @@ export default async function PageConsultation({ params }: Params) {
   return (
     <>
 
-      <main className="jur-page jur-narrow">
+      <main className="jur-page jur-espace-page">
         <h1 className="jur-h1 jur-h1-fil">{consultation.titre}</h1>
         <p className="jur-sub">
           {fiche.label} · <a href={`/${fiche.id}`}>fiche du spécialiste</a>
