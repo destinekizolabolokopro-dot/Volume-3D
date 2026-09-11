@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { Mention } from '@/components/Mention';
 import { MARQUE } from '@/lib/copie';
 import './fonts.css';
 import './socle.css';
@@ -58,10 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400-latin.woff2" crossOrigin="anonymous" />
       </head>
       <body>
-        <div className="jur">
-          <Mention />
-          {children}
-        </div>
+        <div className="jur">{children}</div>
       </body>
     </html>
   );

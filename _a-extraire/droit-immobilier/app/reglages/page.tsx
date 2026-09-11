@@ -11,6 +11,13 @@ import { retirerLaCle, sortir } from './actions';
  * `noindex, nofollow` l'écarte des moteurs. Ce n'est pas ce qui le protège —
  * une adresse finit toujours par circuler — mais il n'y a aucune raison de la
  * publier. Ce qui le protège est le mot de passe, et lui seul.
+ *
+ * C'est la seule page du site sans pied de page, et donc sans la mention qui
+ * dit ce que ce service n'est pas. C'est voulu : cette mention s'adresse à
+ * qui pourrait prendre une réponse pour un conseil d'avocat, et personne ne
+ * lit une clé d'API en croyant consulter. Ajouter ici un pied commercial —
+ * formules, consultations, recours — reviendrait à vendre le service à celui
+ * qui l'exploite.
  */
 export const dynamic = 'force-dynamic';
 

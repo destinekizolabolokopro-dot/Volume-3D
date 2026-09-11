@@ -3,6 +3,7 @@
  "source": "https://echanges.dila.gouv.fr/OPENDATA/LEGI/",
  "global": "Freemium_legi_global_20250713-140000.tar.gz",
  "quotidiennes": 423,
+ "textes": 15,
  "domaines": [
   {
    "domaine": "bail-habitation",

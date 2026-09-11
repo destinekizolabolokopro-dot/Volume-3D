@@ -41,8 +41,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { DIAGNOSTICS } from '../lib/diagnostics.ts';
+import { dateLisible, nombreLisible } from '../lib/nombres.ts';
 import { DOMAINES } from '../lib/domaines.ts';
-import { ACCUEIL, LIMITES, MARQUE, ORIENTATION, SPECIALISTE } from '../lib/copie.ts';
+import { ACCUEIL, LIMITES, MARQUE, MENTION, ORIENTATION, PIED, RASSURANCE, SPECIALISTE } from '../lib/copie.ts';
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DEST = join(RACINE, 'standalone', 'droit-immobilier.html');
@@ -197,7 +198,7 @@ function construire() {
 
   const chiffres = [
     [DOMAINES.length, 'spécialités'],
-    [totalArticles.toLocaleString('fr-FR'), 'articles en vigueur, joints aux réponses'],
+    [nombreLisible(totalArticles), 'articles en vigueur, joints aux réponses'],
     [index.quotidiennes, 'mises à jour du fonds appliquées'],
     [DIAGNOSTICS.length, 'diagnostics et leurs durées'],
   ].map(([n, l]) => `<div class="chiffre"><strong>${e(n)}</strong><span>${e(l)}</span></div>`).join('');
@@ -391,13 +392,22 @@ ${feuille}
 </header>
 
 <main class="jur-page jur-accueil" id="accueil">
-  <p class="jur-oeil">${e(ACCUEIL.oeil)}</p>
-  <h1 class="jur-h1">${ACCUEIL.titreLignes.map((l) => `<span>${e(l)}</span>`).join('')}</h1>
-  <p class="jur-lede">${e(ACCUEIL.lede)}</p>
+  <div class="jur-haut">
+    <div class="jur-haut-colonne">
+      <p class="jur-oeil">${e(ACCUEIL.oeil)}</p>
+      <h1 class="jur-h1">${ACCUEIL.titreLignes.map((l) => `<span>${e(l)}</span>`).join('')}</h1>
+      <p class="jur-lede">${e(ACCUEIL.lede)}</p>
+      <div class="chiffres">${chiffres}</div>
+    </div>
 
-  <div class="chiffres">${chiffres}</div>
+    <aside class="jur-preuve-carte">
+      <p class="jur-oeil">${e(RASSURANCE.oeil)}</p>
+      <ul>${RASSURANCE.points.map((pt) => `<li>${e(pt)}</li>`).join('')}</ul>
+      <p class="jur-preuve-arrete">${e(RASSURANCE.pied)} <strong>${e(dateLisible(index.arrete))}</strong></p>
+    </aside>
+  </div>
 
-  <section class="jur-section">
+  <section class="jur-section jur-vitrine">
     <h2 class="jur-h2">Ce qu’une réponse donne</h2>
     <p class="jur-sub">Le délai d’abord, puis la règle, puis ce qu’il y a à faire — et les articles sur lesquels tout cela s’appuie, cités à la fin.</p>
 
@@ -417,19 +427,19 @@ ${feuille}
     </div>
   </section>
 
-  <section class="jur-section">
+  <section class="jur-section jur-vitrine">
     <h2 class="jur-h2">Des questions qu’on lui pose</h2>
     <p class="jur-sub">Prises dans quatre spécialités différentes. Elles montrent l’étendue du périmètre autant que le niveau de précision utile.</p>
     <div class="jur-suggestions jur-suggestions-accueil">${exemples}</div>
   </section>
 
-  <section class="jur-section">
+  <section class="jur-section jur-vitrine">
     <h2 class="jur-h2">${e(ACCUEIL.grilleTitre)}</h2>
     <p class="jur-sub">${e(ACCUEIL.grilleSous)}</p>
     <div class="jur-grid">${cartes}</div>
   </section>
 
-  <section class="jur-section jur-bande">
+  <section class="jur-section jur-vitrine-aplat jur-bande">
     <p class="jur-oeil">Ce qu’il faut savoir</p>
     <h2>${e(ACCUEIL.limitesTitre)}</h2>
     <p class="jur-bande-sous">${e(ACCUEIL.limitesSous)}</p>
@@ -442,7 +452,19 @@ ${feuille}
 <div id="fiches">${DOMAINES.map(fiche).join('')}</div>
 
 <footer class="jur-pied">
-  <div class="jur-pied-corps"><p>${e(ACCUEIL.piedMention)}</p></div>
+  <div class="jur-pied-corps">
+    <div class="jur-pied-marque">
+      <p class="jur-pied-nom">${e(MARQUE.nom)}</p>
+      <p class="jur-pied-accroche">${e(MARQUE.accroche)}</p>
+    </div>
+    <div class="jur-pied-colonne jur-pied-recours">
+      <p class="jur-pied-titre">${e(PIED.recoursTitre)}</p>
+      <p>${e(PIED.recours)}</p>
+    </div>
+  </div>
+  <div class="jur-pied-mention">
+    <p class="jur-mention"><strong>${e(MENTION.court)}</strong> ${e(MENTION.long)}</p>
+  </div>
 </footer>
 
 </div>

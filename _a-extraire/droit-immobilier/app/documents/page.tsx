@@ -31,7 +31,10 @@ export default function Documents() {
         </p>
 
         {FAMILLES.map((famille) => (
-          <section className="jur-section" key={famille.id}>
+          /* L'identifiant sert d'ancre : l'accueil renvoie ici famille par
+             famille, et un lien qui dépose au sommet d'un catalogue de
+             dix-sept pièces n'a pas tenu sa promesse. */
+          <section className="jur-section" id={famille.id} key={famille.id}>
             <h2 className="jur-h2">{famille.label}</h2>
             <p className="jur-sub">{famille.resume}</p>
 

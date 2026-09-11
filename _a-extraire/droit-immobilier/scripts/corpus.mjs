@@ -415,9 +415,25 @@ async function principal() {
     console.log(`  ${domaineId.padEnd(18)} ${String(nombre).padStart(5)} articles  ${String(taille).padStart(8)} car.`);
   }
 
+  /* `textes` compte les textes DISTINCTS, pas les rattachements : le code
+     civil sert à six spécialités et ne doit être compté qu'une fois. Ce
+     chiffre s'affiche sur l'accueil, à côté du nombre d'articles ; il vaut
+     donc mieux qu'il vienne d'ici que d'une promesse écrite à la main dans
+     une page, qui aurait vieilli au premier texte ajouté. */
   writeFileSync(
     join(SORTIE, 'index.json'),
-    `${JSON.stringify({ arrete: aujourdhui, source: MIROIR, global, quotidiennes: deltas.length, domaines: resume }, null, 1)}\n`,
+    `${JSON.stringify(
+      {
+        arrete: aujourdhui,
+        source: MIROIR,
+        global,
+        quotidiennes: deltas.length,
+        textes: retenus.size,
+        domaines: resume,
+      },
+      null,
+      1,
+    )}\n`,
   );
   console.log(`\nCorpus arrêté au ${aujourdhui} — ${resume.reduce((n, d) => n + d.articles, 0)} articles.`);
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Barre } from '@/components/Barre';
+import { Pied } from '@/components/Pied';
 import { Consultation } from '@/components/Consultation';
 import { compteCourant } from '@/lib/comptes';
 import { CALENDRIER_ENERGIE, DIAGNOSTICS } from '@/lib/diagnostics';
@@ -159,6 +160,8 @@ export default async function PageDomaine({ params, searchParams }: Params) {
           <p>{SPECIALISTE.avertissement}</p>
         </div>
       </main>
+
+      <Pied />
     </>
   );
 }

@@ -35,14 +35,20 @@ export const MARQUE = {
 } as const;
 
 /**
- * La mention qui ne quitte jamais l'écran.
+ * La mention qui dit ce que ce service n'est pas.
  *
- * Elle est affichée en haut de CHAQUE page, sous la barre, et pas seulement
- * en pied. C'est une exigence de fond avant d'être une précaution : en France,
- * la consultation juridique est une activité réglementée (loi du 31 décembre
- * 1971), et ce service donne un avis pratique sans être un cabinet. Quelqu'un
- * qui arrive par un moteur de recherche sur une fiche, lit une réponse et
- * repart n'aura peut-être jamais vu le pied de page.
+ * C'est une exigence de fond avant d'être une précaution : en France, la
+ * consultation juridique est une activité réglementée (loi du 31 décembre
+ * 1971), et ce service donne un avis pratique sans être un cabinet.
+ *
+ * Elle n'est plus posée au-dessus de la marque. Quatre lignes de petit texte
+ * gris avant même le nom du site coûtaient la première impression sans rien
+ * protéger de plus : personne ne lit une décharge qu'on lui tend avant de
+ * s'être présenté. Elle est désormais là où on la lit vraiment — en entier
+ * dans le pied de chaque page, en entier sous chaque fiche de spécialité, et
+ * rappelée en une ligne au-dessus de chaque conversation, c'est-à-dire à
+ * l'endroit exact où quelqu'un pourrait prendre une réponse pour un conseil
+ * d'avocat.
  *
  * Elle est écrite pour être lue, pas pour couvrir : trois choses concrètes
  * qu'il ne fait pas, plutôt qu'une formule juridique que personne ne finit.
@@ -69,6 +75,110 @@ export const ACCUEIL = {
   limitesSous: 'Trois limites, dites avant plutôt qu’après.',
   piedMention:
     'Information juridique, et non consultation d’avocat. Les réponses ne tiennent compte que de ce qui est écrit dans la conversation. En cas de délai en cours, prenez conseil sans attendre : l’ADIL renseigne gratuitement sur le logement, un point-justice reçoit sans condition de ressources.',
+} as const;
+
+/**
+ * Comment ça marche, en trois temps.
+ *
+ * Trois étapes et pas cinq : au-delà, une page d'accueil décrit un logiciel
+ * au lieu de rassurer quelqu'un qui a un problème. Chacune répond à une
+ * objection réelle — « je ne sais pas dans quelle case je tombe », « d'où
+ * sort cette réponse », « et après, je fais quoi ».
+ */
+export const ETAPES: Paragraphe[] = [
+  {
+    amorce: 'Vous racontez.',
+    suite:
+      'En français ordinaire, comme à quelqu’un au téléphone. Rien à choisir, rien à cocher : votre question part sans spécialité, et c’est le service qui la range. Vous pouvez joindre le bail, le compromis ou le procès-verbal — il est lu, jamais conservé.',
+  },
+  {
+    amorce: 'Le bon spécialiste répond.',
+    suite:
+      'Dix périmètres distincts, chacun avec ses textes officiels joints à la question. Il réclame le fait qui manque plutôt que de supposer, et quand la question sort de son domaine, il le dit au lieu de répondre quand même.',
+  },
+  {
+    amorce: 'Vous repartez avec le texte.',
+    suite:
+      'Chaque réponse affiche l’article exact sur lequel elle s’appuie, avec son passage. Et quand il faut écrire — un congé, une mise en demeure, une demande au syndic —, le courrier se rédige ici, aux bonnes mentions, prêt à ouvrir dans un traitement de texte.',
+  },
+];
+
+/**
+ * Le cartouche posé à droite du champ, au moment où l'on hésite à confier
+ * une question juridique à une machine.
+ *
+ * Il ne répète pas les chiffres de la section plus bas : à cet endroit, la
+ * question n'est pas « combien d'articles » mais « est-ce que je peux m'y
+ * fier, et qu'est-ce que ça m'engage ». Trois réponses, dans cet ordre.
+ */
+export const RASSURANCE = {
+  oeil: 'Ce que vous obtenez',
+  points: [
+    'La réponse cite l’article exact, avec son passage, tiré du fonds officiel.',
+    'Le document que vous joignez est lu pendant la réponse, puis oublié. Rien n’en est conservé.',
+    'Aucune inscription, aucune carte bancaire pour poser votre première question.',
+  ],
+  pied: 'Fonds arrêté au',
+} as const;
+
+/** La section qui montre d'où viennent les réponses. */
+export const PREUVE = {
+  oeil: 'Ce sur quoi la réponse s’appuie',
+  titre: 'Le texte officiel, pas la mémoire d’une machine',
+  corps:
+    'Les textes de la spécialité sont joints à chaque question, tirés du fonds LEGI de la Direction de l’information légale et administrative. Quand une réponse cite un article, le numéro et le passage viennent de ce fonds — pas d’un souvenir d’entraînement. C’est la différence entre une référence qu’on peut recopier dans un courrier et une référence qui a l’apparence exacte d’une vraie.',
+  note:
+    'Le fonds est reconstruit depuis l’archive officielle, puis avancé jour par jour jusqu’à sa date d’arrêt. Ce qui n’y est pas — jurisprudence, règlement de copropriété, délibération de votre commune — est nommé sans être numéroté.',
+  labels: {
+    specialites: 'spécialités',
+    textes: 'textes officiels',
+    articles: 'articles joints aux questions',
+    arrete: 'fonds arrêté au',
+  },
+} as const;
+
+/** La section qui montre les courriers. */
+export const VITRINE_DOCUMENTS = {
+  oeil: 'Écrire, pas seulement comprendre',
+  titre: 'Dix-sept courriers, aux mentions qui les rendent valables',
+  corps:
+    'Un congé pour vente auquel il manque le prix et les conditions est nul, et il n’est pas rattrapable : le délai a couru. Chaque modèle affiche ce qui doit y figurer, ce qui l’annule, comment l’envoyer pour que l’envoi se prouve, et le délai qui l’enferme. Vous racontez votre situation, le courrier sort rédigé, et vous l’ouvrez dans Word pour le relire.',
+  action: 'Voir les modèles',
+} as const;
+
+/** Le dernier bloc de l'accueil : ce qu'on demande de faire. */
+export const APPEL = {
+  titre: 'Posez votre question',
+  corps:
+    'Sans inscription, sans carte bancaire. Vous voyez la réponse et ses articles avant de décider si ce service vous sert à quelque chose.',
+  action: 'Commencer',
+  secondaire: 'Voir les formules',
+} as const;
+
+/** Le pied de page, en colonnes. */
+export const PIED = {
+  colonnes: [
+    {
+      titre: 'Le service',
+      liens: [
+        { libelle: 'Poser une question', href: '/' },
+        { libelle: 'Modèles de courriers', href: '/documents' },
+        { libelle: 'Formules et tarifs', href: '/abonnement' },
+      ],
+    },
+    {
+      titre: 'Votre espace',
+      liens: [
+        { libelle: 'Mes consultations', href: '/dossiers' },
+        { libelle: 'Mon compte', href: '/compte' },
+        { libelle: 'Se connecter', href: '/compte/connexion' },
+      ],
+    },
+  ],
+  /** Là où vont ceux pour qui ce service ne suffit pas. Nommés, pas cachés. */
+  recoursTitre: 'Si votre situation dépasse une information',
+  recours:
+    'L’ADIL de votre département renseigne gratuitement sur le logement. Un point-justice reçoit sans condition de ressources. L’aide juridictionnelle peut prendre en charge les honoraires d’un avocat.',
 } as const;
 
 export const LIMITES: Paragraphe[] = [

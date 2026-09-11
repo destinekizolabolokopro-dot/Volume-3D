@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Alerte } from '@/components/Alerte';
 import { Composeur } from '@/components/Composeur';
 import { Fil } from '@/components/Fil';
+import { Mention } from '@/components/Mention';
 import { Question } from '@/components/Question';
 import { useConsultation } from '@/components/useConsultation';
 import { ACCUEIL, ORIENTATION } from '@/lib/copie';
@@ -41,11 +42,19 @@ interface Props {
   exemples: string[];
   connecte: boolean;
   actif: boolean;
+  /**
+   * Le cartouche des chiffres du fonds, posé à droite du champ.
+   *
+   * Il arrive rendu depuis le serveur plutôt que construit ici : les chiffres
+   * sont lus dans l'index du corpus, qui n'a rien à faire dans un composant
+   * client. Absent quand le corpus n'est pas construit.
+   */
+  preuve?: ReactNode;
   /** Ce qui n'a de sens qu'avant la première question : la grille, les limites. */
   children: ReactNode;
 }
 
-export function Assistant({ fiches, exemples, connecte, actif, children }: Props) {
+export function Assistant({ fiches, exemples, connecte, actif, preuve, children }: Props) {
   const {
     tours,
     pending,
@@ -74,44 +83,54 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
   if (!enConversation) {
     return (
       <main className="jur-page jur-accueil">
-        <p className="jur-oeil">{ACCUEIL.oeil}</p>
-        <h1 className="jur-h1">
-          {ACCUEIL.titreLignes.map((ligne) => (
-            <span key={ligne}>{ligne}</span>
-          ))}
-        </h1>
-        <p className="jur-lede">{ACCUEIL.lede}</p>
+        {/* Deux colonnes : ce qu'on demande de faire à gauche, d'où viennent
+            les réponses à droite. Le cartouche disparaît sous 1040 px, où la
+            place manque et où il passerait derrière le champ — les chiffres
+            sont alors repris en pleine section plus bas. */}
+        <div className="jur-haut" id="poser">
+          <div className="jur-haut-colonne">
+            <p className="jur-oeil">{ACCUEIL.oeil}</p>
+            <h1 className="jur-h1">
+              {ACCUEIL.titreLignes.map((ligne) => (
+                <span key={ligne}>{ligne}</span>
+              ))}
+            </h1>
+            <p className="jur-lede">{ACCUEIL.lede}</p>
 
-        <Composeur
-          onEnvoyer={(question, piece) => void demander(question, piece)}
-          pending={pending}
-          actif={actif}
-          connecte={connecte}
-          placeholder={ORIENTATION.placeholder}
-          action="Poser la question"
-          grand
-        />
+            <Composeur
+              onEnvoyer={(question, piece) => void demander(question, piece)}
+              pending={pending}
+              actif={actif}
+              connecte={connecte}
+              placeholder={ORIENTATION.placeholder}
+              action="Poser la question"
+              grand
+            />
 
-        <p className="jur-invite">{ORIENTATION.invite}</p>
+            <p className="jur-invite">{ORIENTATION.invite}</p>
 
-        {erreur && (
-          <div className="jur-erreur-ask">
-            <Alerte message={erreur} quota={quotaAtteint} />
+            {erreur && (
+              <div className="jur-erreur-ask">
+                <Alerte message={erreur} quota={quotaAtteint} />
+              </div>
+            )}
+
+            <div className="jur-suggestions jur-suggestions-accueil">
+              {exemples.map((exemple) => (
+                <button
+                  key={exemple}
+                  type="button"
+                  className="jur-chip"
+                  disabled={!actif || pending}
+                  onClick={() => void demander(exemple)}
+                >
+                  {exemple}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
 
-        <div className="jur-suggestions jur-suggestions-accueil">
-          {exemples.map((exemple) => (
-            <button
-              key={exemple}
-              type="button"
-              className="jur-chip"
-              disabled={!actif || pending}
-              onClick={() => void demander(exemple)}
-            >
-              {exemple}
-            </button>
-          ))}
+          {preuve}
         </div>
 
         {children}
@@ -142,6 +161,11 @@ export function Assistant({ fiches, exemples, connecte, actif, children }: Props
           Nouvelle question
         </button>
       </div>
+
+      {/* Le rappel est ici et nulle part ailleurs dans le fil : au-dessus de
+          la première réponse, là où quelqu'un pourrait la prendre pour un
+          conseil d'avocat. Le texte entier reste en pied de page. */}
+      <Mention forme="rappel" />
 
       {fiche && delaisOuverts && (
         <div className="jur-reperes">

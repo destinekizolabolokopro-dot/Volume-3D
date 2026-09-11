@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Barre } from '@/components/Barre';
+import { Pied } from '@/components/Pied';
 import { compteCourant } from '@/lib/comptes';
 import { consultationsDuCompte } from '@/lib/consultations';
 import { domaineOuNull } from '@/lib/domaines';
@@ -39,6 +40,8 @@ export default async function Dossiers() {
             </a>
           </div>
         </main>
+
+        <Pied />
       </>
     );
   }
@@ -79,6 +82,8 @@ export default async function Dossiers() {
           </ul>
         )}
       </main>
+
+      <Pied />
     </>
   );
 }
