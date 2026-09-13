@@ -1,0 +1,1753 @@
+<title>Immolex</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Spectral:wght@500;600&display=swap">
+
+<style>
+/* ── Les jetons ───────────────────────────────────────────────────────────
+   Neutres CHAUDS et marine profond : ceux du produit, pas ceux d'un tableur.
+   Le thème sombre les redéfinit tous, et rien n'est défini ailleurs qu'ici —
+   une couleur qui n'existe que derrière un [data-theme] ne s'applique jamais
+   à qui laisse son système décider. */
+:root {
+  --papier: #fffdfa;
+  --papier-2: #f5f1ea;
+  --papier-3: #ebe5da;
+  --trait: #ddd5c7;
+  --trait-fort: #b9ae9b;
+  --encre: #211d18;
+  --encre-2: #5d554a;
+  --encre-3: #7d7466;
+  --marine: #173d73;
+  --marine-fort: #102b52;
+  --marine-lavis: #e7edf7;
+  --ambre: #7d4e0d;
+  --ambre-lavis: #f8efdf;
+  --sang: #9d3427;
+  --sang-lavis: #fbeeeb;
+  --ombre: 0 1px 2px rgba(33, 29, 24, 0.04), 0 12px 28px -18px rgba(33, 29, 24, 0.2);
+
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Spectral', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+}
+
+:root:not([data-theme='light']) {
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --papier: #15181d;
+    --papier-2: #1b1f26;
+    --papier-3: #222832;
+    --trait: #313845;
+    --trait-fort: #4a5464;
+    --encre: #e9ecf1;
+    --encre-2: #aab4c2;
+    --encre-3: #8d98a8;
+    --marine: #8ab0e6;
+    --marine-fort: #aecbf3;
+    --marine-lavis: #1c2941;
+    --ambre: #e0b878;
+    --ambre-lavis: #2b2317;
+    --sang: #f09480;
+    --sang-lavis: #2e1d1a;
+    --ombre: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -18px rgba(0, 0, 0, 0.6);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --papier: #15181d;
+  --papier-2: #1b1f26;
+  --papier-3: #222832;
+  --trait: #313845;
+  --trait-fort: #4a5464;
+  --encre: #e9ecf1;
+  --encre-2: #aab4c2;
+  --encre-3: #8d98a8;
+  --marine: #8ab0e6;
+  --marine-fort: #aecbf3;
+  --marine-lavis: #1c2941;
+  --ambre: #e0b878;
+  --ambre-lavis: #2b2317;
+  --sang: #f09480;
+  --sang-lavis: #2e1d1a;
+  --ombre: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -18px rgba(0, 0, 0, 0.6);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ── La barre, collée en haut ─────────────────────────────────────────────
+   Elle porte le nom et le champ de recherche, et rien d'autre. Sur une
+   tablette tenue d'une main, c'est la seule chose qui doit rester joignable. */
+.barre {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--papier);
+  border-bottom: 1px solid var(--trait);
+  padding: 12px max(16px, calc(50vw - 480px));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.marque {
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--encre);
+  flex: none;
+}
+
+.marque span {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--encre-3);
+  margin-left: 8px;
+}
+
+.recherche {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--papier-2);
+  border: 1px solid var(--trait);
+  border-radius: 999px;
+  padding: 0 14px;
+}
+
+.recherche svg { flex: none; color: var(--encre-3); }
+
+.recherche input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 16px;
+  color: var(--encre);
+  /* 44 px : la cible qu'un doigt atteint sans viser. */
+  padding: 11px 0;
+  outline: none;
+}
+
+.recherche input::placeholder { color: var(--encre-3); }
+
+.recherche:focus-within {
+  border-color: var(--marine);
+  box-shadow: 0 0 0 3px var(--marine-lavis);
+}
+
+.vider {
+  flex: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--encre-2);
+  cursor: pointer;
+  padding: 6px 2px;
+}
+
+.vider[hidden] { display: none; }
+
+/* ── Le corps ─────────────────────────────────────────────────────────── */
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 0 64px;
+}
+
+.intro {
+  padding-block: 36px 8px;
+  border-bottom: 1px solid var(--trait);
+  margin-bottom: 36px;
+}
+
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4.2vw, 40px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  text-wrap: balance;
+  max-width: 20ch;
+}
+
+.lede {
+  margin: 0 0 24px;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--encre-2);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+/* Le fonds, en chiffres. Ils viennent de l'index du corpus : le jour où une
+   spécialité gagne un texte, cette ligne le dit sans qu'on y pense. */
+.fonds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+  color: var(--encre-2);
+}
+
+.fonds b {
+  color: var(--marine);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.avis {
+  background: var(--papier-2);
+  border: 1px solid var(--trait);
+  border-left: 3px solid var(--trait-fort);
+  border-radius: 4px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--encre-2);
+  margin: 0 0 8px;
+  max-width: 72ch;
+}
+
+.avis b { color: var(--encre); font-weight: 600; }
+
+section.zone { margin-top: 52px; scroll-margin-top: 80px; }
+
+.oeil {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--encre-3);
+  margin: 0 0 8px;
+}
+
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(22px, 2.8vw, 29px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  margin: 0 0 10px;
+  text-wrap: balance;
+}
+
+.sous {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--encre-2);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+/* ── Les délais ───────────────────────────────────────────────────────────
+   Le seul endroit de la page qui élève la voix, et il le mérite : un délai
+   manqué ne se rattrape pas. Filet ambre à gauche, rien d'autre — un fond
+   plein sur trente entrées ferait un mur. */
+.delais { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+
+.delai {
+  border-left: 3px solid var(--ambre);
+  background: var(--ambre-lavis);
+  padding: 11px 16px;
+}
+
+/* Un peu d'air et un filet au changement de spécialité : les délais d'un même
+   métier se lisent en bloc, et l'œil sait où commence le suivant. */
+.delai-debut {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--trait);
+}
+
+.delais .delai:first-child { margin-top: 0; border-top: 0; }
+
+.delai-ou {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ambre);
+  text-decoration: none;
+  margin-bottom: 4px;
+}
+
+.delai-ou:hover { text-decoration: underline; }
+
+.delai p { margin: 0; font-size: 14.5px; line-height: 1.55; max-width: 78ch; }
+
+/* ── Les fiches et les courriers ─────────────────────────────────────────
+   Dépliables : sur une tablette, dix fiches déroulées font quatre mètres de
+   défilement, et on cherche une chose à la fois. */
+.fiche,
+.courrier {
+  border: 1px solid var(--trait);
+  border-radius: 8px;
+  background: var(--papier);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.fiche[open],
+.courrier[open] { box-shadow: var(--ombre); }
+
+summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 15px 18px;
+  display: grid;
+  gap: 3px;
+  /* 48 px de haut au minimum : c'est une cible tactile, pas un lien. */
+  min-height: 48px;
+  align-content: center;
+}
+
+summary::-webkit-details-marker { display: none; }
+
+summary:hover { background: var(--papier-2); }
+
+summary:focus-visible {
+  outline: 2px solid var(--marine);
+  outline-offset: -2px;
+}
+
+.fiche-nom,
+.courrier-nom {
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--encre);
+}
+
+.fiche[open] .fiche-nom,
+.courrier[open] .courrier-nom { color: var(--marine); }
+
+.fiche-resume,
+.courrier-resume { font-size: 13.5px; line-height: 1.45; color: var(--encre-2); }
+
+.puce-delai {
+  justify-self: start;
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ambre);
+  background: var(--ambre-lavis);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.fiche-corps,
+.courrier-corps {
+  padding: 4px 18px 20px;
+  border-top: 1px solid var(--trait);
+  display: grid;
+  gap: 22px;
+}
+
+.bloc h3,
+.bloc h4 {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--encre-3);
+}
+
+.bloc ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+
+.bloc li {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--encre-2);
+  padding-left: 15px;
+  position: relative;
+  max-width: 80ch;
+}
+
+.bloc li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 7px;
+  height: 1px;
+  background: var(--trait-fort);
+}
+
+.bloc p { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--encre-2); max-width: 80ch; }
+
+/* Les délais dans une fiche gardent leur ambre : même information, même
+   couleur, où qu'elle soit. */
+.bloc-delai h3 { color: var(--ambre); }
+.bloc-delai li::before { background: var(--ambre); width: 9px; height: 2px; }
+
+.bloc-piege h4 { color: var(--sang); }
+.bloc-piege li::before { background: var(--sang); width: 9px; height: 2px; }
+
+.renvois li { padding-left: 15px; }
+.renvois a { color: var(--marine); }
+
+a { color: var(--marine); }
+
+.pour-qui {
+  margin: 0;
+  font-size: 14px;
+  color: var(--encre-3);
+  font-style: italic;
+}
+
+.famille { margin-bottom: 32px; }
+
+.famille-nom {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--encre);
+  letter-spacing: -0.01em;
+}
+
+.famille-resume { margin: 0 0 14px; font-size: 14px; color: var(--encre-2); }
+
+/* ── Le tableau des diagnostics ─────────────────────────────────────────── */
+
+.tableau {
+  overflow-x: auto;
+  border: 1px solid var(--trait);
+  border-radius: 8px;
+  background: var(--papier);
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 620px; }
+
+thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--encre-3);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--trait);
+  background: var(--papier-2);
+}
+
+tbody th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--encre);
+  padding: 13px 16px;
+  vertical-align: top;
+  width: 30%;
+}
+
+tbody td { padding: 13px 16px; color: var(--encre-2); vertical-align: top; line-height: 1.5; }
+
+tbody tr + tr th,
+tbody tr + tr td { border-top: 1px solid var(--trait); }
+
+.validite { color: var(--encre); font-variant-numeric: tabular-nums; }
+
+.calendrier { margin: 22px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+
+.calendrier li {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--encre-2);
+  padding-left: 15px;
+  position: relative;
+}
+
+.calendrier li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 9px;
+  height: 2px;
+  background: var(--marine);
+}
+
+/* ── Ce que la recherche ne trouve pas ─────────────────────────────────── */
+
+.rien {
+  margin-top: 40px;
+  padding: 28px 20px;
+  border: 1px dashed var(--trait-fort);
+  border-radius: 8px;
+  text-align: center;
+  color: var(--encre-2);
+  font-size: 15px;
+}
+
+.rien[hidden] { display: none; }
+
+[hidden] { display: none !important; }
+
+/* ── Le pied ─────────────────────────────────────────────────────────── */
+
+footer {
+  margin-top: 64px;
+  border-top: 1px solid var(--trait);
+  padding-top: 28px;
+  display: grid;
+  gap: 20px;
+}
+
+footer h3 {
+  margin: 0 0 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--encre-3);
+}
+
+footer p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--encre-2); max-width: 80ch; }
+
+footer .mention b { color: var(--encre); font-weight: 600; }
+
+.provenance { color: var(--encre-3); font-size: 12.5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
+
+<header class="barre">
+  <div class="marque">Immolex<span>aide-mémoire hors ligne</span></div>
+
+  <label class="recherche">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+      <circle cx="7" cy="7" r="4.5"></circle>
+      <path d="M10.5 10.5L14 14" stroke-linecap="round"></path>
+    </svg>
+    <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Chercher</span>
+    <input id="q" type="search" placeholder="amiante, congé, dépôt de garantie, syndic…" autocomplete="off" spellcheck="false">
+    <button class="vider" id="vider" type="button" hidden>Effacer</button>
+  </label>
+</header>
+
+<main class="page">
+  <div class="intro">
+    <h1>Ce qu’il ne faut pas rater, quand on ne peut pas vérifier</h1>
+    <p class="lede">
+      Les délais qui ne se rattrapent pas, ce qu’il faut réunir avant d’agir, les diagnostics et
+      leurs durées, et les dix-sept courriers avec les mentions sans lesquelles ils sont nuls.
+      Tout tient dans cette page, et elle fonctionne sans réseau.
+    </p>
+
+    <ul class="fonds">
+      <li><b>10</b> spécialités</li>
+      <li><b>15</b> textes officiels</li>
+      <li><b>2 133</b> articles au fonds</li>
+      <li>arrêté au <b>8 septembre 2026</b></li>
+    </ul>
+
+    <p class="avis">
+      <b>Cette page ne répond à aucune question.</b> Il n’y a pas de modèle derrière un fichier :
+      elle ne contient que ce que Immolex sait sans en consulter un — des délais, des
+      listes, des mentions obligatoires. Pour poser une question et recevoir une réponse qui cite
+      l’article, il faut le site.
+    </p>
+  </div>
+
+  <section class="zone" id="delais">
+    <span class="oeil">Le plus urgent</span>
+    <h2>Les délais qui ne se rattrapent pas</h2>
+    <p class="sous">
+      47 délais, rassemblés des dix spécialités. Un congé tardif d’un seul
+      jour ne vaut rien ; une révision de loyer oubliée est perdue pour l’année. C’est la seule
+      partie de ce métier où le retard ne se corrige pas.
+    </p>
+    <ul class="delais">
+      <li class="delai delai-debut" data-cherche="conge donne par le bailleur : six mois avant l’echeance du bail pour un logement vide, trois mois pour un meuble. un conge tardif d’un seul jour ne vaut rien et le bail se reconduit pour trois ans. bail d’habitation">
+        <a class="delai-ou" href="#f-bail-habitation">Bail d’habitation</a>
+        <p>Congé donné par le bailleur : six mois avant l’échéance du bail pour un logement vide, trois mois pour un meublé. Un congé tardif d’un seul jour ne vaut rien et le bail se reconduit pour trois ans.</p>
+      </li>
+      <li class="delai" data-cherche="restitution du depot de garantie : un mois apres la remise des cles si l’etat des lieux de sortie est conforme a celui d’entree, deux mois sinon. au-dela, la somme due augmente chaque mois de retard. bail d’habitation">
+        
+        <p>Restitution du dépôt de garantie : un mois après la remise des clés si l’état des lieux de sortie est conforme à celui d’entrée, deux mois sinon. Au-delà, la somme due augmente chaque mois de retard.</p>
+      </li>
+      <li class="delai" data-cherche="revision annuelle du loyer : elle doit etre demandee dans l’annee qui suit la date convenue, sinon elle est perdue pour cette annee-la — elle ne se rattrape pas retroactivement. bail d’habitation">
+        
+        <p>Révision annuelle du loyer : elle doit être demandée dans l’année qui suit la date convenue, sinon elle est perdue pour cette année-là — elle ne se rattrape pas rétroactivement.</p>
+      </li>
+      <li class="delai" data-cherche="regularisation des charges : trois ans en arriere, pas davantage, et la meme limite vaut pour le locataire qui reclame un trop-verse. bail d’habitation">
+        
+        <p>Régularisation des charges : trois ans en arrière, pas davantage, et la même limite vaut pour le locataire qui réclame un trop-versé.</p>
+      </li>
+      <li class="delai" data-cherche="impayes : apres un commandement de payer delivre par commissaire de justice, le locataire dispose d’un delai — six semaines depuis la loi de 2023 — pour regler avant que la clause resolutoire puisse jouer. bail d’habitation">
+        
+        <p>Impayés : après un commandement de payer délivré par commissaire de justice, le locataire dispose d’un délai — six semaines depuis la loi de 2023 — pour régler avant que la clause résolutoire puisse jouer.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="la declaration en mairie et le numero d’enregistrement s’obtiennent avant la premiere mise en ligne, dans les communes qui les ont instaures. louer sans numero expose a une amende civile qui se compte en dizaines de milliers d’euros par logement. location courte duree">
+        <a class="delai-ou" href="#f-courte-duree">Location courte durée</a>
+        <p>La déclaration en mairie et le numéro d’enregistrement s’obtiennent AVANT la première mise en ligne, dans les communes qui les ont instaurés. Louer sans numéro expose à une amende civile qui se compte en dizaines de milliers d’euros par logement.</p>
+      </li>
+      <li class="delai" data-cherche="residence principale : la location est plafonnee a cent vingt jours par an. au-dela, le logement n’est plus une residence principale au sens de la regle, et une autorisation de changement d’usage devient necessaire. location courte duree">
+        
+        <p>Résidence principale : la location est plafonnée à cent vingt jours par an. Au-delà, le logement n’est plus une résidence principale au sens de la règle, et une autorisation de changement d’usage devient nécessaire.</p>
+      </li>
+      <li class="delai" data-cherche="taxe de sejour : elle se reverse a la periodicite fixee par la commune — souvent deux fois par an. le retard porte interet, et la plateforme qui l’a collectee ne vous en decharge pas toujours. location courte duree">
+        
+        <p>Taxe de séjour : elle se reverse à la périodicité fixée par la commune — souvent deux fois par an. Le retard porte intérêt, et la plateforme qui l’a collectée ne vous en décharge pas toujours.</p>
+      </li>
+      <li class="delai" data-cherche="contester une decision d’assemblee generale interdisant la location : deux mois a compter de la notification du proces-verbal, et seulement si vous etiez opposant ou absent. location courte duree">
+        
+        <p>Contester une décision d’assemblée générale interdisant la location : deux mois à compter de la notification du procès-verbal, et seulement si vous étiez opposant ou absent.</p>
+      </li>
+      <li class="delai" data-cherche="degradation par un voyageur : les plateformes enferment la reclamation dans un delai tres court, souvent avant l’arrivee du voyageur suivant. c’est un delai contractuel et non legal, mais il s’applique quand meme — les photos se prennent le jour du depart. location courte duree">
+        
+        <p>Dégradation par un voyageur : les plateformes enferment la réclamation dans un délai très court, souvent avant l’arrivée du voyageur suivant. C’est un délai contractuel et non légal, mais il s’applique quand même — les photos se prennent le jour du départ.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="contester une decision d’assemblee generale : deux mois a compter de la notification du proces-verbal. ce delai est applique avec une rigueur absolue, et il n’est ouvert qu’aux coproprietaires opposants ou absents — celui qui a vote pour ne peut plus revenir dessus. copropriete">
+        <a class="delai-ou" href="#f-copropriete">Copropriété</a>
+        <p>Contester une décision d’assemblée générale : deux mois à compter de la notification du procès-verbal. Ce délai est appliqué avec une rigueur absolue, et il n’est ouvert qu’aux copropriétaires opposants ou absents — celui qui a voté pour ne peut plus revenir dessus.</p>
+      </li>
+      <li class="delai" data-cherche="convocation a l’assemblee : vingt et un jours au moins avant la seance, avec les documents joints. une convocation tardive ou incomplete est une cause de nullite, a soulever dans les deux mois du proces-verbal. copropriete">
+        
+        <p>Convocation à l’assemblée : vingt et un jours au moins avant la séance, avec les documents joints. Une convocation tardive ou incomplète est une cause de nullité, à soulever dans les deux mois du procès-verbal.</p>
+      </li>
+      <li class="delai" data-cherche="demande d’inscription d’une resolution a l’ordre du jour : elle doit parvenir au syndic assez tot pour figurer dans la convocation — en pratique, des la cloture de l’assemblee precedente. copropriete">
+        
+        <p>Demande d’inscription d’une résolution à l’ordre du jour : elle doit parvenir au syndic assez tôt pour figurer dans la convocation — en pratique, dès la clôture de l’assemblée précédente.</p>
+      </li>
+      <li class="delai" data-cherche="charges impayees : le syndicat peut les reclamer cinq ans en arriere, et le coproprietaire dispose du meme delai pour contester une repartition erronee. copropriete">
+        
+        <p>Charges impayées : le syndicat peut les réclamer cinq ans en arrière, et le copropriétaire dispose du même délai pour contester une répartition erronée.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="retractation de l’acquereur non professionnel : dix jours a compter du lendemain de la notification du compromis signe. le vendeur, lui, n’a aucun delai de retractation — il est engage des la signature. achat et vente">
+        <a class="delai-ou" href="#f-achat-vente">Achat et vente</a>
+        <p>Rétractation de l’acquéreur non professionnel : dix jours à compter du lendemain de la notification du compromis signé. Le vendeur, lui, n’a aucun délai de rétractation — il est engagé dès la signature.</p>
+      </li>
+      <li class="delai" data-cherche="condition suspensive de pret : le delai est fixe au contrat, jamais inferieur a un mois. passe ce terme sans refus notifie, l’acquereur perd le benefice de la condition et risque la clause penale. achat et vente">
+        
+        <p>Condition suspensive de prêt : le délai est fixé au contrat, jamais inférieur à un mois. Passé ce terme sans refus notifié, l’acquéreur perd le bénéfice de la condition et risque la clause pénale.</p>
+      </li>
+      <li class="delai" data-cherche="vice cache : deux ans a compter de la decouverte du defaut, sans pouvoir depasser vingt ans depuis la vente. le delai court de la decouverte, pas de l’achat — mais il faut pouvoir dater cette decouverte. achat et vente">
+        
+        <p>Vice caché : deux ans à compter de la découverte du défaut, sans pouvoir dépasser vingt ans depuis la vente. Le délai court de la découverte, pas de l’achat — mais il faut pouvoir dater cette découverte.</p>
+      </li>
+      <li class="delai" data-cherche="droit de preemption de la commune : deux mois pour repondre a la declaration d’intention d’aliener adressee par le notaire ; le silence vaut renonciation. achat et vente">
+        
+        <p>Droit de préemption de la commune : deux mois pour répondre à la déclaration d’intention d’aliéner adressée par le notaire ; le silence vaut renonciation.</p>
+      </li>
+      <li class="delai" data-cherche="vente d’un logement loue vide : le conge pour vente vaut offre au locataire et se donne six mois avant l’echeance du bail, avec un droit de preemption ouvert deux mois. achat et vente">
+        
+        <p>Vente d’un logement loué vide : le congé pour vente vaut offre au locataire et se donne six mois avant l’échéance du bail, avec un droit de préemption ouvert deux mois.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="garantie decennale : dix ans a compter de la reception des travaux, pour tout desordre qui compromet la solidite ou rend le bien impropre a sa destination. sans reception, aucune garantie ne court — c’est l’acte le plus important du chantier, et le plus souvent neglige. travaux et malfacons">
+        <a class="delai-ou" href="#f-travaux">Travaux et malfaçons</a>
+        <p>Garantie décennale : dix ans à compter de la réception des travaux, pour tout désordre qui compromet la solidité ou rend le bien impropre à sa destination. Sans réception, aucune garantie ne court — c’est l’acte le plus important du chantier, et le plus souvent négligé.</p>
+      </li>
+      <li class="delai" data-cherche="garantie de parfait achevement : un an apres la reception, pour tous les desordres signales, reserves comprises. c’est la seule qui couvre les defauts esthetiques. travaux et malfacons">
+        
+        <p>Garantie de parfait achèvement : un an après la réception, pour tous les désordres signalés, réserves comprises. C’est la seule qui couvre les défauts esthétiques.</p>
+      </li>
+      <li class="delai" data-cherche="garantie de bon fonctionnement : deux ans, pour les elements d’equipement dissociables — volets, chaudiere, robinetterie. travaux et malfacons">
+        
+        <p>Garantie de bon fonctionnement : deux ans, pour les éléments d’équipement dissociables — volets, chaudière, robinetterie.</p>
+      </li>
+      <li class="delai" data-cherche="assurance dommages-ouvrage : elle se souscrit avant l’ouverture du chantier. une fois le sinistre declare, l’assureur a soixante jours pour se prononcer et quatre-vingt-dix pour proposer une indemnite. travaux et malfacons">
+        
+        <p>Assurance dommages-ouvrage : elle se souscrit AVANT l’ouverture du chantier. Une fois le sinistre déclaré, l’assureur a soixante jours pour se prononcer et quatre-vingt-dix pour proposer une indemnité.</p>
+      </li>
+      <li class="delai" data-cherche="les reserves se consignent au proces-verbal de reception le jour meme : ce qui n’y figure pas est repute accepte, sauf vice cache. travaux et malfacons">
+        
+        <p>Les réserves se consignent au procès-verbal de réception le jour même : ce qui n’y figure pas est réputé accepté, sauf vice caché.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="recours d’un tiers contre un permis : deux mois a compter du premier jour d’un affichage regulier et continu sur le terrain. un panneau mal pose ou retire trop tot rouvre le delai pendant six mois apres l’achevement — photographiez le panneau, date, des le premier jour. urbanisme et autorisations">
+        <a class="delai-ou" href="#f-urbanisme">Urbanisme et autorisations</a>
+        <p>Recours d’un tiers contre un permis : deux mois à compter du premier jour d’un affichage régulier et continu sur le terrain. Un panneau mal posé ou retiré trop tôt rouvre le délai pendant six mois après l’achèvement — photographiez le panneau, daté, dès le premier jour.</p>
+      </li>
+      <li class="delai" data-cherche="recours contre un refus de permis : deux mois a compter de la notification. un recours gracieux forme dans ce delai le proroge, et le compteur repart a la reponse ou au silence garde pendant deux mois. urbanisme et autorisations">
+        
+        <p>Recours contre un refus de permis : deux mois à compter de la notification. Un recours gracieux formé dans ce délai le proroge, et le compteur repart à la réponse ou au silence gardé pendant deux mois.</p>
+      </li>
+      <li class="delai" data-cherche="retrait d’un permis par la mairie elle-meme : trois mois apres sa delivrance, pas au-dela. urbanisme et autorisations">
+        
+        <p>Retrait d’un permis par la mairie elle-même : trois mois après sa délivrance, pas au-delà.</p>
+      </li>
+      <li class="delai" data-cherche="validite du permis : trois ans pour ouvrir le chantier, prorogeable deux fois un an sur demande deposee avant l’expiration. urbanisme et autorisations">
+        
+        <p>Validité du permis : trois ans pour ouvrir le chantier, prorogeable deux fois un an sur demande déposée avant l’expiration.</p>
+      </li>
+      <li class="delai" data-cherche="apres la declaration d’achevement, la mairie a trois mois pour contester la conformite — cinq mois en secteur protege. urbanisme et autorisations">
+        
+        <p>Après la déclaration d’achèvement, la mairie a trois mois pour contester la conformité — cinq mois en secteur protégé.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="trouble anormal de voisinage : cinq ans pour agir, a compter du jour ou le trouble a ete connu. un trouble qui se repete fait courir un nouveau delai a chaque fois. voisinage et limites">
+        <a class="delai-ou" href="#f-voisinage">Voisinage et limites</a>
+        <p>Trouble anormal de voisinage : cinq ans pour agir, à compter du jour où le trouble a été connu. Un trouble qui se répète fait courir un nouveau délai à chaque fois.</p>
+      </li>
+      <li class="delai" data-cherche="bornage et actions portant sur la propriete elle-meme : trente ans. c’est aussi le delai au terme duquel une occupation prolongee peut faire acquerir un droit — un empietement tolere trop longtemps devient difficile a faire cesser. voisinage et limites">
+        
+        <p>Bornage et actions portant sur la propriété elle-même : trente ans. C’est aussi le délai au terme duquel une occupation prolongée peut faire acquérir un droit — un empiètement toléré trop longtemps devient difficile à faire cesser.</p>
+      </li>
+      <li class="delai" data-cherche="servitude de passage : elle s’acquiert par trente ans d’usage continu et apparent, ou par titre. laisser passer sans rien ecrire pendant des annees n’est jamais neutre. voisinage et limites">
+        
+        <p>Servitude de passage : elle s’acquiert par trente ans d’usage continu et apparent, ou par titre. Laisser passer sans rien écrire pendant des années n’est jamais neutre.</p>
+      </li>
+      <li class="delai" data-cherche="avant toute action en justice pour un litige de voisinage de faible montant, une tentative de conciliation ou de mediation est obligatoire : sans elle, la demande est declaree irrecevable. voisinage et limites">
+        
+        <p>Avant toute action en justice pour un litige de voisinage de faible montant, une tentative de conciliation ou de médiation est obligatoire : sans elle, la demande est déclarée irrecevable.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="reclamation contre un impot : jusqu’au 31 decembre de la deuxieme annee suivant la mise en recouvrement ou le versement. le sursis de paiement doit etre demande dans la reclamation : demande apres, il ne suspend plus rien. fiscalite du bien">
+        <a class="delai-ou" href="#f-fiscalite">Fiscalité du bien</a>
+        <p>Réclamation contre un impôt : jusqu’au 31 décembre de la deuxième année suivant la mise en recouvrement ou le versement. Le sursis de paiement doit être demandé DANS la réclamation : demandé après, il ne suspend plus rien.</p>
+      </li>
+      <li class="delai" data-cherche="repondre a une proposition de rectification : trente jours, prorogeables trente jours sur simple demande. le silence vaut acceptation du redressement. fiscalite du bien">
+        
+        <p>Répondre à une proposition de rectification : trente jours, prorogeables trente jours sur simple demande. Le silence vaut acceptation du redressement.</p>
+      </li>
+      <li class="delai" data-cherche="option pour le regime reel : elle s’exerce avant la date limite de declaration et engage pour l’annee — trois ans en revenus fonciers, avec reconduction tacite. fiscalite du bien">
+        
+        <p>Option pour le régime réel : elle s’exerce avant la date limite de déclaration et engage pour l’année — trois ans en revenus fonciers, avec reconduction tacite.</p>
+      </li>
+      <li class="delai" data-cherche="debut d’une activite de location meublee : la declaration aupres du guichet unique se fait dans les quinze jours, faute de quoi le numero siret manque au moment de declarer. fiscalite du bien">
+        
+        <p>Début d’une activité de location meublée : la déclaration auprès du guichet unique se fait dans les quinze jours, faute de quoi le numéro SIRET manque au moment de déclarer.</p>
+      </li>
+      <li class="delai" data-cherche="droit de reprise de l’administration : trois ans en principe, bien davantage en cas d’activite occulte ou de revenus non declares. fiscalite du bien">
+        
+        <p>Droit de reprise de l’administration : trois ans en principe, bien davantage en cas d’activité occulte ou de revenus non déclarés.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="prescription en assurance : deux ans a compter de l’evenement qui donne naissance a l’action. c’est le delai le plus court et le plus meconnu du droit immobilier — passe deux ans, un refus d’indemnisation ne se conteste plus. sinistres et assurances">
+        <a class="delai-ou" href="#f-sinistres">Sinistres et assurances</a>
+        <p>Prescription en assurance : deux ans à compter de l’événement qui donne naissance à l’action. C’est le délai le plus court et le plus méconnu du droit immobilier — passé deux ans, un refus d’indemnisation ne se conteste plus.</p>
+      </li>
+      <li class="delai" data-cherche="declarer un sinistre : cinq jours ouvres en principe, deux jours ouvres pour un vol, dix jours apres la publication de l’arrete pour une catastrophe naturelle. sinistres et assurances">
+        
+        <p>Déclarer un sinistre : cinq jours ouvrés en principe, deux jours ouvrés pour un vol, dix jours après la publication de l’arrêté pour une catastrophe naturelle.</p>
+      </li>
+      <li class="delai" data-cherche="degat des eaux courant : la convention entre assureurs organise la prise en charge sous des plafonds precis ; au-dela, chacun reprend ses recours, et l’expertise devient contradictoire. sinistres et assurances">
+        
+        <p>Dégât des eaux courant : la convention entre assureurs organise la prise en charge sous des plafonds précis ; au-delà, chacun reprend ses recours, et l’expertise devient contradictoire.</p>
+      </li>
+      <li class="delai" data-cherche="contre-expertise : elle se demande avant d’accepter l’indemnite proposee. un accord signe sur un montant se defait tres difficilement. sinistres et assurances">
+        
+        <p>Contre-expertise : elle se demande avant d’accepter l’indemnité proposée. Un accord signé sur un montant se défait très difficilement.</p>
+      </li>
+      <li class="delai delai-debut" data-cherche="le mandat doit etre ecrit, date, numerote au registre des mandats et remis en double exemplaire. un mandat non conforme est nul et la commission n’est pas due : c’est la premiere chose qu’un juge verifie, avant meme de lire le dossier. metier de l’agent immobilier">
+        <a class="delai-ou" href="#f-profession">Métier de l’agent immobilier</a>
+        <p>Le mandat doit être écrit, daté, numéroté au registre des mandats et remis en double exemplaire. Un mandat non conforme est nul et la commission n’est pas due : c’est la première chose qu’un juge vérifie, avant même de lire le dossier.</p>
+      </li>
+      <li class="delai" data-cherche="mandat exclusif : passe trois mois, le client peut le denoncer a tout moment par lettre recommandee, avec quinze jours de preavis. metier de l’agent immobilier">
+        
+        <p>Mandat exclusif : passé trois mois, le client peut le dénoncer à tout moment par lettre recommandée, avec quinze jours de préavis.</p>
+      </li>
+      <li class="delai" data-cherche="mandat signe ailleurs qu’a l’agence, au domicile du client ou a distance : quatorze jours de retractation, et aucune prestation ne peut etre facturee si elle a commence avant la fin du delai sans demande ecrite. metier de l’agent immobilier">
+        
+        <p>Mandat signé ailleurs qu’à l’agence, au domicile du client ou à distance : quatorze jours de rétractation, et aucune prestation ne peut être facturée si elle a commencé avant la fin du délai sans demande écrite.</p>
+      </li>
+      <li class="delai" data-cherche="la commission n’est exigible qu’a la signature de l’acte authentique. aucune somme, sous aucune forme, ne peut etre percue avant — pas meme une provision. metier de l’agent immobilier">
+        
+        <p>La commission n’est exigible qu’à la signature de l’acte authentique. Aucune somme, sous aucune forme, ne peut être perçue avant — pas même une provision.</p>
+      </li>
+      <li class="delai" data-cherche="formation continue : quatorze heures par an, ou quarante-deux heures sur trois ans. c’est la condition du renouvellement de la carte professionnelle, qui dure trois ans. metier de l’agent immobilier">
+        
+        <p>Formation continue : quatorze heures par an, ou quarante-deux heures sur trois ans. C’est la condition du renouvellement de la carte professionnelle, qui dure trois ans.</p>
+      </li></ul>
+  </section>
+
+  <section class="zone" id="fiches">
+    <span class="oeil">Par spécialité</span>
+    <h2>Les dix périmètres</h2>
+    <p class="sous">
+      Ce que chacun traite, ce qu’il ne traite pas, ce qu’il faut avoir en main avant d’agir, et
+      les textes sur lesquels il s’appuie.
+    </p>
+    
+    <details class="fiche" id="f-bail-habitation" data-cherche="bail d’habitation louer a l’annee, vide ou meuble : loyer, conge, depot, impayes. redaction et contenu du bail : duree, clauses, annexes obligatoires loyer : fixation, revision annuelle, encadrement dans les zones concernees charges : provisions, regularisation annuelle, ce qui est recuperable depot de garantie, etat des lieux d’entree et de sortie, reparations locatives conge donne par le bailleur : reprise, vente, motif legitime et serieux impayes : relance, commandement de payer, clause resolutoire, expulsion garant, caution solidaire, assurance loyers impayes, colocation obligations du bailleur : logement decent, entretien, travaux a sa charge conge donne par le bailleur : six mois avant l’echeance du bail pour un logement vide, trois mois pour un meuble. un conge tardif d’un seul jour ne vaut rien et le bail se reconduit pour trois ans. restitution du depot de garantie : un mois apres la remise des cles si l’etat des lieux de sortie est conforme a celui d’entree, deux mois sinon. au-dela, la somme due augmente chaque mois de retard. revision annuelle du loyer : elle doit etre demandee dans l’annee qui suit la date convenue, sinon elle est perdue pour cette annee-la — elle ne se rattrape pas retroactivement. regularisation des charges : trois ans en arriere, pas davantage, et la meme limite vaut pour le locataire qui reclame un trop-verse. impayes : apres un commandement de payer delivre par commissaire de justice, le locataire dispose d’un delai — six semaines depuis la loi de 2023 — pour regler avant que la clause resolutoire puisse jouer. le bail ecrit avec la notice d’information annexee, et l’etat des lieux dresse le meme jour en double exemplaire le dossier de diagnostics a jour : dpe, etat des risques, plomb, gaz, electricite selon le bien la surface habitable au sens de la loi boutin, portee au bail le depot de garantie : un mois de loyer hors charges pour un vide, deux au plus pour un meuble en zone d’encadrement : le loyer de reference majore, et le complement de loyer justifie par ecrit pour un meuble : l’inventaire du mobilier, et la liste des equipements exiges la loi du 6 juillet 1989 sur les rapports locatifs le decret sur les charges recuperables et celui sur les reparations locatives le code civil, pour le louage et la responsabilite le code des procedures civiles d’execution, pour l’expulsion">
+      <summary>
+        <span class="fiche-nom">Bail d’habitation</span>
+        <span class="fiche-resume">Louer à l’année, vide ou meublé : loyer, congé, dépôt, impayés.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Congé donné par le bailleur : six mois avant l’échéance du bail pour un logement vide, trois mois pour un meublé. Un congé tardif d’un seul jour ne vaut rien et le bail se reconduit pour trois ans.</li><li>Restitution du dépôt de garantie : un mois après la remise des clés si l’état des lieux de sortie est conforme à celui d’entrée, deux mois sinon. Au-delà, la somme due augmente chaque mois de retard.</li><li>Révision annuelle du loyer : elle doit être demandée dans l’année qui suit la date convenue, sinon elle est perdue pour cette année-là — elle ne se rattrape pas rétroactivement.</li><li>Régularisation des charges : trois ans en arrière, pas davantage, et la même limite vaut pour le locataire qui réclame un trop-versé.</li><li>Impayés : après un commandement de payer délivré par commissaire de justice, le locataire dispose d’un délai — six semaines depuis la loi de 2023 — pour régler avant que la clause résolutoire puisse jouer.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>le bail écrit avec la notice d’information annexée, et l’état des lieux dressé le même jour en double exemplaire</li><li>le dossier de diagnostics à jour : DPE, état des risques, plomb, gaz, électricité selon le bien</li><li>la surface habitable au sens de la loi Boutin, portée au bail</li><li>le dépôt de garantie : un mois de loyer hors charges pour un vide, deux au plus pour un meublé</li><li>en zone d’encadrement : le loyer de référence majoré, et le complément de loyer justifié par écrit</li><li>pour un meublé : l’inventaire du mobilier, et la liste des équipements exigés</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>rédaction et contenu du bail : durée, clauses, annexes obligatoires</li><li>loyer : fixation, révision annuelle, encadrement dans les zones concernées</li><li>charges : provisions, régularisation annuelle, ce qui est récupérable</li><li>dépôt de garantie, état des lieux d’entrée et de sortie, réparations locatives</li><li>congé donné par le bailleur : reprise, vente, motif légitime et sérieux</li><li>impayés : relance, commandement de payer, clause résolutoire, expulsion</li><li>garant, caution solidaire, assurance loyers impayés, colocation</li><li>obligations du bailleur : logement décent, entretien, travaux à sa charge</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>une location à la nuit ou à la semaine, un meublé de tourisme — <a href="#f-courte-duree">Location courte durée</a></li><li>les charges votées en assemblée générale de l’immeuble — <a href="#f-copropriete">Copropriété</a></li><li>l’imposition des loyers encaissés — <a href="#f-fiscalite">Fiscalité du bien</a></li><li>un dégât des eaux ou un sinistre à faire indemniser — <a href="#f-sinistres">Sinistres et assurances</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>la loi du 6 juillet 1989 sur les rapports locatifs</li><li>le décret sur les charges récupérables et celui sur les réparations locatives</li><li>le code civil, pour le louage et la responsabilité</li><li>le code des procédures civiles d’exécution, pour l’expulsion</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-courte-duree" data-cherche="location courte duree airbnb et meubles de tourisme : declaration, quotas, taxe, litiges. declaration en mairie et numero d’enregistrement, selon la commune changement d’usage, autorisation, compensation dans les villes concernees limite annuelle de location d’une residence principale taxe de sejour : collecte, reversement, part de la plateforme ce que le reglement de copropriete autorise ou interdit relations avec les plateformes : annulation, blocage de compte, commissions litiges voyageurs : degradations, depot de garantie, avis, nuisances obligations d’information, contrat de location saisonniere, assurance mandat de conciergerie et gestion deleguee la declaration en mairie et le numero d’enregistrement s’obtiennent avant la premiere mise en ligne, dans les communes qui les ont instaures. louer sans numero expose a une amende civile qui se compte en dizaines de milliers d’euros par logement. residence principale : la location est plafonnee a cent vingt jours par an. au-dela, le logement n’est plus une residence principale au sens de la regle, et une autorisation de changement d’usage devient necessaire. taxe de sejour : elle se reverse a la periodicite fixee par la commune — souvent deux fois par an. le retard porte interet, et la plateforme qui l’a collectee ne vous en decharge pas toujours. contester une decision d’assemblee generale interdisant la location : deux mois a compter de la notification du proces-verbal, et seulement si vous etiez opposant ou absent. degradation par un voyageur : les plateformes enferment la reclamation dans un delai tres court, souvent avant l’arrivee du voyageur suivant. c’est un delai contractuel et non legal, mais il s’applique quand meme — les photos se prennent le jour du depart. le numero d’enregistrement affiche sur chaque annonce, dans les communes qui l’imposent ce que dit le reglement de copropriete : clause d’habitation bourgeoise, interdiction d’activite commerciale la declaration en mairie, et l’autorisation de changement d’usage si le bien n’est pas votre residence principale le classement du meuble de tourisme : il change l’abattement fiscal et la taxe de sejour l’assurance : la garantie « location saisonniere » ne figure pas dans un contrat d’habitation ordinaire un etat des lieux photographique date a chaque depart, pris avant l’arrivee suivante le code du tourisme et le code de la construction et de l’habitation la loi du 19 novembre 2024 sur les meubles de tourisme la deliberation de votre commune : c’est elle qui fixe l’enregistrement, la compensation et la taxe de sejour le reglement de copropriete de l’immeuble">
+      <summary>
+        <span class="fiche-nom">Location courte durée</span>
+        <span class="fiche-resume">Airbnb et meublés de tourisme : déclaration, quotas, taxe, litiges.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>La déclaration en mairie et le numéro d’enregistrement s’obtiennent AVANT la première mise en ligne, dans les communes qui les ont instaurés. Louer sans numéro expose à une amende civile qui se compte en dizaines de milliers d’euros par logement.</li><li>Résidence principale : la location est plafonnée à cent vingt jours par an. Au-delà, le logement n’est plus une résidence principale au sens de la règle, et une autorisation de changement d’usage devient nécessaire.</li><li>Taxe de séjour : elle se reverse à la périodicité fixée par la commune — souvent deux fois par an. Le retard porte intérêt, et la plateforme qui l’a collectée ne vous en décharge pas toujours.</li><li>Contester une décision d’assemblée générale interdisant la location : deux mois à compter de la notification du procès-verbal, et seulement si vous étiez opposant ou absent.</li><li>Dégradation par un voyageur : les plateformes enferment la réclamation dans un délai très court, souvent avant l’arrivée du voyageur suivant. C’est un délai contractuel et non légal, mais il s’applique quand même — les photos se prennent le jour du départ.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>le numéro d’enregistrement affiché sur chaque annonce, dans les communes qui l’imposent</li><li>ce que dit le règlement de copropriété : clause d’habitation bourgeoise, interdiction d’activité commerciale</li><li>la déclaration en mairie, et l’autorisation de changement d’usage si le bien n’est pas votre résidence principale</li><li>le classement du meublé de tourisme : il change l’abattement fiscal et la taxe de séjour</li><li>l’assurance : la garantie « location saisonnière » ne figure pas dans un contrat d’habitation ordinaire</li><li>un état des lieux photographique daté à chaque départ, pris avant l’arrivée suivante</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>déclaration en mairie et numéro d’enregistrement, selon la commune</li><li>changement d’usage, autorisation, compensation dans les villes concernées</li><li>limite annuelle de location d’une résidence principale</li><li>taxe de séjour : collecte, reversement, part de la plateforme</li><li>ce que le règlement de copropriété autorise ou interdit</li><li>relations avec les plateformes : annulation, blocage de compte, commissions</li><li>litiges voyageurs : dégradations, dépôt de garantie, avis, nuisances</li><li>obligations d’information, contrat de location saisonnière, assurance</li><li>mandat de conciergerie et gestion déléguée</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>une location à l’année, vide ou meublée — <a href="#f-bail-habitation">Bail d’habitation</a></li><li>une décision d’assemblée générale qui veut interdire la location — <a href="#f-copropriete">Copropriété</a></li><li>le régime LMNP, le micro-BIC ou l’abattement applicable — <a href="#f-fiscalite">Fiscalité du bien</a></li><li>un dégât causé par un voyageur, à faire prendre en charge — <a href="#f-sinistres">Sinistres et assurances</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>le code du tourisme et le code de la construction et de l’habitation</li><li>la loi du 19 novembre 2024 sur les meublés de tourisme</li><li>la délibération de votre commune : c’est elle qui fixe l’enregistrement, la compensation et la taxe de séjour</li><li>le règlement de copropriété de l’immeuble</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-copropriete" data-cherche="copropriete assemblee generale, syndic, charges, travaux, reglement. assemblee generale : convocation, ordre du jour, majorites, proces-verbal contester une decision votee, ou faire inscrire une resolution charges de copropriete : repartition, tantiemes, appels de fonds, impayes travaux sur parties communes, fonds de travaux, ravalement, ascenseur syndic : mandat, mise en concurrence, revocation, carences reglement de copropriete : ce qu’il autorise, comment il se modifie parties communes et privatives, jouissance exclusive, empietement conseil syndical, immatriculation, diagnostic technique global contester une decision d’assemblee generale : deux mois a compter de la notification du proces-verbal. ce delai est applique avec une rigueur absolue, et il n’est ouvert qu’aux coproprietaires opposants ou absents — celui qui a vote pour ne peut plus revenir dessus. convocation a l’assemblee : vingt et un jours au moins avant la seance, avec les documents joints. une convocation tardive ou incomplete est une cause de nullite, a soulever dans les deux mois du proces-verbal. demande d’inscription d’une resolution a l’ordre du jour : elle doit parvenir au syndic assez tot pour figurer dans la convocation — en pratique, des la cloture de l’assemblee precedente. charges impayees : le syndicat peut les reclamer cinq ans en arriere, et le coproprietaire dispose du meme delai pour contester une repartition erronee. la convocation recue vingt et un jours avant, avec les pieces exigees pour chaque resolution votre position au proces-verbal : seuls les opposants et les absents peuvent contester la majorite applicable a la resolution — c’est elle qui decide de la validite du vote le reglement de copropriete et l’etat descriptif de division, avant toute interpretation les tantiemes de votre lot pour la cle de repartition en cause le carnet d’entretien et le dernier diagnostic technique global la loi du 10 juillet 1965 et son decret d’application de 1967 le reglement de copropriete et l’etat descriptif de division de votre immeuble le code civil, pour la propriete et la responsabilite">
+      <summary>
+        <span class="fiche-nom">Copropriété</span>
+        <span class="fiche-resume">Assemblée générale, syndic, charges, travaux, règlement.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Contester une décision d’assemblée générale : deux mois à compter de la notification du procès-verbal. Ce délai est appliqué avec une rigueur absolue, et il n’est ouvert qu’aux copropriétaires opposants ou absents — celui qui a voté pour ne peut plus revenir dessus.</li><li>Convocation à l’assemblée : vingt et un jours au moins avant la séance, avec les documents joints. Une convocation tardive ou incomplète est une cause de nullité, à soulever dans les deux mois du procès-verbal.</li><li>Demande d’inscription d’une résolution à l’ordre du jour : elle doit parvenir au syndic assez tôt pour figurer dans la convocation — en pratique, dès la clôture de l’assemblée précédente.</li><li>Charges impayées : le syndicat peut les réclamer cinq ans en arrière, et le copropriétaire dispose du même délai pour contester une répartition erronée.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>la convocation reçue vingt et un jours avant, avec les pièces exigées pour chaque résolution</li><li>votre position au procès-verbal : seuls les opposants et les absents peuvent contester</li><li>la majorité applicable à la résolution — c’est elle qui décide de la validité du vote</li><li>le règlement de copropriété et l’état descriptif de division, avant toute interprétation</li><li>les tantièmes de votre lot pour la clé de répartition en cause</li><li>le carnet d’entretien et le dernier diagnostic technique global</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>assemblée générale : convocation, ordre du jour, majorités, procès-verbal</li><li>contester une décision votée, ou faire inscrire une résolution</li><li>charges de copropriété : répartition, tantièmes, appels de fonds, impayés</li><li>travaux sur parties communes, fonds de travaux, ravalement, ascenseur</li><li>syndic : mandat, mise en concurrence, révocation, carences</li><li>règlement de copropriété : ce qu’il autorise, comment il se modifie</li><li>parties communes et privatives, jouissance exclusive, empiètement</li><li>conseil syndical, immatriculation, diagnostic technique global</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>ce qui se passe à l’intérieur du logement loué — <a href="#f-bail-habitation">Bail d’habitation</a></li><li>l’interdiction de louer en meublé de tourisme — <a href="#f-courte-duree">Location courte durée</a></li><li>des malfaçons sur un chantier déjà réceptionné — <a href="#f-travaux">Travaux et malfaçons</a></li><li>une autorisation d’urbanisme pour modifier la façade — <a href="#f-urbanisme">Urbanisme et autorisations</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>la loi du 10 juillet 1965 et son décret d’application de 1967</li><li>le règlement de copropriété et l’état descriptif de division de votre immeuble</li><li>le code civil, pour la propriété et la responsabilité</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-achat-vente" data-cherche="achat et vente compromis, conditions suspensives, diagnostics, vices caches. offre d’achat, compromis ou promesse : portee, retractation, sequestre conditions suspensives, notamment de pret : redaction, delais, mise en jeu diagnostics obligatoires, surface, informations dues a l’acquereur vices caches decouverts apres la vente, action contre le vendeur refus de signer, retard du notaire, clause penale droit de preemption de la commune, du locataire, des indivisaires vente d’un bien loue, conge pour vente, droit de preemption du locataire mandat d’agence, commission, exclusivite retractation de l’acquereur non professionnel : dix jours a compter du lendemain de la notification du compromis signe. le vendeur, lui, n’a aucun delai de retractation — il est engage des la signature. condition suspensive de pret : le delai est fixe au contrat, jamais inferieur a un mois. passe ce terme sans refus notifie, l’acquereur perd le benefice de la condition et risque la clause penale. vice cache : deux ans a compter de la decouverte du defaut, sans pouvoir depasser vingt ans depuis la vente. le delai court de la decouverte, pas de l’achat — mais il faut pouvoir dater cette decouverte. droit de preemption de la commune : deux mois pour repondre a la declaration d’intention d’aliener adressee par le notaire ; le silence vaut renonciation. vente d’un logement loue vide : le conge pour vente vaut offre au locataire et se donne six mois avant l’echeance du bail, avec un droit de preemption ouvert deux mois. le dossier de diagnostics complet et en cours de validite, chaque rapport portant sa date le titre de propriete, la surface carrez en copropriete, et les servitudes publiees pour un lot de copropriete : les trois derniers proces-verbaux d’assemblee, le pre-etat date, les travaux votes l’etat des risques date de moins de six mois les conditions suspensives : leur delai, leur forme de notification, et qui doit notifier l’existence d’un droit de preemption : commune, locataire en place, indivisaires le code civil, pour la vente, la garantie des vices caches et l’obligation d’information le code de la construction et de l’habitation la loi hoguet, pour les agents immobiliers le code de l’urbanisme, pour le droit de preemption">
+      <summary>
+        <span class="fiche-nom">Achat et vente</span>
+        <span class="fiche-resume">Compromis, conditions suspensives, diagnostics, vices cachés.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Rétractation de l’acquéreur non professionnel : dix jours à compter du lendemain de la notification du compromis signé. Le vendeur, lui, n’a aucun délai de rétractation — il est engagé dès la signature.</li><li>Condition suspensive de prêt : le délai est fixé au contrat, jamais inférieur à un mois. Passé ce terme sans refus notifié, l’acquéreur perd le bénéfice de la condition et risque la clause pénale.</li><li>Vice caché : deux ans à compter de la découverte du défaut, sans pouvoir dépasser vingt ans depuis la vente. Le délai court de la découverte, pas de l’achat — mais il faut pouvoir dater cette découverte.</li><li>Droit de préemption de la commune : deux mois pour répondre à la déclaration d’intention d’aliéner adressée par le notaire ; le silence vaut renonciation.</li><li>Vente d’un logement loué vide : le congé pour vente vaut offre au locataire et se donne six mois avant l’échéance du bail, avec un droit de préemption ouvert deux mois.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>le dossier de diagnostics complet et en cours de validité, chaque rapport portant sa date</li><li>le titre de propriété, la surface Carrez en copropriété, et les servitudes publiées</li><li>pour un lot de copropriété : les trois derniers procès-verbaux d’assemblée, le pré-état daté, les travaux votés</li><li>l’état des risques daté de moins de six mois</li><li>les conditions suspensives : leur délai, leur forme de notification, et qui doit notifier</li><li>l’existence d’un droit de préemption : commune, locataire en place, indivisaires</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>offre d’achat, compromis ou promesse : portée, rétractation, séquestre</li><li>conditions suspensives, notamment de prêt : rédaction, délais, mise en jeu</li><li>diagnostics obligatoires, surface, informations dues à l’acquéreur</li><li>vices cachés découverts après la vente, action contre le vendeur</li><li>refus de signer, retard du notaire, clause pénale</li><li>droit de préemption de la commune, du locataire, des indivisaires</li><li>vente d’un bien loué, congé pour vente, droit de préemption du locataire</li><li>mandat d’agence, commission, exclusivité</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>le congé donné au locataire en place et son préavis — <a href="#f-bail-habitation">Bail d’habitation</a></li><li>des malfaçons sur des travaux récents encore garantis — <a href="#f-travaux">Travaux et malfaçons</a></li><li>la plus-value ou les frais à payer sur la vente — <a href="#f-fiscalite">Fiscalité du bien</a></li><li>la conformité du bien aux autorisations d’urbanisme — <a href="#f-urbanisme">Urbanisme et autorisations</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>le code civil, pour la vente, la garantie des vices cachés et l’obligation d’information</li><li>le code de la construction et de l’habitation</li><li>la loi Hoguet, pour les agents immobiliers</li><li>le code de l’urbanisme, pour le droit de préemption</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-travaux" data-cherche="travaux et malfacons devis, artisans, reception, garanties, chantier abandonne. devis et marche de travaux : contenu, prix, avenants, acomptes reception des travaux, reserves, proces-verbal garanties du constructeur : parfait achevement, bon fonctionnement, decennale assurance dommages-ouvrage : souscription, declaration, delais de reponse malfacons, desordres, expertise amiable ou judiciaire abandon de chantier, retard de livraison, penalites artisan non assure, sous-traitance, paiement direct renovation energetique, aides, entreprises rge garantie decennale : dix ans a compter de la reception des travaux, pour tout desordre qui compromet la solidite ou rend le bien impropre a sa destination. sans reception, aucune garantie ne court — c’est l’acte le plus important du chantier, et le plus souvent neglige. garantie de parfait achevement : un an apres la reception, pour tous les desordres signales, reserves comprises. c’est la seule qui couvre les defauts esthetiques. garantie de bon fonctionnement : deux ans, pour les elements d’equipement dissociables — volets, chaudiere, robinetterie. assurance dommages-ouvrage : elle se souscrit avant l’ouverture du chantier. une fois le sinistre declare, l’assureur a soixante jours pour se prononcer et quatre-vingt-dix pour proposer une indemnite. les reserves se consignent au proces-verbal de reception le jour meme : ce qui n’y figure pas est repute accepte, sauf vice cache. l’attestation d’assurance decennale de l’entreprise, valable a la date d’ouverture du chantier le devis signe : nature des travaux, prix ferme ou revisable, delai, echeancier la dommages-ouvrage souscrite avant le premier coup de pioche le proces-verbal de reception, avec les reserves ecrites le jour meme des photos datees avant, pendant et apres — elles valent preuve pour une aide a la renovation : la mention rge portee sur le devis, et non seulement sur le site de l’entreprise le code civil, pour le contrat d’entreprise et les garanties legales de construction le code des assurances, pour la dommages-ouvrage et la responsabilite decennale le code de la construction et de l’habitation, pour le contrat de construction de maison individuelle">
+      <summary>
+        <span class="fiche-nom">Travaux et malfaçons</span>
+        <span class="fiche-resume">Devis, artisans, réception, garanties, chantier abandonné.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Garantie décennale : dix ans à compter de la réception des travaux, pour tout désordre qui compromet la solidité ou rend le bien impropre à sa destination. Sans réception, aucune garantie ne court — c’est l’acte le plus important du chantier, et le plus souvent négligé.</li><li>Garantie de parfait achèvement : un an après la réception, pour tous les désordres signalés, réserves comprises. C’est la seule qui couvre les défauts esthétiques.</li><li>Garantie de bon fonctionnement : deux ans, pour les éléments d’équipement dissociables — volets, chaudière, robinetterie.</li><li>Assurance dommages-ouvrage : elle se souscrit AVANT l’ouverture du chantier. Une fois le sinistre déclaré, l’assureur a soixante jours pour se prononcer et quatre-vingt-dix pour proposer une indemnité.</li><li>Les réserves se consignent au procès-verbal de réception le jour même : ce qui n’y figure pas est réputé accepté, sauf vice caché.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>l’attestation d’assurance décennale de l’entreprise, valable à la date d’ouverture du chantier</li><li>le devis signé : nature des travaux, prix ferme ou révisable, délai, échéancier</li><li>la dommages-ouvrage souscrite AVANT le premier coup de pioche</li><li>le procès-verbal de réception, avec les réserves écrites le jour même</li><li>des photos datées avant, pendant et après — elles valent preuve</li><li>pour une aide à la rénovation : la mention RGE portée sur le devis, et non seulement sur le site de l’entreprise</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>devis et marché de travaux : contenu, prix, avenants, acomptes</li><li>réception des travaux, réserves, procès-verbal</li><li>garanties du constructeur : parfait achèvement, bon fonctionnement, décennale</li><li>assurance dommages-ouvrage : souscription, déclaration, délais de réponse</li><li>malfaçons, désordres, expertise amiable ou judiciaire</li><li>abandon de chantier, retard de livraison, pénalités</li><li>artisan non assuré, sous-traitance, paiement direct</li><li>rénovation énergétique, aides, entreprises RGE</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>des travaux votés et payés par la copropriété — <a href="#f-copropriete">Copropriété</a></li><li>une autorisation à demander avant de commencer — <a href="#f-urbanisme">Urbanisme et autorisations</a></li><li>des dégâts causés au voisin par le chantier — <a href="#f-voisinage">Voisinage et limites</a></li><li>un sinistre à déclarer à l’assurance du bien — <a href="#f-sinistres">Sinistres et assurances</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>le code civil, pour le contrat d’entreprise et les garanties légales de construction</li><li>le code des assurances, pour la dommages-ouvrage et la responsabilité décennale</li><li>le code de la construction et de l’habitation, pour le contrat de construction de maison individuelle</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-urbanisme" data-cherche="urbanisme et autorisations permis, declaration prealable, plu, recours, conformite. quelle autorisation pour quel projet : declaration prealable ou permis instruction du dossier, pieces manquantes, majoration de delai refus de permis, retrait, recours gracieux et contentieux recours d’un tiers contre votre permis, affichage sur le terrain plan local d’urbanisme, zonage, regles de hauteur et d’implantation changement de destination d’un local, division d’un logement achevement des travaux, conformite, controle de la mairie construction sans autorisation, regularisation, prescription recours d’un tiers contre un permis : deux mois a compter du premier jour d’un affichage regulier et continu sur le terrain. un panneau mal pose ou retire trop tot rouvre le delai pendant six mois apres l’achevement — photographiez le panneau, date, des le premier jour. recours contre un refus de permis : deux mois a compter de la notification. un recours gracieux forme dans ce delai le proroge, et le compteur repart a la reponse ou au silence garde pendant deux mois. retrait d’un permis par la mairie elle-meme : trois mois apres sa delivrance, pas au-dela. validite du permis : trois ans pour ouvrir le chantier, prorogeable deux fois un an sur demande deposee avant l’expiration. apres la declaration d’achevement, la mairie a trois mois pour contester la conformite — cinq mois en secteur protege. la regle applicable a votre parcelle dans le plu, et non la regle generale de la commune le seuil de surface qui decide entre declaration prealable et permis le panneau d’affichage sur le terrain, photographie et date des le premier jour le certificat d’urbanisme, qui fige les regles applicables pendant dix-huit mois en secteur protege : l’avis de l’architecte des batiments de france, qui allonge l’instruction la declaration attestant l’achevement, et le delai de contestation de la conformite le code de l’urbanisme le plan local d’urbanisme de votre commune, qui prime sur les generalites le code de justice administrative, pour les recours">
+      <summary>
+        <span class="fiche-nom">Urbanisme et autorisations</span>
+        <span class="fiche-resume">Permis, déclaration préalable, PLU, recours, conformité.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Recours d’un tiers contre un permis : deux mois à compter du premier jour d’un affichage régulier et continu sur le terrain. Un panneau mal posé ou retiré trop tôt rouvre le délai pendant six mois après l’achèvement — photographiez le panneau, daté, dès le premier jour.</li><li>Recours contre un refus de permis : deux mois à compter de la notification. Un recours gracieux formé dans ce délai le proroge, et le compteur repart à la réponse ou au silence gardé pendant deux mois.</li><li>Retrait d’un permis par la mairie elle-même : trois mois après sa délivrance, pas au-delà.</li><li>Validité du permis : trois ans pour ouvrir le chantier, prorogeable deux fois un an sur demande déposée avant l’expiration.</li><li>Après la déclaration d’achèvement, la mairie a trois mois pour contester la conformité — cinq mois en secteur protégé.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>la règle applicable à votre parcelle dans le PLU, et non la règle générale de la commune</li><li>le seuil de surface qui décide entre déclaration préalable et permis</li><li>le panneau d’affichage sur le terrain, photographié et daté dès le premier jour</li><li>le certificat d’urbanisme, qui fige les règles applicables pendant dix-huit mois</li><li>en secteur protégé : l’avis de l’architecte des bâtiments de France, qui allonge l’instruction</li><li>la déclaration attestant l’achèvement, et le délai de contestation de la conformité</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>quelle autorisation pour quel projet : déclaration préalable ou permis</li><li>instruction du dossier, pièces manquantes, majoration de délai</li><li>refus de permis, retrait, recours gracieux et contentieux</li><li>recours d’un tiers contre votre permis, affichage sur le terrain</li><li>plan local d’urbanisme, zonage, règles de hauteur et d’implantation</li><li>changement de destination d’un local, division d’un logement</li><li>achèvement des travaux, conformité, contrôle de la mairie</li><li>construction sans autorisation, régularisation, prescription</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>l’exécution du chantier et les malfaçons — <a href="#f-travaux">Travaux et malfaçons</a></li><li>une autorisation de l’assemblée générale pour modifier la façade — <a href="#f-copropriete">Copropriété</a></li><li>un litige de limite ou de vue avec le voisin — <a href="#f-voisinage">Voisinage et limites</a></li><li>le changement d’usage pour louer en meublé de tourisme — <a href="#f-courte-duree">Location courte durée</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>le code de l’urbanisme</li><li>le plan local d’urbanisme de votre commune, qui prime sur les généralités</li><li>le code de justice administrative, pour les recours</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-voisinage" data-cherche="voisinage et limites bruit, vues, mitoyennete, bornage, plantations, servitudes. troubles anormaux de voisinage : bruit, odeurs, fumees, vis-a-vis limites de propriete, bornage amiable ou judiciaire, empietement mur mitoyen, cloture, participation aux frais plantations : distances, hauteurs, elagage, branches et racines vues et jours : distances a respecter pour une fenetre ou une terrasse servitudes : passage, ecoulement des eaux, canalisation nuisances causees par des locataires ou des voyageurs conciliation, constat, mise en demeure, action en justice trouble anormal de voisinage : cinq ans pour agir, a compter du jour ou le trouble a ete connu. un trouble qui se repete fait courir un nouveau delai a chaque fois. bornage et actions portant sur la propriete elle-meme : trente ans. c’est aussi le delai au terme duquel une occupation prolongee peut faire acquerir un droit — un empietement tolere trop longtemps devient difficile a faire cesser. servitude de passage : elle s’acquiert par trente ans d’usage continu et apparent, ou par titre. laisser passer sans rien ecrire pendant des annees n’est jamais neutre. avant toute action en justice pour un litige de voisinage de faible montant, une tentative de conciliation ou de mediation est obligatoire : sans elle, la demande est declaree irrecevable. des preuves datees : photos, constat de commissaire de justice, temoignages ecrits et signes le titre de propriete et le plan cadastral, avant de discuter d’une limite les usages locaux de votre departement : ils l’emportent parfois sur les distances generales la tentative amiable prealable — sans elle, la demande est declaree irrecevable l’existence d’une servitude publiee au service de la publicite fonciere le code civil, pour la propriete, les servitudes, la mitoyennete et les plantations le principe jurisprudentiel du trouble anormal de voisinage, desormais inscrit dans le code civil le code de la sante publique, pour les bruits de voisinage les usages locaux de votre departement, qui priment parfois sur les distances generales">
+      <summary>
+        <span class="fiche-nom">Voisinage et limites</span>
+        <span class="fiche-resume">Bruit, vues, mitoyenneté, bornage, plantations, servitudes.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Trouble anormal de voisinage : cinq ans pour agir, à compter du jour où le trouble a été connu. Un trouble qui se répète fait courir un nouveau délai à chaque fois.</li><li>Bornage et actions portant sur la propriété elle-même : trente ans. C’est aussi le délai au terme duquel une occupation prolongée peut faire acquérir un droit — un empiètement toléré trop longtemps devient difficile à faire cesser.</li><li>Servitude de passage : elle s’acquiert par trente ans d’usage continu et apparent, ou par titre. Laisser passer sans rien écrire pendant des années n’est jamais neutre.</li><li>Avant toute action en justice pour un litige de voisinage de faible montant, une tentative de conciliation ou de médiation est obligatoire : sans elle, la demande est déclarée irrecevable.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>des preuves datées : photos, constat de commissaire de justice, témoignages écrits et signés</li><li>le titre de propriété et le plan cadastral, avant de discuter d’une limite</li><li>les usages locaux de votre département : ils l’emportent parfois sur les distances générales</li><li>la tentative amiable préalable — sans elle, la demande est déclarée irrecevable</li><li>l’existence d’une servitude publiée au service de la publicité foncière</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>troubles anormaux de voisinage : bruit, odeurs, fumées, vis-à-vis</li><li>limites de propriété, bornage amiable ou judiciaire, empiètement</li><li>mur mitoyen, clôture, participation aux frais</li><li>plantations : distances, hauteurs, élagage, branches et racines</li><li>vues et jours : distances à respecter pour une fenêtre ou une terrasse</li><li>servitudes : passage, écoulement des eaux, canalisation</li><li>nuisances causées par des locataires ou des voyageurs</li><li>conciliation, constat, mise en demeure, action en justice</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>une autorisation de construire contestée — <a href="#f-urbanisme">Urbanisme et autorisations</a></li><li>un bruit venant des parties communes ou d’un autre lot — <a href="#f-copropriete">Copropriété</a></li><li>des dégâts matériels à faire indemniser par une assurance — <a href="#f-sinistres">Sinistres et assurances</a></li><li>des nuisances causées par vos propres voyageurs — <a href="#f-courte-duree">Location courte durée</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>le code civil, pour la propriété, les servitudes, la mitoyenneté et les plantations</li><li>le principe jurisprudentiel du trouble anormal de voisinage, désormais inscrit dans le code civil</li><li>le code de la santé publique, pour les bruits de voisinage</li><li>les usages locaux de votre département, qui priment parfois sur les distances générales</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-fiscalite" data-cherche="fiscalite du bien lmnp, revenus fonciers, plus-value, taxe fonciere, controle. louer en meuble : lmnp, lmp, micro-bic ou regime reel, amortissement louer vide : revenus fonciers, micro-foncier, regime reel, deficit foncier meuble de tourisme : abattements applicables, classement, seuils plus-value a la revente : abattements, exonerations, residence principale taxe fonciere, taxe d’habitation sur residence secondaire, surtaxe cotisation fonciere des entreprises et tva sur les locations declaration d’activite, guichet unique, obligations comptables controle fiscal, proposition de rectification, reclamation reclamation contre un impot : jusqu’au 31 decembre de la deuxieme annee suivant la mise en recouvrement ou le versement. le sursis de paiement doit etre demande dans la reclamation : demande apres, il ne suspend plus rien. repondre a une proposition de rectification : trente jours, prorogeables trente jours sur simple demande. le silence vaut acceptation du redressement. option pour le regime reel : elle s’exerce avant la date limite de declaration et engage pour l’annee — trois ans en revenus fonciers, avec reconduction tacite. debut d’une activite de location meublee : la declaration aupres du guichet unique se fait dans les quinze jours, faute de quoi le numero siret manque au moment de declarer. droit de reprise de l’administration : trois ans en principe, bien davantage en cas d’activite occulte ou de revenus non declares. le regime reellement applique l’an dernier, et l’annee ou l’option a ete exercee le montant exact des recettes encaissees : les seuils se jouent a l’euro pres les charges deductibles justifiees, factures a l’appui et au nom du proprietaire pour un meuble : le numero siret et la declaration au guichet unique la date de mise en recouvrement portee sur l’avis : c’est elle qui ouvre le delai de reclamation le classement du meuble de tourisme, qui change l’abattement applicable le code general des impots le livre des procedures fiscales la doctrine publiee au bofip, opposable a l’administration">
+      <summary>
+        <span class="fiche-nom">Fiscalité du bien</span>
+        <span class="fiche-resume">LMNP, revenus fonciers, plus-value, taxe foncière, contrôle.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Réclamation contre un impôt : jusqu’au 31 décembre de la deuxième année suivant la mise en recouvrement ou le versement. Le sursis de paiement doit être demandé DANS la réclamation : demandé après, il ne suspend plus rien.</li><li>Répondre à une proposition de rectification : trente jours, prorogeables trente jours sur simple demande. Le silence vaut acceptation du redressement.</li><li>Option pour le régime réel : elle s’exerce avant la date limite de déclaration et engage pour l’année — trois ans en revenus fonciers, avec reconduction tacite.</li><li>Début d’une activité de location meublée : la déclaration auprès du guichet unique se fait dans les quinze jours, faute de quoi le numéro SIRET manque au moment de déclarer.</li><li>Droit de reprise de l’administration : trois ans en principe, bien davantage en cas d’activité occulte ou de revenus non déclarés.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>le régime réellement appliqué l’an dernier, et l’année où l’option a été exercée</li><li>le montant exact des recettes encaissées : les seuils se jouent à l’euro près</li><li>les charges déductibles justifiées, factures à l’appui et au nom du propriétaire</li><li>pour un meublé : le numéro SIRET et la déclaration au guichet unique</li><li>la date de mise en recouvrement portée sur l’avis : c’est elle qui ouvre le délai de réclamation</li><li>le classement du meublé de tourisme, qui change l’abattement applicable</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>louer en meublé : LMNP, LMP, micro-BIC ou régime réel, amortissement</li><li>louer vide : revenus fonciers, micro-foncier, régime réel, déficit foncier</li><li>meublé de tourisme : abattements applicables, classement, seuils</li><li>plus-value à la revente : abattements, exonérations, résidence principale</li><li>taxe foncière, taxe d’habitation sur résidence secondaire, surtaxe</li><li>cotisation foncière des entreprises et TVA sur les locations</li><li>déclaration d’activité, guichet unique, obligations comptables</li><li>contrôle fiscal, proposition de rectification, réclamation</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>la rédaction du bail ou un litige avec le locataire — <a href="#f-bail-habitation">Bail d’habitation</a></li><li>la déclaration en mairie et les quotas de location — <a href="#f-courte-duree">Location courte durée</a></li><li>la vente elle-même et ses conditions — <a href="#f-achat-vente">Achat et vente</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>le code général des impôts</li><li>le livre des procédures fiscales</li><li>la doctrine publiée au BOFiP, opposable à l’administration</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-sinistres" data-cherche="sinistres et assurances degat des eaux, incendie, expertise, indemnisation, recours. declaration d’un sinistre : forme, delais, pieces a fournir degat des eaux : recherche de fuite, convention entre assureurs, franchise incendie, tempete, catastrophe naturelle, secheresse et fissures assurance proprietaire non occupant, multirisque, garanties utiles expertise : contre-expertise, desaccord sur le montant recours contre le locataire, le voisin, la copropriete ou l’artisan garantie loyers impayes : conditions, mise en jeu, refus de prise en charge defaut d’assurance du locataire, resiliation du contrat par l’assureur prescription en assurance : deux ans a compter de l’evenement qui donne naissance a l’action. c’est le delai le plus court et le plus meconnu du droit immobilier — passe deux ans, un refus d’indemnisation ne se conteste plus. declarer un sinistre : cinq jours ouvres en principe, deux jours ouvres pour un vol, dix jours apres la publication de l’arrete pour une catastrophe naturelle. degat des eaux courant : la convention entre assureurs organise la prise en charge sous des plafonds precis ; au-dela, chacun reprend ses recours, et l’expertise devient contradictoire. contre-expertise : elle se demande avant d’accepter l’indemnite proposee. un accord signe sur un montant se defait tres difficilement. la date exacte du sinistre : c’est elle qui fait courir la prescription de deux ans les garanties, plafonds et franchises de votre contrat, lus avant d’appeler des photos datees, et la conservation des elements endommages jusqu’a l’expertise des devis de remise en etat obtenus avant le passage de l’expert le constat amiable de degat des eaux, signe des deux parties la declaration a l’assureur dans les cinq jours ouvres, deux pour un vol le code des assurances le contrat d’assurance et ses conditions generales, qui fixent garanties et franchises la convention irsi, appliquee entre assureurs pour les degats des eaux courants le code civil, pour la responsabilite et les recours">
+      <summary>
+        <span class="fiche-nom">Sinistres et assurances</span>
+        <span class="fiche-resume">Dégât des eaux, incendie, expertise, indemnisation, recours.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Prescription en assurance : deux ans à compter de l’événement qui donne naissance à l’action. C’est le délai le plus court et le plus méconnu du droit immobilier — passé deux ans, un refus d’indemnisation ne se conteste plus.</li><li>Déclarer un sinistre : cinq jours ouvrés en principe, deux jours ouvrés pour un vol, dix jours après la publication de l’arrêté pour une catastrophe naturelle.</li><li>Dégât des eaux courant : la convention entre assureurs organise la prise en charge sous des plafonds précis ; au-delà, chacun reprend ses recours, et l’expertise devient contradictoire.</li><li>Contre-expertise : elle se demande avant d’accepter l’indemnité proposée. Un accord signé sur un montant se défait très difficilement.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>la date exacte du sinistre : c’est elle qui fait courir la prescription de deux ans</li><li>les garanties, plafonds et franchises de votre contrat, lus avant d’appeler</li><li>des photos datées, et la conservation des éléments endommagés jusqu’à l’expertise</li><li>des devis de remise en état obtenus avant le passage de l’expert</li><li>le constat amiable de dégât des eaux, signé des deux parties</li><li>la déclaration à l’assureur dans les cinq jours ouvrés, deux pour un vol</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>déclaration d’un sinistre : forme, délais, pièces à fournir</li><li>dégât des eaux : recherche de fuite, convention entre assureurs, franchise</li><li>incendie, tempête, catastrophe naturelle, sécheresse et fissures</li><li>assurance propriétaire non occupant, multirisque, garanties utiles</li><li>expertise : contre-expertise, désaccord sur le montant</li><li>recours contre le locataire, le voisin, la copropriété ou l’artisan</li><li>garantie loyers impayés : conditions, mise en jeu, refus de prise en charge</li><li>défaut d’assurance du locataire, résiliation du contrat par l’assureur</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>l’obligation d’assurance du locataire inscrite au bail — <a href="#f-bail-habitation">Bail d’habitation</a></li><li>un sinistre dont l’origine est dans les parties communes — <a href="#f-copropriete">Copropriété</a></li><li>un désordre relevant de la garantie décennale d’un artisan — <a href="#f-travaux">Travaux et malfaçons</a></li><li>un dommage causé par le voisin lui-même — <a href="#f-voisinage">Voisinage et limites</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>le code des assurances</li><li>le contrat d’assurance et ses conditions générales, qui fixent garanties et franchises</li><li>la convention IRSI, appliquée entre assureurs pour les dégâts des eaux courants</li><li>le code civil, pour la responsabilité et les recours</li></ul>
+        </section>
+      </div>
+    </details>
+    <details class="fiche" id="f-profession" data-cherche="metier de l’agent immobilier mandat, honoraires, annonces, carte professionnelle, responsabilite. mandat de vente, de recherche ou de gestion : forme, mentions, registre, duree clause d’exclusivite, denonciation, renouvellement tacite honoraires : montant, qui les paie, exigibilite, bareme affiche annonces et publicite : mentions obligatoires, prix, classe energie, honoraires carte professionnelle, garantie financiere, assurance de responsabilite, formation continue devoir de conseil et d’information : ce qu’il faut dire, ecrire et conserver lutte anti-blanchiment : vigilance, identite du client, declaration a tracfin delegation de mandat, reseaux de mandataires, agents commerciaux litiges d’honoraires : vente hors mandat, acquereur presente, mandat expire le mandat doit etre ecrit, date, numerote au registre des mandats et remis en double exemplaire. un mandat non conforme est nul et la commission n’est pas due : c’est la premiere chose qu’un juge verifie, avant meme de lire le dossier. mandat exclusif : passe trois mois, le client peut le denoncer a tout moment par lettre recommandee, avec quinze jours de preavis. mandat signe ailleurs qu’a l’agence, au domicile du client ou a distance : quatorze jours de retractation, et aucune prestation ne peut etre facturee si elle a commence avant la fin du delai sans demande ecrite. la commission n’est exigible qu’a la signature de l’acte authentique. aucune somme, sous aucune forme, ne peut etre percue avant — pas meme une provision. formation continue : quatorze heures par an, ou quarante-deux heures sur trois ans. c’est la condition du renouvellement de la carte professionnelle, qui dure trois ans. le mandat ecrit, date, numerote au registre, et le double effectivement remis au client la duree du mandat, sa clause d’exclusivite et sa date d’expiration exacte le bareme d’honoraires affiche, et l’annonce qui indique clairement qui les paie la carte professionnelle, la garantie financiere et l’assurance de responsabilite, toutes en cours de validite la vigilance anti-blanchiment : identite du client verifiee, origine des fonds, dossier conserve la trace ecrite du devoir de conseil — ce que vous avez dit, a qui, et quand la loi hoguet du 2 janvier 1970 et son decret d’application de 1972 la loi alur, pour la formation continue et les regles de deontologie le code de la consommation, pour la publicite et le demarchage le code monetaire et financier, pour la lutte anti-blanchiment le code civil, pour le mandat et la responsabilite contractuelle">
+      <summary>
+        <span class="fiche-nom">Métier de l’agent immobilier</span>
+        <span class="fiche-resume">Mandat, honoraires, annonces, carte professionnelle, responsabilité.</span>
+      </summary>
+
+      <div class="fiche-corps">
+        <section class="bloc bloc-delai">
+          <h3>Délais à ne pas manquer</h3>
+          <ul class=""><li>Le mandat doit être écrit, daté, numéroté au registre des mandats et remis en double exemplaire. Un mandat non conforme est nul et la commission n’est pas due : c’est la première chose qu’un juge vérifie, avant même de lire le dossier.</li><li>Mandat exclusif : passé trois mois, le client peut le dénoncer à tout moment par lettre recommandée, avec quinze jours de préavis.</li><li>Mandat signé ailleurs qu’à l’agence, au domicile du client ou à distance : quatorze jours de rétractation, et aucune prestation ne peut être facturée si elle a commencé avant la fin du délai sans demande écrite.</li><li>La commission n’est exigible qu’à la signature de l’acte authentique. Aucune somme, sous aucune forme, ne peut être perçue avant — pas même une provision.</li><li>Formation continue : quatorze heures par an, ou quarante-deux heures sur trois ans. C’est la condition du renouvellement de la carte professionnelle, qui dure trois ans.</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>À vérifier avant d’agir</h3>
+          <ul class=""><li>le mandat écrit, daté, numéroté au registre, et le double effectivement remis au client</li><li>la durée du mandat, sa clause d’exclusivité et sa date d’expiration exacte</li><li>le barème d’honoraires affiché, et l’annonce qui indique clairement qui les paie</li><li>la carte professionnelle, la garantie financière et l’assurance de responsabilité, toutes en cours de validité</li><li>la vigilance anti-blanchiment : identité du client vérifiée, origine des fonds, dossier conservé</li><li>la trace écrite du devoir de conseil — ce que vous avez dit, à qui, et quand</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce que ce spécialiste traite</h3>
+          <ul class=""><li>mandat de vente, de recherche ou de gestion : forme, mentions, registre, durée</li><li>clause d’exclusivité, dénonciation, renouvellement tacite</li><li>honoraires : montant, qui les paie, exigibilité, barème affiché</li><li>annonces et publicité : mentions obligatoires, prix, classe énergie, honoraires</li><li>carte professionnelle, garantie financière, assurance de responsabilité, formation continue</li><li>devoir de conseil et d’information : ce qu’il faut dire, écrire et conserver</li><li>lutte anti-blanchiment : vigilance, identité du client, déclaration à Tracfin</li><li>délégation de mandat, réseaux de mandataires, agents commerciaux</li><li>litiges d’honoraires : vente hors mandat, acquéreur présenté, mandat expiré</li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Ce qui relève d’un autre</h3>
+          <ul class="renvois"><li>le contrat de vente lui-même et ses conditions — <a href="#f-achat-vente">Achat et vente</a></li><li>la rédaction d’un bail ou un litige avec le locataire — <a href="#f-bail-habitation">Bail d’habitation</a></li><li>la location en meublé de tourisme et ses autorisations — <a href="#f-courte-duree">Location courte durée</a></li><li>la fiscalité du bien géré — <a href="#f-fiscalite">Fiscalité du bien</a></li></ul>
+        </section>
+
+        <section class="bloc">
+          <h3>Textes de référence</h3>
+          <ul class=""><li>la loi Hoguet du 2 janvier 1970 et son décret d’application de 1972</li><li>la loi ALUR, pour la formation continue et les règles de déontologie</li><li>le code de la consommation, pour la publicité et le démarchage</li><li>le code monétaire et financier, pour la lutte anti-blanchiment</li><li>le code civil, pour le mandat et la responsabilité contractuelle</li></ul>
+        </section>
+      </div>
+    </details>
+  </section>
+
+  <section class="zone" id="diagnostics">
+    <span class="oeil">Le dossier technique</span>
+    <h2>Diagnostics et durées de validité</h2>
+    <p class="sous">
+      Le rapport porte sa propre date de réalisation et de fin de validité : c’est elle qui fait
+      foi. Ce tableau dit ce qu’il faut et quand le chercher.
+    </p>
+    <div class="tableau">
+      <table>
+        <thead>
+          <tr><th scope="col">Diagnostic</th><th scope="col">Quand il est exigé</th><th scope="col">Validité</th></tr>
+        </thead>
+        <tbody>
+    <tr data-cherche="diagnostic de performance energetique (dpe) vente et location de presque tout logement, et a joindre a l’annonce. dix ans.">
+      <th scope="row">Diagnostic de performance énergétique (DPE)</th>
+      <td>Vente et location de presque tout logement, et à joindre à l’annonce.</td>
+      <td class="validite">Dix ans.</td>
+    </tr>
+    <tr data-cherche="audit energetique vente d’une maison individuelle ou d’un immeuble en monopropriete classe f ou g, et classe e depuis 2025. cinq ans.">
+      <th scope="row">Audit énergétique</th>
+      <td>Vente d’une maison individuelle ou d’un immeuble en monopropriété classé F ou G, et classé E depuis 2025.</td>
+      <td class="validite">Cinq ans.</td>
+    </tr>
+    <tr data-cherche="etat des risques et pollutions vente et location, des que la commune est couverte par un arrete prefectoral. six mois. c’est le plus court du dossier, et celui qui perime le plus souvent entre le compromis et l’acte.">
+      <th scope="row">État des risques et pollutions</th>
+      <td>Vente et location, dès que la commune est couverte par un arrêté préfectoral.</td>
+      <td class="validite">Six mois. C’est le plus court du dossier, et celui qui périme le plus souvent entre le compromis et l’acte.</td>
+    </tr>
+    <tr data-cherche="amiante bien dont le permis de construire est anterieur au 1ᵉʳ juillet 1997. illimitee si le rapport, posterieur a 2013, conclut a une absence. trois ans en cas de presence, avec controle periodique.">
+      <th scope="row">Amiante</th>
+      <td>Bien dont le permis de construire est antérieur au 1ᵉʳ juillet 1997.</td>
+      <td class="validite">Illimitée si le rapport, postérieur à 2013, conclut à une absence. Trois ans en cas de présence, avec contrôle périodique.</td>
+    </tr>
+    <tr data-cherche="plomb (constat de risque d’exposition) logement construit avant le 1ᵉʳ janvier 1949. illimitee si absence. en cas de presence : un an a la vente, six ans a la location.">
+      <th scope="row">Plomb (constat de risque d’exposition)</th>
+      <td>Logement construit avant le 1ᵉʳ janvier 1949.</td>
+      <td class="validite">Illimitée si absence. En cas de présence : un an à la vente, six ans à la location.</td>
+    </tr>
+    <tr data-cherche="termites vente, dans les zones delimitees par arrete prefectoral. six mois.">
+      <th scope="row">Termites</th>
+      <td>Vente, dans les zones délimitées par arrêté préfectoral.</td>
+      <td class="validite">Six mois.</td>
+    </tr>
+    <tr data-cherche="etat de l’installation interieure de gaz installation interieure de plus de quinze ans. trois ans a la vente, six ans a la location.">
+      <th scope="row">État de l’installation intérieure de gaz</th>
+      <td>Installation intérieure de plus de quinze ans.</td>
+      <td class="validite">Trois ans à la vente, six ans à la location.</td>
+    </tr>
+    <tr data-cherche="etat de l’installation interieure d’electricite installation interieure de plus de quinze ans. trois ans a la vente, six ans a la location.">
+      <th scope="row">État de l’installation intérieure d’électricité</th>
+      <td>Installation intérieure de plus de quinze ans.</td>
+      <td class="validite">Trois ans à la vente, six ans à la location.</td>
+    </tr>
+    <tr data-cherche="assainissement non collectif vente d’un bien non raccorde au reseau public. trois ans.">
+      <th scope="row">Assainissement non collectif</th>
+      <td>Vente d’un bien non raccordé au réseau public.</td>
+      <td class="validite">Trois ans.</td>
+    </tr>
+    <tr data-cherche="surface privative (loi carrez) vente d’un lot de copropriete. illimitee tant que le bien n’est pas modifie. un mesurage inferieur de plus de cinq pour cent ouvre une action en reduction du prix.">
+      <th scope="row">Surface privative (loi Carrez)</th>
+      <td>Vente d’un lot de copropriété.</td>
+      <td class="validite">Illimitée tant que le bien n’est pas modifié. Un mesurage inférieur de plus de cinq pour cent ouvre une action en réduction du prix.</td>
+    </tr>
+    <tr data-cherche="surface habitable (loi boutin) location vide a usage de residence principale. illimitee tant que le bien n’est pas modifie.">
+      <th scope="row">Surface habitable (loi Boutin)</th>
+      <td>Location vide à usage de résidence principale.</td>
+      <td class="validite">Illimitée tant que le bien n’est pas modifié.</td>
+    </tr>
+    <tr data-cherche="bruit (plan d’exposition aux aerodromes) vente et location d’un bien situe dans une zone d’exposition au bruit. information a annexer, sans duree propre.">
+      <th scope="row">Bruit (plan d’exposition aux aérodromes)</th>
+      <td>Vente et location d’un bien situé dans une zone d’exposition au bruit.</td>
+      <td class="validite">Information à annexer, sans durée propre.</td>
+    </tr></tbody>
+      </table>
+    </div>
+    <ul class="calendrier"><li>Depuis 2023 : les logements les plus consommateurs de la classe G ne peuvent plus être proposés à la location.</li><li>Depuis le 1ᵉʳ janvier 2025 : toute la classe G est concernée.</li><li>À partir de 2028 : la classe F.</li><li>À partir de 2034 : la classe E.</li><li>Un logement interdit à la location reste vendable, et le locataire en place n’est pas expulsé : c’est la mise en location, et le renouvellement du bail, qui sont visés.</li></ul>
+  </section>
+
+  <section class="zone" id="courriers">
+    <span class="oeil">Avant d’envoyer</span>
+    <h2>Dix-sept courriers, et ce qui les annule</h2>
+    <p class="sous">
+      Un congé pour vente auquel il manque le prix est nul, et ce n’est pas rattrapable : le délai
+      a couru. Pour chacun, ce qui doit y figurer, ce qui l’annule, et comment l’envoyer pour que
+      l’envoi se prouve.
+    </p>
+    
+    <div class="famille" data-cherche="courriers du bailleur conge, impayes, depot de garantie, revision du loyer.">
+      <h3 class="famille-nom">Courriers du bailleur</h3>
+      <p class="famille-resume">Congé, impayés, dépôt de garantie, révision du loyer.</p>
+      <div class="courriers">
+      <details class="courrier" data-cherche="conge pour vendre mettre fin au bail a l’echeance parce qu’on vend le logement. le bailleur, a son locataire. le conge vaut offre de vente a celui-ci. le motif : la decision de vendre, enoncee expressement le prix de vente et les conditions de la vente — c’est ce qui manque le plus souvent, et son absence suffit a annuler le conge la description du bien tel qu’il est offert a la vente la reproduction des dispositions legales sur le droit de preemption du locataire, que la loi impose de recopier dans le conge la date d’echeance du bail a laquelle le conge prend effet un conge donne moins de six mois avant l’echeance ne vaut rien : le bail se reconduit pour trois ans un prix omis, ou annonce comme « a debattre », rend le conge nul un locataire age aux ressources modestes beneficie d’une protection qui peut interdire le conge sans offre de relogement : a verifier avant d’envoyer vendre ensuite moins cher qu’annonce oblige a en informer le locataire, qui retrouve son droit d’acheter acte de commissaire de justice, remise en main propre contre recepisse, ou lettre recommandee avec accuse de reception. c’est la date de reception qui compte, pas celle d’envoi. six mois avant l’echeance pour un logement vide, trois mois pour un meuble.">
+        <summary>
+          <span class="courrier-nom">Congé pour vendre</span>
+          <span class="courrier-resume">Mettre fin au bail à l’échéance parce qu’on vend le logement.</span>
+          <span class="puce-delai">Six mois avant l’échéance pour un logement vide, trois mois pour un meublé.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le bailleur, à son locataire. Le congé vaut offre de vente à celui-ci.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>le motif : la décision de vendre, énoncée expressément</li><li>le PRIX de vente et les conditions de la vente — c’est ce qui manque le plus souvent, et son absence suffit à annuler le congé</li><li>la description du bien tel qu’il est offert à la vente</li><li>la reproduction des dispositions légales sur le droit de préemption du locataire, que la loi impose de recopier dans le congé</li><li>la date d’échéance du bail à laquelle le congé prend effet</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>un congé donné moins de six mois avant l’échéance ne vaut rien : le bail se reconduit pour trois ans</li><li>un prix omis, ou annoncé comme « à débattre », rend le congé nul</li><li>un locataire âgé aux ressources modestes bénéficie d’une protection qui peut interdire le congé sans offre de relogement : à vérifier AVANT d’envoyer</li><li>vendre ensuite moins cher qu’annoncé oblige à en informer le locataire, qui retrouve son droit d’acheter</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Acte de commissaire de justice, remise en main propre contre récépissé, ou lettre recommandée avec accusé de réception. C’est la date de RÉCEPTION qui compte, pas celle d’envoi.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="conge pour reprise reprendre le logement pour y habiter, ou y loger un proche. le bailleur, a son locataire. le motif : la reprise pour habiter les nom et adresse du beneficiaire de la reprise la nature du lien entre le bailleur et ce beneficiaire — la loi limite strictement qui peut l’etre le caractere reel et serieux de la reprise, justifie la date d’echeance a laquelle le conge prend effet un beneficiaire hors de la liste legale rend le conge nul une reprise qui n’est pas suivie d’effet expose a des dommages et interets, et le juge le verifie la protection du locataire age aux ressources modestes s’applique ici aussi acte de commissaire de justice, remise en main propre contre recepisse, ou recommande avec accuse de reception. six mois avant l’echeance pour un vide, trois mois pour un meuble.">
+        <summary>
+          <span class="courrier-nom">Congé pour reprise</span>
+          <span class="courrier-resume">Reprendre le logement pour y habiter, ou y loger un proche.</span>
+          <span class="puce-delai">Six mois avant l’échéance pour un vide, trois mois pour un meublé.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le bailleur, à son locataire.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>le motif : la reprise pour habiter</li><li>les NOM et ADRESSE du bénéficiaire de la reprise</li><li>la nature du lien entre le bailleur et ce bénéficiaire — la loi limite strictement qui peut l’être</li><li>le caractère réel et sérieux de la reprise, justifié</li><li>la date d’échéance à laquelle le congé prend effet</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>un bénéficiaire hors de la liste légale rend le congé nul</li><li>une reprise qui n’est pas suivie d’effet expose à des dommages et intérêts, et le juge le vérifie</li><li>la protection du locataire âgé aux ressources modestes s’applique ici aussi</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Acte de commissaire de justice, remise en main propre contre récépissé, ou recommandé avec accusé de réception.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="mise en demeure pour loyers impayes reclamer les loyers dus, avant toute procedure. le bailleur, a son locataire — et au garant s’il y en a un. le decompte precis : chaque mois du, le montant, et le total la periode concernee, sans approximation un delai pour payer, explicite l’annonce de ce qui suivra a defaut de paiement les coordonnees ou payer un decompte faux ou gonfle decredibilise tout le dossier devant le juge la mise en demeure n’est pas le commandement de payer : celui-ci releve du commissaire de justice et fait courir les delais de la clause resolutoire le garant doit etre informe, sous peine de ne plus pouvoir etre appele pour la suite lettre recommandee avec accuse de reception. conservez le double et l’avis de reception. sans attendre : les loyers se prescrivent, et le retard nuit au dossier.">
+        <summary>
+          <span class="courrier-nom">Mise en demeure pour loyers impayés</span>
+          <span class="courrier-resume">Réclamer les loyers dus, avant toute procédure.</span>
+          <span class="puce-delai">Sans attendre : les loyers se prescrivent, et le retard nuit au dossier.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le bailleur, à son locataire — et au garant s’il y en a un.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>le décompte précis : chaque mois dû, le montant, et le total</li><li>la période concernée, sans approximation</li><li>un délai pour payer, explicite</li><li>l’annonce de ce qui suivra à défaut de paiement</li><li>les coordonnées où payer</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>un décompte faux ou gonflé décrédibilise tout le dossier devant le juge</li><li>la mise en demeure n’est pas le commandement de payer : celui-ci relève du commissaire de justice et fait courir les délais de la clause résolutoire</li><li>le garant doit être informé, sous peine de ne plus pouvoir être appelé pour la suite</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre recommandée avec accusé de réception. Conservez le double et l’avis de réception.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="reclamation du depot de garantie reclamer un depot de garantie non restitue dans les delais. le locataire sorti, a son ancien bailleur. le bailleur peut s’en servir pour motiver une retenue. la date de remise des cles — c’est elle qui fait courir le delai le montant verse a l’entree le rappel du delai legal de restitution la majoration due par mois de retard entame un delai pour s’executer avant saisine du juge une retenue doit etre justifiee par des devis ou factures : une retenue forfaitaire est contestable l’usure normale ne se retient pas ; seule la degradation le fait sans etat des lieux de sortie contradictoire, le logement est presume rendu en bon etat lettre recommandee avec accuse de reception. un mois apres la remise des cles si l’etat des lieux de sortie est conforme a celui d’entree, deux mois sinon.">
+        <summary>
+          <span class="courrier-nom">Réclamation du dépôt de garantie</span>
+          <span class="courrier-resume">Réclamer un dépôt de garantie non restitué dans les délais.</span>
+          <span class="puce-delai">Un mois après la remise des clés si l’état des lieux de sortie est conforme à celui d’entrée, deux mois sinon.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le locataire sorti, à son ancien bailleur. Le bailleur peut s’en servir pour motiver une retenue.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la date de remise des clés — c’est elle qui fait courir le délai</li><li>le montant versé à l’entrée</li><li>le rappel du délai légal de restitution</li><li>la majoration due par mois de retard entamé</li><li>un délai pour s’exécuter avant saisine du juge</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>une retenue doit être JUSTIFIÉE par des devis ou factures : une retenue forfaitaire est contestable</li><li>l’usure normale ne se retient pas ; seule la dégradation le fait</li><li>sans état des lieux de sortie contradictoire, le logement est présumé rendu en bon état</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre recommandée avec accusé de réception.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="revision annuelle du loyer appliquer l’indexation prevue au bail. le bailleur, a son locataire. la clause de revision du bail, citee l’indice de reference des loyers du trimestre prevu au contrat, et celui de la meme periode l’annee precedente le calcul, pose en toutes lettres le nouveau loyer et sa date d’application sans clause de revision au bail, aucune revision n’est possible la revision se prescrit : passe un an, elle ne se rattrape pas retroactivement un logement au diagnostic energetique le plus mauvais ne peut pas voir son loyer revise lettre simple suffit, mais le recommande date la demande. dans l’annee qui suit la date de revision prevue au bail.">
+        <summary>
+          <span class="courrier-nom">Révision annuelle du loyer</span>
+          <span class="courrier-resume">Appliquer l’indexation prévue au bail.</span>
+          <span class="puce-delai">Dans l’année qui suit la date de révision prévue au bail.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le bailleur, à son locataire.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la clause de révision du bail, citée</li><li>l’indice de référence des loyers du trimestre prévu au contrat, et celui de la même période l’année précédente</li><li>le calcul, posé en toutes lettres</li><li>le nouveau loyer et sa date d’application</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>sans clause de révision au bail, aucune révision n’est possible</li><li>la révision se prescrit : passé un an, elle ne se rattrape pas rétroactivement</li><li>un logement au diagnostic énergétique le plus mauvais ne peut pas voir son loyer révisé</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre simple suffit, mais le recommandé date la demande.</p>
+          </section>
+        </div>
+      </details></div>
+    </div>
+    <div class="famille" data-cherche="copropriete assemblee generale, syndic, communication de pieces.">
+      <h3 class="famille-nom">Copropriété</h3>
+      <p class="famille-resume">Assemblée générale, syndic, communication de pièces.</p>
+      <div class="courriers">
+      <details class="courrier" data-cherche="inscription d’une resolution a l’ordre du jour faire porter une question au vote de la prochaine assemblee. un coproprietaire, au syndic. la redaction exacte de la resolution telle qu’elle devra etre soumise au vote les documents necessaires a la decision, joints pour des travaux : les devis, sans lesquels la resolution ne peut pas etre votee la demande expresse d’inscription a l’ordre du jour de la prochaine assemblee une resolution vague ne peut pas etre votee et sera ecartee arrivee trop tard pour figurer dans la convocation, elle attend un an une question posee sans les pieces exigees est inscrite mais invotable lettre recommandee avec accuse de reception, ou tout moyen prevu par le reglement. assez tot pour figurer dans la convocation — en pratique, des la cloture de l’assemblee precedente.">
+        <summary>
+          <span class="courrier-nom">Inscription d’une résolution à l’ordre du jour</span>
+          <span class="courrier-resume">Faire porter une question au vote de la prochaine assemblée.</span>
+          <span class="puce-delai">Assez tôt pour figurer dans la convocation — en pratique, dès la clôture de l’assemblée précédente.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Un copropriétaire, au syndic.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la rédaction EXACTE de la résolution telle qu’elle devra être soumise au vote</li><li>les documents nécessaires à la décision, joints</li><li>pour des travaux : les devis, sans lesquels la résolution ne peut pas être votée</li><li>la demande expresse d’inscription à l’ordre du jour de la prochaine assemblée</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>une résolution vague ne peut pas être votée et sera écartée</li><li>arrivée trop tard pour figurer dans la convocation, elle attend un an</li><li>une question posée sans les pièces exigées est inscrite mais invotable</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre recommandée avec accusé de réception, ou tout moyen prévu par le règlement.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="contestation d’une decision d’assemblee generale attaquer une resolution votee, devant le tribunal. un coproprietaire opposant ou absent. celui qui a vote pour ne peut pas contester. la date de l’assemblee et celle de la notification du proces-verbal la ou les resolutions attaquees, designees par leur numero votre position au proces-verbal : opposant, ou absent les motifs de la contestation : irregularite de forme, majorite erronee, abus de majorite deux mois a compter de la notification du proces-verbal, et ce delai est applique sans indulgence cette contestation se porte devant le tribunal : une lettre au syndic n’interrompt rien avoir vote pour ferme le recours, meme si l’on a change d’avis depuis la saisine du tribunal. le courrier au syndic ne remplace pas l’assignation et ne suspend pas le delai. deux mois a compter de la notification du proces-verbal.">
+        <summary>
+          <span class="courrier-nom">Contestation d’une décision d’assemblée générale</span>
+          <span class="courrier-resume">Attaquer une résolution votée, devant le tribunal.</span>
+          <span class="puce-delai">Deux mois à compter de la notification du procès-verbal.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Un copropriétaire opposant ou absent. Celui qui a voté pour ne peut pas contester.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la date de l’assemblée et celle de la notification du procès-verbal</li><li>la ou les résolutions attaquées, désignées par leur numéro</li><li>votre position au procès-verbal : opposant, ou absent</li><li>les motifs de la contestation : irrégularité de forme, majorité erronée, abus de majorité</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>DEUX MOIS à compter de la notification du procès-verbal, et ce délai est appliqué sans indulgence</li><li>cette contestation se porte devant le tribunal : une lettre au syndic n’interrompt rien</li><li>avoir voté pour ferme le recours, même si l’on a changé d’avis depuis</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>La saisine du tribunal. Le courrier au syndic ne remplace pas l’assignation et ne suspend pas le délai.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="mise en demeure au syndic obtenir d’un syndic qu’il execute ce qu’il doit. un coproprietaire ou le conseil syndical, au syndic. l’obligation precise qui n’est pas remplie les faits, dates les demandes anterieures restees sans reponse, avec leurs dates un delai pour s’executer la suite envisagee : saisine du conseil syndical, du tribunal, ou question a l’ordre du jour une reclamation sans date et sans piece ne pese rien certaines carences relevent de l’assemblee, pas du tribunal : la revocation du syndic se vote lettre recommandee avec accuse de reception, copie au conseil syndical.">
+        <summary>
+          <span class="courrier-nom">Mise en demeure au syndic</span>
+          <span class="courrier-resume">Obtenir d’un syndic qu’il exécute ce qu’il doit.</span>
+          
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Un copropriétaire ou le conseil syndical, au syndic.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>l’obligation précise qui n’est pas remplie</li><li>les faits, datés</li><li>les demandes antérieures restées sans réponse, avec leurs dates</li><li>un délai pour s’exécuter</li><li>la suite envisagée : saisine du conseil syndical, du tribunal, ou question à l’ordre du jour</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>une réclamation sans date et sans pièce ne pèse rien</li><li>certaines carences relèvent de l’assemblée, pas du tribunal : la révocation du syndic se vote</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre recommandée avec accusé de réception, copie au conseil syndical.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="demande de communication de pieces obtenir les documents de la copropriete que le syndic doit tenir a disposition. un coproprietaire ou le conseil syndical, au syndic. la liste precise des pieces demandees : contrats, factures, releves, proces-verbaux, carnet d’entretien la periode concernee le fondement de la demande — droit de consultation du coproprietaire, prerogatives du conseil syndical un delai de reponse une demande globale du type « tous les documents » se voit opposer un refus legitime certaines pieces se consultent au cabinet du syndic sans obligation d’envoi de copies lettre recommandee avec accuse de reception.">
+        <summary>
+          <span class="courrier-nom">Demande de communication de pièces</span>
+          <span class="courrier-resume">Obtenir les documents de la copropriété que le syndic doit tenir à disposition.</span>
+          
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Un copropriétaire ou le conseil syndical, au syndic.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la liste précise des pièces demandées : contrats, factures, relevés, procès-verbaux, carnet d’entretien</li><li>la période concernée</li><li>le fondement de la demande — droit de consultation du copropriétaire, prérogatives du conseil syndical</li><li>un délai de réponse</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>une demande globale du type « tous les documents » se voit opposer un refus légitime</li><li>certaines pièces se consultent au cabinet du syndic sans obligation d’envoi de copies</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre recommandée avec accusé de réception.</p>
+          </section>
+        </div>
+      </details></div>
+    </div>
+    <div class="famille" data-cherche="actes du professionnel mandats, bon de visite, denonciation. carte professionnelle requise.">
+      <h3 class="famille-nom">Actes du professionnel</h3>
+      <p class="famille-resume">Mandats, bon de visite, dénonciation. Carte professionnelle requise.</p>
+      <div class="courriers">
+      <details class="courrier" data-cherche="mandat de vente le contrat par lequel un proprietaire confie la vente a un professionnel. l’agent immobilier titulaire de la carte professionnelle, avec son mandant. l’identite complete des parties et la designation du bien le numero d’inscription au registre des mandats — sans lui, aucune commission n’est due la duree du mandat et ses conditions de renouvellement le prix de vente et le montant des honoraires, en precisant qui les supporte les conditions de la faculte de retractation quand elle s’applique la mention de la garantie financiere et de l’assurance de responsabilite professionnelle un mandat non numerote au registre, ou numerote apres coup, prive de toute remuneration un exemplaire doit etre remis au mandant : le defaut de remise est sanctionne un mandat sans duree determinee est nul seul le titulaire de la carte professionnelle peut recevoir ce mandat signe en autant d’exemplaires que de parties, un remis au mandant le jour meme.">
+        <summary>
+          <span class="courrier-nom">Mandat de vente</span>
+          <span class="courrier-resume">Le contrat par lequel un propriétaire confie la vente à un professionnel.</span>
+          
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">L’agent immobilier titulaire de la carte professionnelle, avec son mandant.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>l’identité complète des parties et la désignation du bien</li><li>le NUMÉRO d’inscription au registre des mandats — sans lui, aucune commission n’est due</li><li>la durée du mandat et ses conditions de renouvellement</li><li>le prix de vente et le montant des honoraires, en précisant qui les supporte</li><li>les conditions de la faculté de rétractation quand elle s’applique</li><li>la mention de la garantie financière et de l’assurance de responsabilité professionnelle</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>un mandat non numéroté au registre, ou numéroté après coup, prive de toute rémunération</li><li>un exemplaire doit être REMIS au mandant : le défaut de remise est sanctionné</li><li>un mandat sans durée déterminée est nul</li><li>seul le titulaire de la carte professionnelle peut recevoir ce mandat</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Signé en autant d’exemplaires que de parties, un remis au mandant le jour même.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="mandat de gestion locative confier la gestion d’un bien loue a un professionnel. l’administrateur de biens titulaire de la carte, avec le proprietaire. l’etendue exacte des pouvoirs confies : encaissement, quittances, travaux jusqu’a quel montant, conges le numero d’inscription au registre des mandats la duree et les conditions de resiliation la remuneration, son assiette et son mode de calcul la garantie financiere couvrant les fonds detenus pour autrui la periodicite des comptes rendus de gestion detenir des fonds sans garantie financiere suffisante est une faute lourde un pouvoir de donner conge qui ne serait pas expressement prevu n’existe pas signe en autant d’exemplaires que de parties, un remis au mandant.">
+        <summary>
+          <span class="courrier-nom">Mandat de gestion locative</span>
+          <span class="courrier-resume">Confier la gestion d’un bien loué à un professionnel.</span>
+          
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">L’administrateur de biens titulaire de la carte, avec le propriétaire.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>l’étendue exacte des pouvoirs confiés : encaissement, quittances, travaux jusqu’à quel montant, congés</li><li>le numéro d’inscription au registre des mandats</li><li>la durée et les conditions de résiliation</li><li>la rémunération, son assiette et son mode de calcul</li><li>la garantie financière couvrant les fonds détenus pour autrui</li><li>la périodicité des comptes rendus de gestion</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>détenir des fonds sans garantie financière suffisante est une faute lourde</li><li>un pouvoir de donner congé qui ne serait pas expressément prévu n’existe pas</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Signé en autant d’exemplaires que de parties, un remis au mandant.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="bon de visite attester qu’un acquereur a decouvert le bien par l’agence. l’agent immobilier, signe par le visiteur. l’identite du visiteur et la designation du bien la date de la visite le nom de l’agence et son mandat l’engagement de ne pas traiter directement avec le vendeur le bon de visite prouve la visite, pas le droit a commission : il ne vaut que rapproche d’un mandat valable un bon signe sans mandat en cours ne sert a rien une clause de dedit disproportionnee sera ecartee par le juge signe sur place, un exemplaire remis au visiteur.">
+        <summary>
+          <span class="courrier-nom">Bon de visite</span>
+          <span class="courrier-resume">Attester qu’un acquéreur a découvert le bien par l’agence.</span>
+          
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">L’agent immobilier, signé par le visiteur.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>l’identité du visiteur et la désignation du bien</li><li>la DATE de la visite</li><li>le nom de l’agence et son mandat</li><li>l’engagement de ne pas traiter directement avec le vendeur</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>le bon de visite prouve la visite, pas le droit à commission : il ne vaut que rapproché d’un mandat valable</li><li>un bon signé sans mandat en cours ne sert à rien</li><li>une clause de dédit disproportionnée sera écartée par le juge</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Signé sur place, un exemplaire remis au visiteur.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="denonciation de mandat mettre fin a un mandat, d’un cote ou de l’autre. le mandant ou le mandataire. la reference du mandat et son numero de registre la date d’effet de la denonciation le respect du preavis prevu au mandat le sort des demarches en cours et des acquereurs deja presentes un mandat exclusif ne se denonce qu’aux conditions qu’il prevoit, et rarement avant son terme initial traiter avec un acquereur presente pendant le mandat peut rester du apres sa fin : les clauses de survie s’appliquent lettre recommandee avec accuse de reception. le preavis stipule au mandat, a compter de la reception.">
+        <summary>
+          <span class="courrier-nom">Dénonciation de mandat</span>
+          <span class="courrier-resume">Mettre fin à un mandat, d’un côté ou de l’autre.</span>
+          <span class="puce-delai">Le préavis stipulé au mandat, à compter de la réception.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le mandant ou le mandataire.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la référence du mandat et son numéro de registre</li><li>la date d’effet de la dénonciation</li><li>le respect du préavis prévu au mandat</li><li>le sort des démarches en cours et des acquéreurs déjà présentés</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>un mandat exclusif ne se dénonce qu’aux conditions qu’il prévoit, et rarement avant son terme initial</li><li>traiter avec un acquéreur présenté pendant le mandat peut rester dû après sa fin : les clauses de survie s’appliquent</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre recommandée avec accusé de réception.</p>
+          </section>
+        </div>
+      </details></div>
+    </div>
+    <div class="famille" data-cherche="travaux et sinistres reception, malfacons, assurance, garantie decennale.">
+      <h3 class="famille-nom">Travaux et sinistres</h3>
+      <p class="famille-resume">Réception, malfaçons, assurance, garantie décennale.</p>
+      <div class="courriers">
+      <details class="courrier" data-cherche="declaration de sinistre declarer un degat des eaux, un incendie, un vol a son assureur. l’assure, a son assureur. le numero de contrat et l’adresse du bien la date et l’heure du sinistre, et la date de sa decouverte la nature et les circonstances, sans interpretation la description des dommages, piece par piece les coordonnees des tiers concernes : voisin, syndic, autre assureur les mesures conservatoires deja prises hors delai, la garantie peut etre refusee — c’est le motif de refus le plus frequent reparer avant le passage de l’expert prive de la preuve : photographier d’abord, tout conserver minimiser les dommages dans la declaration se retourne contre l’assure a l’indemnisation par le canal prevu au contrat, double d’un recommande avec accuse de reception quand l’enjeu est important. cinq jours ouvres en regle generale, deux jours ouvres pour un vol. le contrat peut prevoir mieux, jamais moins.">
+        <summary>
+          <span class="courrier-nom">Déclaration de sinistre</span>
+          <span class="courrier-resume">Déclarer un dégât des eaux, un incendie, un vol à son assureur.</span>
+          <span class="puce-delai">Cinq jours ouvrés en règle générale, deux jours ouvrés pour un vol. Le contrat peut prévoir mieux, jamais moins.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">L’assuré, à son assureur.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>le numéro de contrat et l’adresse du bien</li><li>la DATE et l’heure du sinistre, et la date de sa découverte</li><li>la nature et les circonstances, sans interprétation</li><li>la description des dommages, pièce par pièce</li><li>les coordonnées des tiers concernés : voisin, syndic, autre assureur</li><li>les mesures conservatoires déjà prises</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>hors délai, la garantie peut être refusée — c’est le motif de refus le plus fréquent</li><li>réparer avant le passage de l’expert prive de la preuve : photographier d’abord, tout conserver</li><li>minimiser les dommages dans la déclaration se retourne contre l’assuré à l’indemnisation</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Par le canal prévu au contrat, doublé d’un recommandé avec accusé de réception quand l’enjeu est important.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="mise en demeure d’un artisan obtenir la reprise d’un chantier arrete, ou d’une malfacon. le maitre d’ouvrage, a l’entreprise. la reference du devis signe et la date de commande les travaux prevus, et ce qui est reellement fait les desordres constates, decrits un par un et dates les sommes deja versees un delai pour reprendre et achever la suite envisagee a defaut : execution par un tiers aux frais de l’entreprise, resolution du marche sans mise en demeure prealable, la plupart des recours sont irrecevables : c’est la premiere etape, pas une formalite faire achever par un tiers sans autorisation du juge est risque, sauf urgence caracterisee retenir le solde sans mise en demeure expose a des penalites de retard lettre recommandee avec accuse de reception, avec photographies datees.">
+        <summary>
+          <span class="courrier-nom">Mise en demeure d’un artisan</span>
+          <span class="courrier-resume">Obtenir la reprise d’un chantier arrêté, ou d’une malfaçon.</span>
+          
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le maître d’ouvrage, à l’entreprise.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la référence du devis signé et la date de commande</li><li>les travaux prévus, et ce qui est réellement fait</li><li>les désordres constatés, décrits un par un et datés</li><li>les sommes déjà versées</li><li>un délai pour reprendre et achever</li><li>la suite envisagée à défaut : exécution par un tiers aux frais de l’entreprise, résolution du marché</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>sans mise en demeure préalable, la plupart des recours sont irrecevables : c’est la première étape, pas une formalité</li><li>faire achever par un tiers sans autorisation du juge est risqué, sauf urgence caractérisée</li><li>retenir le solde sans mise en demeure expose à des pénalités de retard</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre recommandée avec accusé de réception, avec photographies datées.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="reserves a la reception des travaux consigner ce qui ne va pas au moment de recevoir le chantier. le maitre d’ouvrage, a l’entreprise, le jour de la reception. la date de reception — c’est elle qui fait courir toutes les garanties la liste des reserves, chacune decrite et localisee le delai imparti pour les lever la signature des deux parties, ou la mention du refus de signer sans reception, aucune garantie ne court : c’est l’acte le plus important du chantier et le plus souvent neglige une reception sans reserve rend les defauts apparents inopposables une reserve vague — « finitions a revoir » — ne permet pas d’exiger quoi que ce soit proces-verbal signe sur place, un exemplaire a chaque partie. a defaut d’accord, reception judiciaire ou par commissaire de justice. le jour meme. les reserves ne s’ajoutent pas apres coup.">
+        <summary>
+          <span class="courrier-nom">Réserves à la réception des travaux</span>
+          <span class="courrier-resume">Consigner ce qui ne va pas au moment de recevoir le chantier.</span>
+          <span class="puce-delai">Le jour même. Les réserves ne s’ajoutent pas après coup.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le maître d’ouvrage, à l’entreprise, le jour de la réception.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la date de réception — c’est elle qui fait courir toutes les garanties</li><li>la liste des réserves, chacune décrite et localisée</li><li>le délai imparti pour les lever</li><li>la signature des deux parties, ou la mention du refus de signer</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>SANS RÉCEPTION, aucune garantie ne court : c’est l’acte le plus important du chantier et le plus souvent négligé</li><li>une réception sans réserve rend les défauts apparents inopposables</li><li>une réserve vague — « finitions à revoir » — ne permet pas d’exiger quoi que ce soit</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Procès-verbal signé sur place, un exemplaire à chaque partie. À défaut d’accord, réception judiciaire ou par commissaire de justice.</p>
+          </section>
+        </div>
+      </details>
+      <details class="courrier" data-cherche="mise en jeu de la garantie decennale faire jouer la garantie de dix ans pour un desordre grave. le maitre d’ouvrage, a l’entreprise et a son assureur decennal. la date de reception des travaux, qui ouvre le decompte des dix ans la nature du desordre et en quoi il compromet la solidite ou rend le bien impropre a sa destination la date d’apparition du desordre les references de l’attestation d’assurance decennale de l’entreprise la demande d’expertise un desordre esthetique ne releve pas de la decennale : la gravite est la condition dix ans a compter de la reception, sans prorogation declarer a l’entreprise seule ne suffit pas si elle a disparu : l’assureur se saisit directement lettre recommandee avec accuse de reception a l’entreprise et a son assureur, avec photographies et devis de reprise. dix ans a compter de la reception.">
+        <summary>
+          <span class="courrier-nom">Mise en jeu de la garantie décennale</span>
+          <span class="courrier-resume">Faire jouer la garantie de dix ans pour un désordre grave.</span>
+          <span class="puce-delai">Dix ans à compter de la réception.</span>
+        </summary>
+
+        <div class="courrier-corps">
+          <p class="pour-qui">Le maître d’ouvrage, à l’entreprise ET à son assureur décennal.</p>
+
+          <section class="bloc">
+            <h4>Ce qui doit y figurer</h4>
+            <ul class=""><li>la date de RÉCEPTION des travaux, qui ouvre le décompte des dix ans</li><li>la nature du désordre et en quoi il compromet la solidité ou rend le bien impropre à sa destination</li><li>la date d’apparition du désordre</li><li>les références de l’attestation d’assurance décennale de l’entreprise</li><li>la demande d’expertise</li></ul>
+          </section>
+
+          <section class="bloc bloc-piege">
+            <h4>Ce qui l’annule</h4>
+            <ul class=""><li>un désordre esthétique ne relève pas de la décennale : la gravité est la condition</li><li>dix ans à compter de la réception, sans prorogation</li><li>déclarer à l’entreprise seule ne suffit pas si elle a disparu : l’assureur se saisit directement</li></ul>
+          </section>
+
+          <section class="bloc">
+            <h4>Comment l’envoyer</h4>
+            <p>Lettre recommandée avec accusé de réception à l’entreprise et à son assureur, avec photographies et devis de reprise.</p>
+          </section>
+        </div>
+      </details></div>
+    </div>
+  </section>
+
+  <p class="rien" id="rien" hidden>Rien ne correspond à cette recherche.</p>
+
+  <footer>
+    <div>
+      <h3>Ce que ce service n’est pas</h3>
+      <p class="mention"><b>Ce service ne fait pas le travail d’un avocat.</b> Il donne une information et un avis pratique. Il n’analyse pas votre dossier, ne vous représente pas et ne signe rien à votre place. Sur un enjeu important ou un délai qui court, voyez un avocat : l’ADIL renseigne gratuitement sur le logement, un point-justice reçoit sans condition de ressources, et l’aide juridictionnelle peut prendre en charge les honoraires.</p>
+    </div>
+    <div>
+      <h3>Si votre situation dépasse une information</h3>
+      <p>L’ADIL de votre département renseigne gratuitement sur le logement. Un point-justice reçoit sans condition de ressources. L’aide juridictionnelle peut prendre en charge les honoraires d’un avocat.</p>
+    </div>
+    <p class="provenance">
+      Délais, aide-mémoire et courriers tirés du catalogue de Immolex. Les chiffres du
+      fonds viennent de l’index du corpus LEGI, arrêté au 8 septembre 2026 après
+      423 mises à jour quotidiennes.
+    </p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var champ = document.getElementById('q');
+  var vider = document.getElementById('vider');
+  var rien = document.getElementById('rien');
+  var zones = Array.prototype.slice.call(document.querySelectorAll('.zone'));
+  var cherchables = Array.prototype.slice.call(document.querySelectorAll('[data-cherche]'));
+
+  function sansAccents(texte) {
+    return texte.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  function filtrer() {
+    var mot = sansAccents(champ.value);
+    vider.hidden = mot === '';
+
+    if (!mot) {
+      cherchables.forEach(function (bloc) {
+        bloc.hidden = false;
+        if (bloc.tagName === 'DETAILS') bloc.open = false;
+      });
+      zones.forEach(function (zone) { zone.hidden = false; });
+      rien.hidden = true;
+      return;
+    }
+
+    var trouves = 0;
+    cherchables.forEach(function (bloc) {
+      var correspond = bloc.getAttribute('data-cherche').indexOf(mot) !== -1;
+      bloc.hidden = !correspond;
+      /* Ce qui correspond s'ouvre : chercher « amiante » et devoir encore
+         déplier trois fiches n'est pas une recherche. */
+      if (bloc.tagName === 'DETAILS') bloc.open = correspond;
+      if (correspond) trouves += 1;
+    });
+
+    /* Une section dont plus rien ne dépasse disparaît avec son titre : un
+       intertitre seul au-dessus du vide fait croire à une page cassée. */
+    zones.forEach(function (zone) {
+      var restants = zone.querySelectorAll('[data-cherche]:not([hidden])').length;
+      zone.hidden = restants === 0;
+    });
+
+    rien.hidden = trouves > 0;
+  }
+
+  champ.addEventListener('input', filtrer);
+  vider.addEventListener('click', function () {
+    champ.value = '';
+    champ.focus();
+    filtrer();
+  });
+  /* Le navigateur restaure parfois la valeur d'un champ au rechargement. */
+  if (champ.value) filtrer();
+})();
+</script>
