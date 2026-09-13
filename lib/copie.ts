@@ -29,7 +29,17 @@ export interface Paragraphe {
  * celle-là qu'un client remarque.
  */
 export const MARQUE = {
-  nom: 'Droit immobilier',
+  /*
+   * Immo pour le bien, lex pour la loi : le nom dit les deux moitiés du
+   * métier en trois syllabes, se dicte au téléphone sans être épelé, et
+   * s'écrit comme il se prononce.
+   *
+   * Il ne dit PAS « immobilier », et c'est voulu : le jour où le droit
+   * foncier, la construction, le travail et les sociétés ouvrent leurs
+   * onglets, une marque qui promettait une seule matière aurait été à
+   * refaire — avec le domaine, les courriels et les favoris des clients.
+   */
+  nom: 'Immolex',
   /* Sous le nom, en petit : ce que c'est, pas qui l'édite. */
   accroche: 'dix spécialités, une réponse sourcée',
 } as const;

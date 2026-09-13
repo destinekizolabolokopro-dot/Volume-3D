@@ -1,4 +1,4 @@
-# Droit immobilier
+# Immolex
 
 Un assistant juridique pour ceux qui vivent de l'immobilier : propriétaires
 bailleurs, loueurs en meublé de tourisme, copropriétaires, et les
@@ -46,7 +46,7 @@ onglets des branches du droit.
 | `npm run typecheck` | vérification des types |
 | `npm run verify` | les deux précédents |
 | `npm run corpus -- --fonds` | télécharge le fonds LEGI et reconstruit `corpus/` |
-| `npm run page` | produit `standalone/droit-immobilier.html`, le fichier unique |
+| `npm run page` | produit `standalone/immolex.html`, le fichier unique |
 
 La clé du modèle n'a pas à être dans `.env.local` : posez `ADMIN_PASSWORD`, puis
 collez-la depuis `/reglages`. Voir plus bas.
@@ -55,9 +55,9 @@ collez-la depuis `/reglages`. Voir plus bas.
 est versionné, donc on ne la relance que quand la loi bouge sur une matière
 suivie, ou quand la sélection de `lib/corpus-choix.ts` change.
 
-## La page unique : `standalone/droit-immobilier.html`
+## La page unique : `standalone/immolex.html`
 
-`npm run page` produit **un seul fichier HTML de 166 Ko** qui s'ouvre par
+`npm run page` produit **un seul fichier HTML** qui s'ouvre par
 double-clic. Pas de serveur, pas d'installation, et — vérifié au navigateur —
 **zéro requête réseau** : la police est embarquée, tout le reste est du texte.
 

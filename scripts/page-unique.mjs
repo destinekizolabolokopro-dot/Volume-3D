@@ -46,7 +46,7 @@ import { DOMAINES } from '../lib/domaines.ts';
 import { ACCUEIL, LIMITES, MARQUE, MENTION, ORIENTATION, PIED, RASSURANCE, SPECIALISTE } from '../lib/copie.ts';
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..');
-const DEST = join(RACINE, 'standalone', 'droit-immobilier.html');
+const DEST = join(RACINE, 'standalone', 'immolex.html');
 
 const lire = (chemin) => readFileSync(join(RACINE, chemin), 'utf8');
 const lireJson = (chemin) => JSON.parse(lire(chemin));
