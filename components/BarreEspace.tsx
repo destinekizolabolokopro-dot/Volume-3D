@@ -1,4 +1,5 @@
 import { renvoyerLaVerification } from '@/app/espace/actions';
+import { Sceau } from '@/components/Sceau';
 import { MARQUE } from '@/lib/copie';
 
 /**
@@ -16,8 +17,13 @@ export function BarreEspace({ nom, verifie }: { nom: string; verifie: boolean })
     <>
       <header className="jur-bar jur-bar-espace">
         <a className="jur-bar-brand" href="/">
-          {MARQUE.nom}
-          <small>votre espace</small>
+          {/* La barre de l'espace est sombre : la cire y tombe à 1,3 et le
+              sceau s'y éteindrait. Il prend donc sa version claire. */}
+          <Sceau taille={30} trait="var(--accent-on-dark)" lettre="var(--ink-on-dark)" />
+          <span className="jur-bar-marque">
+            {MARQUE.nom}
+            <small>votre espace</small>
+          </span>
         </a>
 
         <a className="jur-bar-link" href="/espace">

@@ -66,6 +66,33 @@ const e = (v) =>
 const liste = (items, classe = '') =>
   `<ul${classe ? ` class="${classe}"` : ''}>${items.map((i) => `<li>${e(i)}</li>`).join('')}</ul>`;
 
+/**
+ * Le sceau, en clair de composants/Sceau.tsx. Ce fichier n'a pas de React :
+ * il écrit du HTML. Le dessin est le même, au trait près — un double anneau,
+ * le monogramme, deux étoiles — et les couleurs viennent des jetons, si bien
+ * qu'il suit le fond sur lequel on le pose.
+ */
+const sceau = (taille, trait = 'var(--accent)', lettre = 'var(--accent)') =>
+  `<svg width="${taille}" height="${taille}" viewBox="0 0 100 100" aria-hidden="true" focusable="false" style="flex:none">
+  <circle cx="50" cy="50" r="47" fill="none" stroke="${trait}" stroke-width="2.5"/>
+  <circle cx="50" cy="50" r="39.5" fill="none" stroke="${trait}" stroke-width="1"/>
+  <text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="Bodoni Moda, Didot, serif" font-size="40" font-weight="500" fill="${lettre}">IM</text>
+  <path d="M50 12.5 l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z" fill="${trait}"/>
+  <path d="M50 72.8 l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z" fill="${trait}"/>
+</svg>`;
+
+/**
+ * Pose l'italique de cire sur les mots accentués du titre d'accueil, comme le
+ * fait `accentuer()` dans components/Assistant.tsx.
+ */
+const accentue = (ligne) => {
+  const accent = ACCUEIL.titreAccent;
+  const coupe = accent ? ligne.indexOf(accent) : -1;
+  if (coupe < 0) return e(ligne);
+
+  return `${e(ligne.slice(0, coupe))}<em>${e(accent)}</em>${e(ligne.slice(coupe + accent.length))}`;
+};
+
 const index = lireJson('corpus/index.json');
 const articles = index.domaines.reduce((n, d) => n + d.articles, 0);
 const parDomaine = Object.fromEntries(index.domaines.map((d) => [d.domaine, d.articles]));
@@ -251,7 +278,7 @@ const limites = LIMITES.map(
 const accueil = `
 <div class="vue" id="vue-accueil">
   <header class="jur-bar">
-    <span class="jur-bar-brand">${e(MARQUE.nom)}<small>${e(MARQUE.accroche)}</small></span>
+    <span class="jur-bar-brand">${sceau(30)}<span class="jur-bar-marque">${e(MARQUE.nom)}<small>${e(MARQUE.accroche)}</small></span></span>
     <a class="jur-bar-link" href="#documents" data-vers="documents">Documents</a>
     <a class="jur-bar-link" href="#tarifs" data-vers="documents">Formules</a>
     <a class="jur-bar-link jur-bar-compte" href="#espace" data-vers="espace">Entrer</a>
@@ -261,7 +288,7 @@ const accueil = `
     <div class="jur-haut">
       <div class="jur-haut-colonne">
         <p class="jur-oeil">${e(ACCUEIL.oeil)}</p>
-        <h1 class="jur-h1">${ACCUEIL.titreLignes.map((l) => `<span>${e(l)}</span>`).join('')}</h1>
+        <h1 class="jur-h1">${ACCUEIL.titreLignes.map((l) => `<span>${accentue(l)}</span>`).join('')}</h1>
         <p class="jur-lede">${e(ACCUEIL.lede)}</p>
 
         ${composeur('accueil', 'Poser la question', ORIENTATION.placeholder, 'Rien n’est conservé : en fermant cet onglet, le fil disparaît.')}
@@ -296,13 +323,13 @@ const accueil = `
     </section>
 
     <section class="jur-section jur-vitrine">
-      <div class="jur-preuve">
-        <div class="jur-preuve-texte">
-          <p class="jur-oeil">${e(PREUVE.oeil)}</p>
-          <h2 class="jur-h2">${e(PREUVE.titre)}</h2>
-          <p>${e(PREUVE.corps)}</p>
-          <p class="jur-preuve-note">${e(PREUVE.note)}</p>
-        </div>
+      <div class="jur-vitrine-tete">
+        <p class="jur-oeil">${e(PREUVE.oeil)}</p>
+        <h2 class="jur-h2">${e(PREUVE.titre)}</h2>
+      </div>
+      <div class="jur-preuve-texte">
+        <p>${e(PREUVE.corps)}</p>
+        <p class="jur-preuve-note">${e(PREUVE.note)}</p>
         <dl class="jur-chiffres">
           <div class="jur-chiffre"><dt>${e(index.textes)}</dt><dd>${e(PREUVE.labels.textes)}</dd></div>
           <div class="jur-chiffre"><dt>${e(nombreLisible(articles))}</dt><dd>${e(PREUVE.labels.articles)}</dd></div>
@@ -365,7 +392,7 @@ const onglets = BRANCHES.map(
 
 const barreEspace = `
   <header class="jur-bar jur-bar-espace">
-    <a class="jur-bar-brand" href="#accueil" data-vers="accueil">${e(MARQUE.nom)}<small>votre espace</small></a>
+    <a class="jur-bar-brand" href="#accueil" data-vers="accueil">${sceau(30, 'var(--accent-on-dark)', 'var(--ink-on-dark)')}<span class="jur-bar-marque">${e(MARQUE.nom)}<small>votre espace</small></span></a>
     <a class="jur-bar-link" href="#espace" data-vers="espace">Poser une question</a>
     <a class="jur-bar-link" href="#documents" data-vers="documents">Rédiger un courrier</a>
     <a class="jur-bar-link jur-bar-compte" href="#accueil" data-vers="accueil">Camille</a>
@@ -477,7 +504,7 @@ const fiches = DOMAINES.map((d) => {
   return `
 <div class="vue" id="vue-fiche-${e(d.id)}" hidden>
   <header class="jur-bar">
-    <a class="jur-bar-brand" href="#accueil" data-vers="accueil">${e(MARQUE.nom)}<small>${e(MARQUE.accroche)}</small></a>
+    <a class="jur-bar-brand" href="#accueil" data-vers="accueil">${sceau(30)}<span class="jur-bar-marque">${e(MARQUE.nom)}<small>${e(MARQUE.accroche)}</small></span></a>
     <a class="jur-bar-link" href="#accueil" data-vers="accueil">← Toutes les spécialités</a>
     <a class="jur-bar-link" href="#documents" data-vers="documents">Documents</a>
     <a class="jur-bar-link jur-bar-compte" href="#espace" data-vers="espace">Entrer</a>
@@ -544,7 +571,7 @@ const catalogue = FAMILLES.map((famille) => {
 const documents = `
 <div class="vue" id="vue-documents" hidden>
   <header class="jur-bar">
-    <a class="jur-bar-brand" href="#accueil" data-vers="accueil">${e(MARQUE.nom)}<small>${e(MARQUE.accroche)}</small></a>
+    <a class="jur-bar-brand" href="#accueil" data-vers="accueil">${sceau(30)}<span class="jur-bar-marque">${e(MARQUE.nom)}<small>${e(MARQUE.accroche)}</small></span></a>
     <a class="jur-bar-link" href="#accueil" data-vers="accueil">← L’assistant</a>
     <a class="jur-bar-link jur-bar-compte" href="#espace" data-vers="espace">Entrer</a>
   </header>
@@ -578,7 +605,19 @@ const documents = `
 
 /* ================================================================= la page === */
 
-const police = readFileSync(join(RACINE, 'public/fonts/inter-400-latin.woff2')).toString('base64');
+/* Les trois fontes du fichier, embarquées en base64 : le Bodoni romain des
+   titres, son italique — qui porte les deux mots accentués du titre d'accueil,
+   et sans lequel l'accent se perdrait — et le Spectral du texte courant. Les
+   graisses hautes du Spectral et le latin étendu ne sont pas embarqués : ils
+   pèseraient quatre-vingts kilo-octets de plus dans un fichier qu'on ouvre
+   hors ligne, pour des caractères qu'aucun de ces écrans n'emploie. */
+const enBase64 = (nom) =>
+  readFileSync(join(RACINE, 'public/fonts', nom)).toString('base64');
+
+const bodoni = enBase64('bodoni-normal-400-700-latin.woff2');
+const bodoniItalique = enBase64('bodoni-italic-400-700-latin.woff2');
+const spectral = enBase64('spectral-normal-400-latin.woff2');
+const spectralGras = enBase64('spectral-normal-600-latin.woff2');
 const socle = lire('app/socle.css');
 const feuille = lire('app/assistant.css');
 
@@ -586,6 +625,7 @@ const pied = `
 <footer class="jur-pied">
   <div class="jur-pied-corps">
     <div class="jur-pied-marque">
+      ${sceau(34)}
       <p class="jur-pied-nom">${e(MARQUE.nom)}</p>
       <p class="jur-pied-accroche">${e(MARQUE.accroche)}</p>
     </div>
@@ -603,11 +643,35 @@ const page = `<title>${e(MARQUE.nom)}</title>
 
 <style>
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Bodoni Moda';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400 700;
   font-display: swap;
-  src: url(data:font/woff2;base64,${police}) format('woff2');
+  src: url(data:font/woff2;base64,${bodoni}) format('woff2');
+}
+
+@font-face {
+  font-family: 'Bodoni Moda';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(data:font/woff2;base64,${bodoniItalique}) format('woff2');
+}
+
+@font-face {
+  font-family: 'Spectral';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(data:font/woff2;base64,${spectral}) format('woff2');
+}
+
+@font-face {
+  font-family: 'Spectral';
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url(data:font/woff2;base64,${spectralGras}) format('woff2');
 }
 ${socle}
 ${feuille}

@@ -76,11 +76,15 @@ export const ACCUEIL = {
      point d'interrogation en début de ligne une fois sur deux selon la
      largeur — et `text-wrap: balance` n'y peut rien. */
   titreLignes: ['Une question sur votre bien ?', 'Elle ira au bon spécialiste.'],
+  /* Les deux mots que le titre met en italique et en cire. Le titre reste
+     écrit d'un seul tenant : l'accent est posé dessus, il ne le découpe pas,
+     et le jour où la formule change il suffit de changer les deux mots. */
+  titreAccent: 'bon spécialiste',
   lede:
-    'Dix spécialités du droit immobilier, pour ceux qui en vivent : propriétaires bailleurs, loueurs en meublé de tourisme, copropriétaires — et les professionnels qui les accompagnent, agents, mandataires, gestionnaires. Chacune avec son périmètre, ses délais couperets et son aide-mémoire. Racontez votre situation comme vous la raconteriez à quelqu’un.',
+    'Dix spécialités, chacune avec son périmètre et ses délais couperets. Racontez votre situation comme vous la raconteriez à quelqu’un : la réponse cite l’article, elle ne donne pas un avis en l’air.',
   grilleTitre: 'Ou choisissez directement',
   grilleSous:
-    'Chaque fiche indique ce que le spécialiste traite, ce qu’il ne traite pas, les délais à ne pas manquer et les pièces à réunir avant d’agir.',
+    'Ce que chacune traite, ce qu’elle ne traite pas, et les délais à ne pas manquer.',
   limitesTitre: 'Ce que cet assistant est, et ce qu’il n’est pas',
   limitesSous: 'Trois limites, dites avant plutôt qu’après.',
   piedMention:
@@ -99,7 +103,7 @@ export const ETAPES: Paragraphe[] = [
   {
     amorce: 'Vous racontez.',
     suite:
-      'En français ordinaire, comme à quelqu’un au téléphone. Rien à choisir, rien à cocher : votre question part sans spécialité, et c’est le service qui la range. Vous pouvez joindre le bail, le compromis ou le procès-verbal — il est lu, jamais conservé.',
+      'En français ordinaire, comme à quelqu’un au téléphone. Rien à choisir, rien à cocher : votre question part sans spécialité, et c’est le service qui la range. Vous pouvez joindre le bail, le compromis ou le procès-verbal — il est lu, jamais conservé.',
   },
   {
     amorce: 'Le bon spécialiste répond.',
@@ -126,7 +130,7 @@ export const RASSURANCE = {
   points: [
     'La réponse cite l’article exact, avec son passage, tiré du fonds officiel.',
     'Le document que vous joignez est lu pendant la réponse, puis oublié. Rien n’en est conservé.',
-    'Une question d’essai sans inscription et sans carte bancaire : vous jugez avant de décider.',
+    'Une question d’essai sans inscription et sans carte bancaire : vous jugez avant de décider.',
   ],
   pied: 'Fonds arrêté au',
 } as const;
@@ -152,7 +156,7 @@ export const VITRINE_DOCUMENTS = {
   oeil: 'Écrire, pas seulement comprendre',
   titre: 'Dix-sept courriers, aux mentions qui les rendent valables',
   corps:
-    'Un congé pour vente auquel il manque le prix et les conditions est nul, et il n’est pas rattrapable : le délai a couru. Chaque modèle affiche ce qui doit y figurer, ce qui l’annule, comment l’envoyer pour que l’envoi se prouve, et le délai qui l’enferme. Vous racontez votre situation, le courrier sort rédigé, et vous l’ouvrez dans Word pour le relire.',
+    'Un congé pour vente auquel il manque le prix et les conditions est nul, et il n’est pas rattrapable : le délai a couru. Chaque modèle affiche ce qui doit y figurer, ce qui l’annule, comment l’envoyer pour que l’envoi se prouve, et le délai qui l’enferme. Vous racontez votre situation, le courrier sort rédigé, et vous l’ouvrez dans Word pour le relire.',
   action: 'Voir les modèles',
 } as const;
 
@@ -230,10 +234,10 @@ export const ESPACE = {
    * d'écran n'informe plus, il encombre.
    */
   oeil: '',
-  titreLignes: ['Que s’est-il passé ?'],
+  titreLignes: ['Que s’est-il passé ?'],
   lede:
-    'Racontez la situation comme vous la raconteriez à quelqu’un : les faits, les dates, les montants. Elle ira au spécialiste qui en répond, avec ses textes.',
-  invite: 'Votre consultation est enregistrée : vous pourrez la rouvrir depuis « Mes consultations ».',
+    'Racontez la situation comme vous la raconteriez à quelqu’un : les faits, les dates, les montants. Elle ira au spécialiste qui en répond, avec ses textes.',
+  invite: 'Votre consultation est enregistrée : vous pourrez la rouvrir depuis « Mes consultations ».',
 } as const;
 
 export const SPECIALISTE = {

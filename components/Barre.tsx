@@ -1,3 +1,4 @@
+import { Sceau } from '@/components/Sceau';
 import { compteCourant } from '@/lib/comptes';
 import { MARQUE } from '@/lib/copie';
 
@@ -18,8 +19,11 @@ export async function Barre({ retour }: { retour?: { href: string; label: string
   return (
     <header className="jur-bar">
       <a className="jur-bar-brand" href="/">
-        {MARQUE.nom}
-        <small>{MARQUE.accroche}</small>
+        <Sceau taille={30} />
+        <span className="jur-bar-marque">
+          {MARQUE.nom}
+          <small>{MARQUE.accroche}</small>
+        </span>
       </a>
 
       {retour && (

@@ -1,4 +1,5 @@
 import { Mention } from '@/components/Mention';
+import { Sceau } from '@/components/Sceau';
 import { compteCourant } from '@/lib/comptes';
 import { MARQUE, PIED } from '@/lib/copie';
 
@@ -25,6 +26,9 @@ export async function Pied() {
     <footer className="jur-pied">
       <div className="jur-pied-corps">
         <div className="jur-pied-marque">
+          {/* Sur le fond creux du pied, le sceau garde sa cire : c'est le
+              dernier endroit où la marque se pose, et elle s'y pose entière. */}
+          <Sceau taille={34} />
           <p className="jur-pied-nom">{MARQUE.nom}</p>
           <p className="jur-pied-accroche">{MARQUE.accroche}</p>
         </div>

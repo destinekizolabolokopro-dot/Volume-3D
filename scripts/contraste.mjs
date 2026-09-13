@@ -3,7 +3,7 @@
  *
  * Il lit les jetons de couleur dans `app/socle.css` et vérifie, un par un,
  * que chaque texte franchit le seuil sur le fond où il est RÉELLEMENT posé.
- * Pas sur du blanc par principe : `--ink-faint` passait AA sur blanc et
+ * Pas sur du papier par principe : `--ink-faint` passait AA sur le papier et
  * échouait sur le fond alterné, ce qui ne se voit qu'en mesurant la bonne
  * paire.
  *
@@ -45,11 +45,11 @@ const j = (nom) => {
    n'existe pas ferait échouer l'audit sur un cas que personne ne voit ; en
    oublier une laisserait passer le seul défaut qui compte. */
 const PAIRES = [
-  ['texte courant sur blanc', 'ink', 'bg', 4.5],
-  ['titres sur blanc', 'ink-strong', 'bg', 4.5],
-  ['texte atténué sur blanc', 'ink-muted', 'bg', 4.5],
-  ['texte doux sur blanc', 'ink-soft', 'bg', 4.5],
-  ['mentions sur blanc', 'ink-faint', 'bg', 4.5],
+  ['texte courant sur le papier', 'ink', 'bg', 4.5],
+  ['titres sur le papier', 'ink-strong', 'bg', 4.5],
+  ['texte atténué sur le papier', 'ink-muted', 'bg', 4.5],
+  ['texte doux sur le papier', 'ink-soft', 'bg', 4.5],
+  ['mentions sur le papier', 'ink-faint', 'bg', 4.5],
   ['mentions sur le fond alterné', 'ink-faint', 'bg-alt', 4.5],
   ['texte doux sur le fond alterné', 'ink-soft', 'bg-alt', 4.5],
   ['texte courant sur le fond creusé', 'ink', 'bg-sunk', 4.5],
@@ -63,17 +63,17 @@ const PAIRES = [
 
   ['accent sur blanc (lien)', 'accent', 'bg', 4.5],
   ['accent sur le fond alterné', 'accent', 'bg-alt', 4.5],
-  ['blanc sur l’accent (bouton plein)', 'accent-ink', 'accent', 4.5],
-  ['blanc sur l’accent au survol', 'accent-ink', 'accent-strong', 4.5],
+  ['papier sur la cire (bouton plein)', 'accent-ink', 'accent', 4.5],
+  ['papier sur la cire au survol', 'accent-ink', 'accent-strong', 4.5],
   ['accent foncé sur son lavis', 'accent-strong', 'accent-wash', 4.5],
   /* La pastille « bientôt » d'un onglet de branche, et le bandeau qui demande
      de confirmer son adresse : deux textes posés sur un lavis, mesurés là. */
   ['accent sur son lavis (pastille)', 'accent', 'accent-wash', 4.5],
   ['texte courant sur le lavis d’alerte', 'ink', 'warning-wash', 4.5],
   /* L'appel de fin de page : un aplat d'accent, un titre blanc, un texte
-     d'accompagnement plus doux, et un bouton blanc dessus. */
+     d'accompagnement plus doux, et un bouton de papier dessus. */
   ['texte doux sur l’aplat d’accent', 'ink-on-accent-soft', 'accent', 4.5],
-  ['accent foncé sur le bouton blanc', 'accent-strong', 'accent-ink', 4.5],
+  ['cire foncée sur le bouton de papier', 'accent-strong', 'accent-ink', 4.5],
   ['texte courant sur le lavis d’accent', 'ink', 'accent-wash', 4.5],
 
   ['texte clair sur fond sombre', 'ink-on-dark', 'dark', 4.5],
@@ -84,13 +84,18 @@ const PAIRES = [
   ['erreur sur son lavis', 'danger', 'danger-wash', 4.5],
   ['alerte sur son lavis', 'warning', 'warning-wash', 4.5],
   ['succès sur son lavis', 'positive', 'positive-wash', 4.5],
-  ['erreur sur blanc', 'danger', 'bg', 4.5],
-  /* Le micro en écoute : blanc sur le rouge de l'enregistrement. */
-  ['blanc sur l’erreur (micro en écoute)', 'accent-ink', 'danger', 4.5],
+  ['erreur sur le papier', 'danger', 'bg', 4.5],
+  /* Le micro en écoute : papier sur le rouge de l'enregistrement. */
+  ['papier sur l’erreur (micro en écoute)', 'accent-ink', 'danger', 4.5],
 
   /* Bordures : 3,0 suffit, mais il faut le franchir. Un champ dont on ne
      distingue pas le bord du fond n'est pas un champ. */
-  ['bordure de contrôle sur blanc', 'line-strong', 'bg', 3],
+  ['bordure de contrôle sur le papier', 'line-strong', 'bg', 3],
+  /* La surface : le papier plus clair des champs et des encadrés. C'est un
+     fond réel depuis que le blanc franc a disparu du site. */
+  ['texte courant sur la surface', 'ink', 'surface', 4.5],
+  ['mentions sur la surface', 'ink-faint', 'surface', 4.5],
+  ['bordure de contrôle sur la surface', 'line-strong', 'surface', 3],
   ['bordure de contrôle sur le fond alterné', 'line-strong', 'bg-alt', 3],
 ];
 
