@@ -219,7 +219,17 @@ export const LIMITES: Paragraphe[] = [
  * vivent… » chaque matin, c'est lui vendre ce qu'il a déjà.
  */
 export const ESPACE = {
-  oeil: 'Votre espace · droit immobilier',
+  /*
+   * Pas de surtitre ici, et la chaîne vide le dit plutôt que de disparaître
+   * du type.
+   *
+   * Il portait « Votre espace · droit immobilier », c'est-à-dire les deux
+   * choses que l'écran affichait déjà : la barre sombre dit « votre espace »
+   * trois centimètres plus haut, et l'onglet souligné dit « Droit
+   * immobilier » juste au-dessus. Un troisième rappel dans la même hauteur
+   * d'écran n'informe plus, il encombre.
+   */
+  oeil: '',
   titreLignes: ['Que s’est-il passé ?'],
   lede:
     'Racontez la situation comme vous la raconteriez à quelqu’un : les faits, les dates, les montants. Elle ira au spécialiste qui en répond, avec ses textes.',
