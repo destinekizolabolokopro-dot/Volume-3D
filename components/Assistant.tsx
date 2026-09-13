@@ -131,7 +131,10 @@ export function Assistant({
             sont alors repris en pleine section plus bas. */}
         <div className="jur-haut" id="poser">
           <div className="jur-haut-colonne">
-            <p className="jur-oeil">{tete.oeil}</p>
+            {/* Le surtitre est facultatif : l'espace de travail n'en a pas —
+                sa barre et son onglet disent déjà où l'on est. Rendre un
+                paragraphe vide laisserait sa marge, donc son trou. */}
+            {tete.oeil && <p className="jur-oeil">{tete.oeil}</p>}
             <h1 className="jur-h1">
               {tete.titreLignes.map((ligne) => (
                 <span key={ligne}>{ligne}</span>
