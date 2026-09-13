@@ -66,7 +66,13 @@ interface Props {
    * vitrine. L'espace de travail a les siens : on n'y vend plus, on y
    * travaille — voir `ESPACE` dans lib/copie.ts.
    */
-  entete?: { oeil: string; titreLignes: readonly string[]; lede: string; invite: string };
+  entete?: {
+    oeil: string;
+    titreLignes: readonly string[];
+    lede: string;
+    invite: string;
+    titreAccent?: string;
+  };
   /**
    * Propose le mode mains libres. Réservé à l'espace de travail : sur la
    * vitrine, on pose UNE question d'essai, et un interrupteur pour travailler
@@ -75,6 +81,26 @@ interface Props {
   mainsLibres?: boolean;
   /** Ce qui n'a de sens qu'avant la première question : la grille, les limites. */
   children: ReactNode;
+}
+
+/**
+ * Pose l'italique du titre sur les mots accentués, s'ils sont dans cette
+ * ligne-ci. Une seule occurrence est traitée : un titre qui répéterait la
+ * formule aurait deux fois le même relief, et ce ne serait plus un accent.
+ */
+function accentuer(ligne: string, accent?: string): ReactNode {
+  if (!accent) return ligne;
+
+  const coupe = ligne.indexOf(accent);
+  if (coupe < 0) return ligne;
+
+  return (
+    <>
+      {ligne.slice(0, coupe)}
+      <em>{accent}</em>
+      {ligne.slice(coupe + accent.length)}
+    </>
+  );
 }
 
 export function Assistant({
@@ -93,6 +119,7 @@ export function Assistant({
     titreLignes: ACCUEIL.titreLignes,
     lede: ACCUEIL.lede,
     invite: ORIENTATION.invite,
+    titreAccent: ACCUEIL.titreAccent,
   };
   const {
     tours,
@@ -137,7 +164,7 @@ export function Assistant({
             {tete.oeil && <p className="jur-oeil">{tete.oeil}</p>}
             <h1 className="jur-h1">
               {tete.titreLignes.map((ligne) => (
-                <span key={ligne}>{ligne}</span>
+                <span key={ligne}>{accentuer(ligne, tete.titreAccent)}</span>
               ))}
             </h1>
             <p className="jur-lede">{tete.lede}</p>

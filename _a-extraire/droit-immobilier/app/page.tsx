@@ -127,13 +127,14 @@ export default async function AccueilJuridique() {
             annoncer zéro article serait pire que se taire. */}
         {preuve && (
           <section className="jur-section jur-vitrine">
-            <div className="jur-preuve">
-              <div className="jur-preuve-texte">
-                <p className="jur-oeil">{PREUVE.oeil}</p>
-                <h2 className="jur-h2">{PREUVE.titre}</h2>
-                <p>{PREUVE.corps}</p>
-                <p className="jur-preuve-note">{PREUVE.note}</p>
-              </div>
+            <div className="jur-vitrine-tete">
+              <p className="jur-oeil">{PREUVE.oeil}</p>
+              <h2 className="jur-h2">{PREUVE.titre}</h2>
+            </div>
+
+            <div className="jur-preuve-texte">
+              <p>{PREUVE.corps}</p>
+              <p className="jur-preuve-note">{PREUVE.note}</p>
 
               <dl className="jur-chiffres">
                 <div className="jur-chiffre">

@@ -43,7 +43,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#ffffff',
+  themeColor: '#f5f3ed',
   width: 'device-width',
   initialScale: 1,
 };
@@ -52,9 +52,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <head>
-        {/* Une seule fonte pour tout le site : un seul fichier dans le chemin
-            critique. Inter est variable, ce fichier couvre toutes les graisses. */}
-        <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400-latin.woff2" crossOrigin="anonymous" />
+        {/* Les deux fichiers du chemin critique : le Bodoni des titres, qui
+            est variable et couvre donc 400 à 700 à lui seul, et le Spectral
+            du texte courant. Les italiques et le latin étendu ne sont pas
+            préchargés : ils n'arrivent que là où on s'en sert. */}
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/bodoni-normal-400-700-latin.woff2" crossOrigin="anonymous" />
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/spectral-normal-400-latin.woff2" crossOrigin="anonymous" />
       </head>
       <body>
         <div className="jur">{children}</div>
