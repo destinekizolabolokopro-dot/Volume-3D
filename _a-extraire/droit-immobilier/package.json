@@ -11,7 +11,8 @@
     "verify": "npm run typecheck && npm test && npm run contraste",
     "corpus": "node --experimental-strip-types scripts/corpus.mjs",
     "page": "node --experimental-strip-types scripts/page-unique.mjs",
-    "contraste": "node --experimental-strip-types scripts/contraste.mjs"
+    "contraste": "node --experimental-strip-types scripts/contraste.mjs",
+    "artefact": "node --experimental-strip-types scripts/artefact.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
