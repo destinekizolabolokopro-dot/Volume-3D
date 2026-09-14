@@ -83,7 +83,7 @@ export type ResultatEnvoi =
 export async function envoyerLeCourriel(courriel: Courriel): Promise<ResultatEnvoi> {
   const cle = await cleDuCourriel();
   if (!cle) {
-    tracer(courriel);
+    tracer(courriel, 'aucune clé RESEND_API_KEY');
     return { envoye: false, raison: 'non-configure' };
   }
 
@@ -108,28 +108,38 @@ export async function envoyerLeCourriel(courriel: Courriel): Promise<ResultatEnv
          jamais à l'écran : il peut contenir l'adresse d'un tiers. */
       const detail = await reponse.text().catch(() => '');
       console.error(`[courriel] refus ${reponse.status}`, detail.slice(0, 500));
+      tracer(courriel, `refusé par Resend (${reponse.status})`);
       return { envoye: false, raison: 'refus', detail: String(reponse.status) };
     }
 
     return { envoye: true };
   } catch (cause) {
     console.error('[courriel] envoi impossible', cause);
+    tracer(courriel, 'envoi impossible');
     return { envoye: false, raison: 'refus' };
   }
 }
 
 /**
- * Hors production et sans clé, le message est écrit dans la console.
+ * Hors production, un message qui n'est pas parti est écrit dans la console.
  *
  * C'est ce qui permet de suivre une inscription ou une réinitialisation de
  * bout en bout sur une machine de développement, sans compte chez personne.
- * En production, rien n'est écrit : un lien de réinitialisation dans un
- * journal est un mot de passe dans un journal.
+ *
+ * Il ne se déclenchait QUE lorsque la clé était absente. Une clé présente mais
+ * refusée — révoquée, mal recopiée, domaine non vérifié, quota atteint — est
+ * pourtant le cas le plus fréquent, et c'était le pire : l'écran annonçait
+ * « un lien vient d'être envoyé », le journal disait « refus 401 », et le lien
+ * lui-même n'existait nulle part. Le parcours devenait intestable au moment
+ * précis où l'on cherchait à comprendre pourquoi il ne marchait pas.
+ *
+ * En production, rien n'est écrit, quelle que soit la raison : un lien de
+ * réinitialisation dans un journal est un mot de passe dans un journal.
  */
-function tracer(courriel: Courriel): void {
+function tracer(courriel: Courriel, raison: string): void {
   if (process.env.NODE_ENV === 'production') return;
   console.info(
-    `\n[courriel] aucune clé RESEND_API_KEY — message NON envoyé\n  à      : ${courriel.a}\n  objet  : ${courriel.objet}\n${courriel.texte
+    `\n[courriel] ${raison} — message NON envoyé\n  à      : ${courriel.a}\n  objet  : ${courriel.objet}\n${courriel.texte
       .split('\n')
       .map((l) => `  | ${l}`)
       .join('\n')}\n`,

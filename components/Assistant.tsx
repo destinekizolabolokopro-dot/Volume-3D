@@ -8,7 +8,8 @@ import { Mention } from '@/components/Mention';
 import { FournisseurVoix, InterrupteurVoix } from '@/components/Voix';
 import { Question } from '@/components/Question';
 import { useConsultation } from '@/components/useConsultation';
-import { ACCUEIL, ORIENTATION } from '@/lib/copie';
+import { ACCUEIL, MUR, ORIENTATION } from '@/lib/copie';
+import { CLE_REPRISE } from '@/lib/reprise';
 
 /**
  * L'accueil : la conversation EST la page.
@@ -147,6 +148,33 @@ export function Assistant({
   useEffect(() => {
     if (enConversation) finRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [tours, pending, enConversation]);
+
+  /* LE FIL D'ESSAI, MIS DE CÔTÉ POUR LE COMPTE QUI VA NAÎTRE.
+  
+     Le mur promet qu'un compte conserve les consultations, à quelqu'un dont la
+     consultation — celle qu'il vient d'avoir — était jetée dans la seconde. Il
+     part donc dans le sessionStorage du navigateur, et l'espace le verse en
+     base à la première arrivée. Le sessionStorage, et pas le serveur : ce fil
+     n'appartient encore à personne, et le garder côté serveur reviendrait à
+     conserver les questions de gens qui n'ont pas de compte.
+  
+     L'écriture est enveloppée : navigation privée, stockage plein, réglage
+     restrictif — rien de tout cela ne doit empêcher de lire la réponse qu'on
+     vient d'obtenir. */
+  useEffect(() => {
+    if (!essai || !repondu || pending) return;
+    try {
+      sessionStorage.setItem(
+        CLE_REPRISE,
+        JSON.stringify({
+          domaine: specialite.id,
+          tours: tours.map((tour) => ({ role: tour.role, content: tour.content })),
+        }),
+      );
+    } catch {
+      /* Tant pis : le compte s'ouvrira sans le fil, comme avant. */
+    }
+  }, [essai, repondu, pending, tours, specialite.id]);
 
   if (!enConversation) {
     return (
@@ -309,20 +337,23 @@ export function Assistant({
           répond. */}
       {essai && repondu && !pending ? (
         <section className="jur-mur">
-          <p className="jur-oeil">La suite</p>
-          <h2>Vous venez de voir comment il répond.</h2>
-          <p>
-            Cette question était votre essai. Un compte gratuit en donne dix par mois, conserve vos
-            consultations pour les rouvrir, et ouvre la rédaction de courriers. Sans carte bancaire.
-          </p>
+          <p className="jur-oeil">{MUR.oeil}</p>
+          <h2>{MUR.titre}</h2>
+          <p>{MUR.corps}</p>
+          <ul className="jur-mur-points">
+            {MUR.points.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
           <div className="jur-mur-actions">
             <a className="btn btn-accent" href="/entrer?mode=inscription">
-              Créer un compte gratuit
+              {MUR.action}
             </a>
             <a className="btn btn-ghost" href="/entrer">
-              J’ai déjà un compte
+              {MUR.secondaire}
             </a>
           </div>
+          <p className="jur-mur-pied">{MUR.pied}</p>
         </section>
       ) : (
         <Composeur

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { envoyerLaVerification } from '@/lib/acces';
 import { estFormuleId, formuleDuCompte } from '@/lib/abonnements';
 import { COOKIE, compteCourant } from '@/lib/comptes';
+import { effacerLeCompte } from '@/lib/donnees';
 import { QUESTIONS } from '@/lib/profils';
 import { getStore } from '@/lib/store';
 
@@ -44,6 +45,35 @@ export async function deconnexion(): Promise<void> {
   const jar = await cookies();
   jar.delete(COOKIE);
   redirect('/');
+}
+
+/**
+ * Supprimer son compte, et tout ce qui va avec.
+ *
+ * Deux garde-fous, et pas un de plus. Il faut recopier son adresse — ce qui
+ * exclut le clic distrait sans transformer la sortie en parcours du
+ * combattant —, et la session est fermée juste après, parce qu'un cookie qui
+ * désigne un compte effacé promènerait la personne d'écran vide en écran vide.
+ *
+ * Aucune tentative de retenir qui que ce soit : ni « êtes-vous sûr », ni
+ * « voulez-vous plutôt une pause », ni offre de dernière minute. Un droit
+ * qu'on exerce en traversant trois écrans de persuasion n'est déjà plus tout
+ * à fait un droit.
+ */
+export async function supprimerMonCompte(formData: FormData): Promise<void> {
+  const compte = await compteCourant();
+  if (!compte) redirect('/entrer');
+
+  const saisie = String(formData.get('confirmation') ?? '').trim().toLowerCase();
+  if (saisie !== compte.email.toLowerCase()) {
+    redirect('/espace/compte/donnees?erreur=adresse');
+  }
+
+  await effacerLeCompte(compte.id);
+
+  const jar = await cookies();
+  jar.delete(COOKIE);
+  redirect('/?efface=1');
 }
 
 /** Renvoyer le courriel de confirmation, depuis le bandeau de l'espace. */

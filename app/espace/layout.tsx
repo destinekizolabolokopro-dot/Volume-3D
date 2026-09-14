@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { BarreEspace } from '@/components/BarreEspace';
 import { Onglets } from '@/components/Onglets';
+import { Reprise } from '@/components/Reprise';
 import { Pied } from '@/components/Pied';
 import { compteCourant } from '@/lib/comptes';
 
@@ -37,6 +38,10 @@ export default async function GabaritEspace({ children }: { children: React.Reac
     <>
       <BarreEspace nom={compte.nom} verifie={Boolean(compte.emailVerifieA)} />
       <Onglets />
+      {/* La consultation d'essai, versée dans le compte à la première arrivée.
+          Elle ne rend rien lorsqu'il n'y a rien à reprendre, c'est-à-dire
+          presque toujours. Voir components/Reprise.tsx. */}
+      <Reprise />
       {children}
       <Pied />
     </>

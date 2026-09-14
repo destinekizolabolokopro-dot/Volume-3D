@@ -2,7 +2,8 @@ import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import { rassemblerLesReferences, type CitationBrute, type Reference } from './citations';
 import { consigneDuModele, type ModeleDocument } from './documents';
-import { MAX_TOKENS, MODEL, SOCLE, blocsDuCorpus, client, poserLeCorpus } from './juriste';
+import { SOCLE } from './consigne';
+import { MAX_TOKENS, MODEL, blocsDuCorpus, client, poserLeCorpus } from './juriste';
 import { domaine } from './domaines';
 import { versRtf, type Bloc } from './rtf';
 

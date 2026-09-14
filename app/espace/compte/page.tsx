@@ -77,6 +77,9 @@ export default async function Compte() {
             <a className="btn btn-ghost btn-sm" href="/espace/dossiers">
               Mes consultations ({fils.length})
             </a>
+            <a className="btn btn-ghost btn-sm" href="/espace/compte/donnees">
+              Mes données
+            </a>
           </div>
         </section>
 

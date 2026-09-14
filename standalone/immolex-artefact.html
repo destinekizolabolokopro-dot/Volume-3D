@@ -957,18 +957,25 @@ h6 {
 }
 
 .jur-bloc {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: calc(var(--pas) * 2) calc(var(--pas) * 2.25);
+  background: transparent;
+  border: 0;
+  border-top: 3px solid var(--ink-strong);
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 0;
+  padding: calc(var(--pas) * 3) 0;
 }
 
+/* Le bloc n'est plus une carte posée sur la page : un filet épais l'ouvre,
+   un filet fin le ferme, et il vit sur le papier comme le reste. Une fiche de
+   modèle empilait cinq cartes blanches à la file — la page avait l'air d'un
+   formulaire administratif, ce qui est exactement ce dont ce métier souffre. */
 .jur-bloc h3 {
-  margin: 0 0 calc(var(--pas) * 1.5);
-  font-size: 12px;
+  margin: 0 0 calc(var(--pas) * 2);
+  font-family: var(--texte);
+  font-size: 11.5px;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--ink-faint);
+  letter-spacing: 0.22em;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -977,7 +984,31 @@ h6 {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: calc(var(--pas) * 1.25);
+  gap: calc(var(--pas) * 1.75);
+}
+
+/* Les items n'avaient AUCUNE marque : cinq mentions obligatoires se lisaient
+   comme cinq paragraphes, et la première se confondait avec le texte
+   d'introduction juste au-dessus. Le tiret de cire est celui qu'on trouve
+   partout ailleurs sur le site. */
+.jur-bloc li {
+  position: relative;
+  padding-left: calc(var(--pas) * 3);
+}
+
+.jur-bloc li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.68em;
+  width: 12px;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* Le paragraphe d'introduction se détache de la liste qui suit. */
+.jur-bloc > p {
+  margin: 0 0 calc(var(--pas) * 2.25);
 }
 
 .jur-bloc li {
@@ -1042,9 +1073,23 @@ h6 {
    manqué ne se rattrape pas. Le filet à gauche de chaque ligne remplace le
    sablier qui les précédait : un émoji dans une colonne de droit fait
    décoration, un filet fait hiérarchie. */
+/* Les deux blocs teintés d'une fiche de modèle — le délai et ce qui annule —
+   sont les seuls à garder un fond. C'est justifié : ce sont les deux choses
+   qui font perdre un courrier, et elles doivent se voir avant d'être lues.
+
+   Ils reprennent donc la respiration intérieure que `.jur-bloc` a perdue en
+   cessant d'être une carte : sans elle, leur aplat touchait le texte et le
+   filet des items démarrait au ras du bord. */
+.jur-delais,
+.jur-pieges {
+  padding-inline: calc(var(--pas) * 3);
+  border-radius: var(--radius);
+}
+
 .jur-delais {
   background: var(--warning-wash);
-  border-color: var(--warning);
+  border-top-color: var(--warning);
+  border-bottom-color: var(--warning);
 }
 
 .jur-delais h3 {
@@ -1055,10 +1100,20 @@ h6 {
   gap: calc(var(--pas) * 1.5);
 }
 
+/* Le filet vertical à gauche de chaque délai a disparu : depuis que
+   `.jur-bloc li` porte un tiret, il en faisait deux — une barre, puis un
+   tiret, avant le premier mot. Reste le tiret, à la couleur du bloc. */
 .jur-delais li {
   color: var(--ink);
-  border-left: 2px solid var(--warning);
-  padding-left: calc(var(--pas) * 1.5);
+}
+
+.jur-delais li::before,
+.jur-pieges li::before {
+  background: var(--warning);
+}
+
+.jur-pieges li::before {
+  background: var(--danger);
 }
 
 .jur-delais .hint {
@@ -1383,13 +1438,31 @@ h6 {
   }
 }
 
+/* L'état vide. Il était cerné de pointillés — la convention de la zone de
+   dépôt, empruntée aux interfaces d'outils, et le seul trait de tout le site
+   qui ne soit pas plein. Il prend le double filet des fins de page : un trait
+   fin, un trait épais dessous. */
 .jur-vide {
-  background: var(--surface);
-  border: 1px dashed var(--line-strong);
-  border-radius: var(--radius);
-  padding: calc(var(--pas) * 5);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: calc(var(--pas) * 6) calc(var(--pas) * 3) calc(var(--pas) * 5);
   text-align: center;
   color: var(--ink-soft);
+}
+
+.jur-vide::before {
+  content: '';
+  display: block;
+  width: 180px;
+  height: 7px;
+  margin: 0 auto calc(var(--pas) * 3);
+  background: linear-gradient(
+    to bottom,
+    var(--line-soft) 0 1px,
+    transparent 1px 4px,
+    var(--ink-strong) 4px 7px
+  );
 }
 
 .jur-vide p {
@@ -2746,11 +2819,40 @@ h6 {
   grid-template-columns: 1fr;
 }
 
+/* Cinq blocs : la marque, les trois colonnes de liens, et les recours.
+
+   La grille était écrite pour quatre. La colonne « Le cadre » — mentions
+   légales, conditions, données — est arrivée depuis, et les recours
+   tombaient alors sous elle au lieu de tenir leur place. Deux paliers plutôt
+   qu'un : à partir de 760 px les liens se rangent sur trois colonnes sous la
+   marque, et à partir de 1040 px tout tient sur une ligne. */
 @media (min-width: 760px) {
   .jur-pied-corps {
-    grid-template-columns: 1.2fr 1fr 1fr 1.6fr;
+    grid-template-columns: 1.3fr repeat(3, 1fr);
     gap: calc(var(--pas) * 5);
   }
+
+  .jur-pied-recours {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (min-width: 1040px) {
+  /* Les recours prennent une largeur MINIMALE, pas une part. En fractions,
+     leur colonne tombait à deux cents pixels : le titre en capitales espacées
+     y faisait quatre lignes, et le texte une colonne de deux mots. C'est la
+     seule chose de ce pied qui doit se lire vite — quelqu'un pour qui ce
+     service ne suffit pas. */
+  .jur-pied-corps {
+    grid-template-columns: 1fr repeat(3, minmax(120px, 0.7fr)) minmax(280px, 1.5fr);
+  }
+
+}
+
+/* Le titre des recours porte plus de mots que les autres : il perd le crénage
+   large des petites capitales, qui en fait un pavé dès qu'il passe la ligne. */
+.jur-pied-recours .jur-pied-titre {
+  letter-spacing: 0.12em;
 }
 
 .jur-pied-nom {
@@ -2798,14 +2900,21 @@ h6 {
   text-underline-offset: 3px;
 }
 
-/* La colonne des recours est placée explicitement dans la plus large.
-   La page unique n'a pas de colonnes de liens — ses liens iraient vers des
-   adresses qui n'existent pas dans un fichier —, et sans cette ligne, son
-   pied de page aurait tassé les recours dans une colonne étroite au milieu
-   du vide. */
-@media (min-width: 760px) {
+/* La colonne des recours va dans la DERNIÈRE piste, comptée depuis la fin.
+
+   Elle était placée en piste 4, écrite en dur pour un pied qui en comptait
+   quatre. La colonne « Le cadre » est arrivée depuis, le pied en compte cinq,
+   et la ligne pointait alors sur l'avant-dernière : les recours se retrouvaient
+   dans une colonne de 137 px, où le titre faisait quatre lignes. `-2` désigne
+   la dernière piste quel qu'en soit le nombre, et ne se périmera pas à la
+   prochaine colonne ajoutée.
+
+   La page unique, elle, n'a pas de colonnes de liens — ils iraient vers des
+   adresses qui n'existent pas dans un fichier — et rétablit l'étalement dans
+   sa propre feuille. */
+@media (min-width: 1040px) {
   .jur-pied-recours {
-    grid-column: 4;
+    grid-column: -2;
   }
 }
 
@@ -2989,12 +3098,17 @@ h6 {
 /* ------------------------------------------------------ compte et portail - */
 
 .jur-portail,
+/* Le relevé du compte. Il gardait la surface claire et le cadre d'une carte,
+   seul objet de ce genre resté sur une page de papier : entre deux filets, il
+   se lit comme ce qu'il est — un arrêté de compte. */
 .jur-carte-compte {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: calc(var(--pas) * 3.5);
-  box-shadow: var(--pose);
+  background: transparent;
+  border: 0;
+  border-top: 3px solid var(--ink-strong);
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 0;
+  padding: calc(var(--pas) * 3.5) 0;
+  box-shadow: none;
 }
 
 .jur-onglets {
@@ -3834,7 +3948,8 @@ h6 {
 
 /* Ce qui annule un document : le seul bloc de la page qui doit inquiéter. */
 .jur-pieges {
-  border-color: var(--danger);
+  border-top-color: var(--danger);
+  border-bottom-color: var(--danger);
   background: var(--danger-wash);
 }
 
@@ -3925,6 +4040,530 @@ h6 {
   margin-top: calc(var(--pas) * 0.75);
 }
 
+/* =========================================================================
+   LE CADRE — mentions légales, conditions, confidentialité, mes données
+
+   Ces pages ont un lecteur particulier : quelqu'un qui cherche UNE réponse
+   précise — combien de temps vous gardez mes messages, comment je résilie,
+   qui héberge — et qui n'a aucune intention de lire le reste. Tout ici
+   découle de ça : un sommaire cliquable en tête, des articles numérotés en
+   chiffres arabes parce qu'un numéro sert à CITER (« votre article 4 » se dit
+   dans une réclamation, « votre article IV » ne se dit pas), et une colonne
+   de texte étroite.
+
+   Elles gardent le dessin du site, sans un gramme de plus : ce sont les
+   pages où l'ornement se remarquerait le plus, et se pardonnerait le moins.
+   ========================================================================= */
+
+/* ── le sommaire ──────────────────────────────────────────────────────── */
+
+.jur-sommaire {
+  margin: calc(var(--pas) * 5) 0 calc(var(--pas) * 7);
+  padding: calc(var(--pas) * 3) 0;
+  border-top: 3px solid var(--ink-strong);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.jur-sommaire ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: sommaire;
+  display: grid;
+  gap: calc(var(--pas) * 1.25);
+}
+
+@media (min-width: 680px) {
+  .jur-sommaire ol {
+    grid-template-columns: 1fr 1fr;
+    column-gap: calc(var(--pas) * 5);
+  }
+}
+
+.jur-sommaire li {
+  counter-increment: sommaire;
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--pas) * 1.5);
+  font-size: 15px;
+}
+
+.jur-sommaire li::before {
+  content: counter(sommaire);
+  font-family: var(--acte);
+  font-size: 15px;
+  color: var(--accent);
+  min-width: 1.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+.jur-sommaire a {
+  color: var(--ink-muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.jur-sommaire a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── les articles ─────────────────────────────────────────────────────── */
+
+.jur-articles {
+  display: grid;
+  gap: calc(var(--pas) * 6);
+}
+
+.jur-article {
+  scroll-margin-top: calc(var(--pas) * 10);
+}
+
+/* Le numéro dans la marge, et non collé au titre : il sert de repère quand on
+   fait défiler, et il ne se lit pas comme le premier mot du titre. */
+.jur-article h2 {
+  display: grid;
+  gap: calc(var(--pas) * 0.5);
+  font-size: clamp(20px, 2.4vw, 25px);
+  font-weight: 500;
+  margin: 0 0 calc(var(--pas) * 2);
+  padding-bottom: calc(var(--pas) * 1.5);
+  border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 860px) {
+  .jur-article h2 {
+    grid-template-columns: 52px minmax(0, 1fr);
+    column-gap: calc(var(--pas) * 3);
+    align-items: baseline;
+  }
+
+  .jur-article > :not(h2) {
+    margin-left: 76px;
+  }
+}
+
+.jur-article h2 span {
+  font-family: var(--acte);
+  font-size: 22px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 860px) {
+  .jur-article h2 span {
+    text-align: right;
+  }
+}
+
+.jur-article p {
+  margin: 0 0 calc(var(--pas) * 2);
+  font-size: 16px;
+  line-height: 1.68;
+  color: var(--ink-muted);
+  max-width: 64ch;
+}
+
+.jur-article ul {
+  margin: 0 0 calc(var(--pas) * 2);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: calc(var(--pas) * 1.5);
+  max-width: 64ch;
+}
+
+/* Un tiret de cire plutôt qu'une puce : la même marque que les listes du
+   reste du site, pour que ces pages n'aient pas l'air importées. */
+.jur-article li {
+  position: relative;
+  padding-left: calc(var(--pas) * 3);
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.jur-article li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.68em;
+  width: 12px;
+  height: 2px;
+  background: var(--accent);
+}
+
+.jur-legal-pied {
+  margin: calc(var(--pas) * 7) 0 0;
+  padding-top: calc(var(--pas) * 3);
+  border-top: 1px solid var(--line);
+  font-size: 14.5px;
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+/* ── les mentions, en colonnes étiquette / valeur ─────────────────────── */
+
+.jur-mentions {
+  margin-top: calc(var(--pas) * 6);
+}
+
+.jur-mentions h2 {
+  font-size: 21px;
+  font-weight: 500;
+  margin: 0 0 calc(var(--pas) * 2);
+  padding-bottom: calc(var(--pas) * 1.25);
+  border-bottom: 1px solid var(--ink-strong);
+}
+
+.jur-mentions dl {
+  margin: 0;
+  display: grid;
+}
+
+.jur-mentions dl > div {
+  display: grid;
+  gap: calc(var(--pas) * 0.25);
+  padding: calc(var(--pas) * 1.5) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 620px) {
+  .jur-mentions dl > div {
+    grid-template-columns: 220px minmax(0, 1fr);
+    column-gap: calc(var(--pas) * 3);
+    align-items: baseline;
+  }
+}
+
+.jur-mentions dt {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.jur-mentions dd {
+  margin: 0;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.jur-mentions p {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--ink-muted);
+  max-width: 64ch;
+}
+
+.jur-mentions-vide {
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+/* ── le bandeau des mentions qui manquent ─────────────────────────────── */
+
+.jur-aposer {
+  margin: calc(var(--pas) * 4) 0 0;
+  padding: calc(var(--pas) * 3) calc(var(--pas) * 3.5);
+  background: var(--warning-wash);
+  border-left: 3px solid var(--warning);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.jur-aposer p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 68ch;
+}
+
+.jur-aposer strong {
+  color: var(--warning);
+}
+
+.jur-aposer dl {
+  margin: calc(var(--pas) * 2.5) 0 0;
+  display: grid;
+  gap: calc(var(--pas) * 1);
+}
+
+.jur-aposer dl > div {
+  display: grid;
+  gap: calc(var(--pas) * 0.25);
+}
+
+@media (min-width: 620px) {
+  .jur-aposer dl > div {
+    grid-template-columns: 230px minmax(0, 1fr);
+    column-gap: calc(var(--pas) * 2.5);
+    align-items: baseline;
+  }
+}
+
+.jur-aposer dt code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--warning);
+}
+
+.jur-aposer dd {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+/* ── les sous-traitants ───────────────────────────────────────────────── */
+
+.jur-traitants {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 760px) {
+  .jur-traitants {
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: calc(var(--pas) * 4);
+  }
+}
+
+.jur-traitant {
+  padding-block: calc(var(--pas) * 2.5);
+  border-bottom: 1px solid var(--line);
+}
+
+.jur-traitant h3 {
+  margin: 0 0 calc(var(--pas) * 0.5);
+  font-family: var(--acte);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.jur-traitant p {
+  margin: 0 0 calc(var(--pas) * 1.25);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  max-width: none;
+}
+
+.jur-traitant-role {
+  font-size: 11.5px !important;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent) !important;
+}
+
+.jur-traitant-lieu {
+  font-size: 13.5px !important;
+  color: var(--ink-soft) !important;
+  margin-bottom: calc(var(--pas) * 1.75) !important;
+}
+
+.jur-traitant-note {
+  font-style: italic;
+  color: var(--ink-faint) !important;
+  margin-bottom: 0 !important;
+}
+
+/* ── mes données : l'inventaire et les deux gestes ────────────────────── */
+
+.jur-inventaire {
+  margin-top: calc(var(--pas) * 5);
+  padding-block: calc(var(--pas) * 3.5);
+  border-top: 3px solid var(--ink-strong);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.jur-inventaire h2 {
+  margin: 0 0 calc(var(--pas) * 2.5);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-family: var(--texte);
+}
+
+.jur-inventaire dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--pas) * 2);
+}
+
+@media (max-width: 560px) {
+  .jur-inventaire dl {
+    grid-template-columns: 1fr;
+  }
+}
+
+.jur-inventaire dt {
+  font-family: var(--acte);
+  font-size: 34px;
+  line-height: 1;
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.jur-inventaire dd {
+  margin: calc(var(--pas) * 1) 0 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-faint);
+  max-width: 20ch;
+}
+
+.jur-inventaire-note {
+  margin: calc(var(--pas) * 3) 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 62ch;
+}
+
+.jur-geste {
+  margin-top: calc(var(--pas) * 6);
+  padding-top: calc(var(--pas) * 3);
+  border-top: 1px solid var(--line);
+}
+
+.jur-geste h2 {
+  margin: 0 0 calc(var(--pas) * 1.5);
+  font-size: 21px;
+  font-weight: 500;
+}
+
+.jur-geste p {
+  margin: 0 0 calc(var(--pas) * 2);
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--ink-muted);
+  max-width: 64ch;
+}
+
+/* Le geste grave se signale par un filet de cire à gauche, et rien d'autre :
+   ni fond rouge, ni pictogramme d'alerte. La page dit déjà ce qu'elle fait,
+   et un écran qui crie avant qu'on ait cliqué se fait ignorer. */
+.jur-geste-grave {
+  border-top-color: var(--accent);
+  border-left: 3px solid var(--accent);
+  padding-left: calc(var(--pas) * 3);
+}
+
+.jur-geste-forme {
+  display: grid;
+  gap: calc(var(--pas) * 1.25);
+  max-width: 460px;
+}
+
+.jur-geste-forme label {
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+
+.jur-geste-forme strong {
+  color: var(--ink-strong);
+  font-weight: 600;
+}
+
+.jur-geste-forme input {
+  width: 100%;
+  font-family: var(--texte);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+}
+
+.jur-geste-forme input:focus {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.jur-geste-forme button {
+  justify-self: start;
+}
+
+/* Le mot qui suit une suppression de compte. Sur le papier creux et bordé de
+   cire : il se voit sans crier, et il disparaît à la première navigation. */
+.jur-efface {
+  max-width: 1000px;
+  margin: calc(var(--pas) * 3) auto 0;
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 3);
+  background: var(--bg-sunk);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.jur-efface strong {
+  color: var(--ink-strong);
+  font-weight: 600;
+}
+
+/* ── le mur, et la reprise du fil d'essai ─────────────────────────────── */
+
+/* Les trois choses qu'un compte apporte, réglées comme les registres du
+   site : le mur disait la même chose en un paragraphe, où rien ne se
+   détachait. */
+.jur-mur-points {
+  margin: 0 0 calc(var(--pas) * 3);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: calc(var(--pas) * 1.25);
+  max-width: 54ch;
+}
+
+.jur-mur-points li {
+  position: relative;
+  padding-left: calc(var(--pas) * 3);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.jur-mur-points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.66em;
+  width: 12px;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* Ce qui lève la dernière objection — la carte bancaire — se dit en petit,
+   sous le bouton : en gros, une gratuité annoncée inquiète. */
+.jur-mur-pied {
+  margin: calc(var(--pas) * 2) 0 0 !important;
+  font-size: 13px !important;
+  color: var(--ink-soft) !important;
+  font-style: italic;
+}
+
+.jur-reprise {
+  max-width: 1000px;
+  margin: calc(var(--pas) * 3) auto 0;
+  padding: calc(var(--pas) * 2) calc(var(--pas) * 3);
+  background: var(--accent-wash);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 14.5px;
+  color: var(--ink-muted);
+}
+
 
 /* =========================================================================
    Propre à ce fichier.
@@ -3946,6 +4585,17 @@ h6 {
    JavaScript, et un accent grave y ferme la chaîne. */
 body {
   background: var(--bg-alt);
+}
+
+/* Le pied de ce fichier n'a que deux blocs : la marque et les recours. Les
+   trois colonnes de liens du site enverraient vers des adresses qui n'existent
+   pas dans un fichier, et elles ne sont donc pas rendues. Sans cette ligne,
+   les recours iraient se ranger dans la derniere piste d'une grille a cinq,
+   c'est-a-dire dans un coin, avec trois colonnes vides a leur gauche. */
+@media (min-width: 1040px) {
+  .jur-pied-recours {
+    grid-column: 2 / -1;
+  }
 }
 
 .jur {

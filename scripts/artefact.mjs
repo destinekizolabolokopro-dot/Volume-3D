@@ -698,6 +698,17 @@ body {
   background: var(--bg-alt);
 }
 
+/* Le pied de ce fichier n'a que deux blocs : la marque et les recours. Les
+   trois colonnes de liens du site enverraient vers des adresses qui n'existent
+   pas dans un fichier, et elles ne sont donc pas rendues. Sans cette ligne,
+   les recours iraient se ranger dans la derniere piste d'une grille a cinq,
+   c'est-a-dire dans un coin, avec trois colonnes vides a leur gauche. */
+@media (min-width: 1040px) {
+  .jur-pied-recours {
+    grid-column: 2 / -1;
+  }
+}
+
 .jur {
   min-height: 100vh;
 }
