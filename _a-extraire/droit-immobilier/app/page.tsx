@@ -38,7 +38,10 @@ export const dynamic = 'force-dynamic';
  * d'aiguillage, textes de référence, périmètre donné au modèle) pèse cinq
  * fois plus et ne sert qu'au serveur.
  */
-export default async function AccueilJuridique() {
+type Params = { searchParams: Promise<{ efface?: string }> };
+
+export default async function AccueilJuridique({ searchParams }: Params) {
+  const { efface } = await searchParams;
   const compte = await compteCourant();
   const preuve = await preuveDuCorpus();
 
@@ -62,6 +65,18 @@ export default async function AccueilJuridique() {
   return (
     <>
       <Barre />
+
+      {/* Le mot qui manquait après une suppression de compte. On était renvoyé
+          à l'accueil sans rien : c'est exactement au moment où l'on vient
+          d'effacer trois ans d'échanges qu'on a besoin d'être sûr que ça a
+          marché. Il tient en deux lignes et ne retient personne. */}
+      {efface === '1' && (
+        <p className="jur-efface" role="status">
+          <strong>Votre compte est supprimé.</strong> Le compte, les consultations, leurs messages
+          et la trace des courriers ont été effacés. Il n’en reste pas de copie. Vous pouvez encore
+          poser une question d’essai sans compte.
+        </p>
+      )}
 
       <Assistant
         fiches={fiches}

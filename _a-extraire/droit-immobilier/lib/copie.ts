@@ -160,6 +160,38 @@ export const VITRINE_DOCUMENTS = {
   action: 'Voir les modèles',
 } as const;
 
+/**
+ * Le mur de la vitrine : ce qu'on lit juste après sa question d'essai.
+ *
+ * C'est le seul endroit du site où l'on demande quelque chose, et il arrive au
+ * seul moment où c'est légitime — sous une réponse sourcée qu'on vient de lire.
+ *
+ * Il disait ce qu'un compte APPORTE. Il dit maintenant, d'abord, ce qu'on est
+ * en train de PERDRE : la consultation qu'on a sous les yeux disparaît en
+ * fermant l'onglet. C'est vrai, c'est vérifiable, et c'est la seule chose qui
+ * distingue cet instant de tous les autres — l'argument est déjà à l'écran, il
+ * suffisait de le nommer.
+ *
+ * Et la promesse est tenue : le fil est mis de côté par le navigateur et versé
+ * dans le compte dès l'arrivée dans l'espace. Voir lib/reprise.ts. Promettre
+ * « un compte conserve vos consultations » en jetant celle qu'on a en main
+ * était la seule phrase malhonnête du parcours.
+ */
+export const MUR = {
+  oeil: 'La suite',
+  titre: 'Cette consultation disparaîtra en fermant l’onglet.',
+  corps:
+    'Elle n’appartient encore à personne : sans compte, rien n’est enregistré, et c’est voulu. Ouvrez-en un et elle y est reprise telle quelle, avec la réponse et ses articles.',
+  points: [
+    'Votre consultation d’essai conservée, et rouvrable',
+    'Dix questions par mois, puis le compteur repart',
+    'La rédaction de courriers, avec leurs mentions obligatoires',
+  ],
+  action: 'Ouvrir un compte et garder cette consultation',
+  secondaire: 'J’ai déjà un compte',
+  pied: 'Gratuit, sans carte bancaire. Un nom, une adresse, et rien d’autre.',
+} as const;
+
 /** Le dernier bloc de l'accueil : ce qu'on demande de faire. */
 export const APPEL = {
   titre: 'Posez votre question',
@@ -186,6 +218,18 @@ export const PIED = {
         { libelle: 'Mes consultations', href: '/espace/dossiers' },
         { libelle: 'Mon compte', href: '/espace/compte' },
         { libelle: 'Se connecter', href: '/entrer' },
+      ],
+    },
+    /* Le cadre. Il a sa colonne plutôt qu'une ligne de petits caractères sous
+       le pied : ces trois pages sont obligatoires, elles sont écrites pour
+       être lues, et les enterrer donnerait raison à ceux qui pensent qu'elles
+       ne le sont jamais. */
+    {
+      titre: 'Le cadre',
+      liens: [
+        { libelle: 'Mentions légales', href: '/mentions-legales' },
+        { libelle: 'Conditions générales', href: '/conditions' },
+        { libelle: 'Vos données', href: '/confidentialite' },
       ],
     },
   ],
