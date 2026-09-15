@@ -1,3 +1,4 @@
+import { Repli } from '@/components/Repli';
 import type { Article } from '@/lib/legal';
 
 /**
@@ -34,17 +35,23 @@ export function PageLegale({ articles }: { articles: Article[] }) {
               {article.titre}
             </h2>
 
-            {article.corps.map((paragraphe) => (
-              <p key={paragraphe}>{paragraphe}</p>
-            ))}
+            {/* Le titre reste dehors : replié ou non, on doit pouvoir parcourir
+                la page en ne lisant que les titres, et n'ouvrir que l'article
+                qu'on est venu chercher. C'est le seul usage réel de ces
+                pages-là. */}
+            <Repli hauteur={300} quoi="l’article">
+              {article.corps.map((paragraphe) => (
+                <p key={paragraphe}>{paragraphe}</p>
+              ))}
 
-            {article.points && (
-              <ul>
-                {article.points.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-            )}
+              {article.points && (
+                <ul>
+                  {article.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              )}
+            </Repli>
           </section>
         ))}
       </div>

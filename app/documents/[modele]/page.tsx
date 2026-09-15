@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Barre } from '@/components/Barre';
+import { Repli } from '@/components/Repli';
 import { Pied } from '@/components/Pied';
 import { Redaction } from '@/components/Redaction';
 import { domaine } from '@/lib/domaines';
@@ -59,20 +60,24 @@ export default async function Document({ params }: { params: Promise<{ modele: s
             Un courrier auquel il manque une de ces mentions peut être nul, quelle que soit sa
             qualité de rédaction.
           </p>
-          <ul>
-            {modele.mentions.map((mention) => (
-              <li key={mention}>{mention}</li>
-            ))}
-          </ul>
+          <Repli hauteur={300} quoi="les mentions">
+            <ul>
+              {modele.mentions.map((mention) => (
+                <li key={mention}>{mention}</li>
+              ))}
+            </ul>
+          </Repli>
         </section>
 
         <section className="jur-bloc jur-pieges">
           <h3>Ce qui l’annule</h3>
-          <ul>
-            {modele.pieges.map((piege) => (
-              <li key={piege}>{piege}</li>
-            ))}
-          </ul>
+          <Repli hauteur={300} quoi="la liste">
+            <ul>
+              {modele.pieges.map((piege) => (
+                <li key={piege}>{piege}</li>
+              ))}
+            </ul>
+          </Repli>
         </section>
 
         <section className="jur-bloc">
