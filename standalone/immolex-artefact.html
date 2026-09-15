@@ -6382,11 +6382,41 @@ body {
      Elle, elle marche pour de vrai : dicter et écouter sont des fonctions du
      navigateur, pas du serveur. */
 
-  var REPONSE = "En clair\nVous pouvez vendre, mais il faut prévenir très tôt : six mois avant la fin du bail. Si le bail se termine en mars, votre locataire doit avoir reçu le courrier fin septembre au plus tard. Un jour de retard et le congé ne vaut rien — le bail repart pour trois ans.\nEt vous devez lui proposer d’acheter en premier, au prix que vous demandez. Il a deux mois pour répondre.\nCe que je ferais\ncompter six mois pleins depuis la date de fin écrite au contrat, pas depuis la signature ; écrire le prix et les conditions de vente dans le courrier — sans le prix, il est nul ; le faire remettre par un huissier, parce que c’est la preuve de réception qui se conteste le plus ; vérifier l’âge et les revenus du locataire avant d’envoyer quoi que ce soit.\nLe délai\nSix mois avant la fin du bail pour un logement loué vide, trois mois s’il est meublé. Le locataire a ensuite deux mois pour dire s’il achète.\nLe détail juridique\nL’article 15 de la loi du 6 juillet 1989 régit le congé pour vendre. Il impose au bailleur d’indiquer le motif, le prix et les conditions de la vente, et le congé vaut offre de vente au profit du locataire, qui dispose de deux mois pour l’accepter. Un congé qui omet le prix est nul, et cette nullité se soulève des années plus tard.\nLe préavis est de six mois pour une location vide et de trois mois pour un meublé, décompté depuis le terme porté au bail. La signification par commissaire de justice n’est pas obligatoire, mais elle constitue la preuve de réception la plus difficile à contester.\nArticle 15-III : protection du locataire de plus de soixante-cinq ans aux ressources inférieures au plafond, sauf offre de relogement ou bailleur lui-même âgé et modeste. Article 1743 du code civil : la vente ne rompt pas le bail en cours, l’acquéreur reprend les obligations du bailleur. Si le locataire renonce à acheter et que vous vendez ensuite moins cher, il retrouve un droit de préemption sur le nouveau prix.";
+  var REPONSE = "En clair\nVous pouvez vendre, mais il faut prévenir très tôt : six mois avant la fin du bail. Si le bail se termine en mars, votre locataire doit avoir reçu le courrier fin septembre au plus tard. Un jour de retard et le congé ne vaut rien — le bail repart pour trois ans.\nEt vous devez lui proposer d’acheter en premier, au prix que vous demandez. Il a deux mois pour répondre.\nCe que je ferais\ncompter six mois pleins depuis la date de fin écrite au contrat, pas depuis la signature ; écrire le prix et les conditions de vente dans le courrier — sans le prix, il est nul ; le faire remettre par un huissier, parce que c’est la preuve de réception qui se conteste le plus ; vérifier l’âge et les revenus du locataire avant d’envoyer quoi que ce soit.\nLe délai\nSix mois avant la fin du bail pour un logement loué vide, trois mois s’il est meublé. Le locataire a ensuite deux mois pour dire s’il achète.";
   var mainsLibres = false;
 
   function synthese() {
     return 'speechSynthesis' in window ? window.speechSynthesis : null;
+  }
+
+  /* La voix la moins robotique installée sur la machine.
+
+     Les moteurs modernes s'annoncent dans leur nom — « Natural », « Online »,
+     « Premium », « Enhanced », « Google » —, les anciens aussi : eSpeak,
+     « Compact », Hortense. Sans ce tri, le navigateur rend sa voix par
+     defaut, qui est presque toujours la plus ancienne installee. Meme regle
+     que classerVoix dans lib/voix.ts.
+
+     Pas d'accent grave dans ce commentaire : il vit a l'interieur d'un
+     gabarit JavaScript, et un accent grave y ferme la chaine. */
+  var MODERNES = /natural|neural|online|premium|enhanced|google|siri/i;
+  var ANCIENS = /espeak|compact|pico|festival|hortense/i;
+
+  function meilleureVoix() {
+    var moteur = synthese();
+    if (!moteur) return null;
+    var francaises = moteur.getVoices().filter(function (v) {
+      return /^fr(-|$)/i.test(v.lang || '');
+    });
+    if (francaises.length === 0) return null;
+
+    francaises.sort(function (a, b) {
+      var qa = ANCIENS.test(a.name) ? 0 : MODERNES.test(a.name) ? 2 : 1;
+      var qb = ANCIENS.test(b.name) ? 0 : MODERNES.test(b.name) ? 2 : 1;
+      if (qa !== qb) return qb - qa;
+      return Number(b.localService) - Number(a.localService);
+    });
+    return francaises[0];
   }
 
   function Micro() {
@@ -6425,7 +6455,13 @@ body {
         return;
       }
       var enonce = new SpeechSynthesisUtterance(parts[rang]);
-      enonce.lang = 'fr-FR';
+      var laVoix = meilleureVoix();
+      if (laVoix) enonce.voice = laVoix;
+      enonce.lang = (laVoix && laVoix.lang) || 'fr-FR';
+      /* Un cran sous la vitesse nominale : a 1, une reponse de dix lignes
+         arrive comme un seul bloc, et c'est une bonne part de ce qu'on entend
+         comme « robotique ». */
+      enonce.rate = 0.95;
       rang += 1;
       enonce.onend = dire;
       enonce.onerror = function () {

@@ -300,7 +300,12 @@ export function Lecture({ texte, dernier = false }: { texte: string; dernier?: b
       const enonce = new SpeechSynthesisUtterance(morceaux[rang]);
       if (laVoix) enonce.voice = laVoix;
       enonce.lang = laVoix?.lang ?? 'fr-FR';
-      enonce.rate = 1;
+      /* Un cran sous la vitesse nominale. Les synthèses françaises enchaînent
+         les groupes de souffle sans respirer ; à 1, une réponse de dix lignes
+         arrive comme un seul bloc, et c'est une bonne part de ce qu'on entend
+         comme « robotique ». Un peu plus lent, la ponctuation reprend son
+         rôle. En dessous de 0,9, en revanche, la voix se met à traîner. */
+      enonce.rate = 0.95;
       enonce.onend = () => dire(rang + 1);
       /* Une panne au milieu ne doit pas laisser le bouton bloqué sur
          « Arrêter » : on rend la main plutôt que d'insister. */
