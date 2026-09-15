@@ -2872,10 +2872,23 @@
    signature sous le nom est ce qui saute en premier, parce qu'elle est la
    seule à ne rien faire faire. */
 @media (max-width: 560px) {
+  /* Elle en porte parfois CINQ : sur une fiche de spécialité, un lien de
+     retour s'ajoute aux quatre autres, et la ligne sortait de l'écran de
+     49 px — mesuré sur un écran de 390 px. Elle passe donc à la ligne au
+     lieu de pousser la page. */
   .jur-bar {
+    flex-wrap: wrap;
+    row-gap: calc(var(--pas) * 1);
     gap: calc(var(--pas) * 2);
     padding-left: calc(var(--pas) * 2);
     padding-right: calc(var(--pas) * 2);
+  }
+
+  /* La marque prend la ligne entière : les liens se rangent dessous, alignés,
+     au lieu de s'enrouler autour d'elle. */
+  .jur-bar-brand {
+    width: 100%;
+    margin-right: 0;
   }
 
   .jur-bar-brand small {
@@ -4073,4 +4086,115 @@
   border-radius: 0 var(--radius) var(--radius) 0;
   font-size: 14.5px;
   color: var(--ink-muted);
+}
+
+/* ── le repli : « Voir tout » ──────────────────────────────────────────
+
+   Le dégradé qui ferme un bloc replié est le seul endroit du site où une
+   couleur se dilue. C'est justifié : il ne décore pas, il DIT quelque chose —
+   le texte continue sous le bord. Un bloc coupé net se lit comme un bloc fini,
+   et personne ne cherche le bouton.
+
+   Il est peint avec la couleur du fond sur lequel il tombe, et non avec du
+   blanc translucide : sur le papier, un blanc dilué se voit comme une tache. */
+
+.jur-repli {
+  position: relative;
+}
+
+/* Le repli coupe la HAUTEUR, pas la largeur.
+
+   `overflow: hidden` clippait les deux axes, et emportait avec lui le
+   défilement horizontal du tableau des diagnostics : sur un téléphone, ses
+   620 px devenaient 390 px coupés net, sans moyen d'aller voir la colonne
+   « Validité » — celle pour laquelle on ouvre ce tableau.
+
+   CSS interdit de laisser un axe `visible` quand l'autre ne l'est pas : il le
+   ramène à `auto`. On l'écrit donc explicitement. Le texte ne déborde jamais
+   en largeur, aucune barre n'apparaît sur les blocs courants, et le tableau
+   garde le défilement de son propre conteneur. */
+.jur-repli-corps {
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.jur-repli[data-replie='1'] .jur-repli-corps::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 96px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--bg) 82%);
+}
+
+/* Le bouton est dans le flux, sous le dégradé, et pleine largeur : il ferme le
+   bloc au lieu de flotter dessus. Un « voir plus » posé sur le texte cache la
+   dernière ligne lisible, qui est précisément celle qui donne envie de lire la
+   suite. */
+.jur-repli-bouton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--pas) * 1.25);
+  width: 100%;
+  margin-top: calc(var(--pas) * 1.5);
+  padding: calc(var(--pas) * 1.25) calc(var(--pas) * 2);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  cursor: pointer;
+  font-family: var(--texte);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  transition: background-color 0.15s ease;
+}
+
+.jur-repli-bouton:hover {
+  background: var(--accent-wash);
+}
+
+.jur-repli-chevron {
+  letter-spacing: 0;
+  font-size: 13px;
+}
+
+/* Dans une bulle de réponse, le dégradé tombe sur la surface de la bulle et
+   non sur le papier de la page. */
+.jur-de-lui .jur-repli[data-replie='1'] .jur-repli-corps::after {
+  background: linear-gradient(to bottom, transparent, var(--surface) 82%);
+}
+
+/* Sur un aplat teinté — le délai d'un modèle, ce qui l'annule —, c'est le
+   lavis qui ferme le bloc. */
+.jur-delais .jur-repli[data-replie='1'] .jur-repli-corps::after {
+  background: linear-gradient(to bottom, transparent, var(--warning-wash) 82%);
+}
+
+.jur-pieges .jur-repli[data-replie='1'] .jur-repli-corps::after {
+  background: linear-gradient(to bottom, transparent, var(--danger-wash) 82%);
+}
+
+/* Sur le fond creusé des encadrés de fiche. */
+.jur-fiche-cote .jur-repli[data-replie='1'] .jur-repli-corps::after,
+.jur-bande .jur-repli[data-replie='1'] .jur-repli-corps::after {
+  background: linear-gradient(to bottom, transparent, var(--bg-sunk) 82%);
+}
+
+/* Dans un article du cadre, le repli hérite du décalage de la colonne : sinon
+   son bouton repartirait au ras de la marge, sous le numéro. */
+@media (min-width: 860px) {
+  .jur-article > .jur-repli {
+    margin-left: 76px;
+  }
+
+  .jur-article > .jur-repli > * {
+    margin-left: 0;
+  }
 }

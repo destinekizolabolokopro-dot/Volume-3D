@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Barre } from '@/components/Barre';
+import { Repli } from '@/components/Repli';
 import { Pied } from '@/components/Pied';
 import { Consultation } from '@/components/Consultation';
 import { compteCourant } from '@/lib/comptes';
@@ -69,51 +70,61 @@ export default async function PageDomaine({ params, searchParams }: Params) {
           <aside className="jur-aside">
             <section className="jur-bloc jur-delais">
               <h3>Délais à ne pas manquer</h3>
-              <ul>
-                {fiche.delais.map((delai) => (
-                  <li key={delai}>{delai}</li>
-                ))}
-              </ul>
+              <Repli hauteur={340} quoi="les délais">
+                <ul>
+                  {fiche.delais.map((delai) => (
+                    <li key={delai}>{delai}</li>
+                  ))}
+                </ul>
+              </Repli>
               <p className="hint">{SPECIALISTE.delaisNote}</p>
             </section>
 
             <section className="jur-bloc">
               <h3>À vérifier avant d’agir</h3>
-              <ul>
-                {fiche.verifications.map((verification) => (
-                  <li key={verification}>{verification}</li>
-                ))}
-              </ul>
+              <Repli hauteur={260} quoi="la liste">
+                <ul>
+                  {fiche.verifications.map((verification) => (
+                    <li key={verification}>{verification}</li>
+                  ))}
+                </ul>
+              </Repli>
             </section>
 
             <section className="jur-bloc">
               <h3>Ce que ce spécialiste traite</h3>
-              <ul>
-                {fiche.matieres.map((matiere) => (
-                  <li key={matiere}>{matiere}</li>
-                ))}
-              </ul>
+              <Repli hauteur={260} quoi="la liste">
+                <ul>
+                  {fiche.matieres.map((matiere) => (
+                    <li key={matiere}>{matiere}</li>
+                  ))}
+                </ul>
+              </Repli>
             </section>
 
             <section className="jur-bloc">
               <h3>Ce qui relève d’un autre</h3>
-              <ul>
-                {fiche.renvois.map((renvoi) => (
-                  <li key={renvoi.quand}>
-                    {renvoi.quand} —{' '}
-                    <a href={`/${renvoi.vers}`}>{domaine(renvoi.vers).label}</a>
-                  </li>
-                ))}
-              </ul>
+              <Repli hauteur={260} quoi="la liste">
+                <ul>
+                  {fiche.renvois.map((renvoi) => (
+                    <li key={renvoi.quand}>
+                      {renvoi.quand} —{' '}
+                      <a href={`/${renvoi.vers}`}>{domaine(renvoi.vers).label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </Repli>
             </section>
 
             <section className="jur-bloc">
               <h3>Textes de référence</h3>
-              <ul>
-                {fiche.sources.map((source) => (
-                  <li key={source}>{source}</li>
-                ))}
-              </ul>
+              <Repli hauteur={260} quoi="la liste">
+                <ul>
+                  {fiche.sources.map((source) => (
+                    <li key={source}>{source}</li>
+                  ))}
+                </ul>
+              </Repli>
             </section>
           </aside>
         </div>
@@ -126,26 +137,32 @@ export default async function PageDomaine({ params, searchParams }: Params) {
               elle qui fait foi. Ce tableau dit ce qu’il faut y chercher.
             </p>
 
-            <div className="jur-tableau">
-              <table>
-                <thead>
-                  <tr>
-                    <th scope="col">Diagnostic</th>
-                    <th scope="col">Quand il est exigé</th>
-                    <th scope="col">Validité</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {DIAGNOSTICS.map((diagnostic) => (
-                    <tr key={diagnostic.nom}>
-                      <th scope="row">{diagnostic.nom}</th>
-                      <td>{diagnostic.quand}</td>
-                      <td>{diagnostic.validite}</td>
+            {/* Douze diagnostics : c'est le plus long bloc de la fiche, et
+                celui qu'on consulte pour UNE ligne — la validité de celui
+                qu'on a en main. Replié, il tient en un écran et se déroule
+                d'un clic. */}
+            <Repli hauteur={420} quoi="le tableau">
+              <div className="jur-tableau">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Diagnostic</th>
+                      <th scope="col">Quand il est exigé</th>
+                      <th scope="col">Validité</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {DIAGNOSTICS.map((diagnostic) => (
+                      <tr key={diagnostic.nom}>
+                        <th scope="row">{diagnostic.nom}</th>
+                        <td>{diagnostic.quand}</td>
+                        <td>{diagnostic.validite}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Repli>
 
             <h3 className="jur-h3">Interdictions de louer, selon la classe énergie</h3>
             <ul className="jur-calendrier">

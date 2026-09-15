@@ -67,6 +67,17 @@ const liste = (items, classe = '') =>
   `<ul${classe ? ` class="${classe}"` : ''}>${items.map((i) => `<li>${e(i)}</li>`).join('')}</ul>`;
 
 /**
+ * Marque un bloc comme repliable.
+ *
+ * Le fichier n'a pas React : il ne peut pas monter le composant du site. Il
+ * pose donc une simple balise, et le script du bas de page fait le reste —
+ * mesurer, envelopper, ajouter le bouton. Le repli est ainsi ABSENT du HTML
+ * livré : ouvert sans JavaScript, ce fichier montre tout, ce qui est le bon
+ * comportement pour un document qu'on lit hors ligne.
+ */
+const repli = (html, hauteur = 300) => `<div data-repli="${hauteur}">${html}</div>`;
+
+/**
  * Le sceau, en clair de composants/Sceau.tsx. Ce fichier n'a pas de React :
  * il écrit du HTML. Le dessin est le même, au trait près — un double anneau,
  * le monogramme, deux étoiles — et les couleurs viennent des jetons, si bien
@@ -210,7 +221,7 @@ const echange = (id) => `
     <div class="jur-fil">
       <div class="jur-tour jur-de-vous"><p>${e(EXEMPLE.question)}</p></div>
       <div class="jur-tour jur-de-lui">
-        ${reponseRendue}
+        ${repli(reponseRendue, 420)}
         <details class="jur-sources" open>
           <summary>Les ${citations.length} textes cités</summary>
           <ul>${sources}</ul>
@@ -496,7 +507,7 @@ const branches = BRANCHES.filter((b) => !b.ouverte)
 
 const fiches = DOMAINES.map((d) => {
   const bloc = (titre, items, classe = '') =>
-    `<section class="jur-bloc${classe ? ` ${classe}` : ''}"><h3>${e(titre)}</h3>${liste(items)}</section>`;
+    `<section class="jur-bloc${classe ? ` ${classe}` : ''}"><h3>${e(titre)}</h3>${repli(liste(items), 260)}</section>`;
   const renvois = d.renvois.map(
     (r) => `${r.quand} — ${DOMAINES.find((x) => x.id === r.vers)?.label ?? r.vers}`,
   );
@@ -524,7 +535,7 @@ const fiches = DOMAINES.map((d) => {
       <aside class="jur-aside">
         <section class="jur-bloc jur-delais">
           <h3>Délais à ne pas manquer</h3>
-          ${liste(d.delais)}
+          ${repli(liste(d.delais), 340)}
           <p class="hint">${e(SPECIALISTE.delaisNote)}</p>
         </section>
         ${bloc('À vérifier avant d’agir', d.verifications)}
@@ -552,8 +563,8 @@ const catalogue = FAMILLES.map((famille) => {
           ${m.delai ? `<span class="jur-card-delai">${e(m.delai)}</span>` : ''}
         </summary>
         <div class="doc-corps">
-          <section class="jur-bloc"><h3>Ce qui doit y figurer</h3>${liste(m.mentions)}</section>
-          <section class="jur-bloc doc-piege"><h3>Ce qui l’annule</h3>${liste(m.pieges)}</section>
+          <section class="jur-bloc"><h3>Ce qui doit y figurer</h3>${repli(liste(m.mentions), 300)}</section>
+          <section class="jur-bloc doc-piege"><h3>Ce qui l’annule</h3>${repli(liste(m.pieges), 300)}</section>
           <section class="jur-bloc"><h3>Comment l’envoyer</h3><p>${e(m.envoi)}</p></section>
         </div>
       </details>`,
@@ -592,12 +603,15 @@ const documents = `
         Le rapport porte sa propre date de réalisation et de fin de validité : c’est elle qui fait
         foi. Ce tableau dit ce qu’il faut et quand le chercher.
       </p>
-      <div class="jur-tableau">
+      ${repli(
+        `<div class="jur-tableau">
         <table>
           <thead><tr><th scope="col">Diagnostic</th><th scope="col">Quand il est exigé</th><th scope="col">Validité</th></tr></thead>
           <tbody>${diagnostics}</tbody>
         </table>
-      </div>
+      </div>`,
+        420,
+      )}
       <ul class="jur-liste-calendrier">${CALENDRIER_ENERGIE.map((l) => `<li>${e(l)}</li>`).join('')}</ul>
     </section>
   </main>
@@ -883,6 +897,66 @@ ${pied}
 
 <script>
 (function () {
+  /* --------------------------------------------------------------- repli --
+
+     Le meme comportement que components/Repli.tsx du site, en clair : on
+     mesure, on n'enveloppe que ce qui depasse vraiment, et le texte reste
+     dans la page — deborde et masque, jamais retire. Un bouton sous un bloc
+     de quatre lignes est une promesse vide.
+
+     Il s'execute au chargement, et de nouveau quand une vue s'ouvre : un
+     bloc cache par « hidden » mesure zero, et serait reste deplie a jamais. */
+
+  function poserLesReplis(racine) {
+    var blocs = Array.prototype.slice.call((racine || document).querySelectorAll('[data-repli]'));
+
+    blocs.forEach(function (bloc) {
+      if (bloc.dataset.repliPose === '1') return;
+      /* Un bloc encore cache ne se mesure pas : on reviendra. */
+      if (!bloc.offsetParent && bloc.getBoundingClientRect().height === 0) return;
+
+      var hauteur = parseInt(bloc.dataset.repli, 10) || 300;
+      bloc.dataset.repliPose = '1';
+
+      var corps = document.createElement('div');
+      corps.className = 'jur-repli-corps';
+      while (bloc.firstChild) corps.appendChild(bloc.firstChild);
+      bloc.appendChild(corps);
+      bloc.className = (bloc.className ? bloc.className + ' ' : '') + 'jur-repli';
+
+      if (corps.scrollHeight <= hauteur + 48) return;
+
+      corps.style.maxHeight = hauteur + 'px';
+      bloc.setAttribute('data-replie', '1');
+
+      var bouton = document.createElement('button');
+      bouton.type = 'button';
+      bouton.className = 'jur-repli-bouton';
+      bouton.setAttribute('aria-expanded', 'false');
+      bouton.innerHTML = '<span data-repli-texte>Voir tout</span>' +
+        '<span class="jur-repli-chevron" aria-hidden="true">&#8595;</span>';
+
+      bouton.addEventListener('click', function () {
+        var ouvert = bloc.getAttribute('data-replie') !== '1';
+        if (ouvert) {
+          var haut = bloc.getBoundingClientRect().top;
+          corps.style.maxHeight = hauteur + 'px';
+          bloc.setAttribute('data-replie', '1');
+          if (haut < 0) bloc.scrollIntoView({ block: 'start' });
+        } else {
+          corps.style.maxHeight = '';
+          bloc.removeAttribute('data-replie');
+        }
+        var replie = bloc.getAttribute('data-replie') === '1';
+        bouton.setAttribute('aria-expanded', replie ? 'false' : 'true');
+        bouton.querySelector('[data-repli-texte]').textContent = replie ? 'Voir tout' : 'Replier';
+        bouton.querySelector('.jur-repli-chevron').innerHTML = replie ? '&#8595;' : '&#8593;';
+      });
+
+      bloc.appendChild(bouton);
+    });
+  }
+
   /* ----------------------------------------------------------- navigation */
 
   var vues = Array.prototype.slice.call(document.querySelectorAll('.vue'));
@@ -891,6 +965,8 @@ ${pied}
     var cible = document.getElementById('vue-' + nom);
     if (!cible) return;
     vues.forEach(function (v) { v.hidden = v !== cible; });
+    /* La vue vient d'apparaitre : ses blocs sont enfin mesurables. */
+    poserLesReplis(cible);
     window.scrollTo(0, 0);
   }
 
@@ -907,6 +983,9 @@ ${pied}
     var bloc = document.getElementById('echange-' + id);
     if (!bloc) return;
     bloc.hidden = false;
+    /* L'echange sort de « hidden » : sa reponse devient mesurable, et c'est
+       le plus long bloc de tout le fichier. */
+    poserLesReplis(bloc);
     bloc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     if (mainsLibres) lire(id);
   }
@@ -1100,6 +1179,21 @@ ${pied}
     });
   } else if (bascule) {
     bascule.closest('.jur-mains-libres').remove();
+  }
+
+  /* ------------------------------------------------- les replis, au depart
+
+     Apres la mise en page des fontes : mesurer avant qu'elles soient posees
+     donne une hauteur calculee sur la fonte de secours, donc fausse — et un
+     bloc qui aurait du etre replie ne l'aurait pas ete. */
+  function demarrerLesReplis() {
+    poserLesReplis(document);
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(demarrerLesReplis);
+  } else {
+    window.addEventListener('load', demarrerLesReplis);
   }
 })();
 </script>
