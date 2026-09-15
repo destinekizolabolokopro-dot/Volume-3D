@@ -281,7 +281,12 @@ const echange = (id) => `
   </div>`;
 
 /* Le texte que la lecture à voix haute prononce : la réponse, sans balises. */
-const texteReponse = EXEMPLE.reponse
+/* Ce qui se DIT : la partie en clair, jamais le détail juridique. Lu tel
+   quel, celui-ci donne « article quinze de la loi numéro quatre-vingt-neuf
+   tiret quatre cent soixante-deux » — une minute de chiffres épelés à
+   quelqu'un qui écoute parce qu'il a les mains prises. Même règle que
+   `pourLaVoix` dans lib/voix.ts. */
+const texteReponse = (coupure < 0 ? EXEMPLE.reponse : EXEMPLE.reponse.slice(0, coupure))
   .map(([type, valeur]) => (type === 'liste' ? valeur.join(' ') : valeur))
   .join('\n');
 
@@ -1061,6 +1066,36 @@ ${pied}
     return 'speechSynthesis' in window ? window.speechSynthesis : null;
   }
 
+  /* La voix la moins robotique installée sur la machine.
+
+     Les moteurs modernes s'annoncent dans leur nom — « Natural », « Online »,
+     « Premium », « Enhanced », « Google » —, les anciens aussi : eSpeak,
+     « Compact », Hortense. Sans ce tri, le navigateur rend sa voix par
+     defaut, qui est presque toujours la plus ancienne installee. Meme regle
+     que classerVoix dans lib/voix.ts.
+
+     Pas d'accent grave dans ce commentaire : il vit a l'interieur d'un
+     gabarit JavaScript, et un accent grave y ferme la chaine. */
+  var MODERNES = /natural|neural|online|premium|enhanced|google|siri/i;
+  var ANCIENS = /espeak|compact|pico|festival|hortense/i;
+
+  function meilleureVoix() {
+    var moteur = synthese();
+    if (!moteur) return null;
+    var francaises = moteur.getVoices().filter(function (v) {
+      return /^fr(-|$)/i.test(v.lang || '');
+    });
+    if (francaises.length === 0) return null;
+
+    francaises.sort(function (a, b) {
+      var qa = ANCIENS.test(a.name) ? 0 : MODERNES.test(a.name) ? 2 : 1;
+      var qb = ANCIENS.test(b.name) ? 0 : MODERNES.test(b.name) ? 2 : 1;
+      if (qa !== qb) return qb - qa;
+      return Number(b.localService) - Number(a.localService);
+    });
+    return francaises[0];
+  }
+
   function Micro() {
     return window.SpeechRecognition || window.webkitSpeechRecognition || null;
   }
@@ -1097,7 +1132,13 @@ ${pied}
         return;
       }
       var enonce = new SpeechSynthesisUtterance(parts[rang]);
-      enonce.lang = 'fr-FR';
+      var laVoix = meilleureVoix();
+      if (laVoix) enonce.voice = laVoix;
+      enonce.lang = (laVoix && laVoix.lang) || 'fr-FR';
+      /* Un cran sous la vitesse nominale : a 1, une reponse de dix lignes
+         arrive comme un seul bloc, et c'est une bonne part de ce qu'on entend
+         comme « robotique ». */
+      enonce.rate = 0.95;
       rang += 1;
       enonce.onend = dire;
       enonce.onerror = function () {

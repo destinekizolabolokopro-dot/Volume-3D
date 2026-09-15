@@ -60,6 +60,26 @@ function aplatir(titre: string): string {
 }
 
 /**
+ * Le texte tel qu'on le DIT : tout ce qui précède le détail juridique.
+ *
+ * La synthèse vocale lisait la réponse entière, détail compris. À l'oreille,
+ * cela donnait « article quinze de la loi numéro quatre-vingt-neuf tiret
+ * quatre cent soixante-deux du six juillet mille neuf cent quatre-vingt-neuf »
+ * — une minute de chiffres épelés, au moment précis où l'on écoute parce qu'on
+ * a les mains prises.
+ *
+ * Le détail est écrit pour être LU, à tête reposée, une fois qu'on a ouvert le
+ * bouton. Il n'a rien à faire dans une lecture à voix haute.
+ */
+export function avantLeDetail(texte: string): string {
+  const lignes = texte.split('\n');
+  const coupure = lignes.findIndex(
+    (ligne) => aplatir(ligne.trim()) === MARQUEUR_DETAIL && ligne.trim().endsWith(':'),
+  );
+  return coupure < 0 ? texte : lignes.slice(0, coupure).join('\n').trimEnd();
+}
+
+/**
  * Sépare ce que tout le monde doit lire de ce qui n'intéresse que ceux qui
  * veulent le fond.
  *
