@@ -97,3 +97,36 @@ test('un nom de fichier vide ou démesuré ne casse pas le cartouche', () => {
   assert.ok(long.length < 1200, 'le nom doit être coupé');
   assert.match(long, /PIÈCE VERSÉE PAR LA PERSONNE/);
 });
+
+/*
+ * Les deux niveaux de lecture.
+ *
+ * Ce qui se perdrait sans ces tests : la règle de vocabulaire. Elle tient en
+ * une liste de mots interdits dans la partie visible, et c'est exactement le
+ * genre de paragraphe qu'une réécriture « pour raccourcir » emporte — après
+ * quoi les réponses redeviennent du droit, sans que rien ne le signale.
+ */
+
+test('la consigne impose les quatre intertitres, dans l’ordre', () => {
+  const rangs = ['En clair :', 'Ce que je ferais :', 'Le délai :', 'Le détail juridique :'].map(
+    (titre) => SOCLE.indexOf(titre),
+  );
+  for (const rang of rangs) assert.ok(rang > 0, 'un intertitre manque');
+  assert.deepEqual([...rangs].sort((a, b) => a - b), rangs, 'l’ordre a changé');
+});
+
+test('le vocabulaire de métier est nommément interdit avant le détail', () => {
+  assert.match(SOCLE, /Aucun numéro d’article/);
+  assert.match(SOCLE, /clause résolutoire/);
+  assert.match(SOCLE, /commandement de payer/);
+  /* Interdire sans donner l'équivalent laisserait le modèle sans issue. */
+  assert.match(SOCLE, /le courrier officiel qu’un huissier apporte/);
+});
+
+test('le détail juridique n’est jamais vide', () => {
+  assert.match(SOCLE, /Cette partie n’est jamais vide/);
+});
+
+test('l’urgence passe devant la structure', () => {
+  assert.match(SOCLE, /avant « En clair/);
+});

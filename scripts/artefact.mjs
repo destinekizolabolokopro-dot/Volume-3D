@@ -75,7 +75,10 @@ const liste = (items, classe = '') =>
  * livré : ouvert sans JavaScript, ce fichier montre tout, ce qui est le bon
  * comportement pour un document qu'on lit hors ligne.
  */
-const repli = (html, hauteur = 300) => `<div data-repli="${hauteur}">${html}</div>`;
+const repli = (html, hauteur = 300, libelle = '', libelleReplie = '') =>
+  `<div data-repli="${hauteur}"${libelle ? ` data-repli-libelle="${e(libelle)}"` : ''}${
+    libelleReplie ? ` data-repli-replie="${e(libelleReplie)}"` : ''
+  }>${html}</div>`;
 
 /**
  * Le sceau, en clair de composants/Sceau.tsx. Ce fichier n'a pas de React :
@@ -123,22 +126,37 @@ const EXEMPLE = {
   domaine: 'bail-habitation',
   question:
     'Je veux vendre mon appartement, qui est loué vide depuis 2021. Le bail arrive à échéance en mars. Comment donner congé ?',
+  /* La réponse est écrite sur les deux niveaux que le site rend : ce qui se
+     lit sans rien connaître au droit, puis le détail juridique, replié
+     derrière un bouton. C'est un échange enregistré — il doit donc montrer
+     exactement la forme que le vrai service produit, sans quoi il promet
+     autre chose que ce qu'on achète. */
   reponse: [
+    ['titre', 'En clair'],
+    ['texte',
+      'Vous pouvez vendre, mais il faut prévenir très tôt : six mois avant la fin du bail. Si le bail se termine en mars, votre locataire doit avoir reçu le courrier fin septembre au plus tard. Un jour de retard et le congé ne vaut rien — le bail repart pour trois ans.'],
+    ['texte',
+      'Et vous devez lui proposer d’acheter en premier, au prix que vous demandez. Il a deux mois pour répondre.'],
+    ['titre', 'Ce que je ferais'],
+    ['liste', [
+      'compter six mois pleins depuis la date de fin écrite au contrat, pas depuis la signature ;',
+      'écrire le prix et les conditions de vente dans le courrier — sans le prix, il est nul ;',
+      'le faire remettre par un huissier, parce que c’est la preuve de réception qui se conteste le plus ;',
+      'vérifier l’âge et les revenus du locataire avant d’envoyer quoi que ce soit.',
+    ]],
     ['titre', 'Le délai'],
     ['texte',
-      'Six mois avant l’échéance, pour un logement vide. Si le bail se termine en mars, le congé doit être reçu par le locataire au plus tard fin septembre. Un jour de retard et il ne vaut rien : le bail se reconduit pour trois ans.'],
-    ['titre', 'Ce que dit la règle'],
+      'Six mois avant la fin du bail pour un logement loué vide, trois mois s’il est meublé. Le locataire a ensuite deux mois pour dire s’il achète.'],
+    ['titre', 'Le détail juridique'],
     ['texte',
-      'Le congé pour vendre doit indiquer le motif, le prix et les conditions de la vente. Il vaut offre de vente au profit du locataire, qui dispose de deux mois pour l’accepter. Ce n’est pas une formalité : un congé qui omet le prix est nul, et la nullité se soulève des années plus tard.'],
-    ['titre', 'Ce que vous pouvez faire'],
+      'L’article 15 de la loi du 6 juillet 1989 régit le congé pour vendre. Il impose au bailleur d’indiquer le motif, le prix et les conditions de la vente, et le congé vaut offre de vente au profit du locataire, qui dispose de deux mois pour l’accepter. Un congé qui omet le prix est nul, et cette nullité se soulève des années plus tard.'],
+    ['texte',
+      'Le préavis est de six mois pour une location vide et de trois mois pour un meublé, décompté depuis le terme porté au bail. La signification par commissaire de justice n’est pas obligatoire, mais elle constitue la preuve de réception la plus difficile à contester.'],
     ['liste', [
-      'compter six mois pleins depuis la date d’échéance portée au contrat, pas depuis la signature ;',
-      'faire délivrer le congé par commissaire de justice — la preuve de réception est ce qui se conteste le plus ;',
-      'y porter le prix et les conditions, faute de quoi il est nul.',
+      'Article 15-III : protection du locataire de plus de soixante-cinq ans aux ressources inférieures au plafond, sauf offre de relogement ou bailleur lui-même âgé et modeste.',
+      'Article 1743 du code civil : la vente ne rompt pas le bail en cours, l’acquéreur reprend les obligations du bailleur.',
+      'Si le locataire renonce à acheter et que vous vendez ensuite moins cher, il retrouve un droit de préemption sur le nouveau prix.',
     ]],
-    ['titre', 'Quand il faut un professionnel'],
-    ['texte',
-      'Si le locataire a plus de soixante-cinq ans et des ressources modestes, la protection légale peut vous interdire le congé sauf à lui proposer un relogement. C’est le cas où une erreur coûte trois ans : faites vérifier la situation avant d’envoyer quoi que ce soit.'],
   ],
   citations: [
     { texte: 'loi du 6 juillet 1989', num: '15' },
@@ -165,15 +183,35 @@ function citationsReelles() {
 
 const citations = citationsReelles();
 
-const reponseRendue = EXEMPLE.reponse
-  .map(([type, valeur]) =>
-    type === 'titre'
-      ? `<p class="jur-intertitre">${e(valeur)}</p>`
-      : type === 'liste'
-        ? liste(valeur, 'jur-liste')
-        : `<p>${e(valeur)}</p>`,
-  )
-  .join('');
+/**
+ * La réponse, rendue sur les DEUX niveaux du site.
+ *
+ * La coupure tombe au titre « Le détail juridique », exactement comme
+ * `separer()` dans lib/mise-en-forme.ts : ce qui précède se lit sans rien
+ * connaître au droit, ce qui suit part derrière un bouton. Ce fichier montre
+ * un échange enregistré — il doit donc montrer la forme que le vrai service
+ * produit, sans quoi il promet autre chose que ce qu'on achète.
+ */
+const rendreBlocs = (blocs) =>
+  blocs
+    .map(([type, valeur]) =>
+      type === 'titre'
+        ? `<p class="jur-intertitre">${e(valeur)}</p>`
+        : type === 'liste'
+          ? liste(valeur, 'jur-liste')
+          : `<p>${e(valeur)}</p>`,
+    )
+    .join('');
+
+const coupure = EXEMPLE.reponse.findIndex(
+  ([type, valeur]) => type === 'titre' && /détail juridique/i.test(valeur),
+);
+
+/* Le titre de la coupure part AVEC le détail : il annonce ce qu'on ouvre. */
+const reponseClaire = rendreBlocs(
+  coupure < 0 ? EXEMPLE.reponse : EXEMPLE.reponse.slice(0, coupure),
+);
+const reponseDetail = coupure < 0 ? '' : rendreBlocs(EXEMPLE.reponse.slice(coupure));
 
 const sources = citations
   .map(
@@ -221,11 +259,17 @@ const echange = (id) => `
     <div class="jur-fil">
       <div class="jur-tour jur-de-vous"><p>${e(EXEMPLE.question)}</p></div>
       <div class="jur-tour jur-de-lui">
-        ${repli(reponseRendue, 420)}
+        ${reponseClaire}
+        ${repli(
+          `${reponseDetail}
         <details class="jur-sources" open>
           <summary>Les ${citations.length} textes cités</summary>
           <ul>${sources}</ul>
-        </details>
+        </details>`,
+          0,
+          'Voir le détail juridique',
+          'Masquer le détail',
+        )}
         <div class="jur-voix">
           <button type="button" class="jur-voix-bouton" data-lire="reponse-${e(id)}">
             <span aria-hidden="true">▶</span><span data-lire-texte>Écouter la réponse</span>
@@ -915,7 +959,9 @@ ${pied}
       /* Un bloc encore cache ne se mesure pas : on reviendra. */
       if (!bloc.offsetParent && bloc.getBoundingClientRect().height === 0) return;
 
-      var hauteur = parseInt(bloc.dataset.repli, 10) || 300;
+      var hauteur = parseInt(bloc.dataset.repli, 10) || 0;
+      var motVoir = bloc.dataset.repliLibelle || 'Voir tout';
+      var motMasquer = bloc.dataset.repliReplie || 'Replier';
       bloc.dataset.repliPose = '1';
 
       var corps = document.createElement('div');
@@ -933,8 +979,9 @@ ${pied}
       bouton.type = 'button';
       bouton.className = 'jur-repli-bouton';
       bouton.setAttribute('aria-expanded', 'false');
-      bouton.innerHTML = '<span data-repli-texte>Voir tout</span>' +
+      bouton.innerHTML = '<span data-repli-texte></span>' +
         '<span class="jur-repli-chevron" aria-hidden="true">&#8595;</span>';
+      bouton.querySelector('[data-repli-texte]').textContent = motVoir;
 
       bouton.addEventListener('click', function () {
         var ouvert = bloc.getAttribute('data-replie') !== '1';
@@ -949,7 +996,7 @@ ${pied}
         }
         var replie = bloc.getAttribute('data-replie') === '1';
         bouton.setAttribute('aria-expanded', replie ? 'false' : 'true');
-        bouton.querySelector('[data-repli-texte]').textContent = replie ? 'Voir tout' : 'Replier';
+        bouton.querySelector('[data-repli-texte]').textContent = replie ? motVoir : motMasquer;
         bouton.querySelector('.jur-repli-chevron').innerHTML = replie ? '&#8595;' : '&#8593;';
       });
 

@@ -1,4 +1,3 @@
-import { Repli } from '@/components/Repli';
 import { Reponse } from '@/components/Reponse';
 import { Sources } from '@/components/Sources';
 import { Lecture } from '@/components/Voix';
@@ -42,18 +41,17 @@ export function Fil({
             </span>
           )}
           {tour.role === 'assistant' ? (
-            /* Une réponse longue est repliée ; une réponse courte ne l'est
-               pas, et le composant s'en charge — il mesure avant de couper.
-               La hauteur laisse passer une quinzaine de lignes : de quoi lire
-               « ce que dit la règle » et « le délai » en entier, qui sont les
-               deux choses pour lesquelles on est venu. */
-            <Repli hauteur={420} quoi="la réponse">
-              <Reponse texte={tour.content} />
-            </Repli>
+            /* Les textes cités rejoignent le détail juridique, à l'intérieur
+               du repli : ils appartiennent au même niveau de lecture. Les
+               laisser dehors aurait remis sous les yeux de tout le monde
+               exactement ce qu'on venait d'en retirer. */
+            <Reponse
+              texte={tour.content}
+              complement={<Sources references={tour.references ?? []} />}
+            />
           ) : (
             <p>{tour.content}</p>
           )}
-          {tour.role === 'assistant' && <Sources references={tour.references ?? []} />}
           {tour.role === 'assistant' && (
             <Lecture
               texte={tour.content}
