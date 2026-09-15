@@ -1,81 +1,50 @@
 import 'server-only';
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
-import { promisify } from 'node:util';
 import { cookies } from 'next/headers';
-import { createHmac } from 'node:crypto';
 import { randomId } from './ids';
+import {
+  emettreJeton,
+  hashPassword,
+  lireJeton,
+  optionsDuCookie,
+  sessionsConfigurees,
+  verifyPassword,
+} from './sessions';
 import { getStore } from './store';
 import type { Account, Plan } from './types';
 
-const scrypt = promisify(scryptCallback);
+export { hashPassword, sessionsConfigurees, verifyPassword };
 
 export const OWNER_COOKIE = 'v3d_owner';
-const SESSION_DAYS = 30;
 
 /**
- * Comptes clients.
+ * Comptes clients de Volume3D — les visites 3D, et rien d'autre.
+ *
+ * L'assistant juridique a les siens, dans lib/juridique/comptes.ts : deux
+ * services, deux tables, deux cookies. Un compte ouvert ici n'ouvre pas de
+ * session là-bas, et réciproquement.
  *
  * Chaque propriétaire ou conciergerie dispose d'un espace où il crée et gère
  * ses propres biens. La formule ne fixe pas un loyer mensuel — le service se
  * paie au logement, une fois — mais le nombre de biens qu'un compte peut
  * tenir : voir `PLAN_LIMITS` plus bas, et `PLAN_OFFERS` dans `lib/content.ts`
- * pour ce qu'on en dit au client. Les mots de passe
- * sont dérivés par scrypt avec un sel par compte : la base ne contient jamais
- * de mot de passe en clair, et deux clients ayant le même mot de passe ont des
- * empreintes différentes.
+ * pour ce qu'on en dit au client. Les mots de passe sont dérivés par scrypt
+ * avec un sel par compte : la base ne contient jamais de mot de passe en
+ * clair, et deux clients ayant le même mot de passe ont des empreintes
+ * différentes.
  */
-
-function secret(): string {
-  const value = process.env.AUTH_SECRET;
-  if (!value || value.length < 16) {
-    throw new Error("AUTH_SECRET manquant ou trop court (16 caractères minimum).");
-  }
-  return value;
-}
-
-export async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString('hex');
-  const derived = (await scrypt(password, salt, 64)) as Buffer;
-  return `${salt}:${derived.toString('hex')}`;
-}
-
-export async function verifyPassword(password: string, stored: string): Promise<boolean> {
-  const [salt, expected] = stored.split(':');
-  if (!salt || !expected) return false;
-  const derived = (await scrypt(password, salt, 64)) as Buffer;
-  const expectedBuffer = Buffer.from(expected, 'hex');
-  if (expectedBuffer.length !== derived.length) return false;
-  return timingSafeEqual(expectedBuffer, derived);
-}
 
 /* --------------------------------------------------------------- session --- */
 
-/** Jeton « idDuCompte.expiration.signature ». Aucune donnée sensible dedans. */
+/** Jeton de session Volume3D. La portée « v3d » entre dans la signature. */
 export function issueOwnerToken(accountId: string, now = Date.now()): string {
-  const payload = `${accountId}.${now + SESSION_DAYS * 24 * 60 * 60 * 1000}`;
-  const signature = createHmac('sha256', secret()).update(payload).digest('base64url');
-  return `${payload}.${signature}`;
+  return emettreJeton('v3d', accountId, now);
 }
 
 export function readOwnerToken(token: string | undefined, now = Date.now()): string | null {
-  if (!token) return null;
-  const parts = token.split('.');
-  if (parts.length !== 3) return null;
-  const [accountId, expiry, signature] = parts;
-  const expected = createHmac('sha256', secret()).update(`${accountId}.${expiry}`).digest('base64url');
-  const a = Buffer.from(expected, 'utf8');
-  const b = Buffer.from(signature, 'utf8');
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
-  return Number(expiry) > now ? accountId : null;
+  return lireJeton('v3d', token, now);
 }
 
-export const ownerCookieOptions = {
-  httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: process.env.NODE_ENV === 'production',
-  path: '/',
-  maxAge: SESSION_DAYS * 24 * 60 * 60,
-};
+export const ownerCookieOptions = optionsDuCookie;
 
 /** Compte connecté, ou null. Ne lève jamais : une session invalide vaut déconnecté. */
 export async function currentAccount(): Promise<Account | null> {
