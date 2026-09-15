@@ -39,6 +39,51 @@ function estTitre(ligne: string): boolean {
   return ligne.endsWith(':') && ligne.length <= TITRE_MAX && !estPuce(ligne);
 }
 
+/**
+ * Le titre qui sépare la réponse en clair du détail juridique.
+ *
+ * Il est demandé au spécialiste par la consigne (lib/consigne.ts), et il est
+ * reconnu ici sans accent ni casse : un modèle qui écrit « LE DÉTAIL
+ * JURIDIQUE » ou « Le detail juridique » dit la même chose, et une réponse
+ * dont la coupure a raté vaut mieux qu'une réponse tronquée.
+ */
+const MARQUEUR_DETAIL = 'le detail juridique';
+
+/** Sans accents, sans casse, sans ponctuation de fin. */
+function aplatir(titre: string): string {
+  return titre
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[.:;!?\s]+$/, '')
+    .trim();
+}
+
+/**
+ * Sépare ce que tout le monde doit lire de ce qui n'intéresse que ceux qui
+ * veulent le fond.
+ *
+ * La partie « claire » se lit sans rien connaître au droit : la réponse, ce
+ * qu'il y a à faire, le délai. La partie « détail » porte la règle exacte, les
+ * articles cités et le vocabulaire du métier — elle est repliée à l'écran.
+ *
+ * Le titre qui marque la coupure part AVEC le détail : il annonce ce qu'on va
+ * lire, il n'a rien à faire au-dessus du bouton qui l'ouvre.
+ *
+ * Quand le marqueur est absent — une réponse courte, une consultation d'avant
+ * ce découpage —, tout reste en clair et rien n'est replié. C'est le bon
+ * défaut : ne rien cacher.
+ */
+export function separer(texte: string): { clair: Bloc[]; detail: Bloc[] } {
+  const blocs = decouper(texte);
+  const coupure = blocs.findIndex(
+    (bloc) => bloc.type === 'titre' && aplatir(bloc.texte) === MARQUEUR_DETAIL,
+  );
+
+  if (coupure < 0) return { clair: blocs, detail: [] };
+  return { clair: blocs.slice(0, coupure), detail: blocs.slice(coupure) };
+}
+
 /** Découpe un texte en blocs affichables. Ne renvoie jamais de bloc vide. */
 export function decouper(texte: string): Bloc[] {
   const blocs: Bloc[] = [];

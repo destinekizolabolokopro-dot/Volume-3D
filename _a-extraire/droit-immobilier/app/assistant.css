@@ -4114,6 +4114,7 @@
    en largeur, aucune barre n'apparaît sur les blocs courants, et le tableau
    garde le défilement de son propre conteneur. */
 .jur-repli-corps {
+  position: relative;
   overflow-y: hidden;
   overflow-x: auto;
 }
