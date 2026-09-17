@@ -101,6 +101,37 @@ export interface Aiguillage {
 }
 
 /**
+ * Le score en dessous duquel une piste n'est qu'un mot qui traîne.
+ *
+ * Un seul mot de champ lexical vaut 1. « Des fissures dans les parties
+ * communes » fait remonter « location courte durée » à 1, parce que le mot
+ * « location » y figure — ce n'est pas une seconde matière, c'est du bruit.
+ * À partir de 2, il a fallu deux mots, ou un signal : quelque chose s'est
+ * vraiment dit.
+ */
+const SEUIL_VOISIN = POIDS_MOT * 2;
+
+/**
+ * La seconde spécialité, quand il y en a vraiment une seconde.
+ *
+ * Elle sert au spécialiste qui répond : il travaille depuis SA matière, et
+ * sans cette information il ignore jusqu'à l'existence de l'autre. « Des
+ * fissures dans les parties communes après les travaux votés en assemblée »
+ * est une question de copropriété — score 12 — qui parle aussi de
+ * construction — score 2. Le premier répond ; le second doit être nommé,
+ * faute de quoi la moitié de la situation reste dans un angle mort.
+ *
+ * Le rapport des scores ne convient PAS pour décider : 2 contre 12 est un
+ * sixième, et c'est pourtant le cas qu'on veut attraper. Ce qui compte n'est
+ * pas le poids relatif de la seconde matière mais le fait qu'elle ait été
+ * nommée — donc un seuil absolu, et bas.
+ */
+export function voisin(aiguillage: Aiguillage): DomaineId | null {
+  const second = aiguillage.pistes.find((piste) => piste.id !== aiguillage.domaine);
+  return second && second.score >= SEUIL_VOISIN ? second.id : null;
+}
+
+/**
  * Range une question. Ne renvoie jamais d'erreur : une question vide est une
  * question sans piste, pas un échec.
  */

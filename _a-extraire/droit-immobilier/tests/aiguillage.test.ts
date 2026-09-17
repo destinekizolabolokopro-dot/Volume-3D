@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { aiguiller, mots } from '../lib/aiguillage.ts';
+import { aiguiller, mots, voisin } from '../lib/aiguillage.ts';
 import { DOMAINES, type DomaineId } from '../lib/domaines.ts';
 
 /**
@@ -115,4 +115,40 @@ test('le résultat est stable : deux appels donnent le même classement', () => 
 test('mots normalise ce qui lui est donné', () => {
   assert.deepEqual(mots('L’état des lieux, reçu hier !'), ['l', 'etat', 'des', 'lieux', 'recu', 'hier']);
   assert.deepEqual(mots('   '), []);
+});
+
+/*
+ * LE VOISIN : la seconde spécialité, quand il y en a vraiment une seconde.
+ *
+ * Elle part avec la question, pour que le spécialiste qui répond sache qu'une
+ * part de la situation lui échappe au lieu de se taire dessus sans le savoir.
+ * Ce qui est testé ici, c'est la frontière entre une seconde matière et un
+ * mot qui traîne — se tromper d'un côté fait un angle mort, de l'autre une
+ * réponse qui se disperse.
+ */
+
+test('une seconde matière vraiment nommée est signalée', () => {
+  const question =
+    'Des fissures sont apparues dans les parties communes après les travaux votés en assemblée générale.';
+  const a = aiguiller(question);
+  assert.equal(a.domaine, 'copropriete');
+  /* Deux contre douze : le rapport est d’un sixième, et c’est pourtant le cas
+     qu’il faut attraper — la question parle bel et bien de construction. */
+  assert.equal(voisin(a), 'travaux');
+});
+
+test('un mot isolé ne fait pas une seconde matière', () => {
+  const a = aiguiller('Mon locataire est parti en laissant deux mois de loyer.');
+  assert.equal(a.domaine, 'bail-habitation');
+  assert.equal(voisin(a), null, 'une piste à 1 est du bruit, pas un voisin');
+});
+
+test('sans seconde piste, pas de voisin', () => {
+  assert.equal(voisin(aiguiller('')), null);
+  assert.equal(voisin({ domaine: 'bail-habitation', certitude: 'sure', pistes: [] }), null);
+});
+
+test('le voisin n’est jamais le domaine retenu lui-même', () => {
+  const a = aiguiller('Je loue en meublé de tourisme, ma commune impose un numéro d’enregistrement.');
+  assert.notEqual(voisin(a), a.domaine);
 });
