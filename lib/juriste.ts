@@ -122,8 +122,16 @@ export async function arbitrer(question: string, pistes: DomaineId[]): Promise<D
     model: MODEL,
     /* Le modèle réfléchit par défaut, et sa réflexion se décompte de ce
        plafond : un budget calé sur la longueur de la réponse attendue — un
-       identifiant — ne laisserait sortir aucun texte. */
-    max_tokens: 1024,
+       identifiant — ne laisserait sortir aucun texte.
+
+       Mille jetons y suffisaient presque toujours, et « presque » était le
+       problème : quand la réflexion les épuisait, la réponse revenait vide,
+       l'arbitrage rendait « rien », et la question partait au domaine le mieux
+       classé par les mots — sans que rien ne distingue un arbitrage qui a
+       échoué d'un arbitrage qui a tranché. Le double laisse la marge, pour un
+       coût négligeable : ce sont des jetons de sortie, sur une requête par
+       question hésitante. */
+    max_tokens: 2048,
     // Un choix entre trois étiquettes ne demande pas de réflexion longue, et
     // la personne attend devant un écran vide tant qu'il n'est pas fait.
     output_config: { effort: 'low' },
@@ -137,7 +145,10 @@ export async function arbitrer(question: string, pistes: DomaineId[]): Promise<D
     ],
   });
 
-  if (response.stop_reason === 'refusal') return null;
+  /* Un refus ou une coupure ne se devinent pas à un texte vide : on les nomme.
+     Dans les deux cas l'appelant retombe sur la meilleure piste locale et
+     garde la certitude « hésitante », ce qui fait proposer les autres. */
+  if (response.stop_reason === 'refusal' || response.stop_reason === 'max_tokens') return null;
 
   const reponse = response.content
     .filter((bloc): bloc is Anthropic.TextBlock => bloc.type === 'text')
@@ -319,9 +330,21 @@ export async function blocsDuCorpus(
       'Ils ne contiennent ni jurisprudence, ni doctrine, ni règlement local, ni délibération communale, ni règlement de copropriété : sur ces points-là, nomme la source sans la numéroter.',
       'Ils peuvent aussi ne pas couvrir la question posée. Dis-le alors franchement, au lieu de rapprocher un article qui parle d’autre chose.',
     ].join('\n'),
-    /* Le corpus est identique à chaque tour : mis en cache ici, il n'est
-       facturé qu'une fois pour toute la consultation. */
-    cache_control: { type: 'ephemeral' },
+    /* Le corpus est identique à chaque tour, et identique d'une PERSONNE à
+       l'autre : deux questions de bail d'habitation, posées par deux
+       inconnus, portent exactement les mêmes soixante mille jetons de textes
+       officiels en tête de requête.
+
+       Le cache durait cinq minutes. À ce rythme il ne servait qu'à l'intérieur
+       d'une consultation : la question suivante, posée par quelqu'un d'autre
+       un quart d'heure plus tard, repayait le fonds LEGI en entier. Une heure
+       change la nature de la chose — le corpus cesse d'être un coût par
+       question pour devenir un coût par heure et par spécialité —, et c'est ce
+       qui rend l'effort « haut » abordable.
+
+       Une heure est aussi la bonne durée au fond : ces textes ne changent que
+       lorsqu'on reconstruit le fonds, c'est-à-dire quand la loi bouge. */
+    cache_control: { type: 'ephemeral', ttl: '1h' },
   });
 
   return { blocs, plan: planDuCorpus(corpus) };
@@ -403,6 +426,23 @@ export async function repondre(
   historique: Echange[],
   piece: Piece | null = null,
   profil: Partial<Profil> | null = null,
+  /**
+   * La spécialité qui talonnait celle retenue, s'il y en avait une.
+   *
+   * L'aiguillage choisit UN spécialiste, et il a raison : une question a un
+   * centre de gravité. Mais « des fissures dans les parties communes après
+   * les travaux votés en assemblée » parle de copropriété ET de construction,
+   * et celui qui répondait ignorait jusqu'à l'existence de l'autre matière.
+   * Il répondait bien sur sa part et se taisait sur le reste — sans savoir
+   * qu'il se taisait.
+   *
+   * Le voisin n'apporte pas ses textes : soixante mille jetons de plus par
+   * question, pour une matière qui n'est peut-être pas la bonne, serait un
+   * mauvais échange. Il apporte son NOM, ce qui suffit à dire « cette
+   * partie-là relève de la copropriété, et voici ce qu'elle y change » au
+   * lieu de laisser un trou.
+   */
+  voisin: DomaineId | null = null,
 ): Promise<ReponseJuriste> {
   const fiche = domaine(id);
   const anthropic = await client();
@@ -420,17 +460,30 @@ export async function repondre(
     max_tokens: MAX_TOKENS,
     /* Une question de droit se traite en réfléchissant : le modèle doit
        pouvoir vérifier qu'il ne confond pas deux régimes voisins avant
-       d'écrire. L'effort moyen tient l'attente sous une poignée de secondes. */
+       d'écrire.
+
+       L'effort était « moyen », calé sur l'attente. Il passe à « haut », qui
+       est le plancher recommandé dès que se tromper coûte cher — et ici, une
+       erreur ne coûte pas une reformulation : elle coûte un délai manqué, et
+       un délai manqué ne se rattrape nulle part. Quelques secondes de plus
+       valent mieux qu'un congé donné cinq mois avant l'échéance au lieu de
+       six.
+
+       Ce que cela coûte est largement repris ailleurs : depuis que le corpus
+       est mis en cache pour une heure au lieu de cinq minutes, la part
+       dominante de la facture — les soixante mille jetons de textes officiels
+       — n'est plus payée plein tarif à chaque question. */
     thinking: { type: 'adaptive' },
-    output_config: { effort: 'medium' },
+    output_config: { effort: 'high' },
     system: [
       { type: 'text', text: SOCLE },
       {
         type: 'text',
         text: consigneDomaine(fiche),
-        /* Socle et fiche sont identiques à chaque message d'une même
-           consultation : mis en cache, ils ne sont facturés qu'une fois. */
-        cache_control: { type: 'ephemeral' },
+        /* Socle et fiche sont identiques d'une consultation à l'autre pour
+           une même spécialité : même durée que le corpus, pour la même
+           raison. */
+        cache_control: { type: 'ephemeral', ttl: '1h' },
       },
       /* Le profil vient APRÈS le point de mise en cache, et c'est tout
          l'intérêt : il change d'une personne à l'autre, quand la consigne du
@@ -438,6 +491,20 @@ export async function repondre(
          fiche à chaque utilisateur. */
       ...(profil && profilPourLeModele(profil)
         ? [{ type: 'text' as const, text: profilPourLeModele(profil) }]
+        : []),
+      /* Le voisin, lui aussi après le point de mise en cache : il change
+         d'une question à l'autre. */
+      ...(voisin && voisin !== id
+        ? [
+            {
+              type: 'text' as const,
+              text: [
+                `L’aiguillage a hésité : cette question touche aussi à la spécialité « ${domaine(voisin).label} » (${domaine(voisin).resume}).`,
+                'Tu réponds depuis la tienne, avec tes textes. Mais si une part de la situation relève de celle-là, dis-le en une phrase, nomme-la, et dis ce qu’elle y change — sans en citer les articles, que tu n’as pas sous les yeux.',
+                'Ne te défausse pas pour autant : la part qui te revient, tu la traites entièrement.',
+              ].join('\n'),
+            },
+          ]
         : []),
     ],
     /* L'outil est déclaré à chaque tour, jamais imposé : c'est au spécialiste
@@ -461,6 +528,22 @@ export async function repondre(
     .map((bloc) => bloc.text)
     .join('\n')
     .trim();
+
+  /* UNE RÉPONSE COUPÉE LE DIT.
+
+     Seul le refus était traité. Une réponse qui atteignait le plafond de
+     jetons revenait tronquée, au milieu d'une phrase, et la page l'affichait
+     comme une réponse finie — sans que rien, nulle part, ne signale la
+     coupure. C'est le pire endroit du produit pour se taire : depuis que la
+     réponse s'écrit en deux niveaux, ce qui se fait couper en premier est le
+     détail juridique, et juste avant lui, le délai. */
+  if (response.stop_reason === 'max_tokens') {
+    return {
+      texte: `${texte}\n\n[Réponse interrompue : elle atteignait la longueur maximale. Ce qui précède est exact, mais incomplet — reposez la question en la découpant, ou demandez la suite.]`,
+      refus: false,
+      references: [],
+    };
+  }
 
   /* Les citations viennent de l'API, pas du texte : on ne relit pas la réponse
      pour y deviner des numéros d'article, on prend ceux que le modèle a

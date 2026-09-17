@@ -9,6 +9,7 @@ import {
   questionsDuMois,
   toursDeConsultation,
 } from '@/lib/consultations';
+import { voisin as voisinSerieux } from '@/lib/aiguillage';
 import { domaine as ficheDomaine, estDomaineId, type DomaineId } from '@/lib/domaines';
 import { estJuristeConfigure, orienter, repondre, type Echange } from '@/lib/juriste';
 import { PieceRefusee, lirePiece, type Piece } from '@/lib/piece';
@@ -270,6 +271,13 @@ export async function POST(request: Request) {
        autres pistes repartent avec la réponse, pour que la page puisse
        proposer de changer de spécialiste sans reposer la question. */
     let pistes: { id: DomaineId; label: string; resume: string }[] = [];
+    /* La spécialité qui talonnait celle retenue. Elle part avec la question :
+       le spécialiste doit savoir qu'une part de la situation lui échappe
+       plutôt que de se taire dessus sans le savoir. Voir `repondre`.
+
+       Seulement quand l'aiguillage a choisi lui-même : un domaine choisi à la
+       main est un choix, pas une hésitation. */
+    let voisin: DomaineId | null = null;
     if (!demande.domaine) {
       const orientation = await orienter(demande.question);
       pistes = orientation.pistes
@@ -296,9 +304,12 @@ export async function POST(request: Request) {
         });
       }
       demande.domaine = orientation.domaine;
+      /* Pas la première piste venue : `voisinSerieux` écarte celles qui ne
+         tiennent qu'à un mot de passage. Voir lib/aiguillage.ts. */
+      voisin = voisinSerieux(orientation);
     }
 
-    const reponse = await repondre(demande.domaine, historique, demande.piece, compte);
+    const reponse = await repondre(demande.domaine, historique, demande.piece, compte, voisin);
 
     if (compte) {
       if (!consultation) {
