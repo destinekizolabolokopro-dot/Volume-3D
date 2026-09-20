@@ -9,6 +9,14 @@ import { diagnosticsPourLeModele } from './diagnostics';
 import { domaine, estDomaineId, type Domaine, type DomaineId } from './domaines';
 import { MAX_OPTIONS, lirePrecision, texteDeLaQuestion, type Precision } from './precision';
 import { profilPourLeModele, type Profil } from './profils';
+import {
+  CONSIGNE_VEILLE,
+  DOMAINES_VEILLE,
+  MAX_RECHERCHES,
+  rassemblerLaVeille,
+  type CitationWeb,
+  type SourceWeb,
+} from './veille';
 import type { Piece } from './piece';
 
 /**
@@ -218,6 +226,12 @@ export interface ReponseJuriste {
    * quand la réponse n'a rien cité — ce qui arrive, et qui doit se voir.
    */
   references?: Reference[];
+  /**
+   * Les pages consultées en ligne, prises dans la liste fermée de
+   * lib/veille.ts. Vide quand la réponse se tranche sur les seuls textes
+   * joints — ce qui est le cas normal d'une question de principe.
+   */
+  veille?: SourceWeb[];
 }
 
 /** Construit le message du visiteur, avec la pièce jointe s'il y en a une. */
@@ -418,6 +432,53 @@ const OUTIL_PRECISER: Anthropic.Tool = {
 };
 
 /**
+ * L'outil par lequel le spécialiste va voir ce qui a changé.
+ *
+ * Il tourne chez Anthropic, pas ici : ni requête sortante depuis ce serveur,
+ * ni page à récupérer, ni HTML à relire. Ce qui revient est du texte déjà
+ * cité, rattaché à son adresse — ce qui permet d'afficher les pages
+ * consultées sans les avoir devinées dans la réponse.
+ *
+ * `allowed_domains` est le cœur de la chose. Sans lui, « cherche sur le web »
+ * signifierait « lis n'importe qui » : un blog d'agence qui recopie une
+ * réforme de travers, un comparateur qui vend un crédit, une page de 2019
+ * qu'aucune date ne date. Avec lui, la question n'est plus « que trouve-t-on »
+ * mais « de qui accepte-t-on de le lire ». La liste est dans lib/veille.ts, et
+ * la consigne envoyée au modèle est construite à partir du même tableau : les
+ * deux ne peuvent pas diverger.
+ *
+ * `blocked_domains` n'est pas passé, et ne peut pas l'être : l'API refuse une
+ * requête qui porte les deux.
+ *
+ * `user_location` n'est pas un traçage de la personne — rien de ce qu'elle est
+ * ne sort d'ici. C'est la localisation du SERVICE : un assistant de droit
+ * immobilier français cherche en France, et « encadrement des loyers » ne doit
+ * pas ramener une page québécoise.
+ */
+const OUTIL_VEILLE: Anthropic.Messages.WebSearchTool20260209 = {
+  type: 'web_search_20260209',
+  name: 'web_search',
+  max_uses: MAX_RECHERCHES,
+  allowed_domains: DOMAINES_VEILLE,
+  user_location: { type: 'approximate', country: 'FR', timezone: 'Europe/Paris' },
+};
+
+/**
+ * Combien de fois on relance une réponse que l'API a mise en pause.
+ *
+ * Quand un outil serveur tourne, l'API exécute sa propre boucle et peut
+ * rendre la main avant la fin, avec `stop_reason: "pause_turn"`. Ce n'est pas
+ * une erreur : c'est une réponse inachevée qu'il faut renvoyer telle quelle
+ * pour qu'elle reprenne où elle en était. Ne pas le faire produit le défaut le
+ * plus vicieux du lot — une réponse coupée au milieu, sans erreur, sans
+ * avertissement, que la page afficherait comme une réponse finie.
+ *
+ * Deux reprises suffisent largement pour cinq recherches ; au-delà, on
+ * s'arrête et on le dit, plutôt que de laisser quelqu'un attendre.
+ */
+const MAX_REPRISES = 2;
+
+/**
  * Pose la question au spécialiste. L'historique est renvoyé entier : l'API est
  * sans état, et une consultation tient largement dans la fenêtre.
  */
@@ -455,7 +516,16 @@ export async function repondre(
   }));
   const derniere = historique[historique.length - 1];
 
-  const response = await anthropic.messages.create({
+  /* Les messages sont sortis de la requête : la boucle de reprise ci-dessous
+     leur ajoute le tour interrompu, et il faut donc pouvoir les modifier
+     entre deux appels. Tout le reste — consignes, outils, corpus — ne bouge
+     pas d'une reprise à l'autre, et c'est ce qui permet au cache de tenir. */
+  const messages = poserLeCorpus(
+    [...precedents, messageAvecPiece(derniere?.content ?? '', piece)],
+    blocs,
+  );
+
+  const parametres: Anthropic.MessageCreateParamsNonStreaming = {
     model: MODEL,
     max_tokens: MAX_TOKENS,
     /* Une question de droit se traite en réfléchissant : le modèle doit
@@ -477,6 +547,11 @@ export async function repondre(
     output_config: { effort: 'high' },
     system: [
       { type: 'text', text: SOCLE },
+      /* La consigne de veille est POSÉE AVANT le point de mise en cache, avec
+         le socle : elle ne dépend ni de la personne, ni de la question, ni de
+         la spécialité. Elle est donc écrite une fois par heure, pas une fois
+         par question — au même titre que le reste de ce qui ne bouge pas. */
+      { type: 'text', text: CONSIGNE_VEILLE },
       {
         type: 'text',
         text: consigneDomaine(fiche),
@@ -507,13 +582,47 @@ export async function repondre(
           ]
         : []),
     ],
-    /* L'outil est déclaré à chaque tour, jamais imposé : c'est au spécialiste
-       de juger s'il lui manque un fait, et le forcer produirait des questions
-       de formulaire. */
-    tools: [OUTIL_PRECISER],
+    /* Les deux outils sont déclarés à chaque tour, aucun n'est imposé.
+       Pour « preciser », c'est au spécialiste de juger s'il lui manque un
+       fait : le forcer produirait des questions de formulaire.
+
+       Pour « web_search », le choix est le même mais la raison est autre. La
+       consigne dit « à chaque question, avant de répondre » et cela suffit :
+       forcer l'outil obligerait à chercher avant même de savoir s'il y a un
+       chiffre à vérifier, et surtout empêcherait le spécialiste de commencer
+       par réclamer le fait qui manque — on paierait une recherche pour
+       découvrir ensuite qu'on ignore s'il s'agit d'un bail vide ou meublé.
+
+       ATTENTION AU CACHE : le bloc `tools` est rendu AVANT `system`. Ajouter
+       ou retirer un outil ici invalide tout le préfixe mis en cache, corpus
+       compris. Ce n'est pas grave une fois — c'est le prix d'une mise en
+       production —, ce le serait si la liste variait d'une question à
+       l'autre. Elle ne doit donc dépendre de rien : ni du domaine, ni de la
+       personne, ni de la présence d'une pièce. */
+    tools: [OUTIL_PRECISER, OUTIL_VEILLE],
     tool_choice: { type: 'auto' },
-    messages: poserLeCorpus([...precedents, messageAvecPiece(derniere?.content ?? '', piece)], blocs),
-  });
+    messages,
+  };
+
+  let response = await anthropic.messages.create(parametres);
+
+  /* Tout ce que le modèle a produit, reprises comprises.
+
+     Quand l'API met un tour en pause, le texte déjà écrit reste dans le tour
+     interrompu : ne lire que la dernière réponse reviendrait à jeter le début
+     de la sienne. On empile, et on relit l'ensemble une seule fois. */
+  const produit: Anthropic.ContentBlock[] = [...response.content];
+  let reprises = 0;
+
+  while (response.stop_reason === 'pause_turn' && reprises < MAX_REPRISES) {
+    reprises += 1;
+    /* On renvoie le tour interrompu tel quel, et RIEN d'autre : l'API voit le
+       bloc d'outil en fin de message et sait qu'elle doit reprendre. Ajouter
+       un « continue » de notre cru la ferait repartir sur autre chose. */
+    messages.push({ role: 'assistant', content: response.content });
+    response = await anthropic.messages.create({ ...parametres, messages });
+    produit.push(...response.content);
+  }
 
   if (response.stop_reason === 'refusal') {
     return {
@@ -523,11 +632,38 @@ export async function repondre(
     };
   }
 
-  const texte = response.content
-    .filter((bloc): bloc is Anthropic.TextBlock => bloc.type === 'text')
+  const textes = produit.filter((bloc): bloc is Anthropic.TextBlock => bloc.type === 'text');
+  const texte = textes
     .map((bloc) => bloc.text)
     .join('\n')
     .trim();
+
+  /* Les pages consultées en ligne, prises dans les citations et non dans les
+     résultats de recherche : ce qu'on montre est ce sur quoi la réponse
+     s'appuie, pas ce qui est passé devant le modèle. Le filtre de
+     lib/veille.ts écarte au passage tout ce qui ne vient pas de la liste
+     fermée — une seconde serrure sur la porte que `allowed_domains` a déjà
+     fermée côté API. */
+  const veille = rassemblerLaVeille(
+    textes.flatMap((bloc) => (bloc.citations ?? []) as CitationWeb[]),
+  );
+
+  /* UNE RÉPONSE RESTÉE EN PAUSE LE DIT AUSSI.
+
+     Deux reprises couvrent cinq recherches avec de la marge. Si le tour est
+     encore en pause après, c'est que quelque chose tourne en rond, et la
+     personne attend depuis assez longtemps : on rend ce qui est écrit, en
+     disant que ce n'est pas fini. Le silence produirait ici exactement le
+     défaut que la coupure de jetons produisait — une réponse inachevée
+     présentée comme achevée. */
+  if (response.stop_reason === 'pause_turn') {
+    return {
+      texte: `${texte}\n\n[Vérification interrompue : la recherche des chiffres à jour n’a pas abouti. Ce qui précède s’appuie sur les textes officiels, mais les montants et indices du moment n’ont pas pu être confirmés — reposez la question dans un instant.]`,
+      refus: false,
+      references: [],
+      veille,
+    };
+  }
 
   /* UNE RÉPONSE COUPÉE LE DIT.
 
@@ -542,6 +678,7 @@ export async function repondre(
       texte: `${texte}\n\n[Réponse interrompue : elle atteignait la longueur maximale. Ce qui précède est exact, mais incomplet — reposez la question en la découpant, ou demandez la suite.]`,
       refus: false,
       references: [],
+      veille,
     };
   }
 
@@ -551,9 +688,7 @@ export async function repondre(
      référence — c'est une information, pas un défaut à masquer. */
   const references = plan
     ? rassemblerLesReferences(
-        response.content
-          .filter((bloc): bloc is Anthropic.TextBlock => bloc.type === 'text')
-          .flatMap((bloc) => (bloc.citations ?? []) as CitationBrute[]),
+        textes.flatMap((bloc) => (bloc.citations ?? []) as CitationBrute[]),
         plan,
       )
     : [];
@@ -561,7 +696,7 @@ export async function repondre(
   /* La question passe par l'outil ; le reste du tour, s'il y en a un, reste du
      texte. Les deux peuvent coexister — le spécialiste commence parfois par
      situer le sujet avant de réclamer la pièce qui lui manque. */
-  const appel = response.content.find(
+  const appel = produit.find(
     (bloc): bloc is Anthropic.ToolUseBlock => bloc.type === 'tool_use' && bloc.name === 'preciser',
   );
   const precision = appel ? lirePrecision(appel.input) : null;
@@ -573,6 +708,7 @@ export async function repondre(
       precision,
       preambule: texte,
       references,
+      veille,
     };
   }
 
@@ -582,5 +718,6 @@ export async function repondre(
       'Je n’ai pas réussi à formuler de réponse. Reformulez votre question en précisant votre situation : la date des faits, ce que vous avez reçu, et ce que vous cherchez à obtenir.',
     refus: false,
     references,
+    veille,
   };
 }

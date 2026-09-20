@@ -45,7 +45,14 @@ export interface Reference {
 /** Un extrait trop long cesse d'être une preuve et redevient un paragraphe. */
 const LONGUEUR_EXTRAIT = 400;
 
-function raccourcir(extrait: string): string {
+/**
+ * Exporté parce que lib/veille.ts en a besoin pour les extraits ramenés du
+ * web, et qu'une seconde troncature écrite à côté finirait par couper
+ * autrement — deux extraits de la même réponse, l'un à quatre cents signes,
+ * l'autre à trois cent quatre-vingts, pour la seule raison que personne
+ * n'aurait relu les deux fichiers le même jour.
+ */
+export function raccourcir(extrait: string): string {
   const propre = extrait.replace(/\s+/g, ' ').trim();
   if (propre.length <= LONGUEUR_EXTRAIT) return propre;
   const coupe = propre.slice(0, LONGUEUR_EXTRAIT);

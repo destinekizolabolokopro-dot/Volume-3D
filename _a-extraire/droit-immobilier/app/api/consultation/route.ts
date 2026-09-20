@@ -343,6 +343,12 @@ export async function POST(request: Request) {
          rattachés au corpus officiel. Une liste vide n'est pas une panne :
          toutes les questions ne se tranchent pas sur un article. */
       references: reponse.references ?? [],
+      /* Les pages consultées en ligne pour vérifier un chiffre, un indice ou
+         un calendrier. Elles viennent d'une liste fermée de sites officiels
+         et professionnels (voir lib/veille.ts) : les afficher n'est pas un
+         ornement, c'est ce qui permet à quelqu'un de vérifier lui-même le
+         montant qu'il va recopier dans une quittance. */
+      veille: reponse.veille ?? [],
       /* Ce qu'il reste après cette question. La page l'affiche sous le champ :
          un compteur qu'on découvre au moment du refus est une mauvaise
          surprise, un compteur qu'on voit descendre est une information. */
