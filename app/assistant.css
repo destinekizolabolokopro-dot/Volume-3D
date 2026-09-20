@@ -3049,6 +3049,50 @@
   max-width: 66ch;
 }
 
+/* La veille reprend la forme des textes cités, et s'en distingue de deux
+   traits seulement : un lien, parce qu'une page se vérifie en l'ouvrant, et
+   une pastille sur les sources professionnelles, parce qu'un avis de
+   fédération n'est pas une règle et ne doit pas se lire comme telle. */
+
+.jur-veille {
+  margin-top: calc(var(--pas) * 1.5);
+}
+
+.jur-source-titre a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-wash);
+  text-underline-offset: 3px;
+}
+
+.jur-source-titre a:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
+.jur-veille-avis {
+  display: inline-block;
+  margin-left: calc(var(--pas) * 0.75);
+  padding: 1px calc(var(--pas) * 0.625);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+.jur-veille-note {
+  margin: calc(var(--pas) * 2) 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-faint);
+  max-width: 62ch;
+}
+
 /* ----------------------------------------------------------------- réglages
    L'espace du propriétaire. Volontairement pauvre : une page qui reçoit un
    moyen de paiement n'a pas à être agréable, elle a à être lisible. Rien n'y

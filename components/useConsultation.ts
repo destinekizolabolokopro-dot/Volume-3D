@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import type { Reference } from '@/lib/citations';
+import type { SourceWeb } from '@/lib/veille';
 import type { Precision } from '@/lib/precision';
 
 /**
@@ -27,6 +28,10 @@ export interface Tour {
      Ils vivent le temps de la séance — une consultation rouverte depuis la
      base montre le texte des réponses, où les articles cités figurent déjà. */
   references?: Reference[];
+  /* Les pages consultées en ligne pour cette réponse-là. Même durée de vie
+     que les articles cités, et pour la même raison : elles appartiennent au
+     tour, pas à la page. */
+  veille?: SourceWeb[];
 }
 
 /** Une autre spécialité plausible, renvoyée par l'aiguillage du serveur. */
@@ -58,6 +63,7 @@ interface Reponse {
   preambule?: string;
   /** Les articles du corpus officiel sur lesquels la réponse s'appuie. */
   references?: Reference[];
+  veille?: SourceWeb[];
   error?: string;
   /** Vrai quand le refus vient d'un quota : la page propose alors une issue. */
   abonnement?: boolean;
@@ -162,7 +168,15 @@ export function useConsultation({
         const bulle = corps.precision ? (corps.preambule ?? '') : (corps.reponse ?? '');
         setTours(
           bulle
-            ? [...suite, { role: 'assistant', content: bulle, references: corps.references ?? [] }]
+            ? [
+                ...suite,
+                {
+                  role: 'assistant',
+                  content: bulle,
+                  references: corps.references ?? [],
+                  veille: corps.veille ?? [],
+                },
+              ]
             : suite,
         );
       } catch (cause) {

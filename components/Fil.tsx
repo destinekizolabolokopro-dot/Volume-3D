@@ -1,5 +1,6 @@
 import { Reponse } from '@/components/Reponse';
 import { Sources } from '@/components/Sources';
+import { Veille } from '@/components/Veille';
 import { Lecture } from '@/components/Voix';
 import type { Tour } from '@/components/useConsultation';
 
@@ -47,7 +48,16 @@ export function Fil({
                exactement ce qu'on venait d'en retirer. */
             <Reponse
               texte={tour.content}
-              complement={<Sources references={tour.references ?? []} />}
+              complement={
+                <>
+                  <Sources references={tour.references ?? []} />
+                  {/* La veille vient APRÈS les textes cités, et l'ordre dit
+                      quelque chose : la règle d'abord, ce qui l'actualise
+                      ensuite. Inverser reviendrait à mettre une page de
+                      fédération au-dessus d'un article de loi. */}
+                  <Veille sources={tour.veille ?? []} />
+                </>
+              }
             />
           ) : (
             <p>{tour.content}</p>
