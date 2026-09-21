@@ -66,12 +66,21 @@ export function Fil({
             <Lecture
               texte={tour.content}
               dernier={index === tours.length - 1 && index >= restaures}
+              /* La dernière bulle, tant que la réponse arrive, est une
+                 réponse en train de s'écrire : il n'y a rien à lire à voix
+                 haute d'un texte qui change encore. Voir components/Voix.tsx. */
+              enEcriture={pending && index === tours.length - 1}
             />
           )}
         </div>
       ))}
 
-      {pending && (
+      {/* La ligne d'attente ne s'affiche que TANT QUE RIEN N'EST ÉCRIT.
+          Dès que le premier mot tombe, la bulle de réponse existe et prend le
+          relais : garder les deux afficherait « il réfléchit… » sous un texte
+          en train de s'écrire, ce qui est faux et donne l'impression que la
+          page s'est dédoublée. */}
+      {pending && tours[tours.length - 1]?.role !== 'assistant' && (
         <div className="jur-tour jur-de-lui">
           <p className="jur-attente">{attente}</p>
         </div>

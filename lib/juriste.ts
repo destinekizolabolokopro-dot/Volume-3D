@@ -68,7 +68,26 @@ export async function estJuristeConfigure(): Promise<boolean> {
  */
 export async function client(): Promise<Anthropic | null> {
   const apiKey = await cleDuModele();
-  return apiKey ? new Anthropic({ apiKey }) : null;
+  if (!apiKey) return null;
+
+  return new Anthropic({
+    apiKey,
+    /* DEUX RÉGLAGES QUI DÉCIDENT DE CE QU'ON FAIT D'UNE PANNE.
+
+       Le SDK attend dix minutes par défaut. C'est raisonnable pour un script
+       et absurde derrière un navigateur : au bout de trois minutes, personne
+       n'attend plus, et la requête qui continue de tourner est du calcul
+       facturé pour une page que plus personne ne regarde. Trois minutes
+       laissent largement la place à une réponse longue avec réflexion et
+       vérifications — la plus lente mesurée en tenait moins d'une.
+
+       Les deux tentatives supplémentaires, elles, valent surtout pour la
+       surcharge du modèle (529), qui est le plus fréquent des échecs
+       passagers et qui passe presque toujours au deuxième essai. Le SDK
+       attend de lui-même entre deux tentatives. */
+    timeout: 180_000,
+    maxRetries: 2,
+  });
 }
 
 /**
@@ -232,6 +251,82 @@ export interface ReponseJuriste {
    * joints — ce qui est le cas normal d'une question de principe.
    */
   veille?: SourceWeb[];
+}
+
+/**
+ * Ce qui se passe pendant qu'on attend.
+ *
+ * Une réponse de droit prend du temps, et depuis qu'elle réfléchit longuement
+ * et qu'elle va vérifier les chiffres en ligne, elle en prend plus qu'avant.
+ * Le produit avait alors un défaut qu'aucun test ne voit : trente à soixante
+ * secondes d'écran figé sur « Bail d'habitation examine… ». Rien ne distingue
+ * cette attente-là d'une panne, et quelqu'un qui doute recharge la page — ce
+ * qui repose la question, la refacture, et repart pour un tour.
+ *
+ * Ces signaux sont la réponse à ça. Ils ne changent rien au raisonnement :
+ * ils le rendent visible. Le texte s'écrit sous les yeux, et pendant qu'il ne
+ * s'écrit pas encore, on dit ce qui se passe — il réfléchit, il cherche
+ * l'indice du trimestre.
+ */
+export type Signal =
+  /** Un morceau de la réponse, tel qu'il s'écrit. */
+  | { type: 'texte'; delta: string }
+  /** Le modèle réfléchit avant d'écrire. Émis une fois par tour, pas par jeton. */
+  | { type: 'reflexion' }
+  /** Une recherche part vers la liste fermée, avec ce qui est cherché. */
+  | { type: 'recherche'; requete: string };
+
+/** À qui on rend compte. Absent quand l'appelant ne veut que le résultat. */
+export type Signaleur = (signal: Signal) => void;
+
+/**
+ * Un tour, diffusé.
+ *
+ * On passe par `stream()` plutôt que `create()` pour deux raisons, et la
+ * seconde compte autant que la première. Elle donne le texte au fur et à
+ * mesure — c'est l'objet du changement. Et elle supprime une panne qu'on
+ * n'avait pas encore rencontrée mais qui nous attendait : une requête non
+ * diffusée dont la réponse est longue finit par dépasser le délai d'attente
+ * de la plateforme, et échoue entièrement après une minute de calcul déjà
+ * payé.
+ *
+ * Le message final est reconstitué par le SDK : citations comprises, ce qui
+ * veut dire que rien de ce qui suit n'a besoin de savoir qu'on a diffusé.
+ */
+async function tourDiffuse(
+  anthropic: Anthropic,
+  parametres: Anthropic.MessageCreateParamsNonStreaming,
+  signaler?: Signaleur,
+): Promise<Anthropic.Message> {
+  const flux = anthropic.messages.stream(parametres);
+
+  if (signaler) {
+    let reflexionAnnoncee = false;
+
+    flux.on('text', (delta) => signaler({ type: 'texte', delta }));
+
+    /* La réflexion s'annonce UNE FOIS. L'événement arrive par fragments, et
+       en relayer un par fragment inonderait le flux de signaux qui disent
+       tous la même chose. */
+    flux.on('thinking', () => {
+      if (reflexionAnnoncee) return;
+      reflexionAnnoncee = true;
+      signaler({ type: 'reflexion' });
+    });
+
+    /* La recherche s'annonce quand son bloc est complet : avant, les
+       arguments arrivent en JSON partiel et la requête serait tronquée au
+       milieu d'un mot. */
+    flux.on('contentBlock', (bloc) => {
+      if (bloc.type !== 'server_tool_use' || bloc.name !== 'web_search') return;
+      const requete = (bloc.input as { query?: unknown } | null)?.query;
+      if (typeof requete === 'string' && requete.trim()) {
+        signaler({ type: 'recherche', requete: requete.trim() });
+      }
+    });
+  }
+
+  return flux.finalMessage();
 }
 
 /** Construit le message du visiteur, avec la pièce jointe s'il y en a une. */
@@ -504,6 +599,12 @@ export async function repondre(
    * lieu de laisser un trou.
    */
   voisin: DomaineId | null = null,
+  /**
+   * À qui rendre compte pendant le calcul. Optionnel : les appelants qui ne
+   * veulent que le résultat — un script d'évaluation, un test — n'ont rien à
+   * fournir et ne voient aucune différence.
+   */
+  signaler?: Signaleur,
 ): Promise<ReponseJuriste> {
   const fiche = domaine(id);
   const anthropic = await client();
@@ -604,7 +705,7 @@ export async function repondre(
     messages,
   };
 
-  let response = await anthropic.messages.create(parametres);
+  let response = await tourDiffuse(anthropic, parametres, signaler);
 
   /* Tout ce que le modèle a produit, reprises comprises.
 
@@ -620,7 +721,7 @@ export async function repondre(
        bloc d'outil en fin de message et sait qu'elle doit reprendre. Ajouter
        un « continue » de notre cru la ferait repartir sur autre chose. */
     messages.push({ role: 'assistant', content: response.content });
-    response = await anthropic.messages.create({ ...parametres, messages });
+    response = await tourDiffuse(anthropic, { ...parametres, messages }, signaler);
     produit.push(...response.content);
   }
 

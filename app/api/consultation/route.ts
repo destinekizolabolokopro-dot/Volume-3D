@@ -11,7 +11,13 @@ import {
 } from '@/lib/consultations';
 import { voisin as voisinSerieux } from '@/lib/aiguillage';
 import { domaine as ficheDomaine, estDomaineId, type DomaineId } from '@/lib/domaines';
+import {
+  TYPE_DU_FLUX,
+  type Evenement,
+  type PisteEnvoyee,
+} from '@/lib/flux';
 import { estJuristeConfigure, orienter, repondre, type Echange } from '@/lib/juriste';
+import { diagnostiquer } from '@/lib/pannes';
 import { PieceRefusee, lirePiece, type Piece } from '@/lib/piece';
 import type { CompteJuridique } from '@/lib/types';
 import { ValidationError, text } from '@/lib/validation';
@@ -266,93 +272,190 @@ export async function POST(request: Request) {
 
     historique = [...historique, { role: 'user', content: demande.question }];
 
-    /* Aiguillage côté serveur quand la personne n'a rien choisi : les mots
-       d'abord, un modèle seulement s'ils hésitent (voir lib/juriste.ts). Les
-       autres pistes repartent avec la réponse, pour que la page puisse
-       proposer de changer de spécialiste sans reposer la question. */
-    let pistes: { id: DomaineId; label: string; resume: string }[] = [];
-    /* La spécialité qui talonnait celle retenue. Elle part avec la question :
-       le spécialiste doit savoir qu'une part de la situation lui échappe
-       plutôt que de se taire dessus sans le savoir. Voir `repondre`.
+    /* ------------------------------------------------------------ le flux ---
 
-       Seulement quand l'aiguillage a choisi lui-même : un domaine choisi à la
-       main est un choix, pas une hésitation. */
-    let voisin: DomaineId | null = null;
-    if (!demande.domaine) {
-      const orientation = await orienter(demande.question);
-      pistes = orientation.pistes
-        .filter((piste) => piste.id !== orientation.domaine)
-        .slice(0, 2)
-        .map((piste) => ({
-          id: piste.id,
-          label: ficheDomaine(piste.id).label,
-          resume: ficheDomaine(piste.id).resume,
-        }));
+       Tout ce qui précède a pu refuser la question par un code HTTP : elle
+       était illisible, le quota était atteint, l'assistant n'est pas
+       configuré. À partir d'ici, plus aucun refus de ce genre n'est possible,
+       et la réponse va prendre du temps — la réflexion, les textes, les
+       vérifications en ligne. On ouvre donc le flux maintenant : le
+       navigateur a de quoi montrer quelque chose dès la première seconde, au
+       lieu de fixer un écran vide en se demandant si le serveur est tombé.
 
-      if (!orientation.domaine) {
-        /* Rien de reconnu : on répond nous-mêmes, sans modèle. Le fil n'est pas
-           enregistré non plus — il n'y a pas de consultation à ouvrir tant
-           qu'aucun spécialiste n'a été saisi. */
-        return NextResponse.json({
-          reponse: SANS_PISTE,
-          refus: false,
-          domaine: '',
-          label: '',
-          pistes: [],
-          consultationId: demande.consultationId,
-          piece: demande.piece?.nom ?? '',
-        });
-      }
-      demande.domaine = orientation.domaine;
-      /* Pas la première piste venue : `voisinSerieux` écarte celles qui ne
-         tiennent qu'à un mot de passage. Voir lib/aiguillage.ts. */
-      voisin = voisinSerieux(orientation);
-    }
+       Ce qui est écrit ici ne peut plus changer le code de réponse : il est
+       parti avec l'en-tête. Une panne survenue après devient un événement
+       « erreur » dans le flux, pas un 500 — voir lib/flux.ts. */
 
-    const reponse = await repondre(demande.domaine, historique, demande.piece, compte, voisin);
+    const encodeur = new TextEncoder();
+    const compteDeLAppel = compte;
+    let consultationCourante = consultation;
 
-    if (compte) {
-      if (!consultation) {
-        consultation = await ouvrirConsultation(compte.id, demande.domaine, demande.question);
-      }
-      await ajouterTour(consultation, {
-        role: 'user',
-        content: demande.question,
-        piece: demande.piece?.nom ?? '',
-      });
-      await ajouterTour(consultation, { role: 'assistant', content: reponse.texte });
-    }
+    const flux = new ReadableStream<Uint8Array>({
+      async start(controleur) {
+        let ferme = false;
+        const envoyer = (evenement: Evenement) => {
+          if (ferme) return;
+          controleur.enqueue(encodeur.encode(`${JSON.stringify(evenement)}\n`));
+        };
 
-    return NextResponse.json({
-      reponse: reponse.texte,
-      refus: reponse.refus,
-      domaine: demande.domaine,
-      label: ficheDomaine(demande.domaine).label,
-      pistes,
-      consultationId: consultation?.id ?? '',
-      /* Le nom du fichier est renvoyé pour que la page l'affiche dans le fil ;
-         il n'y a rien d'autre à en garder. */
-      piece: demande.piece?.nom ?? '',
-      /* La question que le spécialiste pose avant de répondre, s'il en pose
-         une. Le tour enregistré, lui, reste du texte : voir lib/precision.ts. */
-      precision: reponse.precision ?? null,
-      /* Ce qui s'affiche dans la bulle quand une question est posée : la
-         question, elle, a son propre encadré juste en dessous. */
-      preambule: reponse.preambule ?? '',
-      /* Les textes sur lesquels la réponse s'appuie, tels que l'API les a
-         rattachés au corpus officiel. Une liste vide n'est pas une panne :
-         toutes les questions ne se tranchent pas sur un article. */
-      references: reponse.references ?? [],
-      /* Les pages consultées en ligne pour vérifier un chiffre, un indice ou
-         un calendrier. Elles viennent d'une liste fermée de sites officiels
-         et professionnels (voir lib/veille.ts) : les afficher n'est pas un
-         ornement, c'est ce qui permet à quelqu'un de vérifier lui-même le
-         montant qu'il va recopier dans une quittance. */
-      veille: reponse.veille ?? [],
-      /* Ce qu'il reste après cette question. La page l'affiche sous le champ :
-         un compteur qu'on découvre au moment du refus est une mauvaise
-         surprise, un compteur qu'on voit descendre est une information. */
-      restant: quota.restant,
+        try {
+          envoyer({ t: 'debut' });
+
+          /* Aiguillage côté serveur quand la personne n'a rien choisi : les
+             mots d'abord, un modèle seulement s'ils hésitent (voir
+             lib/juriste.ts). Les autres pistes repartent avec la réponse,
+             pour que la page puisse proposer de changer de spécialiste sans
+             reposer la question. */
+          let pistes: PisteEnvoyee[] = [];
+          /* La spécialité qui talonnait celle retenue. Elle part avec la
+             question : le spécialiste doit savoir qu'une part de la situation
+             lui échappe plutôt que de se taire dessus sans le savoir.
+
+             Seulement quand l'aiguillage a choisi lui-même : un domaine
+             choisi à la main est un choix, pas une hésitation. */
+          let voisin: DomaineId | null = null;
+
+          if (!demande.domaine) {
+            const orientation = await orienter(demande.question);
+            pistes = orientation.pistes
+              .filter((piste) => piste.id !== orientation.domaine)
+              .slice(0, 2)
+              .map((piste) => ({
+                id: piste.id,
+                label: ficheDomaine(piste.id).label,
+                resume: ficheDomaine(piste.id).resume,
+              }));
+
+            if (!orientation.domaine) {
+              /* Rien de reconnu : on répond nous-mêmes, sans modèle. Le fil
+                 n'est pas enregistré non plus — il n'y a pas de consultation à
+                 ouvrir tant qu'aucun spécialiste n'a été saisi. */
+              envoyer({
+                t: 'fin',
+                reponse: SANS_PISTE,
+                refus: false,
+                domaine: '',
+                label: '',
+                pistes: [],
+                consultationId: demande.consultationId,
+                piece: demande.piece?.nom ?? '',
+                precision: null,
+                preambule: '',
+                references: [],
+                veille: [],
+                restant: quota.restant,
+              });
+              return;
+            }
+
+            demande.domaine = orientation.domaine;
+            /* Pas la première piste venue : `voisinSerieux` écarte celles qui
+               ne tiennent qu'à un mot de passage. Voir lib/aiguillage.ts. */
+            voisin = voisinSerieux(orientation);
+          }
+
+          envoyer({
+            t: 'cap',
+            domaine: demande.domaine,
+            label: ficheDomaine(demande.domaine).label,
+            pistes,
+          });
+
+          const reponse = await repondre(
+            demande.domaine,
+            historique,
+            demande.piece,
+            compteDeLAppel,
+            voisin,
+            /* Le pont entre le raisonnement et l'écran : chaque signal émis
+               par `repondre` devient une ligne du flux. */
+            (signal) => {
+              if (signal.type === 'texte') envoyer({ t: 'mot', d: signal.delta });
+              else if (signal.type === 'reflexion') envoyer({ t: 'etape', quoi: 'reflexion' });
+              else envoyer({ t: 'etape', quoi: 'recherche', detail: signal.requete });
+            },
+          );
+
+          /* L'enregistrement vient APRÈS la réponse et avant la fin du flux :
+             une consultation qui s'affiche sans être enregistrée se
+             retrouverait perdue au rechargement, ce qui est pire que de ne
+             jamais l'avoir vue. */
+          if (compteDeLAppel) {
+            if (!consultationCourante) {
+              consultationCourante = await ouvrirConsultation(
+                compteDeLAppel.id,
+                demande.domaine,
+                demande.question,
+              );
+            }
+            await ajouterTour(consultationCourante, {
+              role: 'user',
+              content: demande.question,
+              piece: demande.piece?.nom ?? '',
+            });
+            await ajouterTour(consultationCourante, {
+              role: 'assistant',
+              content: reponse.texte,
+            });
+          }
+
+          envoyer({
+            t: 'fin',
+            reponse: reponse.texte,
+            refus: reponse.refus,
+            domaine: demande.domaine,
+            label: ficheDomaine(demande.domaine).label,
+            pistes,
+            consultationId: consultationCourante?.id ?? '',
+            /* Le nom du fichier est renvoyé pour que la page l'affiche dans le
+               fil ; il n'y a rien d'autre à en garder. */
+            piece: demande.piece?.nom ?? '',
+            /* La question que le spécialiste pose avant de répondre, s'il en
+               pose une. Le tour enregistré, lui, reste du texte : voir
+               lib/precision.ts. */
+            precision: reponse.precision ?? null,
+            /* Ce qui s'affiche dans la bulle quand une question est posée : la
+               question, elle, a son propre encadré juste en dessous. */
+            preambule: reponse.preambule ?? '',
+            /* Les textes sur lesquels la réponse s'appuie, tels que l'API les
+               a rattachés au corpus officiel. Une liste vide n'est pas une
+               panne : toutes les questions ne se tranchent pas sur un
+               article. */
+            references: reponse.references ?? [],
+            /* Les pages consultées en ligne pour vérifier un chiffre, un
+               indice ou un calendrier. Elles viennent d'une liste fermée de
+               sites officiels et professionnels (voir lib/veille.ts) : les
+               afficher n'est pas un ornement, c'est ce qui permet à quelqu'un
+               de vérifier lui-même le montant qu'il va recopier dans une
+               quittance. */
+            veille: reponse.veille ?? [],
+            /* Ce qu'il reste après cette question. La page l'affiche sous le
+               champ : un compteur qu'on découvre au moment du refus est une
+               mauvaise surprise, un compteur qu'on voit descendre est une
+               information. */
+            restant: quota.restant,
+          });
+        } catch (cause) {
+          console.error('consultation', cause);
+          envoyer({ t: 'erreur', ...diagnostiquer(cause) });
+        } finally {
+          ferme = true;
+          controleur.close();
+        }
+      },
+    });
+
+    return new Response(flux, {
+      headers: {
+        'content-type': TYPE_DU_FLUX,
+        /* Une réponse juridique ne se met jamais en cache, et surtout pas
+           dans un cache partagé : elle contient la situation de quelqu'un. */
+        'cache-control': 'no-store',
+        /* Les reverse-proxies gardent volontiers une réponse en tampon
+           jusqu'à ce qu'elle soit complète, ce qui annulerait exactement ce
+           qu'on vient de construire. Cet en-tête le leur interdit. */
+        'x-accel-buffering': 'no',
+      },
     });
   } catch (cause) {
     if (cause instanceof PieceRefusee || cause instanceof ValidationError) {

@@ -86,9 +86,34 @@ export function mediateur(): Mention[] {
   ];
 }
 
+/**
+ * Le régime de TVA, tel qu'il doit être écrit à côté des prix.
+ *
+ * Il n'est pas déduit de la présence d'un numéro de TVA, et c'est voulu. Un
+ * numéro vide peut vouloir dire « franchise en base » — le cas le plus
+ * fréquent — mais aussi tout autre chose, et se tromper ici, c'est écrire sur
+ * une page de vente une mention fiscale fausse. Le projet ne devine aucune
+ * mention légale : il les réclame, et dit lesquelles manquent.
+ *
+ * Les deux formulations usuelles sont dans l'aide, pour que celui qui
+ * remplit n'ait pas à les chercher.
+ */
+export function tva(): Mention[] {
+  return [
+    mention(
+      'Régime de TVA',
+      'EDITEUR_TVA_REGIME',
+      true,
+      'La phrase à afficher près des prix. En franchise : « TVA non applicable, article 293 B du CGI ». Assujetti : « Prix TTC, TVA au taux de 20 % ».',
+    ),
+  ];
+}
+
 /** Les mentions obligatoires qui manquent encore, toutes rubriques confondues. */
 export function mentionsManquantes(): Mention[] {
-  return [...editeur(), ...hebergeur(), ...mediateur()].filter((m) => m.requise && !m.valeur);
+  return [...editeur(), ...hebergeur(), ...mediateur(), ...tva()].filter(
+    (m) => m.requise && !m.valeur,
+  );
 }
 
 /** Vrai quand tout ce que la loi réclame est renseigné. */

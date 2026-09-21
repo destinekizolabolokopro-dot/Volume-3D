@@ -230,6 +230,13 @@ export const PIED = {
         { libelle: 'Mentions légales', href: '/mentions-legales' },
         { libelle: 'Conditions générales', href: '/conditions' },
         { libelle: 'Vos données', href: '/confidentialite' },
+        /* Deux liens qui pointent DANS une page plutôt que vers elle. Ils sont
+           là parce qu'on les cherche nommément — « comment je me fais
+           rembourser », « qu'est-ce qu'ils mettent dans mon navigateur » — et
+           que personne n'a envie de parcourir des conditions générales pour
+           trouver la réponse. Les ancres sont stables : voir lib/legal.ts. */
+        { libelle: 'Remboursement', href: '/conditions#remboursement' },
+        { libelle: 'Cookies', href: '/confidentialite#cookies' },
       ],
     },
   ],

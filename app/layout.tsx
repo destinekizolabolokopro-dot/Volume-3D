@@ -60,7 +60,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" as="font" type="font/woff2" href="/fonts/spectral-normal-400-latin.woff2" crossOrigin="anonymous" />
       </head>
       <body>
-        <div className="jur">{children}</div>
+        {/* LE LIEN D'ÉVITEMENT, ENFIN POSÉ.
+            Son style existait dans app/socle.css depuis le début, mais aucun
+            gabarit ne le rendait : il était donc écrit, mesuré, et invisible.
+            Quelqu'un qui navigue au clavier traversait la barre, le sceau et
+            les liens d'en-tête avant d'atteindre le champ de question — à
+            chaque page. Il ne se voit qu'une fois le focus dessus, ce qui est
+            exactement ce qu'on attend de lui. */}
+        <a className="skip-link" href="#contenu">
+          Aller au contenu
+        </a>
+        <div className="jur" id="contenu">
+          {children}
+        </div>
       </body>
     </html>
   );

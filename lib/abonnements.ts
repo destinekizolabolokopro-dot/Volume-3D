@@ -123,9 +123,22 @@ export function paiementConfigure(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY);
 }
 
-/** « 19 € / mois », ou « Gratuit ». L'espace insécable est posé ici. */
+/**
+ * « 19 € TTC / mois », ou « Gratuit ». L'espace insécable est posé ici.
+ *
+ * LE « TTC » N'EST PAS UN ORNEMENT. Un prix annoncé à un consommateur doit
+ * être toutes taxes comprises (article L112-1 du code de la consommation), et
+ * un prix nu — « 19 € » — est ambigu là où il ne devrait pas l'être : ce
+ * service s'adresse aussi à des agents immobiliers, pour qui la différence
+ * entre dix-neuf euros hors taxes et dix-neuf euros toutes taxes n'est pas un
+ * détail de présentation.
+ *
+ * Le régime de TVA, lui, dépend du statut de l'éditeur et ne peut pas être
+ * écrit ici : il vient de l'environnement, comme le reste de l'identité (voir
+ * lib/editeur.ts), et s'affiche sous la grille des formules.
+ */
 export function prixLisible(formule: Formule): string {
-  return formule.prix === 0 ? 'Gratuit' : `${formule.prix} €`;
+  return formule.prix === 0 ? 'Gratuit' : `${formule.prix} € TTC`;
 }
 
 export function quotaLisible(formule: Formule): string {
