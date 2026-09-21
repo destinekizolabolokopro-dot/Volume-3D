@@ -2568,6 +2568,17 @@
   padding: 12px 0;
 }
 
+/* La mention de TVA : discrète, mais posée sous les prix et non en pied de
+   page. C'est là qu'on lit un prix, donc c'est là qu'on doit lire ce qu'il
+   comprend. */
+
+.jur-note-tva {
+  margin: calc(var(--pas) * 2.5) 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
 .jur-note-paiement {
   margin: calc(var(--pas) * 4) 0 0;
   background: var(--warning-wash);
@@ -3049,6 +3060,25 @@
   max-width: 66ch;
 }
 
+/* Le bouton de relance vit DANS la phrase d'erreur, et ressemble donc à un
+   lien plutôt qu'à un bouton : ce n'est pas l'action principale de l'écran,
+   c'est la réparation d'un accident. */
+
+.jur-relance {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.jur-relance:hover {
+  text-decoration-thickness: 2px;
+}
+
 /* La veille reprend la forme des textes cités, et s'en distingue de deux
    traits seulement : un lien, parce qu'une page se vérifie en l'ouvrant, et
    une pastille sur les sources professionnelles, parce qu'un avis de
@@ -3074,7 +3104,10 @@
   display: inline-block;
   margin-left: calc(var(--pas) * 0.75);
   padding: 1px calc(var(--pas) * 0.625);
-  border: 1px solid var(--line);
+  /* `line-strong` et non `line` : une pastille dont on ne distingue pas le
+     bord n'est plus une pastille, et celle-ci porte un avertissement. Le
+     contraste de cette bordure est mesuré, voir scripts/contraste.mjs. */
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   font-size: 10.5px;
   font-weight: 600;

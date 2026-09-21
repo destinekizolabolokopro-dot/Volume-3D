@@ -28,7 +28,10 @@ export async function Barre({ retour }: { retour?: { href: string; label: string
 
       {retour && (
         <a className="jur-bar-link" href={retour.href}>
-          ← {retour.label}
+          {/* La flèche est un ornement : lue à voix haute, elle donnait
+              « flèche vers la gauche, l’assistant ». Le sens est dans le
+              libellé, pas dans le dessin. */}
+          <span aria-hidden="true">←</span> {retour.label}
         </a>
       )}
 

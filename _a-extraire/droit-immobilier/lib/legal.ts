@@ -28,6 +28,17 @@ export interface Article {
   corps: string[];
   /** Une liste à puces, s'il en faut une. */
   points?: string[];
+  /**
+   * Un nom d'ancre stable, pour les articles vers lesquels on pointe depuis
+   * ailleurs.
+   *
+   * Les autres sont numérotés par leur rang, ce qui suffit tant que personne
+   * ne pointe dessus — mais un lien « Remboursement » qui vise `#article-4`
+   * se met à désigner la garantie le jour où l'on insère un article avant
+   * lui, et rien ne le signale : la page s'ouvre, elle défile, et elle montre
+   * autre chose.
+   */
+  ancre?: string;
 }
 
 /* ====================================================== confidentialité === */
@@ -82,7 +93,28 @@ export const CONFIDENTIALITE: Article[] = [
     titre: 'Ce qu’il n’enregistre pas',
     corps: [
       'Les documents que vous joignez à une question — bail, compromis, procès-verbal d’assemblée, avis d’imposition — ne sont écrits nulle part. Ils traversent la mémoire du serveur le temps de fabriquer la réponse, puis disparaissent. Seul le nom du fichier reste dans le fil, pour que vous sachiez de quoi parlait l’échange.',
-      'Il n’y a ni mouchard publicitaire, ni mesure d’audience, ni revente de quoi que ce soit. Le seul cookie déposé est celui de votre session : sans lui, vous seriez déconnecté à chaque page.',
+      'Il n’y a ni mouchard publicitaire, ni mesure d’audience, ni revente de quoi que ce soit, ni bouton de réseau social. Aucune page n’appelle un serveur tiers : les polices de caractères sont servies depuis ce site, et non depuis celui de leur éditeur. Le détail de ce qui est déposé dans votre navigateur est à l’article suivant.',
+    ],
+  },
+  {
+    titre: 'Cookies et stockage local',
+    ancre: 'cookies',
+    corps: [
+      'Ce site dépose deux cookies, et l’un des deux ne concerne que son propriétaire. Aucun ne sert à vous suivre, aucun n’appartient à un tiers, aucun ne survit à votre déconnexion.',
+    ],
+    points: [
+      '« jur_session » — votre session. Il contient un jeton signé qui dit « ce navigateur est connecté à ce compte », et rien d’autre : ni votre nom, ni votre adresse. Il est inaccessible au JavaScript de la page, limité à ce site, et dure trente jours ou jusqu’à votre déconnexion.',
+      '« jur_reglages » — la session du propriétaire du site, dans l’espace de réglages. Vous ne l’aurez jamais si vous n’êtes pas lui.',
+      'Stockage local : la voix de lecture que vous avez choisie et l’état du mode mains libres. Ils restent dans votre navigateur, ne partent jamais vers le serveur, et disparaissent si vous videz vos données de site.',
+      'Stockage de session : si vous posez une question avant d’avoir un compte, votre échange y attend le temps de l’inscription, pour ne pas vous faire retaper votre situation. Il est effacé dès qu’il a été repris, et au plus tard à la fermeture de l’onglet.',
+    ],
+  },
+  {
+    titre: 'Pourquoi il n’y a pas de bandeau de cookies',
+    corps: [
+      'Parce qu’il n’y a rien à vous demander. Le consentement n’est exigé que pour les traceurs qui ne sont pas strictement nécessaires au service que vous demandez — mesure d’audience publicitaire, régie, réseaux sociaux, recommandation. Les cookies ci-dessus sont exemptés par l’article 82 de la loi Informatique et Libertés, tel que la CNIL l’applique : sans eux, il n’y a pas de connexion possible.',
+      'Vous afficher un bandeau pour des cookies exemptés reviendrait à vous demander une autorisation dont nous n’avons pas besoin, et à laisser croire que refuser change quelque chose. Nous préférons vous dire ce qui est déposé, et pourquoi.',
+      'Si un outil de mesure d’audience devait être ajouté un jour, un bandeau apparaîtrait avec lui, et refuser y serait aussi simple qu’accepter. Cette page le dirait avant.',
     ],
   },
   {
@@ -145,7 +177,8 @@ export const CONDITIONS: Article[] = [
     ],
   },
   {
-    titre: 'Droit de rétractation',
+    titre: 'Droit de rétractation et remboursement',
+    ancre: 'remboursement',
     corps: [
       'Vous disposez de quatorze jours pour vous rétracter d’un abonnement, sans avoir à vous justifier (article L221-18 du code de la consommation).',
       'Ce service étant fourni immédiatement, vous êtes invité, au moment de souscrire, à demander expressément son exécution avant la fin de ce délai. En le faisant, vous reconnaissez perdre votre droit de rétractation une fois le service pleinement exécuté (article L221-25). Si vous préférez le conserver, attendez quatorze jours avant de vous en servir : personne ne vous en empêchera.',

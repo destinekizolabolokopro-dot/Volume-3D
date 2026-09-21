@@ -55,7 +55,18 @@ export function Consultation({
   actif = true,
   mainsLibres = false,
 }: Props) {
-  const { tours, pending, erreur, quotaAtteint, restant, precision, demander } = useConsultation({
+  const {
+    tours,
+    pending,
+    erreur,
+    quotaAtteint,
+    reessayable,
+    restant,
+    precision,
+    attente,
+    demander,
+    relancer,
+  } = useConsultation({
     domaine,
     label,
     consultationInitiale,
@@ -100,7 +111,11 @@ export function Consultation({
       <Fil
         tours={tours}
         pending={pending}
-        attente={`${label} examine votre question…`}
+        /* La ligne d'attente vient du crochet : elle dit ce qui se passe
+           vraiment — il réfléchit, il vérifie tel chiffre — au lieu d'une
+           formule figée qui ressemble à une panne au bout de trente
+           secondes. Voir lib/flux.ts. */
+        attente={attente}
         restaures={toursInitiaux.length}
       />
       <div ref={finRef} />
@@ -113,7 +128,14 @@ export function Consultation({
         />
       )}
 
-      {erreur && <Alerte message={erreur} quota={quotaAtteint} />}
+      {erreur && (
+        <Alerte
+          message={erreur}
+          quota={quotaAtteint}
+          reessayable={reessayable}
+          onRelancer={() => void relancer()}
+        />
+      )}
 
       <Composeur
         onEnvoyer={(question, piece) => void demander(question, piece)}

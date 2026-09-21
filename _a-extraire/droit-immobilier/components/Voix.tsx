@@ -252,7 +252,28 @@ function useVoix() {
  * toute seule : sans cette distinction, rouvrir une consultation de six
  * messages déclencherait six lectures en même temps.
  */
-export function Lecture({ texte, dernier = false }: { texte: string; dernier?: boolean }) {
+export function Lecture({
+  texte,
+  dernier = false,
+  /**
+   * Vrai tant que la réponse s'écrit encore.
+   *
+   * Depuis que le texte arrive par morceaux, il change dix fois par seconde,
+   * et la lecture automatique se déclenchait à chaque fois : elle
+   * s'interrompait, repartait du début, et ce qu'on entendait n'était plus
+   * une phrase mais un bégaiement. Le bouton manuel avait le même défaut sous
+   * une autre forme — il lisait une réponse dont la moitié n'était pas encore
+   * arrivée.
+   *
+   * Tant que ça s'écrit, il n'y a donc rien à lire ni à proposer. La lecture
+   * part une fois, quand le texte est arrêté.
+   */
+  enEcriture = false,
+}: {
+  texte: string;
+  dernier?: boolean;
+  enEcriture?: boolean;
+}) {
   const disponible = useDisponible(() => synthese() !== null);
   const { voix, choisie, retenir } = useVoix();
   const { mainsLibres, signalerFinLecture } = useVoixPartagee();
@@ -320,14 +341,14 @@ export function Lecture({ texte, dernier = false }: { texte: string; dernier?: b
      rend une liste vide au premier appel, et lire avant qu'elle arrive donne
      la voix par défaut du système au lieu de celle qu'on a choisie. */
   useEffect(() => {
-    if (!mainsLibres || !dernier || !disponible) return;
+    if (!mainsLibres || !dernier || !disponible || enEcriture) return;
     if (!texte || luRef.current === texte) return;
     if (voix.length > 0 && !choisie) return;
     luRef.current = texte;
     lire();
-  }, [mainsLibres, dernier, disponible, texte, voix.length, choisie, lire]);
+  }, [mainsLibres, dernier, disponible, enEcriture, texte, voix.length, choisie, lire]);
 
-  if (!disponible) return null;
+  if (!disponible || enEcriture) return null;
 
   return (
     <div className="jur-voix">

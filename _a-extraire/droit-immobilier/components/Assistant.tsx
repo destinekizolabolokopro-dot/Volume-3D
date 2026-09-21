@@ -127,11 +127,14 @@ export function Assistant({
     pending,
     erreur,
     quotaAtteint,
+    reessayable,
     restant,
     precision,
     specialite,
     pistes,
+    attente,
     demander,
+    relancer,
     recommencer,
   } = useConsultation({});
   const [delaisOuverts, setDelaisOuverts] = useState(false);
@@ -213,7 +216,12 @@ export function Assistant({
 
             {erreur && (
               <div className="jur-erreur-ask">
-                <Alerte message={erreur} quota={quotaAtteint} />
+                <Alerte
+                  message={erreur}
+                  quota={quotaAtteint}
+                  reessayable={reessayable}
+                  onRelancer={() => void relancer()}
+                />
               </div>
             )}
 
@@ -295,7 +303,7 @@ export function Assistant({
         </div>
       )}
 
-      <Fil tours={tours} pending={pending} attente={`${specialite.label || 'L’assistant'} examine votre question…`} />
+      <Fil tours={tours} pending={pending} attente={attente} />
       <div ref={finRef} />
 
       {pistes.length > 0 && !pending && (
@@ -322,7 +330,14 @@ export function Assistant({
         />
       )}
 
-      {erreur && <Alerte message={erreur} quota={quotaAtteint} />}
+      {erreur && (
+        <Alerte
+          message={erreur}
+          quota={quotaAtteint}
+          reessayable={reessayable}
+          onRelancer={() => void relancer()}
+        />
+      )}
 
       {/* Le mur de la vitrine : il remplace le champ, il ne s'ajoute pas à lui.
           Laisser les deux reviendrait à proposer d'écrire une question dont on

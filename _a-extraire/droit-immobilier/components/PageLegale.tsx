@@ -14,6 +14,18 @@ import type { Article } from '@/lib/legal';
  * rubriques de l'accueil : ici le numéro sert à CITER — « votre article 4 » se
  * dit dans une réclamation, « votre article IV » ne se dit pas.
  */
+/**
+ * L'ancre d'un article : la sienne s'il en a une, son rang sinon.
+ *
+ * Le rang suffit pour naviguer dans la page, où le sommaire est reconstruit
+ * en même temps que les sections. Il ne suffit pas pour un lien qui vient
+ * d'ailleurs : celui-là doit continuer de désigner le bon article quand on en
+ * insère un avant.
+ */
+function idDe(article: Article, rang: number): string {
+  return article.ancre ?? `article-${rang + 1}`;
+}
+
 export function PageLegale({ articles }: { articles: Article[] }) {
   return (
     <>
@@ -21,7 +33,7 @@ export function PageLegale({ articles }: { articles: Article[] }) {
         <ol>
           {articles.map((article, rang) => (
             <li key={article.titre}>
-              <a href={`#article-${rang + 1}`}>{article.titre}</a>
+              <a href={`#${idDe(article, rang)}`}>{article.titre}</a>
             </li>
           ))}
         </ol>
@@ -29,7 +41,7 @@ export function PageLegale({ articles }: { articles: Article[] }) {
 
       <div className="jur-articles">
         {articles.map((article, rang) => (
-          <section className="jur-article" id={`article-${rang + 1}`} key={article.titre}>
+          <section className="jur-article" id={idDe(article, rang)} key={article.titre}>
             <h2>
               <span aria-hidden="true">{rang + 1}</span>
               {article.titre}

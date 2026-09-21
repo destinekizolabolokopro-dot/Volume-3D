@@ -95,6 +95,14 @@ const PAIRES = [
      fond réel depuis que le blanc franc a disparu du site. */
   ['texte courant sur la surface', 'ink', 'surface', 4.5],
   ['mentions sur la surface', 'ink-faint', 'surface', 4.5],
+  /* La bulle de réponse est posée sur la surface, et trois choses s'y
+     écrivent en gris : le nom d'une source consultée, la pastille « avis
+     professionnel » qui l'accompagne, et la note qui ferme le bloc. Elles n'y
+     étaient pas mesurées. */
+  ['texte atténué sur la surface', 'ink-muted', 'surface', 4.5],
+  ['texte doux sur la surface', 'ink-soft', 'surface', 4.5],
+  /* Le bord de cette pastille : une bordure qu'on ne voit pas ne dit rien. */
+  ['bordure de pastille sur la surface', 'line-strong', 'surface', 3],
   ['bordure de contrôle sur la surface', 'line-strong', 'surface', 3],
   ['bordure de contrôle sur le fond alterné', 'line-strong', 'bg-alt', 3],
 ];

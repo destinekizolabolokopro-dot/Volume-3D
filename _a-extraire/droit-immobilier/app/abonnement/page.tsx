@@ -9,6 +9,7 @@ import {
   prixLisible,
 } from '@/lib/abonnements';
 import { compteCourant } from '@/lib/comptes';
+import { tva } from '@/lib/editeur';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
  * devrait faire choisir.
  */
 export default async function Abonnement() {
+  const regimeDeTva = tva()[0].valeur;
   const compte = await compteCourant();
   const actuelle = compte ? formuleDuCompte(compte.abonnement) : null;
 
@@ -98,6 +100,16 @@ export default async function Abonnement() {
             );
           })}
         </div>
+
+        {/* LA MENTION DE TVA, SOUS LA GRILLE.
+            Un prix annoncé à un particulier est toutes taxes comprises, et le
+            régime doit se lire quelque part : « TVA non applicable, article
+            293 B du CGI » n'est pas la même page de vente que « TVA au taux
+            de 20 % ». Elle vient de l'environnement parce qu'elle dépend du
+            statut de l'éditeur, et que ce projet ne devine aucune mention
+            légale — voir lib/editeur.ts. Absente, elle est signalée comme
+            manquante sur les mentions légales, pas inventée ici. */}
+        {regimeDeTva && <p className="jur-note-tva">{regimeDeTva}</p>}
 
         {!paiementConfigure() && (
           <p className="jur-note-paiement">
