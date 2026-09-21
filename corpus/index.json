@@ -1,0 +1,58 @@
+{
+ "arrete": "2026-09-08",
+ "source": "https://echanges.dila.gouv.fr/OPENDATA/LEGI/",
+ "global": "Freemium_legi_global_20250713-140000.tar.gz",
+ "quotidiennes": 423,
+ "domaines": [
+  {
+   "domaine": "bail-habitation",
+   "articles": 263,
+   "caracteres": 209267
+  },
+  {
+   "domaine": "courte-duree",
+   "articles": 151,
+   "caracteres": 171438
+  },
+  {
+   "domaine": "copropriete",
+   "articles": 346,
+   "caracteres": 336996
+  },
+  {
+   "domaine": "achat-vente",
+   "articles": 213,
+   "caracteres": 110778
+  },
+  {
+   "domaine": "travaux",
+   "articles": 82,
+   "caracteres": 98796
+  },
+  {
+   "domaine": "urbanisme",
+   "articles": 480,
+   "caracteres": 315255
+  },
+  {
+   "domaine": "voisinage",
+   "articles": 165,
+   "caracteres": 53096
+  },
+  {
+   "domaine": "fiscalite",
+   "articles": 47,
+   "caracteres": 170595
+  },
+  {
+   "domaine": "sinistres",
+   "articles": 239,
+   "caracteres": 225300
+  },
+  {
+   "domaine": "profession",
+   "articles": 147,
+   "caracteres": 136161
+  }
+ ]
+}

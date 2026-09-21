@@ -1,0 +1,832 @@
+{
+ "domaine": "travaux",
+ "arrete": "2026-09-08",
+ "documents": [
+  {
+   "nom": "code civil",
+   "titre": "Code civil",
+   "cid": "LEGITEXT000006070721",
+   "articles": [
+    {
+     "num": "1779",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie."
+     ],
+     "texte": "Il y a trois espèces principales de louage d'ouvrage et d'industrie :\n\n1° Le louage de service ;\n\n2° Celui des voituriers, tant par terre que par eau, qui se chargent du transport des personnes ou des marchandises ;\n\n3° Celui des architectes, entrepreneurs d'ouvrages et techniciens par suite d'études, devis ou marchés."
+    },
+    {
+     "num": "1780",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 1 : Du louage de service."
+     ],
+     "texte": "On ne peut engager ses services qu'à temps, ou pour une entreprise déterminée.\n\nLe louage de service, fait sans détermination de durée, peut toujours cesser par la volonté d'une des parties contractantes.\n\nNéanmoins, la résiliation du contrat par la volonté d'un seul des contractants peut donner lieu à des dommages-intérêts.\n\nPour la fixation de l'indemnité à allouer, le cas échéant, il est tenu compte des usages, de la nature des services engagés, du temps écoulé, des retenues opérées et des versements effectués en vue d'une pension de retraite, et, en général, de toutes les circonstances qui peuvent justifier l'existence et déterminer l'étendue du préjudice causé.\n\nLes parties ne peuvent renoncer à l'avance au droit éventuel de demander des dommages-intérêts en vertu des dispositions ci-dessus.\n\nLes contestations auxquelles pourra donner lieu l'application des paragraphes précédents, lorsqu'elles seront portées devant les tribunaux civils et devant les cours d'appel, seront instruites comme affaires sommaires et jugées d'urgence."
+    },
+    {
+     "num": "1782",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 2 : Des voituriers par terre et par eau."
+     ],
+     "texte": "Les voituriers par terre et par eau sont assujettis, pour la garde et la conservation des choses qui leur sont confiées, aux mêmes obligations que les aubergistes, dont il est parlé au titre \" Du dépôt et du séquestre \"."
+    },
+    {
+     "num": "1783",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 2 : Des voituriers par terre et par eau."
+     ],
+     "texte": "Ils répondent non seulement de ce qu'ils ont déjà reçu dans leur bâtiment ou voiture, mais encore de ce qui leur a été remis sur le port ou dans l'entrepôt, pour être placé dans leur bâtiment ou voiture."
+    },
+    {
+     "num": "1784",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 2 : Des voituriers par terre et par eau."
+     ],
+     "texte": "Ils sont responsables de la perte et des avaries des choses qui leur sont confiées, à moins qu'ils ne prouvent qu'elles ont été perdues et avariées par cas fortuit ou force majeure."
+    },
+    {
+     "num": "1785",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 2 : Des voituriers par terre et par eau."
+     ],
+     "texte": "Les entrepreneurs de voitures publiques par terre et par eau, et ceux des roulages publics, doivent tenir registre de l'argent, des effets et des paquets dont ils se chargent."
+    },
+    {
+     "num": "1786",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 2 : Des voituriers par terre et par eau."
+     ],
+     "texte": "Les entrepreneurs et directeurs de voitures et roulages publics, les maîtres de barques et navires, sont en outre assujettis à des règlements particuliers, qui font la loi entre eux et les autres citoyens."
+    },
+    {
+     "num": "1787",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Lorsqu'on charge quelqu'un de faire un ouvrage, on peut convenir qu'il fournira seulement son travail ou son industrie, ou bien qu'il fournira aussi la matière."
+    },
+    {
+     "num": "1788",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Si, dans le cas où l'ouvrier fournit la matière, la chose vient à périr, de quelque manière que ce soit, avant d'être livrée, la perte en est pour l'ouvrier, à moins que le maître ne fût en demeure de recevoir la chose."
+    },
+    {
+     "num": "1789",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Dans le cas où l'ouvrier fournit seulement son travail ou son industrie, si la chose vient à périr, l'ouvrier n'est tenu que de sa faute."
+    },
+    {
+     "num": "1790",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Si, dans le cas de l'article précédent la chose vient à périr, quoique sans aucune faute de la part de l'ouvrier, avant que l'ouvrage ait été reçu et sans que le maître fût en demeure de le vérifier, l'ouvrier n'a point de salaire à réclamer, à moins que la chose n'ait péri par le vice de la matière."
+    },
+    {
+     "num": "1791",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "S'il s'agit d'un ouvrage à plusieurs pièces ou à la mesure, la vérification peut s'en faire par parties : elle est censée faite pour toutes les parties payées, si le maître paye l'ouvrier en proportion de l'ouvrage fait."
+    },
+    {
+     "num": "1792",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Tout constructeur d'un ouvrage est responsable de plein droit, envers le maître ou l'acquéreur de l'ouvrage, des dommages, même résultant d'un vice du sol, qui compromettent la solidité de l'ouvrage ou qui, l'affectant dans l'un de ses éléments constitutifs ou l'un de ses éléments d'équipement, le rendent impropre à sa destination.\n\nUne telle responsabilité n'a point lieu si le constructeur prouve que les dommages proviennent d'une cause étrangère."
+    },
+    {
+     "num": "1792-1",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Est réputé constructeur de l'ouvrage :\n\n1° Tout architecte, entrepreneur, technicien ou autre personne liée au maître de l'ouvrage par un contrat de louage d'ouvrage ;\n\n2° Toute personne qui vend, après achèvement, un ouvrage qu'elle a construit ou fait construire ;\n\n3° Toute personne qui, bien qu'agissant en qualité de mandataire du propriétaire de l'ouvrage, accomplit une mission assimilable à celle d'un locateur d'ouvrage."
+    },
+    {
+     "num": "1792-2",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "La présomption de responsabilité établie par l'article 1792 s'étend également aux dommages qui affectent la solidité des éléments d'équipement d'un ouvrage, mais seulement lorsque ceux-ci font indissociablement corps avec les ouvrages de viabilité, de fondation, d'ossature, de clos ou de couvert.\n\nUn élément d'équipement est considéré comme formant indissociablement corps avec l'un des ouvrages de viabilité, de fondation, d'ossature, de clos ou de couvert lorsque sa dépose, son démontage ou son remplacement ne peut s'effectuer sans détérioration ou enlèvement de matière de cet ouvrage."
+    },
+    {
+     "num": "1792-3",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Les autres éléments d'équipement de l'ouvrage font l'objet d'une garantie de bon fonctionnement d'une durée minimale de deux ans à compter de sa réception."
+    },
+    {
+     "num": "1792-4",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Le fabricant d'un ouvrage, d'une partie d'ouvrage ou d'un élément d'équipement conçu et produit pour satisfaire, en état de service, à des exigences précises et déterminées à l'avance, est solidairement responsable des obligations mises par les articles 1792, 1792-2 et 1792-3 à la charge du locateur d'ouvrage qui a mis en oeuvre, sans modification et conformément aux règles édictées par le fabricant, l'ouvrage, la partie d'ouvrage ou élément d'équipement considéré.\n\nSont assimilés à des fabricants pour l'application du présent article :\n\nCelui qui a importé un ouvrage, une partie d'ouvrage ou un élément d'équipement fabriqué à l'étranger ;\n\nCelui qui l'a présenté comme son oeuvre en faisant figurer sur lui son nom, sa marque ou tout autre signe distinctif."
+    },
+    {
+     "num": "1792-4-1",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Toute personne physique ou morale dont la responsabilité peut être engagée en vertu des articles 1792 à 1792-4 du présent code est déchargée des responsabilités et garanties pesant sur elle, en application des articles 1792 à 1792-2, après dix ans à compter de la réception des travaux ou, en application de l'article 1792-3, à l'expiration du délai visé à cet article."
+    },
+    {
+     "num": "1792-4-2",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Les actions en responsabilité dirigées contre un sous-traitant en raison de dommages affectant un ouvrage ou des éléments d'équipement d'un ouvrage mentionnés aux articles 1792 et 1792-2 se prescrivent par dix ans à compter de la réception des travaux et, pour les dommages affectant ceux des éléments d'équipement de l'ouvrage mentionnés à l'article 1792-3, par deux ans à compter de cette même réception."
+    },
+    {
+     "num": "1792-4-3",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "En dehors des actions régies par les articles 1792-3, 1792-4-1 et 1792-4-2, les actions en responsabilité dirigées contre les constructeurs désignés aux articles 1792 et 1792-1 et leurs sous-traitants se prescrivent par dix ans à compter de la réception des travaux."
+    },
+    {
+     "num": "1792-5",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Toute clause d'un contrat qui a pour objet, soit d'exclure ou de limiter la responsabilité prévue aux articles 1792, 1792-1 et 1792-2, soit d'exclure les garanties prévues aux articles 1792-3 et 1792-6 ou d'en limiter la portée, soit d'écarter ou de limiter la solidarité prévue à l'article 1792-4, est réputée non écrite."
+    },
+    {
+     "num": "1792-6",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "La réception est l'acte par lequel le maître de l'ouvrage déclare accepter l'ouvrage avec ou sans réserves. Elle intervient à la demande de la partie la plus diligente, soit à l'amiable, soit à défaut judiciairement. Elle est, en tout état de cause, prononcée contradictoirement.\n\nLa garantie de parfait achèvement, à laquelle l'entrepreneur est tenu pendant un délai d'un an, à compter de la réception, s'étend à la réparation de tous les désordres signalés par le maître de l'ouvrage, soit au moyen de réserves mentionnées au procès-verbal de réception, soit par voie de notification écrite pour ceux révélés postérieurement à la réception.\n\nLes délais nécessaires à l'exécution des travaux de réparation sont fixés d'un commun accord par le maître de l'ouvrage et l'entrepreneur concerné.\n\nEn l'absence d'un tel accord ou en cas d'inexécution dans le délai fixé, les travaux peuvent, après mise en demeure restée infructueuse, être exécutés aux frais et risques de l'entrepreneur défaillant.\n\nL'exécution des travaux exigés au titre de la garantie de parfait achèvement est constatée d'un commun accord, ou, à défaut, judiciairement.\n\nLa garantie ne s'étend pas aux travaux nécessaires pour remédier aux effets de l'usure normale ou de l'usage."
+    },
+    {
+     "num": "1792-7",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Ne sont pas considérés comme des éléments d'équipement d'un ouvrage au sens des articles 1792, 1792-2, 1792-3 et 1792-4 les éléments d'équipement, y compris leurs accessoires, dont la fonction exclusive est de permettre l'exercice d'une activité professionnelle dans l'ouvrage."
+    },
+    {
+     "num": "1793",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Lorsqu'un architecte ou un entrepreneur s'est chargé de la construction à forfait d'un bâtiment, d'après un plan arrêté et convenu avec le propriétaire du sol, il ne peut demander aucune augmentation de prix, ni sous le prétexte de l'augmentation de la main-d'oeuvre ou des matériaux, ni sous celui de changements ou d'augmentations faits sur ce plan, si ces changements ou augmentations n'ont pas été autorisés par écrit, et le prix convenu avec le propriétaire."
+    },
+    {
+     "num": "1794",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Le maître peut résilier, par sa seule volonté, le marché à forfait, quoique l'ouvrage soit déjà commencé, en dédommageant l'entrepreneur de toutes ses dépenses, de tous ses travaux, et de tout ce qu'il aurait pu gagner dans cette entreprise."
+    },
+    {
+     "num": "1795",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Le contrat de louage d'ouvrage est dissous par la mort de l'ouvrier, de l'architecte ou entrepreneur."
+    },
+    {
+     "num": "1796",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Mais le propriétaire est tenu de payer en proportion du prix porté par la convention, à leur succession, la valeur des ouvrages faits et celle des matériaux préparés, lors seulement que ces travaux ou ces matériaux peuvent lui être utiles."
+    },
+    {
+     "num": "1797",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "L'entrepreneur répond du fait des personnes qu'il emploie."
+    },
+    {
+     "num": "1798",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Les maçons, charpentiers et autres ouvriers qui ont été employés à la construction d'un bâtiment ou d'autres ouvrages faits à l'entreprise, n'ont d'action contre celui pour lequel les ouvrages ont été faits, que jusqu'à concurrence de ce dont il se trouve débiteur envers l'entrepreneur, au moment où leur action est intentée."
+    },
+    {
+     "num": "1799",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Les maçons, charpentiers, serruriers et autres ouvriers qui font directement des marchés à prix fait, sont astreints aux règles prescrites dans la présente section : ils sont entrepreneurs dans la partie qu'ils traitent."
+    },
+    {
+     "num": "1799-1",
+     "chemin": [
+      "Livre III : Des différentes manières dont on acquiert la propriété",
+      "Titre VIII : Du contrat de louage",
+      "Chapitre III : Du louage d’ouvrage et d’industrie.",
+      "Section 3 : Des devis et des marchés."
+     ],
+     "texte": "Le maître de l'ouvrage qui conclut un marché de travaux privé visé au 3° de l'article 1779 doit garantir à l'entrepreneur le paiement des sommes dues lorsque celles-ci dépassent un seuil fixé par décret en Conseil d'Etat.\n\nLorsque le maître de l'ouvrage recourt à un crédit spécifique pour financer les travaux, l'établissement de crédit ne peut verser le montant du prêt à une personne autre que celles mentionnées au 3° de l'article 1779 tant que celles-ci n'ont pas reçu le paiement de l'intégralité de la créance née du marché correspondant au prêt. Les versements se font sur l'ordre écrit et sous la responsabilité exclusive du maître de l'ouvrage entre les mains de la personne ou d'un mandataire désigné à cet effet.\n\nLorsque le maître de l'ouvrage ne recourt pas à un crédit spécifique ou lorsqu'il y recourt partiellement, et à défaut de garantie résultant d'une stipulation particulière, le paiement est garanti par un cautionnement solidaire consenti par un établissement de crédit, une société de financement, une entreprise d'assurance ou un organisme de garantie collective, selon des modalités fixées par décret en Conseil d'Etat. Tant qu'aucune garantie n'a été fournie et que l'entrepreneur demeure impayé des travaux exécutés, celui-ci peut surseoir à l'exécution du contrat après mise en demeure restée sans effet à l'issue d'un délai de quinze jours.\n\nLes dispositions de l'alinéa précédent ne s'appliquent pas lorsque le maître de l'ouvrage conclut un marché de travaux pour son propre compte et pour la satisfaction de besoins ne ressortissant pas à une activité professionnelle en rapport avec ce marché.\n\nLes dispositions du présent article ne s'appliquent pas aux marchés conclus par un organisme visé à l'article L. 411-2 du code de la construction et de l'habitation, ou par une société d'économie mixte, pour des logements à usage locatif aidés par l'Etat et réalisés par cet organisme ou cette société."
+    }
+   ]
+  },
+  {
+   "nom": "code des assurances",
+   "titre": "Code des assurances",
+   "cid": "LEGITEXT000006073984",
+   "articles": [
+    {
+     "num": "A243-1",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment"
+     ],
+     "texte": "Tout contrat d'assurance souscrit pour l'application du titre IV du livre II du présent code doit obligatoirement comporter les clauses figurant :\n\nAux annexes I et III au présent article, en ce qui concerne l'assurance de responsabilité ;\n\nA l'annexe II au présent article, en ce qui concerne l'assurance de dommages.\n\nToute autre clause du contrat ne peut avoir pour effet d'altérer d'une quelconque manière le contenu ou la portée de ces clauses, sauf si elle s'applique exclusivement à des garanties plus larges que celles prévues par le titre IV du livre II du présent code."
+    },
+    {
+     "num": "A243-2",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment"
+     ],
+     "texte": "Le document justificatif prévu à l'article L. 243-2 doit être signé par un assureur pouvant pratiquer des opérations d'assurance directes sur le territoire de la République française conformément aux cinq premiers alinéas de l'article L. 310-2 du, ou par une personne identifiée qu'il a dûment mandatée."
+    },
+    {
+     "num": "A243-3",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment"
+     ],
+     "texte": "Lorsque l'attestation d'assurance porte sur un contrat d'assurance de responsabilité décennale souscrit par un assujetti à titre individuel, l'attestation d'assurance prévue à l'article L. 243-2 comporte la mention : “ Attestation d'assurance ” et les termes : “ Assurance de responsabilité décennale obligatoire ” figurant en position centrale.\n\n1° Dans tous les cas, elle doit comporter les informations suivantes :\n\na) La dénomination sociale et adresse de l'assuré ;\n\nb) Le numéro unique d'identification de l'assuré délivré conformément à l'article D. 123-235 du code de commerce ou le numéro d'identification prévu aux articles 214 et suivants de la directive 2006/112/ CE du 28 novembre 2006 ;\n\nc) Le nom, l'adresse du siège social et les coordonnées complètes de l'assureur et, le cas échéant, de la succursale qui accorde la garantie ;\n\nd) Le numéro du contrat ;\n\ne) La période de validité ;\n\nf) La date d'établissement de l'attestation ;\n\n2° Et, selon les hypothèses suivantes :\n\na) Lorsque l'attestation d'assurance vise un ensemble d'opérations de construction, elle en indique le périmètre de la garantie en fonction des caractéristiques suivantes :\n\n-la ou les activité (s) ou mission (s) exercée (s) par l'assuré ;\n\n-la ou les date (s) d'ouverture du ou des chantier (s) ;\n\n-l'étendue géographique des opérations de construction couvertes ;\n\n-le coût des opérations de construction ;\n\n-le cas échéant, le montant du marché de l'assuré ;\n\n-la nature des techniques utilisées ;\n\n-le cas échéant, la présence d'un contrat collectif de responsabilité décennale ainsi que le montant de la franchise absolue.\n\nCes informations doivent être reprises dans l'attestation d'assurance selon les formules suivantes à reproduire :\n\nLes garanties objet de la présente attestation s'appliquent :\n\n-aux activités professionnelles ou missions suivantes : (à compléter par l'assureur) ;\n\n-aux travaux ayant fait l'objet d'une ouverture de chantier pendant la période de validité mentionnée ci-dessus. L'ouverture de chantier est définie à l'annexe I de l'article A. 243-1 ;\n\n-aux travaux réalisés en (étendue géographique des opérations de construction couvertes à préciser par l'assureur) ;\n\n-aux chantiers dont le coût total de construction HT tous corps d'état (à compléter par l'assureur en précisant si ce coût comprend ou non les honoraires) déclaré par le maître d'ouvrage n'est pas supérieur à la somme de (à compléter par l'assureur) euros.\n\n(A ajouter le cas échéant) Cette somme est portée à (à compléter par l'assureur) euros en présence d'un contrat collectif de responsabilité décennale bénéficiant à l'assuré, comportant à son égard une franchise absolue au maximum de (à compléter par l'assureur) euros ;\n\n-aux travaux, produits et procédés de construction suivants : (à compléter par l'assureur).\n\nDans le cas où les travaux réalisés ne répondent pas aux caractéristiques énoncées ci-dessus, l'assuré en informe l'assureur.\n\nb) Lorsque l'attestation d'assurance vise une opération de construction particulière, elle en indique les caractéristiques listées ci-après, telles qu'elles ont été déclarées :\n\n-l'adresse, la nature et le coût de l'opération de construction déclaré par le maître d'ouvrage ;\n\n-la ou les activité (s) ou mission (s) exercée (s) par l'assuré ;\n\n-la date d'ouverture de chantier ;\n\n-la nature et le montant de la prestation réalisée par l'assuré ;\n\n-la nature des techniques utilisées ;\n\n-le cas échéant, la présence d'un contrat collectif de responsabilité décennale ainsi que le montant de la franchise absolue.\n\nCes informations doivent être reprises dans l'attestation d'assurance selon les formules suivantes à reproduire :\n\nLes garanties objet de la présente attestation d'assurance s'appliquent à l'opération de construction ayant les caractéristiques suivantes : (à compléter par l'assureur)\n\nDans le cas où ces caractéristiques seraient modifiées, l'assuré en informe l'assureur.\n\n3° L'attestation d'assurance doit en outre et dans tous les cas reproduire les formules suivantes :\n\nNature de la garantie :\n\nLe contrat garantit la responsabilité décennale de l'assuré instaurée par les articles 1792 et suivants du code civil, dans le cadre et les limites prévus par les dispositions des articles L. 241-1 et L. 241-2 relatives à l'obligation d'assurance décennale, et pour des travaux de construction d'ouvrages qui y sont soumis, au regard de l'article L. 243-1-1 du même code.\n\nLa garantie couvre les travaux de réparation, notamment en cas de remplacement des ouvrages, qui comprennent également les travaux de démolition, déblaiement, dépose ou de démontage éventuellement nécessaires.\n\nMontant de la garantie :\n\nEn habitation : le montant de la garantie couvre le coût des travaux de réparation des dommages à l'ouvrage.\n\nHors habitation : le montant de la garantie couvre le coût des travaux de réparation des dommages à l'ouvrage dans la limite du coût total de construction déclaré par le maître d'ouvrage et sans pouvoir être supérieur au montant prévu au I de l'article R. 243-3.\n\nLorsqu'un contrat collectif de responsabilité décennale est souscrit au bénéfice de l'assuré, le montant de la garantie est égal au montant de la franchise absolue stipulée par ledit contrat collectif.\n\nDurée et maintien de la garantie :\n\nLa garantie s'applique pour la durée de la responsabilité décennale pesant sur l'assuré en vertu des articles 1792 et suivants du code civil. Elle est maintenue dans tous les cas pour la même durée.\n\nLa présente attestation ne peut engager l'assureur au-delà des clauses et conditions du contrat auquel elle se réfère."
+    },
+    {
+     "num": "A243-4",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment"
+     ],
+     "texte": "Lorsque l'attestation d'assurance prévue à l'article L. 243-2 porte sur un contrat collectif de responsabilité décennale, souscrit en complément des contrats individuels garantissant la responsabilité décennale de chacun des constructeurs, elle comporte les termes : “ Attestation d'assurance collective de responsabilité décennale obligatoire ”.\n\nL'attestation doit comporter les informations suivantes :\n\na) Le nom et l'adresse du souscripteur, et éventuellement sa dénomination sociale ;\n\nb) Le nom, l'adresse du siège social et les coordonnées complètes de l'assureur et, le cas échéant, de la succursale qui accorde la couverture ;\n\nc) Le numéro du contrat d'assurance ;\n\nd) La date d'établissement de l'attestation.\n\nL'attestation indique les caractéristiques de l'opération de construction telles qu'elles ont été déclarées à l'assureur :\n\n-l'adresse, la nature et le coût de construction ;\n\n-la date d'ouverture du chantier ;\n\n-la nature des techniques utilisées.\n\nElle indique les personnes assurées ainsi que la franchise absolue qui leur est respectivement applicable.\n\nCes informations doivent être reprises dans l'attestation d'assurance selon la formule suivante à reproduire :\n\nLes garanties objet de la présente attestation d'assurance s'appliquent à l'opération de construction ayant les caractéristiques suivantes : (à compléter par l'assureur).\n\nLe contrat garantit les assurés suivants, au-delà de la franchise absolue respectivement mentionnée : (à compléter par l'assureur).\n\nDans le cas où ces caractéristiques seraient modifiées, l'assuré en informe l'assureur.\n\nNature de la garantie :\n\nLe contrat garantit la responsabilité décennale des assurés instaurée par les articles 1792 et suivants du code civil, dans le cadre et les limites prévues par les dispositions des articles L. 241-1 et L. 241-2 relatives à l'obligation d'assurance décennale, et pour des travaux de construction d'ouvrages qui y sont soumis, au regard de l'article L. 243-1-1 du même code.\n\nLa garantie couvre les travaux de réparation, notamment en cas de remplacement des ouvrages, qui comprennent également les travaux de démolition, déblaiement, dépose ou démontage éventuellement nécessaires.\n\nMontant de la garantie :\n\nEn habitation : le montant de la garantie couvre le coût des travaux de réparation des dommages à l'ouvrage.\n\nHors habitation : le montant de la garantie couvre le coût des travaux de réparation des dommages à l'ouvrage dans la limite du coût total de construction déclaré par le maître d'ouvrage et sans pouvoir être supérieur au montant prévu au I de l'article R. 243-3 du code assurances.\n\nDurée et maintien de la garantie :\n\nLa garantie s'applique pour la durée de la responsabilité décennale pesant sur l'assuré en vertu des articles 1792 et 1792-2 du code civil. Elle est maintenue dans tous les cas pour la même durée.\n\nFranchise absolue :\n\nPour chacun des assurés, le contrat garantit le montant des travaux de réparation au-delà d'une franchise absolue, laquelle est égale au plafond de garantie des contrats individuels d'assurance décennale souscrits par chacun des assurés telle que mentionnée ci-dessus.\n\nLa franchise est opposable à tous.\n\nL'assuré s'oblige à couvrir la portion du risque constituée par cette franchise par des garanties au moins équivalentes à celles figurant dans les clauses types mentionnées à l'annexe I de l'article A. 243-1.\n\nLa présente attestation ne peut engager l'assureur au-delà des clauses et conditions du contrat auquel elle se réfère."
+    },
+    {
+     "num": "A243-5",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment"
+     ],
+     "texte": "L'attestation peut, le cas échéant, comporter des mentions relatives à d'autres garanties ou extensions prévues dans le contrat d'assurance. Néanmoins, au titre de la garantie obligatoire prévue par les articles L. 241-1 et L. 241-2, l'attestation ne doit comporter aucune mention de nature à écarter ou limiter d'une quelconque façon la portée des mentions minimales susmentionnées. Aucune mention ne peut faire référence à des dispositions contractuelles si ces dernières ne sont pas reproduites dans l'attestation."
+    },
+    {
+     "num": "Annexe I art A243-1",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment"
+     ],
+     "texte": "CLAUSES-TYPES APPLICABLES AUX CONTRATS D'ASSURANCE DE RESPONSABILITÉ DÉCENNALE\n\nNature de la garantie\n\nLe contrat garantit le paiement des travaux de réparation de l'ouvrage à la réalisation duquel l'assuré a contribué ainsi que des ouvrages existants, totalement incorporés dans l'ouvrage neuf et qui en deviennent techniquement indivisibles, au sens du II de l'article L. 243-1-1 du présent code, lorsque la responsabilité de l'assuré est engagée sur le fondement de la présomption établie par les articles 1792 et suivants du code civil à propos de travaux de construction, et dans les limites de cette responsabilité.\n\nLes travaux de réparation, notamment en cas de remplacement des ouvrages, comprennent également les travaux de démolition, déblaiement, dépose ou démontage éventuellement nécessaires.\n\nMontant de la garantie (clause-type applicable aux seuls contrats\n\nrelevant de l'article L. 243-9 du présent code)\n\nDans le cas des travaux de construction destinés à un usage autre que l'habitation, le montant de la garantie ne peut être inférieur au coût de la construction déclaré par le maître de l'ouvrage, hormis l'hypothèse où ce coût est supérieur au montant prévu au I de l'article R. 243-3 du présent code, ou lorsqu'il est recouru à un contrat d'assurance collectif mentionné à l'article R. 243-1 du présent code.\n\nDans ces deux derniers cas, le plafond de garantie est déterminé par les conditions particulières, dans les conditions prévues par l'article R. 243-3 du présent code. Lorsqu'il est recouru à un contrat d'assurance collectif, ce plafond ne saurait être inférieur au montant de la franchise absolue stipulée dans ledit contrat collectif.\n\nLe coût total de la construction s'entend du montant définitif des dépenses de l'ensemble des travaux afférents à la réalisation de l'opération de construction, toutes révisions, honoraires, taxes et s'il y a lieu travaux supplémentaires compris. Ce coût intègre la valeur de reconstruction des existants totalement incorporés dans l'ouvrage neuf et qui en deviennent techniquement indivisibles au sens du II de l'article L. 243-1-1 du présent code. En aucun cas ce coût ne peut comprendre les primes ou bonifications accordées par le maître de l'ouvrage au titre d'une exécution plus rapide que celle prévue contractuellement, ni se trouver amputé des pénalités pour retard infligées à l'entrepreneur responsable d'un dépassement des délais contractuels d'exécution.\n\nCette garantie est revalorisée selon les modalités prévues aux conditions particulières, pour tenir compte de l'évolution des coûts de construction entre la date de souscription du contrat et celle de la réparation du sinistre.\n\nDurée et maintien de la garantie dans le temps\n\nLe contrat couvre, pour la durée de la responsabilité pesant sur l'assuré en vertu des articles 1792 et suivants du code civil, les travaux ayant fait l'objet d'une ouverture de chantier pendant la période de validité fixée aux conditions particulières.\n\nLa garantie afférente à ces travaux est maintenue dans tous les cas pour la même durée, sans paiement de prime subséquente.\n\nL'ouverture de chantier s'entend à date unique applicable à l'ensemble de l'opération de construction. Cette date correspond, soit à la date de la déclaration d'ouverture de chantier, mentionnée au premier alinéa de l'article R. 424-16 du code de l'urbanisme pour les travaux nécessitant la délivrance d'un permis de construire, soit, pour les travaux ne nécessitant pas la délivrance d'un tel permis, à la date du premier ordre de service ou à défaut, à la date effective de commencement des travaux.\n\nLorsqu'un professionnel établit son activité postérieurement à la date unique ainsi définie, et par dérogation à l'alinéa précédent, cette date s'entend pour lui comme la date à laquelle il commence effectivement ses prestations.\n\nLorsqu'un professionnel exécute ses prestations antérieurement à la date unique définie à l'alinéa 2 et qu'à cette même date il est en cessation d'activité, l'ouverture du chantier s'entend pour lui à la date de signature de son marché ou à défaut, à celle de tout acte pouvant être considéré comme le point de départ de sa prestation.\n\nFranchise\n\nL'assuré conserve une partie de la charge du sinistre, selon des modalités fixées aux conditions particulières. Il s'interdit de contracter une assurance pour la portion du risque correspondante.\n\nCette franchise n'est pas opposable aux bénéficiaires des indemnités.\n\nExclusions\n\nLa garantie du présent contrat ne s'applique pas aux dommages résultant exclusivement :\n\na) Du fait intentionnel ou du dol du souscripteur ou de l'assuré ;\n\nb) Des effets de l'usure normale, du défaut d'entretien ou de l'usage anormal ;\n\nc) De la cause étrangère.\n\nDéchéance\n\nL'assuré est déchu de tout droit à garantie en cas d'inobservation inexcusable des règles de l'art, telles qu'elles sont définies par les réglementations en vigueur, les normes françaises homologuées ou les normes publiées par les organismes de normalisation d'un autre Etat membre de l'Union européenne ou d'un autre Etat partie à l'accord sur l'Espace économique européen offrant un degré de sécurité et de pérennité équivalant à celui des normes françaises.\n\nPour l'application de cette déchéance, il faut entendre par assuré, soit le souscripteur personne physique, soit le chef d'entreprise ou le représentant statutaire de l'entreprise s'il s'agit d'une entreprise inscrite au répertoire des métiers, soit les représentants légaux ou dûment mandatés de l'assuré lorsque celui-ci est une personne morale.\n\nCette déchéance n'est pas opposable aux bénéficiaires des indemnités."
+    },
+    {
+     "num": "Annexe II art A243-1",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment"
+     ],
+     "texte": "CLAUSES-TYPES APPLICABLES AUX CONTRATS D'ASSURANCE DE DOMMAGES OUVRAGE\n\nDéfinitions\n\na) Souscripteur.\n\nLa personne, physique ou morale, désignée aux conditions particulières, qui fait réaliser des travaux de construction et qui est, en sa qualité définie aux mêmes conditions particulières, soumise à l'obligation d'assurance prévue par l'article L. 242-1 du présent code, tant pour son propre compte que pour celui des propriétaires successifs.\n\nb) Assuré.\n\nLe souscripteur et les propriétaires successifs de l'ouvrage au bénéfice desquels est souscrit le contrat.\n\nc) Réalisateurs.\n\nL'ensemble des constructeurs désignés aux conditions particulières ou dont l'identité est portée ultérieurement à la connaissance de l'assureur, qui sont mentionnés au 1° de l'article 1792-1 du code civil et sont liés, à ce titre, au maître de l'ouvrage par un contrat de louage d'ouvrage en qualité de concepteur ou de conseil (architecte, technicien ou autre) ou en qualité d'entrepreneur, et qui participent à la réalisation de l'opération de construction.\n\nd) Maître de l'ouvrage.\n\nLa personne, physique ou morale, désignée aux conditions particulières, qui conclut avec les réalisateurs les contrats de louage d'ouvrage afférents à la conception et à l'exécution de l'opération de construction.\n\ne) Contrôleur technique (lorsqu'il est désigné un contrôleur technique).\n\nLa personne, désignée aux conditions particulières, agréée ou exerçant dans les conditions prévues par l'article L. 111-25 du code de la construction et de l'habitation, et appelée à intervenir, à la demande du maître de l'ouvrage, pour effectuer le contrôle technique des études et des travaux ayant pour objet la réalisation de l'opération de construction.\n\nf) Réception.\n\nL'acte par lequel le maître de l'ouvrage accepte les travaux exécutés, dans les conditions fixées par l'article 1792-6 du code civil.\n\ng) Sinistre.\n\nLa survenance de dommages, au sens de l'article L. 242-1 du présent code, ayant pour effet d'entraîner la garantie de l'assureur.\n\nNature de la garantie\n\nLe contrat a pour objet de garantir, en dehors de toute recherche de responsabilité, le paiement des travaux de réparation des dommages à l'ouvrage réalisé ainsi qu'aux ouvrages existants, totalement incorporés dans l'ouvrage neuf et qui en deviennent techniquement indivisibles, au sens du II de l'article L. 243-1-1 du présent code.\n\nLa garantie couvre les dommages, même résultant d'un vice du sol, de la nature de ceux dont sont responsables les constructeurs, au sens de l'article 1792-1 du code civil, les fabricants et les importateurs ou le contrôleur technique, et qui :\n\n-compromettent la solidité des ouvrages constitutifs de l'opération de construction ;\n\n-affectent les ouvrages dans l'un de leurs éléments constitutifs ou l'un de leurs éléments d'équipement, les rendant impropres à leur destination ;\n\n-affectent la solidité de l'un des éléments d'équipement indissociables des ouvrages de viabilité, de fondation, d'ossature, de clos et de couvert, au sens de l'article 1792-2 du code civil.\n\nLes travaux de réparation des dommages comprennent également les travaux de démolition, déblaiement, dépose ou démontage éventuellement nécessaires.\n\nMontant et limite de la garantie\n\nLa garantie couvre le coût de l'ensemble des travaux afférents à la remise en état des ouvrages ou éléments d'équipement de l'opération de construction endommagés à la suite d'un sinistre, ainsi que des ouvrages existants, totalement incorporés dans l'ouvrage neuf et qui en deviennent techniquement indivisibles, au sens du II de l'article L. 243-1-1 du présent code.\n\nPour les constructions destinées à un usage autre que l'habitation, la garantie peut être limitée au montant du coût total de construction déclaré aux conditions particulières ou à un montant inférieur au coût total de construction déclaré aux conditions particulières, si ce coût est supérieur au montant prévu au I de l'article R. 243-3 du présent code, sans toutefois pouvoir être inférieur à ce dernier montant.\n\nLe montant de garantie est revalorisé selon les modalités prévues aux conditions particulières, pour tenir compte de l'évolution générale des coûts de construction entre la date de souscription du contrat et celle de la réparation du sinistre.\n\nLes conditions particulières précisent les modalités de reconstitution de la garantie après sinistre.\n\nLe coût total de la construction déclaré s'entend de celui résultant du montant définitif des dépenses de l'ensemble des travaux afférents à la réalisation de l'opération de construction, toutes révisions, honoraires, taxes et, s'il y a lieu, travaux supplémentaires compris. Ce coût intègre la valeur de reconstruction des existants totalement incorporés dans l'ouvrage neuf et qui en deviennent techniquement indivisibles au sens du II de l'article L. 243-1-1 du présent code. En aucun cas ce coût ne peut toutefois comprendre les primes ou bonifications accordées par le maître de l'ouvrage au titre d'une exécution plus rapide que celle prévue contractuellement ni se trouver amputé des pénalités pour retard infligées à l'entrepreneur responsable d'un dépassement des délais contractuels d'exécution.\n\nExclusions\n\nLa garantie du contrat ne s'applique pas aux dommages résultant exclusivement :\n\na) Du fait intentionnel ou du dol du souscripteur ou de l'assuré ;\n\nb) Des effets de l'usure normale, du défaut d'entretien ou de l'usage anormal ;\n\nc) De la cause étrangère.\n\nPoint de départ et durée de la garantie\n\na) La période de garantie est précisée aux conditions particulières ; elle commence au plus tôt, sous réserve des dispositions du b, à l'expiration du délai de garantie de parfait achèvement défini à l'article 1792-6 du code civil. Elle prend fin à l'expiration d'une période de dix ans à compter de la réception.\n\nb) Toutefois, elle garantit le paiement des réparations nécessaires lorsque :\n\n-avant la réception, après mise en demeure restée infructueuse, le contrat de louage d'ouvrage conclu avec l'entrepreneur est résilié pour inexécution, par celui-ci, de ses obligations ;\n\n-après la réception, et avant l'expiration du délai de la garantie de parfait achèvement au sens de l'article 1792-6 du code civil, lorsque l'entrepreneur n'a pas exécuté ses obligations au titre de cette garantie, après mise en demeure par lettre recommandée ou par envoi recommandé électronique, avec demande d'avis de réception, resté infructueux.\n\nObligations réciproques des parties\n\nLes déclarations ou notifications auxquelles il est procédé entre les parties en application de paragraphes A (1°, c), A (3°), B (2°, a), B (2°, c), B (3°, a), de la présente clause, sont faites par écrit soit contre récépissé, sur support papier ou tout autre support durable, soit par lettre recommandée ou par envoi recommandé électronique avec demande d'avis de réception.\n\nA.-Obligations de l'assuré\n\n1° L'assuré s'engage :\n\na) A fournir à l'assureur, sur sa demande, la preuve de l'existence des contrats d'assurance de responsabilité décennale souscrits par les réalisateurs et le contrôleur technique ;\n\nb) A lui déclarer les réceptions de travaux, ainsi qu'à lui remettre dans le mois de leur prononcé, le ou les procès-verbaux desdites réceptions, ainsi que le relevé des observations ou réserves demeurées non levées du contrôleur technique ;\n\nc) A lui adresser un dossier technique comportant au moins les plans et descriptifs de l'ensemble des travaux effectivement réalisés, dans le délai maximal d'un mois à compter de leur achèvement ;\n\nd) A lui notifier dans le même délai, le constat de l'exécution des travaux éventuellement effectués au titre de la garantie de parfait achèvement au sens de l'article 1792-6 du code civil ainsi que le relevé des observations ou réserves demeurées non levées du contrôleur technique ;\n\ne) A lui faire tenir la déclaration de tout arrêt de travaux devant excéder trente jours ;\n\nf) A communiquer les avis, observations et réserves du contrôleur technique, simultanément, tant à l'assureur qu'au réalisateur concerné, et à ne pas s'opposer à ce que l'assureur puisse, à ses frais, demander au contrôleur technique, sous son couvert, les informations complémentaires dont il estimerait avoir besoin pour l'appréciation des risques assurés.\n\nDans le cas où il n'est pas lui-même le maître de l'ouvrage, l'assuré s'engage à obtenir de celui-ci que les avis, observations et réserves du contrôleur technique soient pareillement communiqués à l'assureur et au réalisateur concerné, et que, dans les mêmes conditions, l'assureur puisse demander au contrôleur technique les informations complémentaires dont il estimerait avoir besoin pour l'appréciation des risques assurés.\n\n2° En cas de sinistre susceptible de mettre en jeu les garanties du contrat, l'assuré est tenu d'en faire la déclaration à l'assureur.\n\nLa déclaration de sinistre est réputée constituée dès qu'elle comporte au moins les renseignements suivants :\n\n-le numéro du contrat d'assurance et, le cas échéant, celui de l'avenant ;\n\n-le nom du propriétaire de la construction endommagée ;\n\n-l'adresse de la construction endommagée ;\n\n-la date de réception ou, à défaut, la date de la première occupation des locaux ;\n\n-la date d'apparition des dommages ainsi que leur description et localisation ;\n\n-si la déclaration survient pendant la période de parfait achèvement au sens de l'article 1792-6 du code civil, la copie de la mise en demeure effectuée au titre de la garantie de parfait achèvement.\n\nA compter de la réception de la déclaration de sinistre, l'assureur dispose d'un délai de dix jours pour signifier à l'assuré que la déclaration n'est pas réputée constituée et réclamer les renseignements manquants susvisés. Les délais visés à l'article L. 242-1 du présent code commencent à courir du jour où la déclaration de sinistre réputée constituée est reçue par l'assureur.\n\n3° L'assuré s'engage à autoriser l'assureur à constater l'état d'exécution des travaux de réparation des dommages ayant fait l'objet d'une indemnisation en cas de sinistre.\n\n4° Pour permettre l'exercice éventuel du droit de subrogation ouvert au profit de l'assureur par l'article L. 121-12 du code des assurances, l'assuré s'engage également :\n\na) A autoriser l'assureur à accéder à tout moment au chantier pendant la période d'exécution des travaux de construction, jusqu'à l'expiration du délai de garantie de parfait achèvement au sens de l'article 1792-6 du code civil, et, à cet effet, à prendre les dispositions nécessaires dans les contrats et marchés à passer avec les réalisateurs ayant la responsabilité de la garde du chantier. En cas de sinistre survenant au-delà de la date d'expiration de la garantie de parfait achèvement, l'assuré s'engage à accorder à l'assureur toutes facilités pour accéder aux lieux du sinistre ;\n\nb) En cas de sinistre, à autoriser les assureurs couvrant la responsabilité décennale des réalisateurs, des fabricants au sens de l'article 1792-4 du code civil, et du contrôleur technique à accéder aux lieux du sinistre sur l'invitation qui leur en est faite par la personne désignée au paragraphe B (1°, a) ;\n\nc) A autoriser ladite personne à pratiquer les investigations qui lui apparaîtraient nécessaires en vue de l'établissement, à l'intention de l'assureur, d'un rapport complémentaire qui, reprenant les conclusions du rapport d'expertise défini au paragraphe B (1°, c et b) en approfondit, en tant que de besoin, l'analyse, en vue notamment de la recherche des faits générateurs du sinistre et des éléments propres à étayer le recours de l'assureur.\n\nB.-Obligations de l'assureur en cas de sinistre\n\n1° Constat des dommages, expertise :\n\na) Sous réserve des dispositions du d ci-dessous, les dommages sont constatés, décrits et évalués par les soins d'un expert, personne physique ou morale, désigné par l'assureur.\n\nL'expert peut faire l'objet d'une récusation dans les huit jours de la notification à l'assuré de sa désignation. En cas de seconde récusation par l'assuré, l'assureur fait désigner l'expert par le juge des référés.\n\nLorsque l'expert est une personne morale, celle-ci fait connaître aux parties le nom de la ou des personnes physiques chargées d'effectuer la mission donnée, en son nom et sous sa responsabilité.\n\nLors de la première demande de récusation, les délais d'instruction et de règlement de sinistre prévus ci-après par la présente clause-type sont augmentés de dix jours. En cas de désignation de l'expert par le juge des référés, ces mêmes délais sont augmentés de trente jours.\n\nLes opérations de l'expert revêtent un caractère contradictoire. L'assuré peut se faire assister ou représenter. Les observations éventuelles de l'assuré sont consignées dans le rapport de l'expert ;\n\nb) L'assureur s'engage envers l'assuré à donner à l'expert les instructions nécessaires pour que les réalisateurs, les fabricants au sens de l'article 1792-4 du code civil et le contrôleur technique, ainsi que les assureurs couvrant leur responsabilité décennale et celle de l'assuré soient, d'une façon générale, consultés pour avis par ledit expert, chaque fois que celui-ci l'estime nécessaire et, en tout cas, obligatoirement avant le dépôt entre les mains de l'assureur de chacun des deux documents définis en c, et soient, en outre, systématiquement informés par lui du déroulement des différentes phases du constat des dommages et du règlement des indemnités ;\n\nc) La mission d'expertise définie en a est limitée à la recherche et au rassemblement des données strictement indispensables à la non-aggravation et à la réparation rapide des dommages garantis.\n\nLes conclusions écrites de l'expert sont, en conséquence, consignées au moyen de deux documents distincts :\n\nc. a) un rapport préliminaire, qui comporte l'indication descriptive et estimative des mesures conservatoires jugées nécessaires à la non-aggravation des dommages, compte tenu, s'il y a lieu, des mesures conservatoires prises par l'assuré, ainsi que les indications sommaires sur les circonstances et les caractéristiques techniques du sinistre, permettant à l'assureur de se prononcer dans le délai prévu au paragraphe 2°, a, sur le principe de la mise en jeu des garanties du contrat ;\n\nc. b) un rapport d'expertise, exclusivement consacré à la description des caractéristiques techniques du sinistre et à l'établissement des propositions, descriptions et estimations, concernant les différentes mesures à prendre et les différents travaux à exécuter en vue de la réparation intégrale des dommages constatés ;\n\nd) L'assureur n'est pas tenu de recourir à une expertise lorsque, au vu de la déclaration de sinistre :\n\n-il évalue le dommage à un montant inférieur à 1 800 euros\n\n-ou\n\n-la mise en jeu de la garantie est manifestement injustifiée.\n\nLorsqu'il décide de ne pas recourir à une expertise, l'assureur notifie à l'assuré son offre d'indemnité ou sa décision de refus de garantie dans le délai de quinze jours à compter de la réception de la déclaration de sinistre réputée constituée.\n\nEn cas de contestation de l'assuré, celui-ci peut obtenir la désignation d'un expert.\n\nLa notification reproduit de façon apparente l'alinéa précédent.\n\n2° Rapport préliminaire, mise en jeu des garanties, mesures conservatoires :\n\na) Dans un délai maximum de soixante jours courant à compter de la réception de la déclaration du sinistre réputée constituée, l'assureur, sauf s'il a fait application des dispositions du deuxième alinéa du d du 1°, sur le vu du rapport préliminaire établi par l'expert, notifie à celui-ci sa décision quant au principe de la mise en jeu des garanties du contrat. L'assureur communique à l'assuré ce rapport préliminaire, préalablement ou au plus tard lors de cette notification ;\n\nToute décision négative de l'assureur, ayant pour effet de rejeter la demande d'indemnisation, doit être expressément motivée.\n\nSi l'assureur ne conteste pas la mise en jeu des garanties du contrat, la notification de sa décision comporte l'indication du montant de l'indemnité destinée à couvrir les dépenses correspondant à l'exécution des mesures conservatoires nécessaires à la non-aggravation des dommages. Cette indemnité tient compte, s'il y a lieu, des dépenses qui ont pu être précédemment engagées par l'assuré lui-même, au titre des mesures conservatoires.\n\nb) L'assureur prend les dispositions nécessaires pour que l'assuré puisse être saisi du rapport préliminaire en temps utile et, en tout cas, dans un délai compatible avec celui qu'il est lui-même tenu d'observer en vertu du paragraphe a ;\n\nc) Faute, pour l'assureur, de respecter le délai fixé au paragraphe a, et sur simple notification faite à l'assureur, les garanties du présent contrat jouent pour ce qui concerne le sinistre déclaré, et l'assuré est autorisé à engager les dépenses correspondant à l'exécution des mesures conservatoires nécessaires à la non-aggravation des dommages, dans la limite de l'estimation portée dans le rapport préliminaire de l'expert. Si, dans le même délai, l'assuré n'a pu avoir connaissance du rapport préliminaire, il est autorisé de la même manière à engager les dépenses en cause dans la limite de l'estimation qu'il a pu en faire lui-même.\n\n3° Rapport d'expertise, détermination et règlement de l'indemnité :\n\na) L'assureur, sauf s'il a fait application des dispositions du deuxième alinéa d du 1° sur le vu du rapport d'expertise, notifie à celui-ci ses propositions quant au montant de l'indemnité destinée au paiement des travaux de réparation des dommages. L'assureur communique à l'assuré ce rapport d'expertise, préalablement ou au plus tard lors de cette notification.\n\nCes propositions font l'objet d'une actualisation ou d'une révision de prix selon les modalités prévues à cet effet aux conditions particulières ; elles sont obligatoirement ventilées entre les différents postes de dépenses retenus et appuyées des justifications nécessaires, tant en ce qui concerne les quantités que les prix unitaires. Elles comprennent, outre les dépenses de travaux proprement dits, les frais annexes nécessaires à la mise en œuvre desdits travaux, tels qu'honoraires, essais, analyses, ainsi que les taxes applicables. Elles tiennent compte, s'il y a lieu, des dépenses qui ont pu être précédemment engagées ou retenues, ainsi que des indemnités qui ont pu être antérieurement versées au titre des mesures conservatoires ;\n\nb) Au cas où une expertise a été requise, l'assureur prend les dispositions nécessaires pour que l'assuré puisse être saisi du rapport d'expertise en temps utile ;\n\nc) En tout état de cause, l'assuré qui a fait connaître à l'assureur qu'il n'acquiesce pas aux propositions de règlement dont il a été saisi, s'il estime ne pas devoir cependant différer l'exécution des travaux de réparation, reçoit sur sa demande, de l'assureur, sans préjudice des décisions éventuelles de justice à intervenir sur le fond, une avance au moins égale aux trois quarts du montant de l'indemnité qui lui a été notifié selon les modalités définies en a. Cette avance, forfaitaire et non revalorisable, et à valoir sur le montant définitif de l'indemnité qui sera mise à la charge de l'assureur, est versée en une seule fois, dans un délai maximum de quinze jours courant à compter de la réception, par l'assureur, de la demande de l'assuré.\n\nL'assuré s'engage à autoriser l'assureur à constater l'exécution des travaux de réparation des dommages ayant fait l'objet d'une avance ;\n\nd) Si l'assuré ayant demandé le bénéfice des dispositions du paragraphe c n'a pas reçu, dans le délai fixé au même paragraphe, les sommes représentatives de l'avance due par l'assureur, il est autorisé à engager les dépenses afférentes aux travaux de réparation qu'il entreprend, dans la limite des propositions d'indemnisation qui lui ont été précédemment notifiées.\n\n4° L'assureur est tenu de notifier à l'assuré, pour l'information de celui-ci, la position définitive que, sur le vu du rapport complémentaire, il estime devoir prendre en ce qui concerne l'exercice du droit de subrogation ouvert à son profit par l'article L. 121-12."
+    },
+    {
+     "num": "Annexe III art A243-1",
+     "chemin": [
+      "Partie réglementaire - Arrêtés",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment"
+     ],
+     "texte": "CLAUSES-TYPES APPLICABLES AUX CONTRATS COLLECTIFS DE RESPONSABILITÉ DÉCENNALE SOUSCRITS POUR LE COMPTE DE PLUSIEURS PERSONNES ASSUJETTIES À L'OBLIGATION D'ASSURANCE MENTIONNÉE AUX ARTICLES L. 241-1 ET L. 241-2, EN COMPLÉMENT DES CONTRATS INDIVIDUELS GARANTISSANT LA RESPONSABILITÉ DÉCENNALE DE CHACUNE DE CES PERSONNES\n\nNature de la garantie\n\nLe contrat garantit le paiement des travaux de réparation de l'ouvrage à la réalisation duquel les assurés, désignés aux conditions particulières, ont contribué ainsi que des ouvrages existants, totalement incorporés dans l'ouvrage neuf et qui en deviennent techniquement indivisibles, au sens du II de l'article L. 243-1-1 II du présent code, lorsque la responsabilité de l'un ou plusieurs des assurés est engagée sur le fondement de la présomption établie par les articles 1792 et suivants du code civil à propos de travaux de construction, et dans les limites de cette responsabilité.\n\nLes travaux de réparation, notamment en cas de remplacement des ouvrages, comprennent également les travaux de démolition, déblaiement, dépose ou démontage éventuellement nécessaires.\n\nMontant de la garantie (clause-type applicable aux seuls contrats\n\nrelevant de l'article L. 243-9 du présent code)\n\nDans le cas des travaux de construction destinés à un usage autre que d'habitation, le montant de la garantie est établi selon les modalités prévues aux conditions particulières et ne peut être inférieur pour l'ouvrage au coût total de la construction déclaré par le maître de l'ouvrage ou au montant prévu au I de l'article R. 243. 3 du présent code, si le coût total de la construction déclaré par le maître de l'ouvrage excède ce montant.\n\nLes conditions particulières précisent les modalités de reconstitution de la garantie après sinistre.\n\nLe coût total de la construction s'entend du montant définitif des dépenses de l'ensemble des travaux afférents à la réalisation de l'opération de construction, toutes révisions, honoraires, taxes et s'il y a lieu travaux supplémentaires compris. Ce coût intègre la valeur de reconstruction des existants totalement incorporés dans l'ouvrage neuf et qui en deviennent techniquement indivisibles au sens du II de l'article L. 243-1-1 du présent code. En aucun cas ce coût ne peut comprendre les primes ou bonifications accordées par le maître de l'ouvrage au titre d'une exécution plus rapide que celle prévue contractuellement ni se trouver amputé des pénalités pour retard infligées à l'entrepreneur responsable d'un dépassement des délais contractuels d'exécution.\n\nCette garantie est revalorisée selon les modalités prévues aux conditions particulières, pour tenir compte de l'évolution des coûts de construction entre la date de souscription du contrat et celle de la réparation du sinistre.\n\nDurée et maintien de la garantie dans le temps\n\nLe contrat couvre, pour la durée de la responsabilité pesant sur les assurés en vertu des articles 1792 et suivants du code civil, les travaux de construction de l'ouvrage désigné aux conditions particulières.\n\nLa garantie afférente à ces travaux est maintenue dans tous les cas pour la même durée, sans paiement de prime subséquente.\n\nFranchise au sens du présent contrat\n\nPour chacun des assurés, le contrat garantit le montant des travaux de réparation au-delà d'une franchise absolue définie aux conditions particulières, laquelle est égale au plafond de garantie des contrats individuels souscrits par chacun des assurés, après ajustement de ce plafond en tant que de besoin.\n\nLa franchise est opposable à tous.\n\nL'assuré s'oblige à couvrir la portion du risque constituée par cette franchise par un ou plusieurs contrats individuels d'assurance de responsabilité décennale comportant des garanties au moins équivalentes à celles figurant dans les clauses types mentionnées à l'annexe I de l'article A. 243-1 du présent code. Cette franchise est revalorisée selon les mêmes modalités que celles prévues aux conditions particulières des contrats individuels pour les montants de garanties de ces contrats.\n\nExclusions\n\nLa garantie du présent contrat ne s'applique pas aux dommages résultant exclusivement :\n\na) Du fait intentionnel ou du dol du souscripteur ou de l'assuré ;\n\nb) Des effets de l'usure normale, du défaut d'entretien ou de l'usage anormal ;\n\nc) De la cause étrangère.\n\nDéchéance\n\nL'assuré est déchu de tout droit à garantie en cas d'inobservation inexcusable des règles de l'art, telles qu'elles sont définies par les réglementations en vigueur, les normes françaises homologuées ou les normes publiées par les organismes de normalisation d'un autre Etat membre de l'Union européenne ou d'un autre Etat partie à l'accord sur l'Espace économique européen, offrant un degré de sécurité et de pérennité équivalant à celui des normes françaises.\n\nPour l'application de cette déchéance, il faut entendre par assuré, soit le souscripteur personne physique, soit le chef d'entreprise ou le représentant statutaire de l'entreprise s'il s'agit d'une entreprise inscrite au répertoire des métiers, soit les représentants légaux ou dûment mandatés de l'assuré lorsque celui-ci est une personne morale.\n\nCette déchéance n'est pas opposable aux bénéficiaires des indemnités."
+    },
+    {
+     "num": "R243-1",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment."
+     ],
+     "texte": "Les personnes mentionnées aux articles L. 241-1 et L. 241-2 peuvent satisfaire à l'obligation d'assurance leur incombant en vertu de ces articles en recourant à un contrat d'assurance collectif, en complément d'un ou plusieurs contrats d'assurance garantissant individuellement leur responsabilité dans la limite des plafonds fixés dans ce ou ces contrats.\n\nCe contrat d'assurance collectif peut être souscrit pour le compte de plusieurs personnes mentionnées à ces articles."
+    },
+    {
+     "num": "R243-2",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment."
+     ],
+     "texte": "Les justifications prévues à l'article L. 243-2 doivent être apportées, lors de la déclaration d'ouverture du chantier, à l'autorité compétente pour recevoir cette déclaration.\n\nLes justifications prévues au présent article précisent le montant des garanties apportées par chacun des contrats souscrits par ou pour le compte des personnes mentionnées aux articles L. 241-1, L. 241-2, L. 242-1 et L. 242-2 ainsi que les modalités d'articulation de ces différentes garanties entre elles.\n\nLorsqu'il est recouru à un ou plusieurs contrats, auxquels s'appliquent les plafonds de garantie prévus à l'article R. 243-3, les justifications comportent en outre la mention du montant du coût de construction de l'ouvrage déclaré préalablement par le maître de l'ouvrage.\n\nEn outre, pendant l'exécution des travaux, le maître de l'ouvrage peut demander à tout intervenant à l'acte de construire de justifier qu'il satisfait aux obligations prévues par les articles L. 241-1 et L. 241-2."
+    },
+    {
+     "num": "R243-3",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Assurances obligatoires",
+      "Titre IV : L’assurance des travaux de bâtiment."
+     ],
+     "texte": "I.-Le montant de garantie du ou des contrats d'assurance mentionnés à l'article L. 243-9 doit couvrir les personnes mentionnées aux articles L. 241-1, L. 241-2, L. 242-1 et L. 242-2 à hauteur d'un montant minimum par ouvrage. Ce montant ne peut être inférieur, pour cet ouvrage, au coût total de construction déclaré par le maître de l'ouvrage, ou à 150 millions d'euros si ce coût est supérieur à 150 millions d'euros.\n\nLorsqu'il est recouru à un contrat d'assurance collectif mentionné à l'article R. 243-1, le total des garanties, tel qu'il résulte de ce contrat collectif et des contrats garantissant chacune des personnes assurées par le contrat collectif, doit couvrir le paiement des travaux de réparation des dommages engageant la responsabilité décennale d'une ou de plusieurs de ces personnes, à hauteur du coût total de construction déclaré par le maître de l'ouvrage, ou à 150 millions d'euros si ce coût est supérieur à 150 millions d'euros.\n\nII.-Le montant du plafond de garantie mentionné au I peut être modifié par arrêté conjoint du ministre chargé de l'économie et du ministre chargé de la construction, en tenant compte de l'évolution du coût de la construction et des capacités économiques des marchés de l'assurance et de la réassurance."
+    }
+   ]
+  },
+  {
+   "nom": "code de la construction et de l’habitation",
+   "titre": "Code de la construction et de l’habitation",
+   "cid": "LEGITEXT000006074096",
+   "articles": [
+    {
+     "num": "Annexe à l'article R231-13",
+     "chemin": [
+      "Annexes",
+      "Clauses types afférentes au contrat de construction d’une maison individuelle avec fourniture de plan rédigées en application de l’article R. 231-13"
+     ],
+     "texte": "I. - Définition des travaux\n\nClause :\n\n\" La consistance et les caractéristiques techniques du bâtiment à édifier et des travaux d'équipement intérieur ou extérieur qui sont indispensables à l'implantation, à l'utilisation ou à l'habitation de l'immeuble résultent des documents suivants annexés au présent contrat :\n\n\" Le plan de la construction à édifier comportant les travaux d'adaptation au sol, les coupes et élévations, les cotes utiles et l'indication des surfaces de chacune des pièces, des dégagements et des dépendances. Le plan indique en outre les raccordements décrits à la notice prévue à l'article R. 231-4 et les éléments d'équipement intérieur ou extérieur qui sont indispensables à l'implantation et à l'utilisation ou à l'habitation de l'immeuble.\n\n\" Un dessin d'une perspective de l'immeuble est joint au plan. Le plan est daté et signé par les parties.\n\n\" Est également annexée au contrat une notice descriptive conforme au modèle type agréé par arrêté ministériel donnant les caractéristiques techniques tant de l'immeuble lui-même que des travaux d'équipement intérieur ou extérieur qui sont indispensables à l'implantation et à l'utilisation de l'immeuble. La notice fait entre ces éléments la distinction prévue à l'article L. 231-2 (d) selon que ces éléments sont ou non compris dans le prix convenu (travaux à la charge du constructeur) et indique le coût de ceux desdits éléments non compris dans le prix (travaux dont le maître de l'ouvrage se réserve l'exécution).\n\n\" La notice mentionne les raccordements de l'immeuble à l'égout et aux distributions assurées par les services publics notamment aux distributions d'eau, de gaz, d'électricité ou de chauffage en distinguant ceux qui sont inclus dans le prix et, s'il y a lieu, ceux dont le coût est à la charge du maître de l'ouvrage.\n\n\" La notice porte, de la main du maître de l'ouvrage, une mention signée par laquelle il accepte le coût des travaux à sa charge qui ne sont pas compris dans le prix convenu et en précise le montant taxes comprises.\n\n\" Le constructeur établit, en autant d'exemplaires qu'il en est besoin, le dossier de demande de permis de construire.\n\n\" Le constructeur s'oblige à constituer le dossier de demande de permis de construire et, s'il y a lieu, celui des autres autorisations administratives dans le délai d'un mois à compter de la signature du contrat et à le déposer dès sa signature par le maître de l'ouvrage auprès de l'autorité compétente. \"\n\nFacultatif : \" Le maître de l'ouvrage constitue par les présentes le constructeur mandataire pour l'accomplissement des démarches et formalités nécessaires à l'obtention du permis de construire et, s'il y a lieu, des autres autorisations administratives. \"\n\nFacultatif : \" Le maître de l'ouvrage constitue le constructeur mandataire à l'effet de rechercher l'assurance de dommages.\n\n\" Le constructeur communique au maître de l'ouvrage à titre indicatif le coût des taxes d'urbanisme et participations non comprises dans le prix convenu prévues par les articles L. 332-6 et L. 332-6-1 du code de l'urbanisme. \"\n\nClauses additionnelles à prévoir dans le cas où le constructeur assure la fabrication, la pose et l'assemblage sur le chantier d'éléments préfabriqués dans les conditions définies à l'article L. 111-1-1 du code de la construction et de l'habitation :\n\n“ Sont également annexés au présent contrat :\n\n“-la liste et la description, avec leur plan et leurs caractéristiques, des éléments préfabriqués qui font indissociablement corps avec les ouvrages de viabilité, de fondation, d'ossature, de clos et de couvert de la construction. Ces éléments peuvent intégrer l'isolation et les réserves pour les réseaux divers ;\n\n“-le document définissant les modalités selon lesquelles le constructeur informera le maître de l'ouvrage de l'achèvement et de la bonne exécution de la fabrication de ces éléments, soit en le mettant à même de constater ou de faire constater cette fabrication sur le site de production, soit en lui transmettant les éléments permettant d'attester la fabrication des éléments mentionnés et décrits au contrat, identifiables par tout moyen propre à l'entreprise, notamment par marquage des éléments préfabriqués au nom du maître d'ouvrage, code barre ou tout autre moyen pertinent d'identification. ”\n\nII. - Coût de la construction et prix convenu\n\nClause :\n\n\" Le coût du bâtiment à construire comportant le prix convenu et le coût des travaux dont le maître de l'ouvrage se réserve l'exécution s'élève à la somme de ... € se décomposant comme suit :\n\n\" 1. Prix convenu : le prix forfaitaire et définitif s'élève à ... €.\n\n\" Cette somme comporte la rémunération de tout ce qui est à la charge du constructeur y compris le montant des taxes dues sur le coût de la construction, le coût du plan, celui de la garantie de livraison et le cas échéant de la garantie de remboursement et, s'il y a lieu, les frais d'étude du terrain pour l'implantation de l'immeuble. \"\n\nFacultatif : \" Le prix est révisable dans les conditions ci-après précisées... \"\n\n\" 2. Travaux à la charge du maître de l'ouvrage : le coût des travaux à la charge du maître de l'ouvrage s'élève à ... €.\n\n\" Ces travaux sont décrits et chiffrés dans la notice annexée au présent contrat qui comporte une mention manuscrite et signée du maître de l'ouvrage pour en accepter le coût et la charge.\n\n\" Le constructeur s'oblige à exécuter ou faire exécuter ces travaux aux prix et conditions prévus si le maître de l'ouvrage en fait la demande dans le délai de quatre mois à compter de ce jour, c'est-à-dire avant le ... \"\n\nIII. - Modalités de paiement du prix convenu\n\nDans l'hypothèse où le contrat ne comporte pas de garantie de remboursement, la rédaction peut être la suivante :\n\n\" Le prix convenu sera payé conformément aux dispositions des articles L. 231-4-III et R. 231-7 du code de la construction et de l'habitation.\n\n\" En conséquence, M. ... (le maître de l'ouvrage) verse ce jour la somme de ... représentant x p. 100 du prix de la construction, somme qui sera consignée à l'établissement X... en un compte spécial ouvert au nom de M. ... (le maître de l'ouvrage) dans le délai de deux jours.\n\n\" Cette somme s'imputera sur les premiers paiements qui seront demandés selon l'échelonnement prévu à l'article R. 231-7 du code de la construction et de l'habitation ci-après reproduit :\n\n\" Art. R. 231-7 ... \"\n\nLa formule suivante peut être utilisée dans l'hypothèse où le contrat est assorti d'une garantie de remboursement :\n\n\" Le constructeur justifie de la garantie de remboursement prévue par l'article R. 231-8 du code de la construction et de l'habitation délivrée par ,et faisant l'objet d'une attestation annexée au présent contrat.\n\n\" En conséquence, l'échelonnement des paiements est fixé ainsi qu'il suit :\n\n\" 5 p. 100 à la signature du contrat ;\n\n\" 5 p. 100 à la délivrance du permis de construire.\n\n\" Les autres paiements seront effectués conformément aux dispositions de l'article R. 231-7 du code de la construction et de l'habitation ci-après reproduit :\n\n\" Art. R. 231-7 ... \"\n\nLa formule suivante peut être utilisée dans l'hypothèse où le contrat est assorti d'une clause de remboursement, lorsque le constructeur assure la fabrication, la pose et l'assemblage sur le chantier d'éléments préfabriqués dans les conditions définies à l'article L. 111-1-1 du code de la construction et de l'habitation :\n\n“ Le constructeur justifie de la garantie de remboursement prévue par l'article R. 231-8 du code de la construction et de l'habitation délivrée par …, et faisant l'objet d'une attestation annexée au présent contrat.\n\n“ En conséquence, l'échelonnement des paiements est fixé ainsi qu'il suit :\n\n“ 5 % à la signature du contrat ;\n\n“ 5 % à la délivrance du permis de construire.\n\n“ Les autres paiements seront effectués conformément aux dispositions de l'article R. 231-7-1 du code de la construction et de l'habitation ci-après reproduit :\n\n“ Art. R. 231-7-1 … ”.\n\nIV. - Délai d'exécution des travaux\n\nClause :\n\n\" Les parties conviennent que les conditions suspensives devront être réalisées dans un délai de ... après la signature du contrat.\n\n\" Les travaux commenceront dans le délai de ... à compter de la réalisation des conditions suspensives.\n\n\" Les travaux commenceront en conséquence au plus tard à la date du ...\n\n\" La durée d'exécution des travaux sera de ... mois à compter de l'ouverture du chantier.\n\n\" Ce délai sera prolongé de la durée des périodes d'intempéries pendant lesquelles le travail est arrêté conformément aux dispositions des articles L. 731-1 et suivants du code du travail. Il sera également prolongé en cas de force majeure ou cas fortuit.\n\n\" En cas de retard dans l'achèvement de la construction, une pénalité de ... du prix par jour de retard est due par le constructeur. \"\n\nV. - Garanties de livraison\n\nClause :\n\n\" La garantie de livraison aux prix et délai convenus est donnée par l'établissement X..., qui prend à sa charge les obligations prévues à l'article L. 231-6 du code de la construction et de l'habitation ci-après reproduit :\n\n\" Art. L. 231-6 ... \"\n\n\" Une attestation de cette garantie est annexée au présent contrat. \"\n\nVariante :\n\n\" Le présent contrat est soumis à la condition suspensive de l'obtention par le constructeur de la garantie de livraison prévue à l'article L. 231-6 du code de la construction et de l'habitation ci-après reproduit :\n\n\" Art. L. 231-6 ... \"\n\n\" Une attestation de cette garantie délivrée par un organisme habilité sera adressée à M. ,dans le délai prévu pour la réalisation des conditions suspensives.\n\n\" M. ...... s'engage à communiquer cette attestation au prêteur dès sa réception. \""
+    },
+    {
+     "num": "L230-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle."
+     ],
+     "texte": "Les règles prévues au présent titre sont d'ordre public."
+    },
+    {
+     "num": "L231-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "Toute personne qui se charge de la construction d'un immeuble à usage d'habitation ou d'un immeuble à usage professionnel et d'habitation ne comportant pas plus de deux logements destinés au même maître de l'ouvrage d'après un plan qu'elle a proposé ou fait proposer doit conclure avec le maître de l'ouvrage un contrat soumis aux dispositions de l'article L. 231-2.\n\nCette obligation est également imposée :\n\na) A toute personne qui se charge de la construction d'un tel immeuble à partir d'un plan fourni par un tiers à la suite d'un démarchage à domicile ou d'une publicité faits pour le compte de cette personne ;\n\nb) A toute personne qui réalise une partie des travaux de construction d'un tel immeuble dès lors que le plan de celui-ci a été fourni par cette personne ou, pour son compte, au moyen des procédés visés à l'alinéa précédent.\n\nCette personne est dénommée constructeur au sens du présent chapitre et réputée constructeur de l'ouvrage au sens de l'article 1792-1 du code civil."
+    },
+    {
+     "num": "L231-2",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "Le contrat visé à l'article L. 231-1 doit comporter les énonciations suivantes :\n\na) La désignation du terrain destiné à l'implantation de la construction et la mention du titre de propriété du maître de l'ouvrage ou des droits réels lui permettant de construire ;\n\nb) L'affirmation de la conformité du projet aux règles de construction prescrites en application du présent code, notamment de son livre Ier, et du code de l'urbanisme ;\n\nc) La consistance et les caractéristiques techniques du bâtiment à construire comportant :\n\n-tous les travaux d'adaptation au sol, notamment, le cas échéant, ceux rendus nécessaires par l'étude géotechnique mentionnée aux articles L. 132-6 et L. 132-7 du présent code, dont une copie est annexée au contrat ;\n\n-les raccordements aux réseaux divers ;\n\n-tous les travaux d'équipement intérieur ou extérieur indispensables à l'implantation et à l'utilisation de l'immeuble ;\n\nd) Le coût du bâtiment à construire, égal à la somme du prix convenu et, s'il y a lieu, du coût des travaux dont le maître de l'ouvrage se réserve l'exécution en précisant :\n\n-d'une part, le prix convenu qui est forfaitaire et définitif, sous réserve, s'il y a lieu, de sa révision dans les conditions et limites convenues conformément à l'article L. 231-11, et qui comporte la rémunération de tout ce qui est à la charge du constructeur, y compris le coût de la garantie de livraison ;\n\n-d'autre part, le coût des travaux dont le maître de l'ouvrage se réserve l'exécution, ceux-ci étant décrits et chiffrés par le constructeur et faisant l'objet, de la part du maître de l'ouvrage, d'une clause manuscrite spécifique et paraphée par laquelle il en accepte le coût et la charge ;\n\ne) Les modalités de règlement en fonction de l'état d'avancement des travaux ;\n\nf) L'indication que le maître de l'ouvrage pourra se faire assister par un professionnel habilité en application de la loi n° 77-2 du 3 janvier 1977 sur l'architecture ou des articles L. 125-1 et suivants lors de la réception ou par tout autre professionnel de la construction titulaire d'un contrat d'assurance couvrant les responsabilités pour ce type de mission ;\n\ng) L'indication de l'obtention du permis de construire et des autres autorisations administratives, dont une copie est annexée au contrat ;\n\nh) L'indication des modalités de financement, la nature et le montant des prêts obtenus et acceptés par le maître de l'ouvrage ;\n\ni) La date d'ouverture du chantier, le délai d'exécution des travaux et les pénalités prévues en cas de retard de livraison ;\n\nj) La référence de l'assurance de dommages souscrite par le maître de l'ouvrage, en application de l'article L. 242-1 du code des assurances ;\n\nk) Les justifications des garanties de remboursement et de livraison apportées par le constructeur, les attestations de ces garanties étant établies par le garant et annexées au contrat.\n\nLorsque le constructeur assure la fabrication, la pose et l'assemblage sur le chantier d'éléments préfabriqués dans les conditions définies à l'article L. 111-1-1, le contrat précise en outre la description et les caractéristiques des éléments préfabriqués, ainsi que les modalités selon lesquelles le maître de l'ouvrage est informé de l'achèvement et de la bonne exécution de la fabrication de ces éléments.\n\nDans le cas prévu au précédent alinéa, les modalités de règlement mentionnées au contrat, en vertu du e de l'article L. 231-2, tiennent compte de l'état d'avancement des travaux de construction et de l'achèvement de la fabrication des éléments préfabriqués.\n\nLes stipulations du contrat, notamment celles relatives aux travaux à la charge du constructeur, au prix convenu, au délai d'exécution des travaux et aux pénalités applicables en cas de retard d'exécution, ainsi que celles relatives aux modalités selon lesquelles le maître de l'ouvrage est informé de l'achèvement et de la bonne exécution de la fabrication des éléments préfabriqués, peuvent se référer à des clauses types approuvées par décret en Conseil d'Etat."
+    },
+    {
+     "num": "L231-3",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "Dans le contrat visé à l'article L. 231-1, sont réputées non écrites les clauses ayant pour objet ou pour effet :\n\na) D'obliger le maître de l'ouvrage à donner mandat au constructeur pour rechercher le ou les prêts nécessaires au financement de la construction sans que ce mandat soit exprès et comporte toutes les précisions utiles sur les conditions de ce ou de ces prêts ;\n\nb) De subordonner le remboursement du dépôt de garantie à l'obligation, pour le maître de l'ouvrage, de justifier du refus de plusieurs demandes de prêt ;\n\nc) D'admettre comme valant autorisation administrative un permis de construire assorti de prescriptions techniques ou architecturales telles qu'elles entraînent une modification substantielle du projet ayant donné lieu à la conclusion du contrat initial ;\n\nd) De décharger le constructeur de son obligation d'exécuter les travaux dans les délais prévus par le contrat en prévoyant notamment des causes légitimes de retard autres que les intempéries, les cas de force majeure et les cas fortuits ;\n\ne) De subordonner la remise des clefs au paiement intégral du prix et faire ainsi obstacle au droit du maître de l'ouvrage de consigner les sommes restant dues lorsque des réserves sont faites à la réception des travaux ;\n\nf) D'interdire au maître de l'ouvrage la possibilité de visiter le chantier, préalablement à chaque échéance des paiements et à la réception des travaux ;\n\ng) D'interdire au maître de l'ouvrage de constater l'achèvement et la bonne exécution des éléments préfabriqués dûment identifiés, destinés à être livrés et assemblés pour la construction de sa maison."
+    },
+    {
+     "num": "L231-4",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "I.-Le contrat défini à l'article L. 231-1 peut être conclu sous les conditions suspensives suivantes :\n\na) L'acquisition du terrain ou des droits réels permettant de construire si le maître de l'ouvrage bénéficie d'une promesse de vente ;\n\nb) L'obtention du permis de construire et des autres autorisations administratives, le maître de l'ouvrage étant tenu de préciser la date limite de dépôt de la demande ;\n\nc) L'obtention des prêts demandés pour le financement de la construction ;\n\nd) L'obtention de l'assurance de dommages ;\n\ne) L'obtention de la garantie de livraison.\n\nLe délai maximum de réalisation des conditions suspensives ainsi que la date d'ouverture du chantier, déterminée à partir de ce délai, sont précisés par le contrat.\n\nII.-Aucun versement, aucun dépôt, aucune souscription ou acceptation d'effets de commerce ne peuvent être exigés ou acceptés avant la signature du contrat défini à l'article L. 231-1 ni avant la date à laquelle la créance est exigible.\n\nIII.-Le contrat peut stipuler qu'un dépôt de garantie sera effectué à un compte spécial ouvert au nom du maître de l'ouvrage par un organisme habilité. Le montant de ce dépôt ne peut excéder 3 % du prix de la construction projetée tel qu'il est énoncé au contrat.\n\nLes fonds ainsi déposés sont indisponibles, incessibles et insaisissables jusqu'à la réalisation de toutes les conditions ; dans ce cas, ces sommes viennent s'imputer sur les premiers paiements prévus par le contrat.\n\nLes fonds déposés en garantie sont immédiatement restitués au maître de l'ouvrage, sans retenue ni pénalité, si toutes les conditions suspensives ne sont pas réalisées dans le délai prévu au contrat ou si le maître de l'ouvrage exerce la faculté de rétractation prévue à l'article L. 271-1.\n\nLe contrat peut prévoir des paiements au constructeur avant la date d'ouverture du chantier, sous réserve que leur remboursement soit garanti par un établissement habilité à cet effet.\n\nUn décret en Conseil d'Etat fixe la nature de la garantie et les conditions et limites dans lesquelles ces sommes sont versées."
+    },
+    {
+     "num": "L231-5",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "L'obligation, instituée par le deuxième alinéa de l'article L. 261-10, de conclure un contrat conforme aux dispositions de l'alinéa premier de cet article ne s'applique pas lorsque celui qui procure indirectement le terrain est le constructeur."
+    },
+    {
+     "num": "L231-6",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "I.-La garantie de livraison prévue au k de l'article L. 231-2 couvre le maître de l'ouvrage, à compter de la date d'ouverture du chantier, contre les risques d'inexécution ou de mauvaise exécution des travaux prévus au contrat, à prix et délais convenus. Dans le cas prévu à l'antépénultième alinéa de l'article L. 231-2, elle couvre également le maître de l'ouvrage, à compter de l'ouverture du chantier, contre les risques d'inexécution ou de mauvaise exécution de la fabrication, de la pose et de l'assemblage des éléments préfabriqués.\n\nEn cas de défaillance du constructeur, le garant prend à sa charge :\n\na) Le coût des dépassements du prix convenu dès lors qu'ils sont nécessaires à l'achèvement de la construction, la garantie apportée à ce titre pouvant être assortie d'une franchise n'excédant pas 5 % du prix convenu ;\n\nb) Les conséquences du fait du constructeur ayant abouti à un paiement anticipé ou à un supplément de prix ;\n\nc) Les pénalités forfaitaires prévues au contrat en cas de retard de livraison excédant trente jours, le montant et le seuil minimum de ces pénalités étant fixés par décret.\n\nLa garantie est constituée par une caution solidaire donnée par un établissement de crédit, une société de financement ou une entreprise d'assurance agréés à cet effet.\n\nII.-Dans le cas où le garant constate que le délai de livraison n'est pas respecté ou que les travaux nécessaires à la levée des réserves formulées à la réception ne sont pas réalisés, il met en demeure sans délai le constructeur soit de livrer l'immeuble, soit d'exécuter les travaux. Le garant est tenu à la même obligation lorsqu'il est informé par le maître de l'ouvrage des faits susindiqués.\n\nQuinze jours après une mise en demeure restée infructueuse, le garant procède à l'exécution de ses obligations dans les conditions prévues au paragraphe III du présent article.\n\nAu cas où, en cours d'exécution des travaux, le constructeur fait l'objet des procédures de sauvegarde et de redressement judiciaire prévues par le code de commerce, le garant peut mettre en demeure l'administrateur de se prononcer sur l'exécution du contrat conformément à l'article L. 621-28 dudit code. A défaut de réponse dans le délai d'un mois et sans que ce délai puisse être prorogé pour quelque raison que ce soit, le garant procède à l'exécution de ses obligations. Il y procède également dans le cas où, malgré sa réponse positive, l'administrateur ne poursuit pas l'exécution du contrat dans les quinze jours qui suivent sa réponse.\n\nIII.-Dans les cas prévus au paragraphe II ci-dessus et faute pour le constructeur ou l'administrateur de procéder à l'achèvement de la construction, le garant doit désigner sous sa responsabilité la personne qui terminera les travaux.\n\nToutefois, et à condition que l'immeuble ait atteint le stade du hors d'eau, le garant peut proposer au maître de l'ouvrage de conclure lui-même des marchés de travaux avec des entreprises qui se chargeront de l'achèvement. Si le maître de l'ouvrage l'accepte, le garant verse directement aux entreprises les sommes dont il est redevable au titre du paragraphe I du présent article.\n\nEn cas de défaillance du constructeur, le garant est en droit d'exiger de percevoir directement les sommes correspondant aux travaux qu'il effectue ou fait effectuer dans les conditions prévues au e de l'article L. 231-2.\n\nIV.-La garantie cesse lorsque la réception des travaux a été constatée par écrit et, le cas échéant, à l'expiration du délai de huit jours prévu à l'article L. 231-8 pour dénoncer les vices apparents ou, si des réserves ont été formulées, lorsque celles-ci ont été levées."
+    },
+    {
+     "num": "L231-7",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "I.-Dans le cas prévu au d de l'article L. 231-2, le constructeur est tenu d'exécuter ou de faire exécuter les travaux dont le maître de l'ouvrage s'est réservé l'exécution aux prix et conditions mentionnés au contrat si le maître de l'ouvrage lui en fait la demande dans les quatre mois qui suivent la signature du contrat.\n\nII.-Est réputé non écrit tout mandat donné par le maître de l'ouvrage au constructeur ou à un de ses préposés aux fins de percevoir tout ou partie d'un prêt destiné au financement de la construction.\n\nIII.-Les paiements intervenant aux différents stades de la construction peuvent être effectués directement par le prêteur, sous réserve de l'accord écrit du maître de l'ouvrage à chaque échéance et de l'information du garant.\n\nA défaut d'accord écrit du maître de l'ouvrage à chaque échéance, le prêteur est responsable des conséquences préjudiciables des paiements qu'il effectue aux différents stades de la construction."
+    },
+    {
+     "num": "L231-8",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "Le maître de l'ouvrage peut, par lettre recommandée avec accusé de réception dans les huit jours qui suivent la remise des clefs consécutive à la réception, dénoncer les vices apparents qu'il n'avait pas signalés lors de la réception afin qu'il y soit remédié dans le cadre de l'exécution du contrat.\n\nLa disposition prévue à l'alinéa précédent ne s'applique pas quand le maître de l'ouvrage se fait assister, lors de la réception, par un professionnel habilité en application de la loi n° 77-2 du 3 janvier 1977 précitée ou des articles L. 125-1 et suivants ou par tout autre professionnel de la construction titulaire d'un contrat d'assurance couvrant les responsabilités pour ce type de mission."
+    },
+    {
+     "num": "L231-9",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "Une notice d'information conforme à un modèle type agréé par arrêté conjoint des ministres chargés de la construction et de la consommation est jointe au contrat qui est adressé par le constructeur au maître de l'ouvrage par lettre recommandée avec avis de réception."
+    },
+    {
+     "num": "L231-10",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "Aucun prêteur ne peut émettre une offre de prêt sans avoir vérifié que le contrat comporte celles des énonciations mentionnées à l'article L. 231-2 qui doivent y figurer au moment où l'acte lui est transmis et ne peut débloquer les fonds s'il n'a pas communication de l'attestation de garantie de livraison.\n\nDans les cas de défaillance du constructeur visés au paragraphe II de l'article L. 231-6 et nonobstant l'accord du maître de l'ouvrage prévu au premier alinéa du paragraphe III de l'article L. 231-7, le prêteur est responsable des conséquences préjudiciables d'un versement excédant le pourcentage maximum du prix total exigible aux différents stades de la construction d'après l'état d'avancement des travaux dès lors que ce versement résulte de l'exécution d'une clause irrégulière du contrat."
+    },
+    {
+     "num": "L231-11",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "Au cas où le contrat défini à l'article L. 231-1 prévoit la révision du prix, celle-ci ne peut être calculée qu'en fonction de la variation d'un indice national du bâtiment tous corps d'état mesurant l'évolution du coût des facteurs de production dans le bâtiment, publié par l'autorité administrative, et, au choix des parties, selon l'une des deux modalités ci-après :\n\na) Révision du prix d'après la variation de l'indice entre la date de la signature du contrat et la date fixée à l'article L. 231-12, le prix ainsi révisé ne pouvant subir aucune variation après cette date ;\n\nb) Révision sur chaque paiement dans une limite exprimée en pourcentage de la variation de l'indice défini ci-dessus entre la date de signature du contrat et la date de livraison prévue au contrat, aucune révision ne pouvant être effectuée au-delà d'une période de neuf mois suivant la date définie à l'article L. 231-12 lorsque la livraison prévue doit avoir lieu postérieurement à l'expiration de cette période.\n\nCes modalités doivent être portées, préalablement à la signature du contrat, à la connaissance du maître de l'ouvrage par la personne qui se charge de la construction. Elles doivent être reproduites dans le contrat, cet acte devant en outre porter, paraphée par le maître de l'ouvrage, une clause par laquelle celui-ci reconnaît en avoir été informé dans les conditions prévues ci-dessus.\n\nLa modalité choisie d'un commun accord par les parties doit figurer dans le contrat.\n\nA défaut des mentions prévues aux deux alinéas précédents, le prix figurant au contrat n'est pas révisable.\n\nL'indice et la limite prévus ci-dessus sont définis par décret en Conseil d'Etat. Cette limite, destinée à tenir compte des frais fixes, des approvisionnements constitués et des améliorations de productivité, doit être comprise entre 60 % et 80 % de la variation de l'indice.\n\nL'indice servant de base pour le calcul de la révision est le dernier indice publié au jour de la signature du contrat. La variation prise en compte résulte de la comparaison de cet indice avec le dernier indice publié avant la date de chaque paiement ou avant celle prévue à l'article L. 231-12 selon le choix exprimé par les parties."
+    },
+    {
+     "num": "L231-12",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "La date prévue pour l'application des deuxième (a) et troisième (b) alinéas de l'article L. 231-11 est celle de l'expiration d'un délai d'un mois qui suit la plus tardive des deux dates suivantes : a) La date de l'obtention, tacite ou expresse, des autorisations administratives nécessaires pour entreprendre la construction ; b) La date de la réalisation de la condition suspensive sous laquelle le contrat a été conclu ou est considéré comme conclu en application des articles L. 313-41 et L. 313-42 du code de la consommation."
+    },
+    {
+     "num": "L231-13",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Contrat de construction d’une maison individuelle avec fourniture du plan."
+     ],
+     "texte": "Le constructeur est tenu de conclure par écrit les contrats de sous-traitance avant tout commencement d'exécution des travaux à la charge du sous-traitant. Ces contrats comportent les énonciations suivantes :\n\na) La désignation de la construction ainsi que les nom et adresse du maître de l'ouvrage et de l'établissement qui apporte la garantie prévue à l'article L. 231-6 ;\n\nb) La description des travaux qui en font l'objet, conforme aux énonciations du contrat de construction ;\n\nc) Le prix convenu et, s'il y a lieu, les modalités de sa révision ;\n\nd) Le délai d'exécution des travaux et le montant des pénalités de retard ;\n\ne) Les modalités de règlement du prix, qui ne peut dépasser un délai de trente jours à compter de la date du versement effectué au constructeur par le maître de l'ouvrage ou le prêteur, en règlement de travaux comprenant ceux effectués par le sous-traitant et acceptés par le constructeur ;\n\nf) Le montant des pénalités dues par le constructeur en cas de retard de paiement ;\n\ng) La justification de l'une ou l'autre des garanties de paiement prévues à l'article 14 de la loi n° 75-1334 du 31 décembre 1975 relative à la sous-traitance ou de toute autre garantie, délivrée par un établissement de crédit, une société de financement ou une entreprise d'assurance, de nature à garantir le paiement des sommes dues au titre du sous-traité.\n\nCopie des contrats de sous-traitance est adressée par le constructeur à l'établissement qui apporte la garantie prévue à l'article L. 231-6."
+    },
+    {
+     "num": "L232-1",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Contrat de construction d’une maison individuelle sans fourniture du plan."
+     ],
+     "texte": "Le contrat de louage d'ouvrage n'entrant pas dans le champ d'application de l'article L. 231-1 et ayant au moins pour objet l'exécution des travaux de gros oeuvre, de mise hors d'eau et hors d'air d'un immeuble à usage d'habitation ou d'un immeuble à usage professionnel et d'habitation, ne comportant pas plus de deux logements destinés au même maître de l'ouvrage, doit être rédigé par écrit et préciser :\n\na) La désignation du terrain ;\n\nb) La consistance et les caractéristiques techniques de l'ouvrage à réaliser ;\n\nc) Le prix convenu forfaitaire et définitif, sous réserve, s'il y a lieu, de sa révision dans les conditions et limites convenues, ainsi que les modalités de son règlement au fur et à mesure de l'exécution des travaux ;\n\nd) Le délai d'exécution des travaux et les pénalités applicables en cas de retard de livraison ;\n\ne) La référence de l'assurance de dommages souscrite par le maître de l'ouvrage en application de l'article L. 242-1 du code des assurances ;\n\nf) L'indication que le maître de l'ouvrage pourra se faire assister par un professionnel habilité en application de la loi n° 77-2 du 3 janvier 1977 précitée ou des articles L. 125-1 et suivants lors de la réception ou par tout autre professionnel de la construction titulaire d'un contrat d'assurance couvrant les responsabilités pour ce type de mission ;\n\ng) L'engagement de l'entrepreneur de fournir, au plus tard à la date d'ouverture du chantier, la justification de la garantie de livraison qu'il apporte au maître de l'ouvrage, l'attestation de cette garantie étant établie par le garant et annexée au contrat."
+    },
+    {
+     "num": "L232-2",
+     "chemin": [
+      "Partie législative",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Contrat de construction d’une maison individuelle sans fourniture du plan."
+     ],
+     "texte": "Les dispositions du dernier alinéa de l'article L. 231-2, de l'article L. 231-6, du paragraphe II de l'article L. 231-4, des articles L. 231-8, L. 231-9 et L. 231-13 sont applicables au contrat prévu au présent chapitre."
+    },
+    {
+     "num": "R231-1",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "Le présent chapitre s'applique aux contrats relatifs à la construction d'un immeuble à usage d'habitation ou à usage professionnel et d'habitation ne comportant pas plus de deux logements destinés au même maître de l'ouvrage et régis par le chapitre Ier du titre III du livre II du présent code, partie Législative."
+    },
+    {
+     "num": "R231-2",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "Il est satisfait aux obligations prévues au a de l'article L. 231-2 par les énonciations suivantes portées au contrat :\n\n1. En ce qui concerne la désignation du terrain : sa situation avec l'indication de son adresse ou lieudit ainsi que sa surface et sa désignation cadastrale ;\n\n2. En ce qui concerne le titre de propriété ou les droits réels permettant de construire : la nature des droits, la nature du titre, sa date, l'indication des nom et adresse du rédacteur de l'acte."
+    },
+    {
+     "num": "R231-3",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "En application du c de l'article L. 231-2, à tout contrat, qu'il soit ou non assorti de conditions suspensives, doit être joint le plan de la construction à édifier, précisant les travaux d'adaptation au sol, les coupes et élévations, les cotes utiles et l'indication des surfaces de chacune des pièces, des dégagements et des dépendances. Le plan indique en outre les raccordements aux réseaux divers décrits à la notice prévue à l'article R. 231-4 et les éléments d'équipement intérieur ou extérieur qui sont indispensables à l'implantation, à l'utilisation et à l'habitation de l'immeuble.\n\nUn dessin d'une perspective de l'immeuble est joint au plan."
+    },
+    {
+     "num": "R231-3-1",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "Lorsque le constructeur assure la fabrication, la pose et l'assemblage sur le chantier d'éléments préfabriqués dans les conditions définies à l'article L. 111-1-1, le contrat mentionné à l'article R. 231-3 précise en outre la description, avec leur plan et leurs caractéristiques, des éléments préfabriqués qui font indissociablement corps avec les ouvrages de viabilité, de fondation, d'ossature, de clos et de couvert de la construction et peuvent intégrer l'isolation et les réserves pour les réseaux divers.\n\nDans le cas prévu à l'alinéa précédent, le contrat détaille également les modalités selon lesquelles le constructeur informe le maître de l'ouvrage de l'achèvement et de la bonne exécution de la fabrication de ces éléments, soit en le mettant à même de constater ou de faire constater cette fabrication sur le site de production, soit en lui transmettant les éléments permettant d'attester la fabrication des éléments mentionnés et décrits au contrat, identifiables par tout moyen propre à l'entreprise, notamment par marquage des éléments préfabriqués au nom du maître de l'ouvrage, code barre ou tout autre moyen pertinent d'identification."
+    },
+    {
+     "num": "R231-4",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "I.-Est aussi annexée au contrat visé à l'article L. 231-2 une notice descriptive conforme à un modèle type agréé par arrêté du ministre chargé de la construction et de l'habitation indiquant les caractéristiques techniques tant de l'immeuble lui-même que des travaux d'équipement intérieur ou extérieur qui sont indispensables à l'implantation et à l'utilisation de l'immeuble.\n\nII.-Cette notice fait la distinction prévue à l'article L. 231-2 (d) entre ces éléments selon que ceux-ci sont ou non compris dans le prix convenu. Elle indique le coût de ceux desdits éléments dont le coût n'est pas compris dans le prix.\n\nLa notice mentionne les raccordements de l'immeuble à l'égout et aux distributions assurées par les services publics, notamment aux distributions d'eau, de gaz, d'électricité ou de chauffage, en distinguant ceux qui sont inclus dans le prix et, s'il y a lieu, ceux dont le coût reste à la charge du maître de l'ouvrage.\n\nLa notice doit porter, de la main du maître de l'ouvrage, une mention signée par laquelle celui-ci précise et accepte le coût des travaux à sa charge qui ne sont pas compris dans le prix convenu."
+    },
+    {
+     "num": "R231-5",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "Pour l'application du d de l'article L. 231-2, le prix convenu s'entend du prix global défini au contrat éventuellement révisé ; il inclut en particulier :\n\n1. Le coût de la garantie de livraison et, s'il y a lieu, celui de la garantie de remboursement ;\n\n2. Le coût du plan et, s'il y a lieu, les frais d'études du terrain pour l'implantation du bâtiment ;\n\n3. Le montant des taxes dues par le constructeur sur le coût de la construction."
+    },
+    {
+     "num": "R231-6",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "L'indice mentionné à l'article L. 231-11 est l'index national du bâtiment tous corps d'état dénommé BT 01, créé par le ministre chargé de l'économie et des finances et utilisé pour la révision des prix des marchés de construction de bâtiment. Il traduit la variation des coûts salariaux, y compris les charges annexes, des coûts des matériaux et leur transport, des coûts d'utilisation, amortissement compris, des matériels mis en oeuvre ainsi que des coûts des produits et services divers nécessaires à la gestion des entreprises définis par décision du ministre chargé de l'économie et des finances et publiés au Bulletin officiel de la concurrence et de la consommation.\n\nL'index BT 01 est publié mensuellement au Journal officiel par le ministre chargé de l'économie et des finances.\n\nLa limite mentionnée à l'article L. 231-11 est fixée à 70%."
+    },
+    {
+     "num": "R231-7",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "I.-Le pourcentage maximum du prix convenu, exigible aux différents stades de la construction d'après l'état d'avancement des travaux, est fixé, par application du troisième alinéa de l'article L. 242-2, de la manière suivante :\n\n15 % à l'ouverture du chantier, pourcentage incluant éventuellement celui du dépôt de garantie ;\n\n25 % à l'achèvement des fondations ;\n\n40 % à l'achèvement des murs ;\n\n60 % à la mise hors d'eau ;\n\n75 % à l'achèvement des cloisons et à la mise hors d'air ;\n\n95 % à l'achèvement des travaux d'équipement, de plomberie, de menuiserie, de chauffage et de revêtements extérieurs.\n\nII.-Le solde du prix est payable dans les conditions suivantes :\n\n1. Lorsque le maître de l'ouvrage se fait assister, lors de la réception, par un professionnel mentionné à l'article L. 231-8, à la levée des réserves qui ont été formulées à la réception ou, si aucune réserve n'a été formulée, à l'issue de la réception ;\n\n2. Lorsque le maître de l'ouvrage ne se fait pas assister par un professionnel pour la réception, dans les huit jours qui suivent la remise des clés consécutive à la réception, si aucune réserve n'a été formulée, ou, si des réserves ont été formulées, à la levée de celles-ci.\n\nDans le cas où des réserves sont formulées, une somme au plus égale à 5 % du prix convenu est, jusqu'à la levée des réserves, consignée entre les mains d'un consignataire accepté par les deux parties ou, à défaut, désigné par le président du tribunal judiciaire."
+    },
+    {
+     "num": "R231-7-1",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "I.-Lorsque le constructeur assure la fabrication, la pose et l'assemblage sur le chantier d'éléments préfabriqués dans les conditions définies à l'article L. 111-1-1, le pourcentage maximum du prix convenu, exigible aux différents stades de la construction et de la fabrication des éléments préfabriqués d'après l'état d'avancement des travaux, est fixé de la manière suivante :\n\n-20 % à l'ouverture du chantier, pourcentage incluant éventuellement celui du dépôt de garantie ;\n\n-25 % à l'achèvement des fondations ;\n\n-50 % à l'achèvement des éléments préfabriqués, tels que définis au premier alinéa de l'article R. 231-3-1, après information du maître de l'ouvrage dans les conditions prévues au deuxième alinéa du même article ;\n\n-75 % à l'achèvement, sur le chantier, des cloisons et à la mise hors d'eau et la mise hors d'air ;\n\n-95 % à l'achèvement des travaux d'équipement, de plomberie, de menuiserie, de chauffage et d'enduits extérieurs.\n\nII.-Le solde du prix est payable dans les conditions définies au II de l'article R. 231-7."
+    },
+    {
+     "num": "R231-8",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "I.-Lorsque le contrat n'a pas stipulé un dépôt de garantie conforme à l'article L. 231-4-III, il prévoit un paiement n'excédant pas 5 p. 100 du prix convenu de la construction au jour de la signature ainsi qu'un paiement n'excédant pas 5 p. 100 dudit prix à la délivrance du permis de construire. En ce cas une attestation de garantie de remboursement est annexée au contrat.\n\nII.-La garantie de remboursement est constituée par une caution solidaire donnée par un établissement de crédit, une société de financement ou une entreprise d'assurance agréés à cet effet.\n\nLa garantie est donnée :\n\n1. Pour le cas où le contrat ne peut être exécuté faute de réalisation des conditions suspensives dans le délai prévu ;\n\n2. Pour le cas où le chantier n'est pas ouvert à la date convenue ;\n\n3. Pour le cas où le maître de l'ouvrage exerce la faculté de rétractation prévue à l'article L. 271-1.\n\nCette garantie prend fin à la date d'ouverture du chantier."
+    },
+    {
+     "num": "R231-9",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "La déclaration d'ouverture du chantier est notifiée par le constructeur à l'établissement garant."
+    },
+    {
+     "num": "R231-10",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "Les mises en demeure visées au II de l'article L. 231-6 sont faites par acte d'huissier."
+    },
+    {
+     "num": "R231-11",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "La demande d'exécution des travaux prévus à l'article L. 231-7 est valablement faite par lettre recommandée avec demande d'avis de réception."
+    },
+    {
+     "num": "R231-12",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "La copie des contrats de sous-traitance est adressée à l'établissement garant dans les huit jours de la signature de ces contrats."
+    },
+    {
+     "num": "R231-13",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "Sont approuvées les clauses types mentionnées au dernier alinéa de l'article L. 231-2 et figurant en annexe au présent code."
+    },
+    {
+     "num": "R231-14",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre Ier : Construction d’une maison individuelle avec fourniture de plan."
+     ],
+     "texte": "En cas de retard de livraison, les pénalités prévues au i de l'article L. 231-2 ne peuvent être fixées à un montant inférieur à 1/3 000 du prix convenu par jour de retard.\n\nLe contrat peut prévoir à la charge du maître de l'ouvrage une pénalité pour retard de paiement. Toutefois, le taux de celle-ci ne peut excéder 1% par mois calculé sur les sommes non réglées si la pénalité pour retard de livraison est limitée à 1/3 000 du prix par jour de retard."
+    },
+    {
+     "num": "R232-1",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Construction d’une maison individuelle sans fourniture de plan."
+     ],
+     "texte": "Le présent chapitre s'applique aux contrats ayant au moins pour objet l'exécution de gros oeuvre, de mise hors d'eau et hors d'air d'un immeuble à usage d'habitation ou à usage professionnel et d'habitation, ne comportant pas plus de deux logements destinés au même maître de l'ouvrage et régis par le chapitre II du titre III du livre II du présent code, partie Législative, par exclusion des contrats de construction avec fourniture de plan régis par les dispositions du chapitre Ier du présent titre."
+    },
+    {
+     "num": "R232-2",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Construction d’une maison individuelle sans fourniture de plan."
+     ],
+     "texte": "Dans l'hypothèse où un plan a été établi pour la réalisation des travaux prévus par un contrat relevant du présent chapitre, le maître de l'ouvrage doit indiquer le nom ou la raison sociale ainsi que l'adresse de l'auteur de ce plan. Le plan est joint au contrat."
+    },
+    {
+     "num": "R232-3",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Construction d’une maison individuelle sans fourniture de plan."
+     ],
+     "texte": "La désignation du terrain prévue au a de l'article L. 232-1 résulte de l'indication de son adresse ou lieudit, de sa surface et de sa désignation cadastrale."
+    },
+    {
+     "num": "R232-4",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Construction d’une maison individuelle sans fourniture de plan."
+     ],
+     "texte": "La consistance et les caractéristiques techniques de l'immeuble à réaliser sont décrites dans une notice analogue à celle qui est mentionnée au I de l'article R. 231-4. Cette notice est annexée au contrat."
+    },
+    {
+     "num": "R232-5",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Construction d’une maison individuelle sans fourniture de plan."
+     ],
+     "texte": "En application du c de l'article L. 232-1, le contrat prévoit l'échelonnement des paiements au fur et à mesure de l'exécution des travaux.\n\nUn solde de 5 % du prix est payable à l'expiration de la garantie de livraison dans les conditions analogues à celles qui sont fixées au II de l'article R. 231-7."
+    },
+    {
+     "num": "R232-6",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Construction d’une maison individuelle sans fourniture de plan."
+     ],
+     "texte": "Les dispositions des articles R. 231-9, R. 231-10 et R. 231-12 sont applicables au contrat prévu au présent chapitre."
+    },
+    {
+     "num": "R232-7",
+     "chemin": [
+      "Partie réglementaire",
+      "Livre II : Statut des constructeurs.",
+      "Titre III : Construction d’une maison individuelle.",
+      "Chapitre II : Construction d’une maison individuelle sans fourniture de plan."
+     ],
+     "texte": "En cas de retard de livraison, les pénalités prévues au d de l'article L. 232-1 ne peuvent être fixées à un montant inférieur à 1/3 000 du prix convenu par jour de retard.\n\nLe contrat peut prévoir à la charge du maître de l'ouvrage une pénalité pour retard de paiement. Toutefois, le taux de celle-ci ne peut excéder 1% par mois calculé sur les sommes non réglées si la pénalité pour retard de livraison est limitée à 1/3 000 du prix par jour de retard."
+    }
+   ]
+  }
+ ]
+}

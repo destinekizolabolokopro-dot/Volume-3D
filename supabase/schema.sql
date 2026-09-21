@@ -207,6 +207,60 @@ create table if not exists attention (
 create index if not exists attention_property on attention("propertyId");
 create index if not exists attention_day on attention(day);
 
+-- -----------------------------------------------------------------------------
+-- Assistant juridique
+--
+-- Un service distinct de Volume3D, avec sa propre table de comptes. Deux
+-- marques, deux clientèles, deux facturations : une adresse peut exister des
+-- deux côtés sans que l'un ouvre l'autre, et fermer l'un n'entame pas l'autre.
+--
+-- Un fil de consultation appartient à un compte juridique : sans compte, rien
+-- n'est écrit ici, et le fil ne vit que dans l'onglet du visiteur.
+--
+-- Ce que ces deux tables NE contiennent PAS est aussi important que ce qu'elles
+-- contiennent : les documents déposés (bail, contrat de travail, arrêté) ne
+-- sont jamais stockés. Seul leur nom de fichier subsiste, dans "piece". Voir
+-- l'en-tête de lib/piece.ts pour la raison.
+-- -----------------------------------------------------------------------------
+create table if not exists "comptesJuridiques" (
+  id                 text primary key,
+  email              text not null unique,
+  "passwordHash"     text not null,
+  nom                text not null default '',
+  statut             text not null default 'active',
+  "createdAt"        text not null,
+  -- Formule — voir FormuleId dans lib/juridique/abonnements.ts. Vide vaut « Découverte ».
+  abonnement         text not null default 'decouverte',
+  "abonnementDepuis" text not null default '',
+  -- Le profil déclaré à l'ouverture : d'où la personne parle. Il sert au
+  -- spécialiste, pas à un fichier commercial. Les trois champs sont
+  -- facultatifs — un profil faux serait pire qu'un profil vide.
+  metier             text not null default '',
+  volume             text not null default '',
+  usage              text not null default ''
+);
+
+create table if not exists consultations (
+  id          text primary key,
+  "compteId"  text not null references "comptesJuridiques"(id) on delete cascade,
+  domaine     text not null,
+  titre       text not null default '',
+  "createdAt" text not null,
+  "updatedAt" text not null
+);
+
+create table if not exists "consultationTours" (
+  id               text primary key,
+  "consultationId" text not null references consultations(id) on delete cascade,
+  role             text not null,
+  content          text not null default '',
+  piece            text not null default '',
+  "createdAt"      text not null
+);
+
+create index if not exists consultations_compte on consultations("compteId");
+create index if not exists consultation_tours_fil on "consultationTours"("consultationId");
+
 -- Rien n'est accessible sans la clé service_role : aucune politique n'est créée.
 alter table accounts       enable row level security;
 alter table properties     enable row level security;
@@ -221,6 +275,42 @@ alter table leads          enable row level security;
 alter table plans          enable row level security;
 alter table "planDoors"    enable row level security;
 alter table attention      enable row level security;
+alter table "comptesJuridiques" enable row level security;
+alter table consultations  enable row level security;
+alter table "consultationTours" enable row level security;
+
+-- -----------------------------------------------------------------------------
+-- Migration : séparer les deux services
+--
+-- Sur une base ouverte AVANT cette séparation, les comptes juridiques vivaient
+-- dans "accounts" et les fils y renvoyaient. Ces trois instructions déplacent
+-- ce qui appartient au droit, puis retirent de "accounts" ce qui n'y a plus sa
+-- place. Elles ne font rien sur une base neuve, et rien deux fois.
+--
+-- Les mots de passe sont recopiés tels quels : ce sont des empreintes scrypt,
+-- elles restent valables. En revanche le cookie change de nom et de portée,
+-- donc tout le monde se reconnecte une fois — de chaque côté.
+--
+--   insert into "comptesJuridiques" (id, email, "passwordHash", nom, statut,
+--          "createdAt", abonnement, "abonnementDepuis", metier, volume, usage)
+--   select id, email, "passwordHash", name, status, "createdAt",
+--          coalesce(abonnement, 'decouverte'), coalesce("abonnementDepuis", ''),
+--          coalesce(metier, ''), coalesce(volume, ''), coalesce(usage, '')
+--     from accounts
+--    where id in (select "accountId" from consultations)
+--       on conflict (id) do nothing;
+--
+--   alter table consultations rename column "accountId" to "compteId";
+--
+--   alter table accounts drop column if exists abonnement,
+--                        drop column if exists "abonnementDepuis",
+--                        drop column if exists metier,
+--                        drop column if exists volume,
+--                        drop column if exists usage;
+--
+-- Elles sont en commentaire, et c'est délibéré : une migration destructive ne
+-- se joue pas par inadvertance en rejouant le schéma.
+-- -----------------------------------------------------------------------------
 
 -- =============================================================================
 -- Stockage des fichiers
