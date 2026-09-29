@@ -67,11 +67,22 @@ test('rien n’est interprété comme du balisage', () => {
  * ne le voie.
  */
 
-test('la réponse se coupe au détail juridique, titre compris', () => {
+test('la réponse se coupe à la marche à suivre, titre compris', () => {
+  /* LA COUPURE A CHANGÉ D'ENDROIT. Elle était sur « Le détail juridique » ;
+     elle est sur « Ce que je ferais ». Ce qui reste visible tient désormais en
+     quelques lignes — la réponse, les textes, le délai, ce qui pourrait la
+     faire basculer — et la marche à suivre, utile mais longue, ne se lit
+     qu'une fois qu'on a décidé d'agir. */
   const { clair, detail } = separer(
     [
       'En clair :',
       'Vous pouvez garder de quoi couvrir ce qu’il vous doit.',
+      '',
+      'Les textes :',
+      'Article 22 de la loi du 6 juillet 1989.',
+      '',
+      'Ce que je ferais :',
+      '— Chiffrer ce qui reste dû.',
       '',
       'Le détail juridique :',
       'L’article 22 de la loi de 1989 encadre la restitution.',
@@ -81,11 +92,13 @@ test('la réponse se coupe au détail juridique, titre compris', () => {
   assert.deepEqual(clair, [
     { type: 'titre', texte: 'En clair' },
     { type: 'paragraphe', texte: 'Vous pouvez garder de quoi couvrir ce qu’il vous doit.' },
+    { type: 'titre', texte: 'Les textes' },
+    { type: 'paragraphe', texte: 'Article 22 de la loi du 6 juillet 1989.' },
   ]);
-  /* Le titre part avec le détail : il annonce ce qu'on ouvre. */
-  assert.equal(detail[0].type, 'titre');
-  assert.deepEqual(detail[0], { type: 'titre', texte: 'Le détail juridique' });
-  assert.equal(detail.length, 2);
+  /* Le titre part avec ce qu'il annonce : il n'a rien à faire au-dessus du
+     bouton qui l'ouvre. */
+  assert.deepEqual(detail[0], { type: 'titre', texte: 'Ce que je ferais' });
+  assert.equal(detail.length, 4);
 });
 
 test('sans marqueur, tout reste visible', () => {
@@ -95,10 +108,21 @@ test('sans marqueur, tout reste visible', () => {
 });
 
 test('le marqueur est reconnu sans accent et sans casse', () => {
-  for (const variante of ['Le détail juridique', 'LE DETAIL JURIDIQUE', 'le detail juridique']) {
-    const { detail } = separer(`En clair :\nOui.\n\n${variante} :\nL’article 15.`);
+  for (const variante of ['Ce que je ferais', 'CE QUE JE FERAIS', 'ce que je ferais']) {
+    const { detail } = separer(`En clair :\nOui.\n\n${variante} :\n— Écrire.`);
     assert.equal(detail.length, 2, variante);
   }
+});
+
+test('sans marche à suivre, la coupure ne se fait pas au détail juridique', () => {
+  /* Une question factuelle se répond en une ligne, ses textes, et le détail.
+     Il n'y a alors rien à replier au sens du nouveau découpage : mieux vaut
+     tout montrer que couper à un endroit qui n'existe plus. */
+  const { clair, detail } = separer(
+    ['En clair :', 'Oui.', '', 'Le détail juridique :', 'L’article 3-3.'].join('\n'),
+  );
+  assert.equal(detail.length, 0);
+  assert.equal(clair.length, 4);
 });
 
 test('rien ne se perd à la coupure', () => {

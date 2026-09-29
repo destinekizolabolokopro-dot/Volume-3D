@@ -23,17 +23,45 @@
 /* L'extension est obligatoire : ce fichier est chargé tel quel par le lanceur
    de tests de Node, qui ne résout pas les imports sans elle. Même contrainte
    dans lib/voix.ts et lib/veille.ts. */
-import { MARQUEUR_DETAIL, aplatir } from './mise-en-forme.ts';
+import { MARQUEUR_DETAIL, MARQUEUR_REPLI, MARQUEUR_TEXTES, aplatir } from './mise-en-forme.ts';
 
 /* ============================================================= la structure === */
 
 /** Les quatre intertitres, dans l'ordre imposé par le socle. */
 export const INTERTITRES = [
   'en clair',
-  'ce que je ferais',
+  'les textes',
   'le délai',
+  'ce qui peut changer la réponse',
+  'ce que je ferais',
   'le détail juridique',
 ] as const;
+
+/** Les quatre qui s'affichent sans cliquer. L'écran coupe juste après. */
+export const VISIBLES = ['en clair', 'les textes', 'le délai', 'ce qui peut changer la réponse'];
+
+/**
+ * Le plafond de « En clair », en lignes d'écran.
+ *
+ * Trois lignes de téléphone, et non trois phrases : c'est ce que voit la
+ * personne, et une phrase de quarante mots en occupe quatre à elle seule. On
+ * compte donc en signes, sur une largeur de téléphone.
+ */
+export const LIGNES_EN_CLAIR = 3;
+
+/**
+ * Combien de signes tiennent sur une ligne, sur un téléphone.
+ *
+ * MESURÉ, PAS ESTIMÉ. La première version portait soixante, ce qui paraissait
+ * raisonnable et était faux : sur un écran de 390 comme de 420 pixels, le
+ * texte courant de la bulle en affiche trente-huit. Un plafond calé sur
+ * soixante aurait laissé passer une réponse de cinq lignes d'écran en la
+ * comptant pour trois — c'est-à-dire qu'il n'aurait rien plafonné du tout.
+ *
+ * Relevé sur la bulle de réponse elle-même, à la police et à la largeur
+ * réelles. Si la typographie change, cette valeur se remesure.
+ */
+const SIGNES_PAR_LIGNE = 38;
 
 function sansAccent(texte: string): string {
   return texte.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -98,14 +126,36 @@ export function ordreRespecte(texte: string): boolean {
   return true;
 }
 
-/** Le texte des trois sections qui doivent se lire sans connaître le droit. */
+/**
+ * Le texte des sections qui doivent se lire sans connaître le droit.
+ *
+ * Deux sections en sont retirées, et pour des raisons opposées. « Le détail
+ * juridique » et « Ce que je ferais » sont repliés : le vocabulaire du métier
+ * y est permis. « Les textes » est visible mais n'existe QUE pour porter des
+ * numéros d'article : lui appliquer l'interdiction du jargon reviendrait à
+ * interdire ce qu'on vient de lui demander.
+ */
 export function partieSimple(texte: string): string {
-  const trouvees = sections(texte);
-  const detail = sansAccent(MARQUEUR_DETAIL);
-  return [...trouvees.entries()]
-    .filter(([cle]) => cle !== detail)
+  const exclues = new Set([
+    sansAccent(MARQUEUR_DETAIL),
+    sansAccent(MARQUEUR_REPLI),
+    sansAccent(MARQUEUR_TEXTES),
+  ]);
+  return [...sections(texte).entries()]
+    .filter(([cle]) => !exclues.has(cle))
     .map(([, contenu]) => contenu)
     .join('\n');
+}
+
+/** Ce que porte « En clair », d'un seul tenant. */
+export function enClair(texte: string): string {
+  return (sections(texte).get(sansAccent('en clair')) ?? '').replace(/\s+/g, ' ').trim();
+}
+
+/** Combien de lignes d'écran « En clair » occupe, à la largeur d'un téléphone. */
+export function lignesDuClair(texte: string): number {
+  const contenu = enClair(texte);
+  return contenu ? Math.ceil(contenu.length / SIGNES_PAR_LIGNE) : 0;
 }
 
 /* =============================================================== le jargon === */
@@ -259,12 +309,17 @@ export function articlesCites(texte: string): ArticleCite[] {
   const trouvees = sections(texte);
   const vus = new Map<string, ArticleCite>();
 
+  /* « Les textes » est, avec le détail juridique, le second endroit où un
+     numéro d'article a sa place : c'est la ligne qu'on recopie dans un
+     courrier. Un article qui n'apparaît que là n'est pas « hors du détail ». */
+  const permis = new Set([detail, sansAccent(MARQUEUR_TEXTES)]);
+
   for (const [cle, contenu] of trouvees) {
     for (const trouve of contenu.matchAll(ARTICLE)) {
       const numero = normaliserLeNumero(trouve[1]);
       if (!numero) continue;
       const deja = vus.get(numero);
-      const ici = cle === detail;
+      const ici = permis.has(cle);
       /* Un article cité aux deux endroits compte comme cité dans le clair :
          c'est là qu'il pose problème. */
       if (!deja) vus.set(numero, { numero, dansLeDetail: ici });
@@ -359,6 +414,25 @@ export function juger(
 
   if (!texte.toLowerCase().includes('détail juridique')) {
     manques.push({ regle: 'structure', detail: 'pas de section « Le détail juridique »' });
+  }
+
+  /* LE PLAFOND DE LA PARTIE VISIBLE. C'est la demande la plus simple à
+     formuler et la plus facile à laisser filer : une réponse « en clair » de
+     huit lignes n'est plus en clair, c'est un paragraphe. */
+  const lignes = lignesDuClair(texte);
+  if (lignes > LIGNES_EN_CLAIR) {
+    manques.push({
+      regle: 'trop long',
+      detail: `« En clair » fait environ ${lignes} lignes d’écran, le plafond est ${LIGNES_EN_CLAIR}`,
+    });
+  }
+  if (lignes === 0) {
+    manques.push({ regle: 'structure', detail: 'pas de section « En clair »' });
+  }
+
+  const sansTextes = !sections(texte).has(sansAccent(MARQUEUR_TEXTES));
+  if (sansTextes) {
+    manques.push({ regle: 'structure', detail: 'pas de ligne « Les textes »' });
   }
 
   if (!premierePhraseRepond(texte)) {

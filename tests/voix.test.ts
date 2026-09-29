@@ -157,11 +157,17 @@ test('rien n’est perdu entre le texte et ce qui est dit', () => {
 
 /* ------------------------------------------------- ce qui ne se dit pas --- */
 
-test('le détail juridique n’est pas lu à voix haute', () => {
+test('rien de ce qui est replié n’est lu à voix haute', () => {
   const dit = pourLaVoix(
     [
       'En clair :',
       'Vous avez un mois.',
+      '',
+      'Le délai :',
+      'Un mois à partir de la réception.',
+      '',
+      'Ce que je ferais :',
+      '— Écrire au bailleur en recommandé.',
       '',
       'Le détail juridique :',
       'L’article 22 de la loi n° 89-462 du 6 juillet 1989 dispose que…',
@@ -169,10 +175,40 @@ test('le détail juridique n’est pas lu à voix haute', () => {
   );
 
   assert.match(dit, /Vous avez un mois/);
+  assert.match(dit, /à partir de la réception/);
+  /* La coupure est passée sur « Ce que je ferais » : ce qui est derrière le
+     bouton ne se dit pas, marche à suivre comprise. */
+  assert.doesNotMatch(dit, /recommandé/i);
   /* Sans quoi la synthèse épelle « quatre-vingt-neuf tiret quatre cent
      soixante-deux » pendant une minute, à quelqu’un qui a les mains prises. */
   assert.doesNotMatch(dit, /89-462/);
   assert.doesNotMatch(dit, /détail juridique/i);
+});
+
+test('la ligne des textes n’est pas dite, mais ce qui la suit l’est', () => {
+  /* Elle est faite pour être lue et recopiée dans un courrier. Dite, elle
+     donne une minute de chiffres épelés — et elle est désormais AVANT le
+     délai, donc la sauter ne doit pas emporter ce qui vient après. */
+  const dit = pourLaVoix(
+    [
+      'En clair :',
+      'Oui, vous pouvez.',
+      '',
+      'Les textes :',
+      'Article 15 de la loi n° 89-462 du 6 juillet 1989.',
+      '',
+      'Le délai :',
+      'Six mois avant l’échéance.',
+      '',
+      'Ce que je ferais :',
+      '— Écrire.',
+    ].join('\n'),
+  );
+
+  assert.match(dit, /Oui, vous pouvez/);
+  assert.match(dit, /Six mois avant/);
+  assert.doesNotMatch(dit, /89-462/);
+  assert.doesNotMatch(dit, /Article 15/i);
 });
 
 test('une réponse sans détail est dite en entier', () => {

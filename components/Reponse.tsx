@@ -47,11 +47,16 @@ export function Reponse({
   return (
     <>
       {rendre(clair)}
+      {/* Le libellé visible reste court — sur un téléphone, « Voir la marche à
+          suivre et le détail » passait à la ligne et occupait deux lignes de
+          capitales espacées. `quoi` le complète pour les lecteurs d'écran, qui
+          entendent la phrase entière : c'est à cela que sert ce champ, et
+          répéter le libellé dedans le faisait dire deux fois. */}
       <Repli
         hauteur={0}
-        libelle="Voir le détail juridique"
-        libelleReplie="Masquer le détail"
-        quoi="le détail juridique"
+        libelle="Voir la marche à suivre"
+        libelleReplie="Replier"
+        quoi="et le détail juridique"
       >
         {rendre(detail)}
         {complement}
