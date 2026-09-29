@@ -46,6 +46,46 @@ export interface Account {
   createdAt: string;
 }
 
+/**
+ * Compte de l'assistant juridique.
+ *
+ * Il n'a rien à voir avec `Account`, et c'est le point. Les deux services se
+ * vendent séparément, à des gens qui ne se recoupent qu'accidentellement : un
+ * bailleur qui veut savoir s'il peut donner congé n'a aucune raison d'avoir
+ * un compte de visites 3D, et l'inverse est tout aussi vrai. Deux tables, deux
+ * cookies, deux facturations — une adresse peut exister des deux côtés sans
+ * que l'un ouvre l'autre.
+ *
+ * La duplication de `email` et `passwordHash` est le prix de cette séparation,
+ * et il est bas. Le prix de l'autre choix — une table commune — se paierait le
+ * jour d'une revente, d'une fermeture ou d'une demande d'effacement portant
+ * sur un seul des deux services.
+ */
+export interface CompteJuridique {
+  id: string;
+  email: string;
+  /** Empreinte scrypt du mot de passe, au format « sel:empreinte ». */
+  passwordHash: string;
+  nom: string;
+  /** 'active' | 'suspended'. */
+  statut: string;
+  createdAt: string;
+  /** Formule — voir `FormuleId` dans lib/juridique/abonnements.ts. Vide vaut « Découverte ». */
+  abonnement: string;
+  /** Date du dernier changement de formule, en ISO. Vide si jamais changée. */
+  abonnementDepuis: string;
+  /**
+   * Le profil déclaré à l'ouverture — voir lib/juridique/profils.ts.
+   *
+   * Il sert au spécialiste, qui doit savoir de quel côté du bail se tient
+   * celui qui lui écrit. Les trois champs sont facultatifs : un profil faux
+   * est pire qu'un profil vide.
+   */
+  metier: string;
+  volume: string;
+  usage: string;
+}
+
 export interface Property {
   id: string;
   /** Compte propriétaire. Vide pour les biens créés par l'administrateur. */
@@ -270,6 +310,48 @@ export interface Lead {
   handled: boolean;
 }
 
+/* ==========================================================================
+   Assistant juridique
+
+   Une consultation est un fil avec UN spécialiste : le domaine est fixé à
+   l'ouverture et ne change plus. Changer de spécialité en cours de route
+   ouvre une nouvelle consultation, parce que la fiche de consigne — donc ce
+   que le spécialiste s'autorise à traiter — change entièrement avec elle.
+
+   Rien n'est conservé pour un visiteur non connecté : `accountId` n'est jamais
+   vide dans la base. Un fil anonyme n'existe que dans l'onglet ouvert.
+   ========================================================================== */
+
+/** Un fil de consultation, rattaché à un compte et à une spécialité. */
+export interface Consultation {
+  id: string;
+  /** Le compte juridique propriétaire du fil — jamais un compte Volume3D. */
+  compteId: string;
+  /** Identifiant de spécialité — voir `DomaineId` dans lib/domaines.ts. */
+  domaine: string;
+  /** La première question, telle qu'elle a été posée. Sert de titre. */
+  titre: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Un message du fil.
+ *
+ * `piece` ne porte que le NOM du document déposé. Le fichier lui-même n'est ni
+ * stocké ni transmis ailleurs qu'au modèle, le temps de la réponse — voir
+ * l'en-tête de lib/piece.ts.
+ */
+export interface ConsultationTour {
+  id: string;
+  consultationId: string;
+  /** 'user' | 'assistant' */
+  role: string;
+  content: string;
+  piece: string;
+  createdAt: string;
+}
+
 import type { RoomAttention } from './attention';
 import type { Appointment } from './booking';
 
@@ -277,6 +359,7 @@ export type { Appointment, RoomAttention };
 
 export interface Database {
   accounts: Account[];
+  comptesJuridiques: CompteJuridique[];
   properties: Property[];
   scenes: Scene[];
   hotspots: Hotspot[];
@@ -292,10 +375,14 @@ export interface Database {
   attention: RoomAttention[];
   /* Rendez-vous pris depuis le site public. */
   appointments: Appointment[];
+  /* Assistant juridique : les fils de consultation et leurs messages. */
+  consultations: Consultation[];
+  consultationTours: ConsultationTour[];
 }
 
 export const EMPTY_DB: Database = {
   accounts: [],
+  comptesJuridiques: [],
   properties: [],
   scenes: [],
   hotspots: [],
@@ -309,4 +396,6 @@ export const EMPTY_DB: Database = {
   leads: [],
   attention: [],
   appointments: [],
+  consultations: [],
+  consultationTours: [],
 };
