@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { formuleDuCompte, paiementConfigure, prixLisible, quotaLisible } from '@/lib/abonnements';
+import { formuleDuCompte, prixLisible, quotaLisible } from '@/lib/abonnements';
+import { estEtatAbonnement, phraseDEtat } from '@/lib/facturation';
+import { paiementBranche } from '@/lib/paiement';
+import { gererLAbonnement } from '@/app/espace/actions';
 import { compteCourant } from '@/lib/comptes';
 import { consultationsDuCompte, questionsDuMois } from '@/lib/consultations';
 import { deconnexion } from '@/app/espace/actions';
@@ -27,6 +30,11 @@ export default async function Compte() {
   if (!compte) redirect('/entrer');
 
   const formule = formuleDuCompte(compte.abonnement);
+  /* L'état n'est affiché que s'il y a quelque chose à dire. Un compte qui n'a
+     jamais rien pris n'a pas d'abonnement « terminé » : lui annoncer une fin
+     serait faux, et inquiétant pour rien. */
+  const etat = estEtatAbonnement(compte.abonnementEtat) ? compte.abonnementEtat : null;
+  const paiement = paiementBranche();
   const [utilisees, fils] = await Promise.all([
     questionsDuMois(compte.id),
     consultationsDuCompte(compte.id),
@@ -58,6 +66,12 @@ export default async function Compte() {
 
           <p className="jur-formule-pour">{quotaLisible(formule)}.</p>
 
+          {etat && (
+            <p className={`jur-etat-abonnement${etat === 'retard' ? ' jur-etat-retard' : ''}`}>
+              {phraseDEtat(etat, compte.abonnementJusquA)}
+            </p>
+          )}
+
           {!illimite && (
             <div className="jur-jauge" role="img" aria-label={`${utilisees} questions posées sur ${formule.quota}`}>
               <span style={{ width: `${part}%` }} />
@@ -74,6 +88,16 @@ export default async function Compte() {
             <a className="btn btn-accent btn-sm" href="/abonnement">
               {formule.id === 'cabinet' ? 'Voir les formules' : 'Changer de formule'}
             </a>
+            {paiement && etat && (
+              /* La gestion est chez Stripe : la carte, les factures et la date
+                 de fin y sont, et en afficher une copie ici reviendrait à
+                 montrer une version qui peut être fausse. */
+              <form action={gererLAbonnement}>
+                <button className="btn btn-ghost btn-sm" type="submit">
+                  Gérer mon abonnement
+                </button>
+              </form>
+            )}
             <a className="btn btn-ghost btn-sm" href="/espace/dossiers">
               Mes consultations ({fils.length})
             </a>
@@ -83,7 +107,7 @@ export default async function Compte() {
           </div>
         </section>
 
-        {!paiementConfigure() && (
+        {!paiement && (
           <p className="jur-note-paiement">
             Aucun prestataire de paiement n’est branché sur ce site : les formules payantes
             s’activent immédiatement et gratuitement. C’est écrit ici plutôt que caché derrière une

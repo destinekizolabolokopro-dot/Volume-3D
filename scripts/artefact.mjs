@@ -234,11 +234,11 @@ const composeur = (id, action, placeholder, note, grand = true) => `
 
     <div class="jur-composer-foot">
       <span class="jur-fichier" aria-disabled="true" title="Le dépôt de document demande le site">
-        <span aria-hidden="true">📎</span>Joindre un document
+        <svg class="jur-picto" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 8.5v7.2a5 5 0 0 1-10 0V6.8a3.2 3.2 0 0 1 6.4 0v8.7a1.5 1.5 0 0 1-3 0V8.5"/></svg>Joindre un document
       </span>
 
       <button type="button" class="jur-micro" data-micro="q-${e(id)}" aria-pressed="false">
-        <span class="jur-micro-icone" aria-hidden="true">🎙</span><span data-micro-texte>Dicter</span>
+        <span class="jur-micro-icone" aria-hidden="true"><svg class="jur-picto" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9.25" y="2.75" width="5.5" height="11" rx="2.75"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3.2M9 21.2h6"/></svg></span><span data-micro-texte>Dicter</span>
       </button>
 
       <p class="jur-hint jur-micro-note">
@@ -272,7 +272,7 @@ const echange = (id) => `
         )}
         <div class="jur-voix">
           <button type="button" class="jur-voix-bouton" data-lire="reponse-${e(id)}">
-            <span aria-hidden="true">▶</span><span data-lire-texte>Écouter la réponse</span>
+            <svg class="jur-picto" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M8 4.8 19 12 8 19.2z"/></svg><span data-lire-texte>Écouter la réponse</span>
           </button>
         </div>
       </div>

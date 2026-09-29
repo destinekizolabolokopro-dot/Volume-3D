@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 import { classerVoix, decouperPourLaVoix, type VoixOfferte } from '@/lib/voix';
+import { Arret, Jouer, Micro } from '@/components/Picto';
 
 /**
  * Écouter la réponse, et dicter la question.
@@ -353,7 +354,7 @@ export function Lecture({
   return (
     <div className="jur-voix">
       <button type="button" className="jur-voix-bouton" onClick={enCours ? arreter : lire}>
-        <span aria-hidden="true">{enCours ? '■' : '▶'}</span>
+        {enCours ? <Arret /> : <Jouer />}
         {enCours ? 'Arrêter' : 'Écouter la réponse'}
       </button>
 
@@ -555,7 +556,7 @@ export function Dictee({
               <i />
             </span>
           ) : (
-            '🎙'
+            <Micro />
           )}
         </span>
         {ecoute ? 'J’écoute…' : 'Dicter'}

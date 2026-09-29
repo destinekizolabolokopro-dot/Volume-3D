@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { envoyerLaVerification } from '@/lib/acces';
 import { estFormuleId, formuleDuCompte } from '@/lib/abonnements';
+import { donneAcces, estEtatAbonnement } from '@/lib/facturation';
+import { ouvrirLaCaisse, ouvrirLePortail, paiementBranche } from '@/lib/paiement';
 import { COOKIE, compteCourant } from '@/lib/comptes';
 import { effacerLeCompte } from '@/lib/donnees';
 import { QUESTIONS } from '@/lib/profils';
@@ -102,6 +104,27 @@ export async function renvoyerLaVerification(): Promise<void> {
  * n'arrive pas, un compte payant dont personne ne peut reprendre la main. La
  * formule gratuite, elle, reste ouverte sans rien confirmer.
  */
+/**
+ * Prendre une formule, ou en changer.
+ *
+ * Deux mondes, et le même bouton.
+ *
+ * TANT QU'AUCUN PRESTATAIRE N'EST BRANCHÉ, le changement est immédiat et
+ * gratuit. L'écran le dit en toutes lettres plutôt que de simuler une caisse
+ * qui n'encaisse rien : c'est la seule chose vraiment malhonnête qu'on
+ * pourrait faire à cet endroit.
+ *
+ * UNE FOIS LE PAIEMENT BRANCHÉ, ce bouton ne donne plus la formule : il
+ * ouvre une caisse. C'est Stripe qui, une fois payé, prévient le serveur par
+ * un message signé, et c'est ce message-là qui écrit la formule. Sans cette
+ * règle, envoyer ce formulaire à la main suffirait à obtenir « Cabinet »
+ * gratuitement — il est visible dans n'importe quel navigateur.
+ *
+ * ET ON NE RETIRE PAS CE QUI EST PAYÉ. Redescendre en Découverte alors qu'un
+ * abonnement court ne s'écrit pas dans la base : cela couperait un service
+ * encore facturé. Cela se résilie chez Stripe, à la fin de la période, et
+ * l'accès tient jusque-là — d'où le renvoi vers le portail.
+ */
 export async function changerFormule(formData: FormData): Promise<void> {
   const compte = await compteCourant();
   if (!compte) redirect('/entrer');
@@ -112,15 +135,67 @@ export async function changerFormule(formData: FormData): Promise<void> {
   const formule = formuleDuCompte(compte.abonnement);
   if (formule.id === demandee) redirect('/espace/compte');
 
-  const visee = estFormuleId(demandee) ? demandee : null;
-  if (visee && visee !== 'decouverte' && !compte.emailVerifieA) {
+  /* Une adresse non confirmée n'empêche pas d'entrer ; elle empêche de payer.
+     C'est là qu'une adresse fausse devient un problème — pour la facture
+     comme pour la reprise en main du compte. */
+  if (demandee !== 'decouverte' && !compte.emailVerifieA) {
     redirect('/espace/compte?confirmer=1');
   }
 
-  await getStore().update('comptesJuridiques', compte.id, {
-    abonnement: demandee,
-    abonnementDepuis: new Date().toISOString(),
-  });
+  if (!paiementBranche()) {
+    await getStore().update('comptesJuridiques', compte.id, {
+      abonnement: demandee,
+      abonnementDepuis: new Date().toISOString(),
+    });
+    redirect('/espace/compte');
+  }
 
-  redirect('/espace/compte');
+  const enregistrerLeClient = async (stripeClientId: string) => {
+    await getStore().update('comptesJuridiques', compte.id, { stripeClientId });
+  };
+
+  /* Descendre vers la formule gratuite pendant qu'un abonnement court :
+     c'est une résiliation, et elle se fait là où elle se voit — avec la date
+     de fin, les factures, et la possibilité de revenir en arrière. */
+  const etat = estEtatAbonnement(compte.abonnementEtat) ? compte.abonnementEtat : 'clos';
+  if (demandee === 'decouverte') {
+    if (!donneAcces(etat)) {
+      await getStore().update('comptesJuridiques', compte.id, {
+        abonnement: 'decouverte',
+        abonnementDepuis: new Date().toISOString(),
+      });
+      redirect('/espace/compte');
+    }
+    const portail = await ouvrirLePortail(compte, enregistrerLeClient);
+    redirect(portail.url);
+  }
+
+  /* Changer d'une formule payante à une autre passe aussi par le portail :
+     c'est là que Stripe calcule le prorata, et refaire ce calcul ici
+     donnerait deux montants pour une seule facture. */
+  if (donneAcces(etat) && formule.id !== 'decouverte') {
+    const portail = await ouvrirLePortail(compte, enregistrerLeClient);
+    redirect(portail.url);
+  }
+
+  const caisse = await ouvrirLaCaisse(compte, demandee, enregistrerLeClient);
+  redirect(caisse.url);
+}
+
+/**
+ * La gestion de l'abonnement : carte, factures, résiliation.
+ *
+ * Tout est chez Stripe, et refaire ces écrans ici reviendrait à en afficher
+ * une copie qui peut être fausse — la carte a pu être changée depuis, la
+ * facture a pu être rééditée, la date de fin a pu bouger.
+ */
+export async function gererLAbonnement(): Promise<void> {
+  const compte = await compteCourant();
+  if (!compte) redirect('/entrer');
+  if (!paiementBranche()) redirect('/espace/compte');
+
+  const portail = await ouvrirLePortail(compte, async (stripeClientId) => {
+    await getStore().update('comptesJuridiques', compte.id, { stripeClientId });
+  });
+  redirect(portail.url);
 }

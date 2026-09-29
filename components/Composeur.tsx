@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { Dictee } from '@/components/Voix';
 import { MAX_PIECE_BYTES } from '@/lib/piece';
+import { Trombone } from '@/components/Picto';
 
 /**
  * Le champ où l'on écrit, et le seul endroit d'où part une question.
@@ -96,7 +97,7 @@ export function Composeur({
             disabled={!actif}
             onChange={choisirFichier}
           />
-          <span aria-hidden="true">📎</span>
+          <Trombone />
           {fichier ? fichier.name : 'Joindre un document'}
         </label>
 

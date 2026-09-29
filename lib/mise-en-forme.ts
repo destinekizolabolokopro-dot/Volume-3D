@@ -47,10 +47,15 @@ function estTitre(ligne: string): boolean {
  * JURIDIQUE » ou « Le detail juridique » dit la même chose, et une réponse
  * dont la coupure a raté vaut mieux qu'une réponse tronquée.
  */
-const MARQUEUR_DETAIL = 'le detail juridique';
+/* Exportés pour lib/bareme.ts, qui vérifie qu'une réponse respecte la forme
+   imposée par le socle. Le marqueur y sert à séparer ce qui doit se lire sans
+   rien connaître au droit de ce qui a le droit d'être technique : l'écrire
+   une seconde fois là-bas ferait diverger les deux le jour où l'intertitre
+   change. */
+export const MARQUEUR_DETAIL = 'le detail juridique';
 
 /** Sans accents, sans casse, sans ponctuation de fin. */
-function aplatir(titre: string): string {
+export function aplatir(titre: string): string {
   return titre
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')

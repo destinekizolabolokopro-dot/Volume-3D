@@ -38,6 +38,33 @@ export interface CompteJuridique {
   /** Date du dernier changement de formule, en ISO. Vide si jamais changée. */
   abonnementDepuis: string;
   /**
+   * L'état de l'abonnement payant — voir `EtatAbonnement` dans
+   * lib/facturation.ts. Vide tant qu'aucun paiement n'a eu lieu.
+   *
+   * Il est séparé de `abonnement` parce que les deux répondent à des
+   * questions différentes : `abonnement` dit CE QUI est ouvert, celui-ci dit
+   * DANS QUEL ÉTAT. Un compte en formule Pro dont le dernier prélèvement a
+   * échoué garde sa formule et porte « retard » : l'accès tient, et l'écran
+   * peut le dire sans couper.
+   */
+  abonnementEtat: string;
+  /**
+   * La fin de la période en cours, en ISO. Vide quand il n'y en a pas.
+   *
+   * Recopiée depuis Stripe plutôt que calculée : une date d'échéance déduite
+   * d'une date de souscription se met à diverger au premier changement de
+   * formule, et c'est celle de Stripe qui débite.
+   */
+  abonnementJusquA: string;
+  /**
+   * L'identifiant du client chez le prestataire de paiement.
+   *
+   * Sans lui, chaque passage en caisse créerait une fiche client de plus, et
+   * l'historique de facturation d'une même personne se retrouverait éclaté.
+   * Le jour où elle réclame une facture, personne ne la retrouve.
+   */
+  stripeClientId: string;
+  /**
    * Date de confirmation de l'adresse, en ISO. Vide tant qu'elle ne l'est pas.
    *
    * Une adresse non confirmée n'empêche PAS d'entrer : l'espace gratuit

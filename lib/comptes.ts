@@ -91,6 +91,13 @@ export async function creerCompte(entree: {
        pour poser une première question. */
     abonnement: 'decouverte',
     abonnementDepuis: new Date().toISOString(),
+    /* Rien de payant, donc rien à dire sur l'état : les trois champs de
+       facturation restent vides jusqu'au premier passage en caisse. Vides et
+       non « clos » — un compte qui n'a jamais rien pris n'a pas d'abonnement
+       terminé, et l'écran ne doit pas lui annoncer une fin. */
+    abonnementEtat: '',
+    abonnementJusquA: '',
+    stripeClientId: '',
     /* L'adresse n'est pas confirmée, et cela n'empêche rien tout de suite :
        l'espace gratuit s'ouvre, un bandeau rappelle de confirmer, et la
        confirmation n'est exigée qu'au moment de prendre une formule payante.
