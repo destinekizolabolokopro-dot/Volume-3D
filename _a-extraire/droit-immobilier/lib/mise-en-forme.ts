@@ -47,11 +47,27 @@ function estTitre(ligne: string): boolean {
  * JURIDIQUE » ou « Le detail juridique » dit la même chose, et une réponse
  * dont la coupure a raté vaut mieux qu'une réponse tronquée.
  */
-/* Exportés pour lib/bareme.ts, qui vérifie qu'une réponse respecte la forme
-   imposée par le socle. Le marqueur y sert à séparer ce qui doit se lire sans
-   rien connaître au droit de ce qui a le droit d'être technique : l'écrire
-   une seconde fois là-bas ferait diverger les deux le jour où l'intertitre
-   change. */
+/*
+ * DEUX MARQUEURS, ET ILS NE SERVENT PAS À LA MÊME CHOSE.
+ *
+ * `MARQUEUR_REPLI` est l'endroit où l'écran coupe : tout ce qui suit passe
+ * derrière le bouton. Il est sur « Ce que je ferais » et non sur « Le détail
+ * juridique », et c'est le changement de fond — la partie visible tient
+ * désormais en quelques lignes : la réponse, les textes, le délai, ce qui
+ * pourrait la faire basculer. La marche à suivre est utile, mais elle ne se
+ * lit qu'une fois qu'on a décidé d'agir.
+ *
+ * `MARQUEUR_DETAIL` reste le titre de la partie technique. Il ne coupe plus
+ * rien ; il sert au barème (lib/bareme.ts), qui vérifie que cette partie
+ * existe et que les numéros d'article n'en sortent pas.
+ *
+ * Tous deux sont reconnus sans accent ni casse : un modèle qui écrit « CE QUE
+ * JE FERAIS » dit la même chose, et une coupure ratée vaut mieux qu'une
+ * réponse tronquée.
+ */
+export const MARQUEUR_REPLI = 'ce que je ferais';
+/** La ligne des articles : lue à l'écran, jamais dite à voix haute. */
+export const MARQUEUR_TEXTES = 'les textes';
 export const MARQUEUR_DETAIL = 'le detail juridique';
 
 /** Sans accents, sans casse, sans ponctuation de fin. */
@@ -79,9 +95,25 @@ export function aplatir(titre: string): string {
 export function avantLeDetail(texte: string): string {
   const lignes = texte.split('\n');
   const coupure = lignes.findIndex(
-    (ligne) => aplatir(ligne.trim()) === MARQUEUR_DETAIL && ligne.trim().endsWith(':'),
+    (ligne) => aplatir(ligne.trim()) === MARQUEUR_REPLI && ligne.trim().endsWith(':'),
   );
-  return coupure < 0 ? texte : lignes.slice(0, coupure).join('\n').trimEnd();
+  const avant = coupure < 0 ? lignes : lignes.slice(0, coupure);
+
+  /* LA LIGNE DES TEXTES NE SE DIT PAS.
+     Elle est faite pour être lue et recopiée dans un courrier. À l'oreille,
+     « article quinze de la loi numéro quatre-vingt-neuf tiret quatre cent
+     soixante-deux » est une minute de chiffres épelés, au moment précis où
+     l'on écoute parce qu'on a les mains prises. */
+  const textes = avant.findIndex(
+    (ligne) => aplatir(ligne.trim()) === MARQUEUR_TEXTES && ligne.trim().endsWith(':'),
+  );
+  if (textes < 0) return avant.join('\n').trimEnd();
+
+  const suite = avant.slice(textes + 1);
+  const fin = suite.findIndex((ligne) => estTitre(ligne.trim()));
+  return [...avant.slice(0, textes), ...(fin < 0 ? [] : suite.slice(fin))]
+    .join('\n')
+    .trimEnd();
 }
 
 /**
@@ -102,7 +134,7 @@ export function avantLeDetail(texte: string): string {
 export function separer(texte: string): { clair: Bloc[]; detail: Bloc[] } {
   const blocs = decouper(texte);
   const coupure = blocs.findIndex(
-    (bloc) => bloc.type === 'titre' && aplatir(bloc.texte) === MARQUEUR_DETAIL,
+    (bloc) => bloc.type === 'titre' && aplatir(bloc.texte) === MARQUEUR_REPLI,
   );
 
   if (coupure < 0) return { clair: blocs, detail: [] };

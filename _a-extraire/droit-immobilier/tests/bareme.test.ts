@@ -12,6 +12,7 @@ import {
   ordreRespecte,
   sections,
   jugerLesMots,
+  lignesDuClair,
   premierePhrase,
   premierePhraseRepond,
   phrasesTropLongues,
@@ -23,16 +24,28 @@ import {
  * tests le jugent lui.
  */
 
+/**
+ * Une réponse conforme, dans la forme voulue depuis que la partie visible
+ * tient en quelques lignes : la réponse, les textes, le délai, ce qui
+ * pourrait la faire basculer. L'écran coupe à « Ce que je ferais ».
+ */
 const BONNE = [
   'En clair :',
-  'Oui, vous pouvez donner congé, mais pas n’importe quand ni pour n’importe quoi.',
+  'Oui, vous pouvez donner congé pour vendre, à condition de respecter le délai.',
+  '',
+  'Les textes :',
+  'Article 15 de la loi du 6 juillet 1989.',
+  '',
+  'Le délai :',
+  'Six mois avant l’échéance, à partir de la réception du courrier.',
+  '',
+  'Ce qui peut changer la réponse :',
+  '— Si le bail est meublé, le délai tombe à trois mois.',
+  '— Si le locataire a plus de 65 ans et de faibles ressources, le congé est encadré.',
   '',
   'Ce que je ferais :',
   '— Vérifier la date anniversaire du bail.',
   '— Écrire au locataire en recommandé.',
-  '',
-  'Le délai :',
-  'Six mois avant l’échéance. À partir de la réception du courrier.',
   '',
   'Le détail juridique :',
   'L’article 15 de la loi du 6 juillet 1989 impose ce préavis, et la clause résolutoire ne s’y applique pas.',
@@ -51,8 +64,10 @@ test('l’ordre du socle est reconnu', () => {
   assert.equal(ordreRespecte(BONNE), true);
   assert.deepEqual(ordreDesIntertitres(BONNE), [
     'en clair',
-    'ce que je ferais',
+    'les textes',
     'le delai',
+    'ce qui peut changer la reponse',
+    'ce que je ferais',
     'le detail juridique',
   ]);
 });
@@ -105,8 +120,16 @@ test('« L. 221-18 » et « L221-18 » sont le même article', () => {
   assert.equal(normaliserLeNumero('L. 221-18'), normaliserLeNumero('L221-18'));
 });
 
-test('un article cité hors du détail est relevé', () => {
-  const fautif = BONNE.replace('Six mois avant l’échéance.', 'Six mois, article 15.');
+test('un article cité hors des deux endroits permis est relevé', () => {
+  /* Deux endroits l'admettent : la ligne « Les textes », qu'on recopie dans un
+     courrier, et le détail juridique. Partout ailleurs, un numéro d'article
+     remet du jargon dans la ligne que tout le monde lit — et le même article,
+     cité aussi au bon endroit, ne l'excuse pas. */
+  const fautif = BONNE.replace(
+    'Six mois avant l’échéance, à partir de la réception du courrier.',
+    'Six mois, article 15.',
+  );
+  assert.notEqual(fautif, BONNE, 'le texte témoin a changé, l’ancre ne mord plus');
   assert.deepEqual(articlesHorsDuDetail(fautif), ['15']);
 });
 
@@ -142,6 +165,9 @@ test('une section de délai vide ou absente ne compte pas', () => {
 
 test('une bonne réponse ne produit aucun manquement', () => {
   assert.deepEqual(juger(BONNE, { delai: true, doitContenir: ['congé'] }, ['15']), []);
+  /* L'article 15 figure sur la ligne « Les textes », qui est visible : ce n'est
+     pas un article « hors du détail », c'est la ligne qu'on recopie. */
+  assert.deepEqual(articlesHorsDuDetail(BONNE), []);
 });
 
 test('chaque manquement se nomme et se situe', () => {
@@ -271,4 +297,43 @@ test('les nouveaux mots de métier sont relevés dans la partie simple', () => {
     const texte = ['En clair :', `Oui. Le calcul se fait ${mot} la date du bail.`, 'Le détail juridique :', 'x'].join('\n');
     assert.ok(jargonDansLeClair(texte).length > 0, mot);
   }
+});
+
+/* ------------------------------------------------ le plafond de la partie visible --- */
+
+test('une réponse « en clair » qui déborde est relevée', () => {
+  const bavarde = [
+    'En clair :',
+    'Oui, vous pouvez donner congé pour vendre votre appartement, mais il faut respecter un délai précis, prévenir par lettre recommandée, motiver le congé et reproduire certaines mentions obligatoires, faute de quoi le congé est nul.',
+    'Les textes :',
+    'Article 15 de la loi du 6 juillet 1989.',
+    'Le détail juridique :',
+    'x',
+  ].join('\n');
+  const regles = juger(bavarde, {}, ['15']).map((m) => m.regle);
+  assert.ok(regles.includes('trop long'), regles.join(','));
+});
+
+test('le plafond se mesure en lignes d’écran, pas en phrases', () => {
+  /* Trois phrases courtes tiennent en deux lignes ; une seule phrase longue en
+     occupe cinq. C'est ce que voit la personne qui compte. */
+  const troisPhrases = ['En clair :', 'Oui. Six mois. Par recommandé.', 'Les textes :', 'Article 15.', 'Le détail juridique :', 'x'].join('\n');
+  assert.equal(lignesDuClair(troisPhrases) <= 3, true, String(lignesDuClair(troisPhrases)));
+  assert.deepEqual(
+    juger(troisPhrases, {}, ['15']).filter((m) => m.regle === 'trop long'),
+    [],
+  );
+});
+
+test('la ligne des textes est exigée', () => {
+  const sansTextes = ['En clair :', 'Oui.', 'Le détail juridique :', 'x'].join('\n');
+  const manques = juger(sansTextes, {}, []).filter((m) => m.detail.includes('Les textes'));
+  assert.equal(manques.length, 1, JSON.stringify(juger(sansTextes, {}, [])));
+});
+
+test('un article sur la ligne des textes n’est pas du jargon', () => {
+  /* Cette ligne existe POUR porter des numéros d'article. Lui appliquer
+     l'interdiction reviendrait à interdire ce qu'on vient de demander. */
+  assert.deepEqual(jargonDansLeClair(BONNE), []);
+  assert.deepEqual(articlesHorsDuDetail(BONNE), []);
 });

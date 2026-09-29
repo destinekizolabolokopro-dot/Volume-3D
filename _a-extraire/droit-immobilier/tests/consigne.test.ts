@@ -107,12 +107,35 @@ test('un nom de fichier vide ou démesuré ne casse pas le cartouche', () => {
  * quoi les réponses redeviennent du droit, sans que rien ne le signale.
  */
 
-test('la consigne impose les quatre intertitres, dans l’ordre', () => {
-  const rangs = ['En clair :', 'Ce que je ferais :', 'Le délai :', 'Le détail juridique :'].map(
-    (titre) => SOCLE.indexOf(titre),
-  );
+test('la consigne impose les six intertitres, dans l’ordre', () => {
+  const rangs = [
+    'En clair :',
+    'Les textes :',
+    'Le délai :',
+    'Ce qui peut changer la réponse :',
+    'Ce que je ferais :',
+    'Le détail juridique :',
+  ].map((titre) => SOCLE.indexOf(titre));
   for (const rang of rangs) assert.ok(rang > 0, 'un intertitre manque');
   assert.deepEqual([...rangs].sort((a, b) => a - b), rangs, 'l’ordre a changé');
+});
+
+test('la partie visible est plafonnée, et la ligne des textes existe pour les articles', () => {
+  /* La demande était simple : deux à trois lignes, pas un paragraphe. Sans
+     plafond écrit, « en clair » redevient une explication. */
+  assert.match(SOCLE, /EN CLAIR\s*: DEUX À TROIS LIGNES/);
+  assert.match(SOCLE, /LES TEXTES\s*: une seule ligne/);
+  /* Et l'exception à la règle 1 est bornée : la ligne des textes ne lève pas
+     l'interdiction ailleurs, ni celle d'inventer un numéro. */
+  assert.match(SOCLE, /SAUF sur la ligne « Les textes »/);
+  assert.match(SOCLE, /la règle 1 tient entière/);
+});
+
+test('« Ce qui peut changer la réponse » interdit la précaution vide', () => {
+  /* « Chaque situation est particulière » est la façon polie de ne rien dire,
+     et elle remplirait cette section à chaque fois si on ne l'interdisait pas. */
+  assert.match(SOCLE, /Chaque situation est particulière/);
+  assert.match(SOCLE, /Rien d’autre ne devrait changer cette réponse/);
 });
 
 test('le vocabulaire de métier est nommément interdit avant le détail', () => {
