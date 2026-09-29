@@ -5,6 +5,7 @@ import { Repli } from '@/components/Repli';
 import { Pied } from '@/components/Pied';
 import { Consultation } from '@/components/Consultation';
 import { compteCourant } from '@/lib/comptes';
+import { CALENDRIER, MAJORITES, PASSERELLES } from '@/lib/copropriete';
 import { CALENDRIER_ENERGIE, DIAGNOSTICS } from '@/lib/diagnostics';
 import { domaine, domaineOuNull, estDomaineId } from '@/lib/domaines';
 import { SPECIALISTE } from '@/lib/copie';
@@ -167,6 +168,71 @@ export default async function PageDomaine({ params, searchParams }: Params) {
             <h3 className="jur-h3">Interdictions de louer, selon la classe énergie</h3>
             <ul className="jur-calendrier">
               {CALENDRIER_ENERGIE.map((etape) => (
+                <li key={etape}>{etape}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {fiche.copropriete && (
+          <section className="jur-section">
+            <h2 className="jur-h2">Quelle majorité pour quelle décision</h2>
+            <p className="jur-sub">
+              Une résolution votée à la mauvaise majorité est annulable, et l’annulation emporte
+              les travaux, les appels de fonds et le marché signé. Le règlement de copropriété de
+              votre immeuble peut être plus exigeant que la loi{' '}: c’est lui qui s’impose alors.
+            </p>
+
+            {/* La table que personne ne reconstruit de mémoire sans se tromper.
+                Repliée comme celle des diagnostics, et pour la même raison :
+                on l'ouvre pour UNE ligne — la décision qu'on a en tête. */}
+            <Repli hauteur={420} quoi="le tableau">
+              <div className="jur-tableau">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Majorité</th>
+                      <th scope="col">Comment elle se compte</th>
+                      <th scope="col">Ce qu’elle gouverne</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {MAJORITES.map((majorite) => (
+                      <tr key={majorite.nom + majorite.article}>
+                        <th scope="row">
+                          {majorite.nom}
+                          <span className="jur-source-texte"> — article {majorite.article}</span>
+                        </th>
+                        <td>{majorite.calcul}</td>
+                        <td>
+                          <ul>
+                            {majorite.decisions.map((decision) => (
+                              <li key={decision}>{decision}</li>
+                            ))}
+                          </ul>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Repli>
+
+            <h3 className="jur-h3">Quand la majorité n’est pas atteinte</h3>
+            <p className="jur-sub">
+              C’est la partie que la plupart des gens ignorent, y compris des syndics{' '}: une
+              résolution qui « échoue » peut souvent être adoptée dans la même séance, au second
+              vote, sans reconvoquer.
+            </p>
+            <ul className="jur-calendrier">
+              {PASSERELLES.map((passerelle) => (
+                <li key={passerelle}>{passerelle}</li>
+              ))}
+            </ul>
+
+            <h3 className="jur-h3">Le calendrier de l’assemblée</h3>
+            <ul className="jur-calendrier">
+              {CALENDRIER.map((etape) => (
                 <li key={etape}>{etape}</li>
               ))}
             </ul>

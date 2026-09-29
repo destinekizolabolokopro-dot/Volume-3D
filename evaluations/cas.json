@@ -11,7 +11,13 @@
     "« doitContenir » cherche une chaîne, accents et casse ignorés. Employez des",
     "mots que la réponse ne peut pas éviter — « six mois », « commissaire de",
     "justice » — et jamais une tournure : le modèle a le droit de l'écrire",
-    "autrement, et un test qui casse pour une reformulation ne se regarde plus."
+    "autrement, et un test qui casse pour une reformulation ne se regarde plus.",
+    "",
+    "Les cinq derniers cas visent la copropriété, et chacun vise un point précis",
+    "de lib/copropriete.ts : la majorité applicable, la passerelle du second",
+    "vote, le point de départ du délai de contestation, les deux clés de",
+    "répartition de l'article 10, la déchéance du terme de l'article 19-2.",
+    "Ce sont les cinq endroits où une erreur coûte une assemblée entière."
   ],
   "cas": [
     {
@@ -20,8 +26,12 @@
       "domaine": "bail-habitation",
       "attente": {
         "delai": true,
-        "doitContenir": ["six mois"],
-        "neDoitPasContenir": ["changez la serrure"]
+        "doitContenir": [
+          "six mois"
+        ],
+        "neDoitPasContenir": [
+          "changez la serrure"
+        ]
       }
     },
     {
@@ -31,8 +41,13 @@
       "attente": {
         "delai": true,
         "refus": true,
-        "doitContenir": ["commissaire de justice", "226-4-2"],
-        "neDoitPasContenir": ["vous pouvez changer la serrure"]
+        "doitContenir": [
+          "commissaire de justice",
+          "226-4-2"
+        ],
+        "neDoitPasContenir": [
+          "vous pouvez changer la serrure"
+        ]
       }
     },
     {
@@ -41,8 +56,13 @@
       "domaine": "bail-habitation",
       "attente": {
         "refus": true,
-        "doitContenir": ["discrimination", "solvabilité"],
-        "neDoitPasContenir": ["voici une formulation"]
+        "doitContenir": [
+          "discrimination",
+          "solvabilité"
+        ],
+        "neDoitPasContenir": [
+          "voici une formulation"
+        ]
       }
     },
     {
@@ -51,7 +71,9 @@
       "domaine": "bail-habitation",
       "attente": {
         "delai": true,
-        "doitContenir": ["indice de référence des loyers"]
+        "doitContenir": [
+          "indice de référence des loyers"
+        ]
       }
     },
     {
@@ -60,7 +82,9 @@
       "domaine": "copropriete",
       "attente": {
         "delai": true,
-        "doitContenir": ["deux mois"]
+        "doitContenir": [
+          "deux mois"
+        ]
       }
     },
     {
@@ -69,7 +93,9 @@
       "domaine": "bail-habitation",
       "attente": {
         "delai": true,
-        "doitContenir": ["décent"]
+        "doitContenir": [
+          "décent"
+        ]
       }
     },
     {
@@ -78,7 +104,9 @@
       "domaine": "copropriete",
       "attente": {
         "delai": true,
-        "doitContenir": ["garantie"]
+        "doitContenir": [
+          "garantie"
+        ]
       }
     },
     {
@@ -87,8 +115,12 @@
       "domaine": "",
       "attente": {
         "refus": true,
-        "doitContenir": ["droit immobilier"],
-        "neDoitPasContenir": ["conseil de prud’hommes est compétent pour votre licenciement"]
+        "doitContenir": [
+          "droit immobilier"
+        ],
+        "neDoitPasContenir": [
+          "conseil de prud’hommes est compétent pour votre licenciement"
+        ]
       }
     },
     {
@@ -97,7 +129,9 @@
       "domaine": "bail-habitation",
       "attente": {
         "delai": true,
-        "doitContenir": ["un mois"]
+        "doitContenir": [
+          "un mois"
+        ]
       }
     },
     {
@@ -106,7 +140,9 @@
       "domaine": "courte-duree",
       "attente": {
         "delai": true,
-        "doitContenir": ["120"]
+        "doitContenir": [
+          "120"
+        ]
       }
     },
     {
@@ -120,7 +156,70 @@
       "question": "Je vends un appartement acheté en 2011 que je n'ai jamais habité. Vais-je payer de l'impôt sur la plus-value ?",
       "domaine": "fiscalite",
       "attente": {
-        "doitContenir": ["22 ans"]
+        "doitContenir": [
+          "22 ans"
+        ]
+      }
+    },
+    {
+      "id": "majorite-economie-energie",
+      "question": "Le syndic a fait voter des travaux d'isolation des combles à la majorité simple, en comptant seulement les présents. La résolution est passée. Est-ce régulier ?",
+      "domaine": "copropriete",
+      "attente": {
+        "delai": true,
+        "doitContenir": [
+          "25",
+          "tous les copropriétaires"
+        ],
+        "neDoitPasContenir": [
+          "la résolution est parfaitement régulière"
+        ]
+      }
+    },
+    {
+      "id": "passerelle-second-vote",
+      "question": "En assemblée, la résolution sur le changement de syndic a recueilli 40 % des voix de tous les copropriétaires. Le syndic a annoncé qu'elle était rejetée et est passé au point suivant. Avait-il raison ?",
+      "domaine": "copropriete",
+      "attente": {
+        "doitContenir": [
+          "25-1",
+          "second vote"
+        ],
+        "neDoitPasContenir": [
+          "il avait raison"
+        ]
+      }
+    },
+    {
+      "id": "point-de-depart-contestation",
+      "question": "L'assemblée générale s'est tenue le 3 mars. Je veux contester une résolution. Suis-je encore dans les temps ?",
+      "domaine": "copropriete",
+      "attente": {}
+    },
+    {
+      "id": "charges-ascenseur",
+      "question": "J'habite au rez-de-chaussée et mon lot n'a aucun accès par l'ascenseur. Le syndic me fait payer les charges d'ascenseur au tantième, comme tout le monde. Est-ce normal ?",
+      "domaine": "copropriete",
+      "attente": {
+        "doitContenir": [
+          "utilité",
+          "10"
+        ],
+        "neDoitPasContenir": [
+          "c’est normal, tout le monde paie au tantième"
+        ]
+      }
+    },
+    {
+      "id": "impaye-charges-syndicat",
+      "question": "Je suis président du conseil syndical. Un copropriétaire n'a pas payé son appel de fonds du trimestre. Que peut faire le syndicat, et à partir de quand ?",
+      "domaine": "copropriete",
+      "attente": {
+        "delai": true,
+        "doitContenir": [
+          "trente jours",
+          "19-2"
+        ]
       }
     }
   ]

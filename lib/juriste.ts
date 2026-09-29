@@ -4,6 +4,7 @@ import { aiguiller, type Aiguillage } from './aiguillage';
 import { SOCLE, encadrerLaPiece } from './consigne';
 import { cleDuModele } from './reglages';
 import { rassemblerLesReferences, type CitationBrute, type Reference } from './citations';
+import { coproprietePourLeModele } from './copropriete';
 import { corpusDuDomaine, nommerArticle, planDuCorpus, type PlanCorpus } from './corpus';
 import { diagnosticsPourLeModele } from './diagnostics';
 import { domaine, estDomaineId, type Domaine, type DomaineId } from './domaines';
@@ -121,6 +122,18 @@ export function consigneDomaine(fiche: Domaine): string {
      inviterait le modèle à ramener la conversation sur un terrain qui n'est
      pas le sien. */
   if (fiche.diagnostics) lignes.push('', diagnosticsPourLeModele());
+
+  /* Les tables de la copropriété, pour la seule spécialité qui les manipule.
+     Elles ne sont pas du texte de loi — le corpus en porte déjà trois cent
+     quarante-six articles — mais sa MISE EN TABLE : quelle majorité pour
+     quelle décision, ce qui se passe quand elle n'est pas atteinte, d'où
+     part le délai de contestation. C'est exactement ce qui sépare quelqu'un
+     qui a lu la loi de quelqu'un qui la pratique, et c'est ce qu'un modèle
+     reconstruit le moins bien en relisant trois mille signes d'article.
+
+     Chaque numéro qui y figure est vérifié contre le corpus par un test :
+     voir tests/copropriete.test.ts. */
+  if (fiche.copropriete) lignes.push('', coproprietePourLeModele());
 
   return lignes.join('\n');
 }
@@ -409,11 +422,36 @@ function messageAvecPiece(question: string, piece: Piece | null): Anthropic.Mess
  * corpus d'un domaine ne change pas d'un message à l'autre : écrit une fois,
  * relu à chaque tour sans être refacturé.
  */
+/**
+ * Les blocs, construits une fois par spécialité et par processus.
+ *
+ * Le corpus lui-même était déjà gardé en mémoire (lib/corpus.ts), mais on en
+ * refabriquait les blocs à CHAQUE question : deux mille objets de texte, un
+ * par article, reconstruits à l'identique pour être sérialisés puis jetés.
+ *
+ * Ils ne dépendent que du domaine, et le domaine ne change pas entre deux
+ * questions. Les garder coûte quelques mégaoctets par spécialité réellement
+ * consultée — le corpus était déjà en mémoire de toute façon — et rend le
+ * travail nul à partir de la deuxième question.
+ *
+ * Rien ne les modifie ensuite : `poserLeCorpus` les recopie dans un nouveau
+ * tableau, et l'objet de requête est sérialisé sans être touché. Les partager
+ * entre deux requêtes est donc sans danger.
+ */
+const BLOCS = new Map<DomaineId, { blocs: Anthropic.ContentBlockParam[]; plan: PlanCorpus | null }>();
+
 export async function blocsDuCorpus(
   id: DomaineId,
 ): Promise<{ blocs: Anthropic.ContentBlockParam[]; plan: PlanCorpus | null }> {
+  const deja = BLOCS.get(id);
+  if (deja) return deja;
+
   const corpus = await corpusDuDomaine(id);
-  if (!corpus || corpus.documents.length === 0) return { blocs: [], plan: null };
+  if (!corpus || corpus.documents.length === 0) {
+    const vide = { blocs: [], plan: null };
+    BLOCS.set(id, vide);
+    return vide;
+  }
 
   const blocs: Anthropic.ContentBlockParam[] = corpus.documents.map((document) => ({
     type: 'document',
@@ -456,7 +494,9 @@ export async function blocsDuCorpus(
     cache_control: { type: 'ephemeral', ttl: '1h' },
   });
 
-  return { blocs, plan: planDuCorpus(corpus) };
+  const pret = { blocs, plan: planDuCorpus(corpus) };
+  BLOCS.set(id, pret);
+  return pret;
 }
 
 /** Pose les textes en tête du premier message, là où ils resteront identiques. */

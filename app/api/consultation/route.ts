@@ -224,12 +224,8 @@ async function evaluerQuota(
 
 export async function POST(request: Request) {
   try {
-    if (!(await estJuristeConfigure())) {
-      return NextResponse.json(
-        { error: 'L’assistant n’est pas configuré sur ce site (clé ANTHROPIC_API_KEY manquante).' },
-        { status: 503 },
-      );
-    }
+    /* Le frein d'abord : il est synchrone, il ne coûte rien, et il n'a aucune
+       raison de laisser partir cinq lectures en base avant de refuser. */
     if (FREIN.depasse(origine(request))) {
       return NextResponse.json(
         { error: 'Trop de questions d’affilée. Patientez une minute.' },
@@ -237,10 +233,52 @@ export async function POST(request: Request) {
       );
     }
 
-    const demande = await lireDemande(request);
-    const compte = await compteCourant();
+    /* PREMIÈRE VAGUE — trois choses indépendantes, menées ensemble.
 
-    const quota = await evaluerQuota(compte, request, Boolean(demande.piece));
+       Elles s'attendaient l'une l'autre sans raison : lire le corps de la
+       requête n'a rien à voir avec relire la clé du modèle, qui n'a rien à
+       voir avec relire le cookie de session. Chacune est un aller-retour vers
+       la base ou le disque, et les enchaîner ajoutait leur somme à l'attente
+       de quelqu'un qui n'a encore rien reçu. Menées ensemble, elles coûtent
+       la plus lente des trois.
+
+       `allSettled` et non `all` : une question illisible ne doit pas masquer
+       un assistant non configuré. L'ordre des refus est reconstitué juste
+       après, et il est le même qu'avant. */
+    const [configure, lue, session] = await Promise.allSettled([
+      estJuristeConfigure(),
+      lireDemande(request),
+      compteCourant(),
+    ]);
+
+    if (configure.status === 'rejected' || !configure.value) {
+      return NextResponse.json(
+        { error: 'L’assistant n’est pas configuré sur ce site (clé ANTHROPIC_API_KEY manquante).' },
+        { status: 503 },
+      );
+    }
+    /* Une demande illisible garde son 400, levée ici pour que le `catch` du
+       bas la reconnaisse comme avant. */
+    if (lue.status === 'rejected') throw lue.reason;
+    if (session.status === 'rejected') throw session.reason;
+
+    const demande = lue.value;
+    const compte = session.value;
+
+    /* DEUXIÈME VAGUE — le quota et le fil, eux aussi indépendants.
+
+       Le quota se calcule sur le compte, le fil se relit sur son
+       identifiant : aucun des deux n'a besoin du résultat de l'autre. Le
+       refus de quota reste évalué en premier, pour ne pas facturer une
+       question qu'on n'allait pas rendre. */
+    const [verdict, fil] = await Promise.all([
+      evaluerQuota(compte, request, Boolean(demande.piece)),
+      compte && demande.consultationId
+        ? consultationDuCompte(demande.consultationId, compte.id)
+        : Promise.resolve(null),
+    ]);
+
+    const quota = verdict;
     if (quota.refus) {
       return NextResponse.json(
         { error: quota.refus.message, abonnement: quota.refus.abonnement },
@@ -250,9 +288,7 @@ export async function POST(request: Request) {
 
     /* Le fil de référence : la base si la personne est connectée et que la
        consultation lui appartient, sinon ce que le navigateur a gardé. */
-    let consultation = compte && demande.consultationId
-      ? await consultationDuCompte(demande.consultationId, compte.id)
-      : null;
+    let consultation = fil;
 
     if (compte && demande.consultationId && !consultation) {
       return NextResponse.json({ error: 'Consultation introuvable.' }, { status: 404 });

@@ -12,6 +12,9 @@ import {
   ordreRespecte,
   sections,
   jugerLesMots,
+  premierePhrase,
+  premierePhraseRepond,
+  phrasesTropLongues,
 } from '../lib/bareme.ts';
 
 /**
@@ -174,4 +177,98 @@ test('le jugement des seuls mots n’exige aucune forme', () => {
   const sansForme = 'Je n’ai pas reconnu de spécialité. Cet assistant ne traite que le droit immobilier.';
   assert.deepEqual(jugerLesMots(sansForme, { doitContenir: ['droit immobilier'] }), []);
   assert.ok(juger(sansForme, { doitContenir: ['droit immobilier'] }, []).length > 0);
+});
+
+/* ------------------------------------------------------ la première phrase --- */
+
+test('une première phrase qui répond est reconnue', () => {
+  for (const debut of [
+    'Oui, vous pouvez donner congé.',
+    'Non, il n’a pas le droit.',
+    'Ça dépend d’une seule chose : le bail est-il vide ou meublé ?',
+    'C’est trop tard pour contester.',
+    'Vous avez six mois.',
+  ]) {
+    const texte = ['En clair :', debut, 'Le détail juridique :', 'x'].join('\n');
+    assert.equal(premierePhraseRepond(texte), true, debut);
+  }
+});
+
+test('les trois esquives connues sont relevées', () => {
+  for (const debut of [
+    'Vous me demandez si vous pouvez donner congé.',
+    'Votre situation relève du bail d’habitation, régi par la loi de 1989.',
+    'Plusieurs éléments sont à prendre en compte ici.',
+  ]) {
+    const texte = ['En clair :', debut, 'Le détail juridique :', 'x'].join('\n');
+    assert.equal(premierePhraseRepond(texte), false, debut);
+  }
+});
+
+test('une esquive suivie d’une réponse reste une esquive', () => {
+  /* « Votre situation relève du bail d'habitation, et oui, vous pouvez » commence
+     par du contexte, quoi qu'il vienne ensuite : c'est la ligne que beaucoup
+     liront seule. */
+  const texte = [
+    'En clair :',
+    'Votre situation relève du bail d’habitation, et oui, vous pouvez donner congé.',
+    'Le détail juridique :',
+    'x',
+  ].join('\n');
+  assert.equal(premierePhraseRepond(texte), false);
+});
+
+test('la première phrase est extraite sans la suite', () => {
+  const texte = ['En clair :', 'Oui, vous pouvez. Mais pas n’importe quand.', 'Le détail juridique :', 'x'].join('\n');
+  assert.equal(premierePhrase(texte), 'Oui, vous pouvez.');
+});
+
+/* ---------------------------------------------------------- la longueur --- */
+
+test('une phrase-fleuve de la partie simple est relevée', () => {
+  const fleuve =
+    'Oui. Dans la mesure où le bail que vous avez signé porte sur un logement vide et que le locataire occupe les lieux depuis plus de trois ans, ce qui semble être le cas au vu de ce que vous indiquez, la règle applicable impose un délai qui se compte à partir de la réception du courrier et non de son envoi.';
+  const texte = ['En clair :', fleuve, 'Le détail juridique :', 'x'].join('\n');
+  assert.equal(phrasesTropLongues(texte).length, 1);
+});
+
+test('le détail juridique a le droit d’être long', () => {
+  const texte = [
+    'En clair :',
+    'Oui.',
+    'Le détail juridique :',
+    'L’article 15 de la loi du 6 juillet 1989 impose au bailleur qui entend délivrer congé pour vendre de respecter un délai de six mois avant le terme du bail, ce délai courant à compter de la réception de la lettre recommandée ou de la signification par acte de commissaire de justice, étant précisé que le congé doit être motivé.',
+  ].join('\n');
+  assert.deepEqual(phrasesTropLongues(texte), []);
+});
+
+test('une énumération de gestes n’est pas une phrase trop longue', () => {
+  const texte = [
+    'En clair :',
+    'Oui.',
+    'Ce que je ferais :',
+    '— Écrire au locataire en recommandé avec accusé de réception, en indiquant clairement la date à laquelle le bail prendra fin et le motif exact pour lequel vous reprenez le logement.',
+    'Le détail juridique :',
+    'x',
+  ].join('\n');
+  assert.deepEqual(phrasesTropLongues(texte), []);
+});
+
+test('le verdict relève la première phrase et la phrase-fleuve', () => {
+  const fautive = [
+    'En clair :',
+    'Votre question porte sur un sujet qui met en jeu plusieurs règles distinctes dont il faut examiner chacune avec attention avant de pouvoir vous répondre utilement sur le fond de votre affaire.',
+    'Le détail juridique :',
+    'x',
+  ].join('\n');
+  const regles = juger(fautive, {}, []).map((m) => m.regle);
+  assert.ok(regles.includes('première phrase'), regles.join(','));
+  assert.ok(regles.includes('phrase trop longue'), regles.join(','));
+});
+
+test('les nouveaux mots de métier sont relevés dans la partie simple', () => {
+  for (const mot of ['indivision', 'quote-part', 'à compter de']) {
+    const texte = ['En clair :', `Oui. Le calcul se fait ${mot} la date du bail.`, 'Le détail juridique :', 'x'].join('\n');
+    assert.ok(jargonDansLeClair(texte).length > 0, mot);
+  }
 });

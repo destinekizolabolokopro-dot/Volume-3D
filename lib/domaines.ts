@@ -89,6 +89,17 @@ export interface Domaine {
    */
   diagnostics?: boolean;
   /**
+   * Vrai si les tables de la copropriété (lib/copropriete.ts) font partie de
+   * la consigne : majorités d'assemblée, passerelles, calendrier, charges.
+   *
+   * Un seul domaine les porte, et c'est voulu. Ailleurs, elles occuperaient
+   * la fenêtre sans servir et inviteraient le spécialiste à ramener la
+   * conversation sur un terrain qui n'est pas le sien — la spécialité
+   * « travaux » n'a pas à raisonner en majorités d'assemblée, elle a à
+   * renvoyer vers celle qui le fait.
+   */
+  copropriete?: boolean;
+  /**
    * Termes décisifs pour l'aiguillage : leur présence désigne le domaine à
    * elle seule. « décennale » ne veut dire qu'une chose.
    */
@@ -315,8 +326,10 @@ export const DOMAINES: Domaine[] = [
       'le règlement de copropriété et l’état descriptif de division de votre immeuble',
       'le code civil, pour la propriété et la responsabilité',
     ],
+    copropriete: true,
     delais: [
-      'Contester une décision d’assemblée générale : deux mois à compter de la notification du procès-verbal. Ce délai est appliqué avec une rigueur absolue, et il n’est ouvert qu’aux copropriétaires opposants ou absents — celui qui a voté pour ne peut plus revenir dessus.',
+      'Contester une décision d’assemblée générale : deux mois à compter de la NOTIFICATION du procès-verbal, et non de la tenue de l’assemblée. Le syndic a un mois pour notifier : entre la séance et le point de départ du délai, il peut donc s’écouler un mois de plus. Le délai est appliqué avec une rigueur absolue, et il n’est ouvert qu’aux copropriétaires opposants ou défaillants — absents et non représentés. Celui qui a voté pour, ou qui s’est abstenu en séance, ne peut plus revenir dessus.',
+      'Exécution des travaux votés : sauf urgence, le syndic ne peut pas les engager avant l’expiration de ce délai de deux mois.',
       'Convocation à l’assemblée : vingt et un jours au moins avant la séance, avec les documents joints. Une convocation tardive ou incomplète est une cause de nullité, à soulever dans les deux mois du procès-verbal.',
       'Demande d’inscription d’une résolution à l’ordre du jour : elle doit parvenir au syndic assez tôt pour figurer dans la convocation — en pratique, dès la clôture de l’assemblée précédente.',
       'Charges impayées : le syndicat peut les réclamer cinq ans en arrière, et le copropriétaire dispose du même délai pour contester une répartition erronée.',
