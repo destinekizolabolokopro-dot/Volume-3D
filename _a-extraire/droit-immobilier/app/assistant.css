@@ -2572,6 +2572,39 @@
    page. C'est là qu'on lit un prix, donc c'est là qu'on doit lire ce qu'il
    comprend. */
 
+/* Les marques dessinées — trombone, micro, lecture, arrêt. Elles prennent la
+   couleur du texte qui les accompagne, ce qu'un emoji ne fait pas : à côté
+   d'un lien d'accent ou sur un bouton sombre, un emoji reste de sa couleur à
+   lui et le bouton se met à ressembler à un collage. Voir components/Picto.tsx. */
+
+.jur-picto {
+  flex: none;
+  /* Posée sur la ligne de base du texte plutôt qu'au milieu de la hauteur de
+     ligne : centrée, elle flotte au-dessus des minuscules. */
+  vertical-align: -2px;
+}
+
+/* L'état d'un abonnement. En temps normal c'est une mention : on la lit une
+   fois, on sait quand on sera prélevé. En retard de paiement, elle prend le
+   lavis d'alerte — pas le rouge de l'erreur, parce que la personne n'a rien
+   fait de mal et que sa banque va probablement réessayer. */
+
+.jur-etat-abonnement {
+  margin: calc(var(--pas) * 1.25) 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  max-width: 62ch;
+}
+
+.jur-etat-retard {
+  background: var(--warning-wash);
+  border-left: 2px solid var(--warning);
+  padding: calc(var(--pas) * 1.25) calc(var(--pas) * 1.5);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--ink);
+}
+
 .jur-note-tva {
   margin: calc(var(--pas) * 2.5) 0 0;
   font-size: 13px;

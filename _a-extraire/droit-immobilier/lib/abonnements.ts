@@ -7,10 +7,13 @@
  * d'entrée sans engagement, celle du haut rend la médiane raisonnable.
  *
  * Ce fichier ne connaît ni Stripe ni aucun prestataire : il décrit ce qui est
- * vendu, pas comment c'est encaissé. Le branchement du paiement est un seul
- * point d'entrée, `paiementConfigure()`, et tant qu'aucune clé n'est présente
- * le changement de formule est immédiat et gratuit — l'interface le dit alors
- * en toutes lettres plutôt que de simuler une caisse.
+ * vendu, pas comment c'est encaissé. L'encaissement vit dans lib/paiement.ts,
+ * et l'état d'un abonnement dans lib/facturation.ts — celui-ci reste pur, donc
+ * lisible depuis un composant client.
+ *
+ * Tant qu'aucun prestataire n'est branché, le changement de formule est
+ * immédiat et gratuit, et l'interface le dit en toutes lettres plutôt que de
+ * simuler une caisse qui n'encaisse rien.
  */
 
 export type FormuleId = 'decouverte' | 'pro' | 'cabinet';
@@ -110,18 +113,6 @@ export function formuleDuCompte(valeur: unknown): Formule {
   return estFormuleId(valeur) ? formule(valeur) : formule('decouverte');
 }
 
-/**
- * Vrai quand un prestataire de paiement est configuré.
- *
- * Tant qu'il ne l'est pas, le site ne fait pas semblant : les formules
- * payantes restent visibles et sélectionnables, et chaque écran qui les
- * propose écrit noir sur blanc qu'aucun paiement n'est demandé. Simuler une
- * page de carte bancaire serait la seule chose vraiment malhonnête à faire
- * ici.
- */
-export function paiementConfigure(): boolean {
-  return Boolean(process.env.STRIPE_SECRET_KEY);
-}
 
 /**
  * « 19 € TTC / mois », ou « Gratuit ». L'espace insécable est posé ici.

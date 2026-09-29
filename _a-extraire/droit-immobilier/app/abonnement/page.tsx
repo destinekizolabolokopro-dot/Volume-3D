@@ -2,12 +2,8 @@ import type { Metadata } from 'next';
 import { changerFormule } from '@/app/espace/actions';
 import { Barre } from '@/components/Barre';
 import { Pied } from '@/components/Pied';
-import {
-  FORMULES,
-  formuleDuCompte,
-  paiementConfigure,
-  prixLisible,
-} from '@/lib/abonnements';
+import { FORMULES, formuleDuCompte, prixLisible } from '@/lib/abonnements';
+import { paiementBranche } from '@/lib/paiement';
 import { compteCourant } from '@/lib/comptes';
 import { tva } from '@/lib/editeur';
 
@@ -111,7 +107,7 @@ export default async function Abonnement() {
             manquante sur les mentions légales, pas inventée ici. */}
         {regimeDeTva && <p className="jur-note-tva">{regimeDeTva}</p>}
 
-        {!paiementConfigure() && (
+        {!paiementBranche() && (
           <p className="jur-note-paiement">
             Aucun prestataire de paiement n’est branché sur ce site : les formules payantes
             s’activent immédiatement et gratuitement, et rien ne vous sera demandé. C’est écrit ici

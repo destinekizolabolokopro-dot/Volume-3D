@@ -26,6 +26,14 @@ create table if not exists "comptesJuridiques" (
   -- Formule — voir FormuleId dans lib/abonnements.ts. Vide vaut « Découverte ».
   abonnement         text not null default 'decouverte',
   "abonnementDepuis" text not null default '',
+  -- L'état de l'abonnement payant (actif, essai, retard, clos) et la fin de la
+  -- période en cours, recopiés depuis le prestataire de paiement : c'est lui
+  -- qui débite, c'est donc lui qui fait foi. Voir lib/facturation.ts.
+  "abonnementEtat"   text not null default '',
+  "abonnementJusquA" text not null default '',
+  -- L'identifiant du client chez le prestataire. Sans lui, chaque passage en
+  -- caisse créerait une fiche de plus et éclaterait l'historique de factures.
+  "stripeClientId"   text not null default '',
   -- Date de confirmation de l'adresse. Vide tant qu'elle ne l'est pas : une
   -- adresse non confirmée n'empêche pas d'entrer, elle empêche de payer.
   "emailVerifieA"    text not null default '',
@@ -39,6 +47,17 @@ create table if not exists "comptesJuridiques" (
 
 -- Un fil n'est enregistré que si la personne a un compte. Sans compte, il vit
 -- dans l'onglet et disparaît avec lui : c'est écrit sur la page, et c'est
+-- LES COLONNES AJOUTÉES APRÈS COUP.
+--
+-- « create table if not exists » ne touche pas à une table qui existe déjà :
+-- sur une base montée avant l'encaissement, les trois colonnes ci-dessus
+-- n'apparaîtraient jamais, et le site échouerait à écrire l'état d'un
+-- abonnement sans que rien ne dise pourquoi. Ces trois lignes rattrapent ce
+-- cas et ne font rien sur une base neuve.
+alter table "comptesJuridiques" add column if not exists "abonnementEtat"   text not null default '';
+alter table "comptesJuridiques" add column if not exists "abonnementJusquA" text not null default '';
+alter table "comptesJuridiques" add column if not exists "stripeClientId"   text not null default '';
+
 -- préférable à un identifiant déposé dans un cookie pour rattacher après coup
 -- des questions sur une expulsion ou un impayé.
 create table if not exists consultations (

@@ -11,3 +11,8 @@ next-env.d.ts
 # Le fonds LEGI brut téléchargé par `npm run corpus` : 2,4 Go d’archives
 # officielles. Ce qu’on en tire vit dans corpus/, et c’est cela qui est versionné.
 .legi/
+
+# Le rapport de la dernière évaluation : il porte des réponses entières, il
+# change à chaque passage, et il n'a rien à faire dans l'historique. Les cas,
+# eux, sont versionnés — ce sont eux, le jeu d'évaluation.
+evaluations/dernier-rapport.json

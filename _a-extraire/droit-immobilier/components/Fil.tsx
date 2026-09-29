@@ -1,6 +1,7 @@
 import { Reponse } from '@/components/Reponse';
 import { Sources } from '@/components/Sources';
 import { Veille } from '@/components/Veille';
+import { Trombone } from '@/components/Picto';
 import { Lecture } from '@/components/Voix';
 import type { Tour } from '@/components/useConsultation';
 
@@ -38,7 +39,7 @@ export function Fil({
         >
           {tour.piece && (
             <span className="jur-piece">
-              <span aria-hidden="true">📎</span> {tour.piece}
+              <Trombone /> {tour.piece}
             </span>
           )}
           {tour.role === 'assistant' ? (
