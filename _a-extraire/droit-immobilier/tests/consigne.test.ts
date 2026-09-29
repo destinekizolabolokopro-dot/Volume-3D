@@ -119,8 +119,29 @@ test('le vocabulaire de métier est nommément interdit avant le détail', () =>
   assert.match(SOCLE, /Aucun numéro d’article/);
   assert.match(SOCLE, /clause résolutoire/);
   assert.match(SOCLE, /commandement de payer/);
-  /* Interdire sans donner l'équivalent laisserait le modèle sans issue. */
-  assert.match(SOCLE, /le courrier officiel qu’un huissier apporte/);
+  /* Interdire sans donner l'équivalent laisserait le modèle sans issue. Le
+     socle porte maintenant une table d'équivalences plutôt qu'un exemple
+     isolé, et chaque équivalent est plus court que le terme qu'il remplace —
+     ce qui est la preuve qu'il est vraiment plus simple. */
+  assert.match(SOCLE, /un courrier officiel qu’un huissier apporte/);
+  for (const [terme, equivalent] of [
+    ['préavis', 'le temps à respecter avant de partir'],
+    ['mise en demeure', 'une lettre recommandée qui pose une date limite'],
+    ['forclusion', 'passé ce jour, vous ne pouvez plus rien demander'],
+    ['indivision', 'le bien appartient à plusieurs personnes à la fois'],
+  ]) {
+    assert.ok(SOCLE.includes(terme), terme);
+    assert.ok(SOCLE.includes(equivalent), equivalent);
+  }
+});
+
+test('la première phrase doit répondre, et les esquives sont nommées', () => {
+  /* C'est la seule ligne que beaucoup liront. Une réponse qui commence par
+     « Votre situation relève de… » a déjà perdu la personne. */
+  assert.match(SOCLE, /LA PREMIÈRE PHRASE RÉPOND/);
+  assert.match(SOCLE, /Vous me demandez si/);
+  assert.match(SOCLE, /Plusieurs éléments sont à prendre en compte/);
+  assert.match(SOCLE, /le chiffre EST la réponse/);
 });
 
 test('le détail juridique n’est jamais vide', () => {

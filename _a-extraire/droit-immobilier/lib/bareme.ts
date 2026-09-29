@@ -124,18 +124,117 @@ export const JARGON = [
   'forclusion',
   'titre exécutoire',
   'préavis',
+  'indivision',
+  'quote-part',
+  'diligenter',
   'il convient de',
   'en l’espèce',
   'en l’espece',
   'nonobstant',
   'susvisé',
   'précité',
+  'à compter de',
+  'au titre de',
+  'ledit',
+  'y afférent',
 ] as const;
 
 /** Le jargon trouvé dans la partie qui doit s'en passer. */
 export function jargonDansLeClair(texte: string): string[] {
   const nu = sansAccent(partieSimple(texte));
   return JARGON.filter((mot) => nu.includes(sansAccent(mot)));
+}
+
+/* ====================================================== la première phrase === */
+
+/**
+ * Les ouvertures qui répondent.
+ *
+ * Elles ne sont pas décoratives : c'est la seule ligne que beaucoup liront,
+ * et une réponse qui commence par « Votre situation relève de… » a déjà
+ * perdu la personne qui voulait savoir si elle pouvait donner congé.
+ */
+const OUVERTURES = [
+  'oui',
+  'non',
+  'ca depend',
+  'vous pouvez',
+  'vous ne pouvez pas',
+  'vous devez',
+  'vous n’etes pas',
+  'vous n’avez pas',
+  'vous avez',
+  'c’est trop tard',
+  'il est trop tard',
+  'rien ne vous',
+  'rien ne l’',
+  'votre proprietaire peut',
+  'votre proprietaire ne peut pas',
+  'votre locataire peut',
+  'votre locataire ne peut pas',
+  'la reponse est',
+];
+
+/** Les ouvertures qui esquivent, et qu'on relève nommément. */
+const ESQUIVES = [
+  'vous me demandez',
+  'votre question porte',
+  'votre situation releve',
+  'plusieurs elements',
+  'il faut distinguer',
+  'la reponse depend de plusieurs',
+  'en droit francais',
+  'tout d’abord',
+];
+
+/** La première phrase de « En clair », telle quelle. */
+export function premierePhrase(texte: string): string {
+  const clair = sections(texte).get(sansAccent('en clair')) ?? '';
+  const propre = clair.replace(/\s+/g, ' ').trim();
+  if (!propre) return '';
+  const fin = propre.search(/[.!?…](\s|$)/);
+  return fin === -1 ? propre : propre.slice(0, fin + 1);
+}
+
+/**
+ * Vrai quand la première phrase répond au lieu de se mettre en route.
+ *
+ * Une esquive reconnue l'emporte sur une ouverture reconnue : « Votre
+ * situation relève du bail d'habitation, et oui, vous pouvez » commence bien
+ * par du contexte, quel que soit ce qui suit.
+ */
+export function premierePhraseRepond(texte: string): boolean {
+  const nu = sansAccent(premierePhrase(texte));
+  if (!nu) return false;
+  if (ESQUIVES.some((esquive) => nu.startsWith(sansAccent(esquive)))) return false;
+  return OUVERTURES.some((ouverture) => nu.startsWith(sansAccent(ouverture)));
+}
+
+/* ======================================================== la longueur =========== */
+
+/** Au-delà, une phrase cesse d'être simple, quels que soient les mots employés. */
+export const MOTS_PAR_PHRASE = 30;
+
+/**
+ * Les phrases trop longues de la partie qui doit se lire sans rien connaître
+ * au droit.
+ *
+ * Le seuil est large à dessein : trente mots, quand la consigne en demande
+ * une vingtaine. Il ne s'agit pas de faire respecter un style mais
+ * d'attraper la phrase-fleuve à trois subordonnées, qui est la forme que
+ * prend le jargon quand on lui a interdit ses mots.
+ *
+ * Les énumérations sont écartées : une ligne de « Ce que je ferais » est un
+ * geste, pas une phrase, et elle a le droit d'être précise.
+ */
+export function phrasesTropLongues(texte: string): string[] {
+  return partieSimple(texte)
+    .split('\n')
+    .filter((ligne) => !ligne.trim().startsWith('—'))
+    .join(' ')
+    .split(/(?<=[.!?…])\s+/)
+    .map((phrase) => phrase.trim())
+    .filter((phrase) => phrase.split(/\s+/).filter(Boolean).length > MOTS_PAR_PHRASE);
 }
 
 /* ============================================================= les articles === */
@@ -260,6 +359,24 @@ export function juger(
 
   if (!texte.toLowerCase().includes('détail juridique')) {
     manques.push({ regle: 'structure', detail: 'pas de section « Le détail juridique »' });
+  }
+
+  if (!premierePhraseRepond(texte)) {
+    const debut = premierePhrase(texte);
+    manques.push({
+      regle: 'première phrase',
+      detail: debut
+        ? `ne répond pas : « ${debut.slice(0, 90)} »`
+        : '« En clair » est vide ou absent',
+    });
+  }
+
+  const longues = phrasesTropLongues(texte);
+  if (longues.length > 0) {
+    manques.push({
+      regle: 'phrase trop longue',
+      detail: `${longues.length} phrase(s) de plus de ${MOTS_PAR_PHRASE} mots, dont : « ${longues[0].slice(0, 90)}… »`,
+    });
   }
 
   const jargon = jargonDansLeClair(texte);
