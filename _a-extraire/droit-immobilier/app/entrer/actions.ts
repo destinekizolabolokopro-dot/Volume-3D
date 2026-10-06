@@ -1,5 +1,6 @@
 'use server';
 
+import { randomBytes } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { envoyerLaReinitialisation, envoyerLaVerification, poserLeMotDePasse } from '@/lib/acces';
@@ -8,6 +9,7 @@ import {
   compteCourant,
   creerCompte,
   emettreSession,
+  hashPassword,
   optionsSession,
   sessionsConfigurees,
   trouverParEmail,
@@ -37,6 +39,30 @@ import { ValidationError, email as champEmail, text } from '@/lib/validation';
  * quelqu'un qui a déjà un compte — un vrai dommage pour une fuite que le
  * formulaire d'inscription livre de toute façon.
  */
+
+/**
+ * Les bornes d'un mot de passe.
+ *
+ * Dix signes au minimum : c'est le plancher déjà en place, et il tient.
+ *
+ * Deux cents au maximum, et ce n'est PAS une protection contre un déni de
+ * service — j'ai mesuré, scrypt coûte le même temps sur un mot de passe de
+ * deux millions de signes que sur un de dix. C'est de l'hygiène : un champ
+ * sans borne accepte un envoi de plusieurs mégaoctets à chaque tentative, et
+ * une phrase de passe sérieuse en fait soixante.
+ */
+const MOT_DE_PASSE_MIN = 10;
+const MOT_DE_PASSE_MAX = 200;
+
+function motDePasseDe(formData: FormData, champ = 'password'): string {
+  const valeur = String(formData.get(champ) ?? '');
+  if (valeur.length > MOT_DE_PASSE_MAX) {
+    throw new ValidationError(
+      `Ce mot de passe dépasse ${MOT_DE_PASSE_MAX} caractères. Une phrase de passe solide en fait soixante.`,
+    );
+  }
+  return valeur;
+}
 
 export interface Resultat {
   ok: boolean;
@@ -93,6 +119,20 @@ function verifierHebergement(): void {
  * une adresse IP annoncée.
  */
 const FREIN_ENTREE = cadence(10, 15 * 60 * 1000);
+
+/**
+ * Une empreinte sur laquelle perdre le même temps quand l'adresse n'existe pas.
+ *
+ * Calculée une fois, à la première tentative, puis gardée : la recalculer à
+ * chaque appel coûterait un scrypt de plus sans rien apporter. Le mot de passe
+ * qui la produit est tiré au hasard et n'est jamais conservé — rien ne peut
+ * donc la valider.
+ */
+let garde: Promise<string> | null = null;
+function empreinteDeGarde(): Promise<string> {
+  garde ??= hashPassword(randomBytes(32).toString('hex'));
+  return garde;
+}
 /** Les envois de courriel sont plus chers : trois par quart d'heure et par adresse. */
 const FREIN_COURRIEL = cadence(3, 15 * 60 * 1000);
 
@@ -100,7 +140,7 @@ export async function connexion(_precedent: Resultat | null, formData: FormData)
   return executer(async () => {
     verifierHebergement();
     const adresse = champEmail(formData.get('email'));
-    const motDePasse = String(formData.get('password') ?? '');
+    const motDePasse = motDePasseDe(formData);
 
     if (FREIN_ENTREE.depasse(`entree:${adresse}`)) {
       throw new ValidationError(
@@ -108,8 +148,21 @@ export async function connexion(_precedent: Resultat | null, formData: FormData)
       );
     }
 
+    /* LE MÊME TEMPS, QUE L'ADRESSE EXISTE OU NON.
+       Le message était déjà identique dans les deux cas — et la durée ne
+       l'était pas. Une adresse sans compte répondait en quatre centièmes de
+       milliseconde, une adresse avec compte en quarante-cinq : le temps de
+       vérifier l'empreinte. Mille fois plus. N'importe qui pouvait donc passer
+       une liste d'adresses et apprendre lesquelles ont un compte sur un
+       service où l'on raconte des litiges — exactement ce que le message
+       refusait de dire.
+
+       On vérifie donc TOUJOURS une empreinte : celle du compte s'il existe,
+       une empreinte de garde sinon. Le résultat est jeté dans le second cas ;
+       seul le temps compte. */
     const compte = await trouverParEmail(adresse);
-    if (!compte || !(await verifyPassword(motDePasse, compte.passwordHash))) {
+    const correct = await verifyPassword(motDePasse, compte?.passwordHash ?? (await empreinteDeGarde()));
+    if (!compte || !correct) {
       throw new ValidationError('Adresse ou mot de passe incorrect.');
     }
     if (compte.statut !== 'active') {
@@ -117,7 +170,7 @@ export async function connexion(_precedent: Resultat | null, formData: FormData)
     }
 
     const jar = await cookies();
-    jar.set(COOKIE, emettreSession(compte.id), optionsSession);
+    jar.set(COOKIE, emettreSession(compte), optionsSession);
     redirect('/espace');
   });
 }
@@ -126,9 +179,9 @@ export async function inscription(_precedent: Resultat | null, formData: FormDat
   return executer(async () => {
     verifierHebergement();
     const adresse = champEmail(formData.get('email'));
-    const motDePasse = String(formData.get('password') ?? '');
-    if (motDePasse.length < 10) {
-      throw new ValidationError('Choisissez un mot de passe d’au moins dix caractères.');
+    const motDePasse = motDePasseDe(formData);
+    if (motDePasse.length < MOT_DE_PASSE_MIN) {
+      throw new ValidationError(`Choisissez un mot de passe d’au moins ${MOT_DE_PASSE_MIN} caractères.`);
     }
     if (await trouverParEmail(adresse)) {
       throw new ValidationError('Un compte existe déjà avec cette adresse. Connectez-vous.');
@@ -147,7 +200,7 @@ export async function inscription(_precedent: Resultat | null, formData: FormDat
     await envoyerLaVerification(compte);
 
     const jar = await cookies();
-    jar.set(COOKIE, emettreSession(compte.id), optionsSession);
+    jar.set(COOKIE, emettreSession(compte), optionsSession);
     /* Le profil se demande juste après, sur son propre écran : trois questions
        de plus dans le formulaire d'inscription feraient trois occasions
        d'abandonner avant d'avoir vu la première réponse. */
@@ -192,11 +245,11 @@ export async function reinitialiser(
   return executer(async () => {
     verifierHebergement();
     const jeton = String(formData.get('jeton') ?? '');
-    const motDePasse = String(formData.get('password') ?? '');
-    const confirmation = String(formData.get('password2') ?? '');
+    const motDePasse = motDePasseDe(formData);
+    const confirmation = motDePasseDe(formData, 'password2');
 
-    if (motDePasse.length < 10) {
-      throw new ValidationError('Choisissez un mot de passe d’au moins dix caractères.');
+    if (motDePasse.length < MOT_DE_PASSE_MIN) {
+      throw new ValidationError(`Choisissez un mot de passe d’au moins ${MOT_DE_PASSE_MIN} caractères.`);
     }
     if (motDePasse !== confirmation) {
       throw new ValidationError('Les deux mots de passe ne sont pas identiques.');
