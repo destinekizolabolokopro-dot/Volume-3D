@@ -3,9 +3,15 @@ import { test } from 'node:test';
 
 process.env.AUTH_SECRET = 'un-secret-de-test-suffisamment-long';
 
-const { emettreJeton, hashPassword, lireJeton, sessionsConfigurees, verifyPassword } = await import(
-  '../lib/sessions.ts'
-);
+const {
+  emettreJeton,
+  empreinteDuMotDePasse,
+  hashPassword,
+  identifiantNonVerifie,
+  lireJeton,
+  sessionsConfigurees,
+  verifyPassword,
+} = await import('../lib/sessions.ts');
 
 /**
  * La mécanique des sessions, vérifiée là où elle peut casser.
@@ -72,4 +78,70 @@ test('un secret trop court interdit les sessions au lieu de les affaiblir', () =
   assert.throws(() => emettreJeton('juridique', 'compte-1'), /AUTH_SECRET/);
   process.env.AUTH_SECRET = garde;
   assert.equal(sessionsConfigurees(), true);
+});
+
+/* ================================= le jeton meurt avec le mot de passe === */
+
+/**
+ * LE TEST QUI COMPTE LE PLUS DE CE FICHIER.
+ *
+ * Quelqu'un dont le compte vient d'être pris fait exactement le bon geste : il
+ * change son mot de passe. Avant, cela ne faisait rien aux sessions déjà
+ * ouvertes — celui qui était entré gardait son accès trente jours, sur un
+ * service où l'on dépose des baux et où l'on raconte des litiges.
+ */
+test('changer de mot de passe ferme les sessions ouvertes', async () => {
+  const avant = await hashPassword('ancien-mot-de-passe');
+  const apres = await hashPassword('nouveau-mot-de-passe');
+
+  const porteeAvant = `juridique.${empreinteDuMotDePasse(avant)}`;
+  const porteeApres = `juridique.${empreinteDuMotDePasse(apres)}`;
+
+  const cookie = emettreJeton(porteeAvant, 'compte-1');
+
+  assert.equal(lireJeton(porteeAvant, cookie), 'compte-1', 'le jeton valait avant');
+  assert.equal(lireJeton(porteeApres, cookie), null, 'il vaut encore après le changement');
+});
+
+test('deux mots de passe différents donnent deux empreintes différentes', async () => {
+  const a = empreinteDuMotDePasse(await hashPassword('motdepasse-un'));
+  const b = empreinteDuMotDePasse(await hashPassword('motdepasse-deux'));
+  assert.notEqual(a, b);
+});
+
+test('la même empreinte stockée donne toujours la même portée', async () => {
+  /* Sans cela, chaque lecture invaliderait la session précédente et personne
+     ne resterait connecté plus d'une requête. */
+  const empreinte = await hashPassword('stable');
+  assert.equal(empreinteDuMotDePasse(empreinte), empreinteDuMotDePasse(empreinte));
+});
+
+test('l’empreinte ne laisse rien filtrer du hachage', async () => {
+  const stocke = await hashPassword('motdepasse');
+  const empreinte = empreinteDuMotDePasse(stocke);
+  assert.equal(empreinte.length, 12);
+  assert.ok(!stocke.includes(empreinte), 'l’empreinte est un morceau du hachage');
+});
+
+/* ========================== l'identifiant lu avant vérification === */
+
+test('l’identifiant non vérifié se lit, et n’ouvre rien par lui-même', () => {
+  const jeton = emettreJeton('juridique.abc', 'compte-7');
+  assert.equal(identifiantNonVerifie(jeton), 'compte-7');
+  /* Il sert à savoir quelle ligne charger, pas à autoriser : la signature
+     reste à vérifier, et avec la bonne portée. */
+  assert.equal(lireJeton('juridique.autre', jeton), null);
+});
+
+test('un jeton fabriqué de toutes pièces annonce un identifiant mais ne vaut rien', () => {
+  const faux = `compte-7.${Date.now() + 100000}.signaturebidon`;
+  assert.equal(identifiantNonVerifie(faux), 'compte-7');
+  assert.equal(lireJeton('juridique.abc', faux), null);
+});
+
+test('une forme inattendue ne donne aucun identifiant', () => {
+  for (const jeton of ['', 'deux.parts', 'a.b.c.d', '.expire.signature']) {
+    assert.equal(identifiantNonVerifie(jeton), null, JSON.stringify(jeton));
+  }
+  assert.equal(identifiantNonVerifie(undefined), null);
 });

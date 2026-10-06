@@ -4,6 +4,8 @@ import { randomId } from './ids';
 import {
   emettreJeton,
   hashPassword,
+  empreinteDuMotDePasse,
+  identifiantNonVerifie,
   lireJeton,
   optionsDuCookie,
   sessionsConfigurees,
@@ -28,13 +30,35 @@ export { hashPassword, sessionsConfigurees, verifyPassword };
 
 export const COOKIE = 'jur_session';
 
-/** Jeton de session. La portée entre dans la signature — voir lib/sessions.ts. */
-export function emettreSession(compteId: string, now = Date.now()): string {
-  return emettreJeton('juridique', compteId, now);
+/**
+ * Jeton de session. Deux choses entrent dans la signature, et aucune n'est du
+ * décor.
+ *
+ * La PORTÉE « juridique » empêche un cookie émis par un autre service
+ * partageant AUTH_SECRET d'ouvrir une session ici.
+ *
+ * L'EMPREINTE DU MOT DE PASSE fait tomber le jeton dès que le mot de passe
+ * change. C'est ce qui donne enfin un effet au geste de quelqu'un dont le
+ * compte vient d'être pris : il change son mot de passe, et toutes les
+ * sessions ouvertes ailleurs cessent à l'instant. Voir lib/sessions.ts.
+ */
+function portee(passwordHash: string): string {
+  return `juridique.${empreinteDuMotDePasse(passwordHash)}`;
 }
 
-export function lireSession(jeton: string | undefined, now = Date.now()): string | null {
-  return lireJeton('juridique', jeton, now);
+export function emettreSession(
+  compte: Pick<CompteJuridique, 'id' | 'passwordHash'>,
+  now = Date.now(),
+): string {
+  return emettreJeton(portee(compte.passwordHash), compte.id, now);
+}
+
+export function lireSession(
+  jeton: string | undefined,
+  passwordHash: string,
+  now = Date.now(),
+): string | null {
+  return lireJeton(portee(passwordHash), jeton, now);
 }
 
 export const optionsSession = optionsDuCookie;
@@ -43,9 +67,24 @@ export const optionsSession = optionsDuCookie;
 export async function compteCourant(): Promise<CompteJuridique | null> {
   try {
     const jar = await cookies();
-    const id = lireSession(jar.get(COOKIE)?.value);
-    if (!id) return null;
-    const compte = await getStore().get('comptesJuridiques', id);
+    const jeton = jar.get(COOKIE)?.value;
+
+    /* L'ORDRE EST IMPOSÉ PAR LA SIGNATURE. La portée dépend du mot de passe,
+       le mot de passe est en base, et on ne peut pas lire la base sans savoir
+       quelle ligne lire. On extrait donc l'identifiant SANS le vérifier, on
+       charge le compte, et on vérifie ensuite — c'est cette vérification-là,
+       et elle seule, qui ouvre quoi que ce soit. */
+    const annonce = identifiantNonVerifie(jeton);
+    if (!annonce) return null;
+
+    const compte = await getStore().get('comptesJuridiques', annonce);
+    if (!compte) return null;
+
+    const id = lireSession(jeton, compte.passwordHash);
+    /* La comparaison avec l'identifiant annoncé n'est pas superflue : elle
+       ferme la porte à un jeton valide pour un autre compte qui serait
+       présenté avec l'identifiant d'un troisième. */
+    if (id !== compte.id) return null;
     /* Seul 'active' ouvre. Un compte suspendu garde son cookie trente jours :
        le tester par la négative — « tout sauf supprimé » — laissait la
        suspension sans effet jusqu'à l'expiration, c'est-à-dire sans effet. */

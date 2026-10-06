@@ -13,7 +13,8 @@
     "page": "node --experimental-strip-types scripts/page-unique.mjs",
     "contraste": "node --experimental-strip-types scripts/contraste.mjs",
     "artefact": "node --experimental-strip-types scripts/artefact.mjs",
-    "evaluer": "node --experimental-strip-types scripts/evaluer.mjs"
+    "evaluer": "node --experimental-strip-types scripts/evaluer.mjs",
+    "avant-lancement": "node scripts/avant-lancement.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
