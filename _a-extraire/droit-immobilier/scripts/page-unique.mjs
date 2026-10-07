@@ -160,7 +160,18 @@ function construire() {
   const parDomaine = Object.fromEntries(index.domaines.map((d) => [d.domaine, d.articles]));
   const citations = citationsReelles();
 
-  const police = readFileSync(join(RACINE, 'public/fonts/inter-400-latin.woff2')).toString('base64');
+  /* LES DEUX POLICES DU SITE, ET PLUS INTER.
+     Ce script chargeait encore « inter-400-latin.woff2 », abandonné au passage
+     au dessin « Étude ». Le fichier n'existait plus depuis, et la commande
+     échouait sur un ENOENT — en silence, parce que personne ne la lançait.
+     Les noms sont maintenant ceux de public/fonts, et la page se compose dans
+     la vraie typographie du site plutôt que dans la police de secours du
+     système. */
+  const enPolice = (nom) =>
+    readFileSync(join(RACINE, 'public/fonts', nom)).toString('base64');
+  const bodoni = enPolice('bodoni-normal-400-700-latin.woff2');
+  const spectral = enPolice('spectral-normal-400-latin.woff2');
+  const spectralGras = enPolice('spectral-normal-600-latin.woff2');
   const socle = lire('app/socle.css');
   const feuille = lire('app/assistant.css');
 
@@ -212,11 +223,25 @@ function construire() {
 <meta name="description" content="${e(ACCUEIL.lede.slice(0, 155))}">
 <style>
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Bodoni Moda';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400 700;
   font-display: swap;
-  src: url(data:font/woff2;base64,${police}) format('woff2');
+  src: url(data:font/woff2;base64,${bodoni}) format('woff2');
+}
+@font-face {
+  font-family: 'Spectral';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(data:font/woff2;base64,${spectral}) format('woff2');
+}
+@font-face {
+  font-family: 'Spectral';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(data:font/woff2;base64,${spectralGras}) format('woff2');
 }
 ${socle}
 ${feuille}
