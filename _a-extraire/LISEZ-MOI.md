@@ -3,29 +3,48 @@
 Ce dossier n'a pas vocation à rester ici. Il contient **une application
 complète et autonome**, prête à devenir son propre dépôt : l'assistant
 juridique en droit immobilier, avec ses pages, son corpus de 2 133 articles,
-ses trois tables et ses 55 tests. Il ne dépend de rien de Volume3D — ni du
+ses trois tables et ses 245 tests. Il ne dépend de rien de Volume3D — ni du
 `package.json`, ni des composants, ni des types, ni de la base.
 
-Il est ici pour une seule raison : le jeton GitHub de la session qui l'a
-produit ne peut pas créer de dépôt (`403 Resource not accessible by
-integration` — permission d'administration). Le laisser hors du dépôt l'aurait
-fait disparaître avec le conteneur.
+Il est ici pour une seule raison : aucune session n'a pu créer de dépôt à sa
+place — créer un dépôt public est une action qui revient à son propriétaire.
+Le laisser hors du dépôt l'aurait fait disparaître avec le conteneur.
 
-## Les trois commandes qui le sortent d'ici
+## L'extraction est préparée — il reste une étape, et elle vous revient
 
-Créez d'abord un dépôt vide `droit-immobilier` sur GitHub — sans README, sans
-`.gitignore`, sans licence, sinon le premier `push` sera refusé. Puis :
+L'historique de cette application a été extrait dans une branche de ce même
+dépôt : **`immolex-extrait`**. Elle porte les 29 commits qui ont touché ce
+dossier, avec l'application à sa racine — plus de `_a-extraire/`. Elle a été
+vérifiée seule, hors de ce dépôt : 245 tests passent, le site compile.
+
+Il manque la seule chose qui ne peut pas être faite d'ici : créer le dépôt.
+Créez-le **vide** sur GitHub — sans README, sans `.gitignore`, sans licence,
+sinon le premier `push` sera refusé —, puis :
 
 ```bash
-cd _a-extraire/droit-immobilier
-git init -b main && git add -A && git commit -m "L’assistant juridique, chez lui"
-git remote add origin git@github.com:<vous>/droit-immobilier.git
+git clone --single-branch --branch immolex-extrait \
+  https://github.com/destinekizolabolokopro-dot/Volume-3D.git immolex
+cd immolex
+git branch -m immolex-extrait main
+git remote set-url origin git@github.com:<vous>/immolex.git
 git push -u origin main
 ```
 
-Ensuite, et **seulement ensuite**, ce dossier et la zone `/juridique` du dépôt
-Volume3D peuvent être supprimés : tant que le nouveau dépôt n'existe pas, ils
-sont la seule copie.
+Vérifiez ensuite que le nouveau dépôt tient debout :
+
+```bash
+npm install && npm run verify && npm run avant-lancement
+```
+
+**Ensuite, et seulement ensuite**, ce dossier peut être supprimé de Volume3D :
+tant que le nouveau dépôt n'existe pas, il en est la seule copie versionnée.
+La branche `immolex-extrait` pourra l'être aussi, une fois le nouveau dépôt
+confirmé.
+
+Une précision qui compte : ce dépôt-ci est **public**. Le nouveau le sera ou
+non selon ce que vous choisirez en le créant — mais ce qui est déjà ici
+restera lisible dans l'historique de Volume3D, quelle que soit la visibilité
+du nouveau.
 
 ## Ce qu'il reste à faire côté Volume3D
 
