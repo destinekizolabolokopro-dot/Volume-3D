@@ -1,0 +1,72 @@
+import type { Metadata } from 'next';
+import { notFound, redirect } from 'next/navigation';
+import { effacer } from '@/app/espace/dossiers/actions';
+import { Consultation, type Tour } from '@/components/Consultation';
+import { compteCourant } from '@/lib/comptes';
+import { consultationDuCompte, toursDeConsultation } from '@/lib/consultations';
+import { domaineOuNull } from '@/lib/domaines';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Consultation',
+  robots: { index: false, follow: false },
+};
+
+type Params = { params: Promise<{ id: string }> };
+
+/**
+ * Une consultation reprise.
+ *
+ * Le fil repart avec le même spécialiste et le même identifiant : la suite
+ * s'ajoute au dossier au lieu d'en ouvrir un second. Les documents déposés à
+ * l'époque n'y sont plus — seul leur nom subsiste, et il faut les redéposer
+ * pour qu'ils soient relus.
+ */
+export default async function PageConsultation({ params }: Params) {
+  const compte = await compteCourant();
+  if (!compte) redirect('/entrer');
+
+  const { id } = await params;
+  const consultation = await consultationDuCompte(id, compte.id);
+  if (!consultation) notFound();
+
+  const fiche = domaineOuNull(consultation.domaine);
+  if (!fiche) notFound();
+
+  const tours = await toursDeConsultation(consultation.id);
+  const initiaux: Tour[] = tours.map((tour) => ({
+    role: tour.role === 'assistant' ? 'assistant' : 'user',
+    content: tour.content,
+    piece: tour.piece || undefined,
+  }));
+
+  return (
+    <>
+
+      <main className="jur-page jur-espace-page">
+        <h1 className="jur-h1 jur-h1-fil">{consultation.titre}</h1>
+        <p className="jur-sub">
+          {fiche.label} · <a href={`/${fiche.id}`}>fiche du spécialiste</a>
+        </p>
+
+        <Consultation
+          domaine={fiche.id}
+          label={fiche.label}
+          exemples={fiche.exemples}
+          consultationInitiale={consultation.id}
+          toursInitiaux={initiaux}
+          mainsLibres
+          connecte
+        />
+
+        <form action={effacer} className="jur-section">
+          <input type="hidden" name="id" value={consultation.id} />
+          <button className="btn btn-ghost btn-danger btn-sm" type="submit">
+            Effacer cette consultation
+          </button>
+        </form>
+      </main>
+    </>
+  );
+}

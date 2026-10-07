@@ -22,7 +22,8 @@
     "resistance": "node scripts/resistance.mjs",
     "autonome": "node scripts/autonome.mjs",
     "matieres": "node scripts/matieres.mjs",
-    "demarrage": "node scripts/demarrage.mjs"
+    "demarrage": "node scripts/demarrage.mjs",
+    "corpus": "node --experimental-strip-types scripts/corpus.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
